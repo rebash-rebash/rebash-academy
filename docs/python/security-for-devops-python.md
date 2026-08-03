@@ -170,23 +170,24 @@ Before a platform team merges a new deploy helper, security asks for three proof
 
 Plant a fake key in a sample file, then build a scanner that exits non-zero when the pattern matches. Clean sample must pass.
 
-```bash
-cd ~/rebash-python/lab25
-set -euo pipefail
+Create `samples/clean_config.txt`:
 
-mkdir -p samples
-cat > samples/clean_config.txt << 'EOF'
+```text
 endpoint=https://example.invalid/api
 timeout_seconds=10
-EOF
+```
 
-cat > samples/leaky_config.txt << 'EOF'
+Create `samples/leaky_config.txt`:
+
+```text
 endpoint=https://example.invalid/api
 REBASH_API_KEY=AKIA_TRAINING_ONLY_FAKEKEY99
 timeout_seconds=10
-EOF
+```
 
-cat > secret_scan.py << 'EOF'
+Create `secret_scan.py`:
+
+```python
 """Fail if a REBASH_API_KEY-like secret appears in scanned files."""
 from __future__ import annotations
 
@@ -230,8 +231,15 @@ def main(argv: list[str] | None = None) -> int:
 
 if __name__ == "__main__":
     raise SystemExit(main())
-EOF
+```
 
+Run:
+
+```bash
+cd ~/rebash-python/lab25
+set -euo pipefail
+
+mkdir -p samples
 python3 secret_scan.py samples/clean_config.txt | tee scan-clean.stdout
 grep -F 'RESULT=ok' scan-clean.stdout
 
@@ -244,15 +252,15 @@ grep -F 'RESULT=fail' scan-leaky.stdout
 grep -F 'secret-like' scan-leaky.stdout
 ```
 
+
 **Expected output:** clean scan prints `RESULT=ok`; leaky scan exits non-zero with `RESULT=fail`.
 
 #### Task 2 – Safe subprocess (list args, not shell=True)
 
-```bash
-cd ~/rebash-python/lab25
-set -euo pipefail
 
-cat > safe_subprocess_demo.py << 'EOF'
+Create `safe_subprocess_demo.py`:
+
+```python
 """Demonstrate argv-list subprocess (no shell=True)."""
 from __future__ import annotations
 
@@ -282,8 +290,13 @@ def main() -> int:
 
 if __name__ == "__main__":
     raise SystemExit(main())
-EOF
+```
 
+Run:
+
+```bash
+cd ~/rebash-python/lab25
+set -euo pipefail
 python3 safe_subprocess_demo.py | tee safe-subprocess.stdout
 grep -F 'safe_output=42' safe-subprocess.stdout
 grep -F 'RESULT=ok' safe-subprocess.stdout

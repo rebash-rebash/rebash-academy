@@ -35,7 +35,7 @@ tags:
   - aks
   - gke
 author: Shaik Basha
-last_updated: "2026-07-31"
+last_updated: "2026-08-03"
 comments: false
 ---
 
@@ -144,87 +144,156 @@ You do not SSH to etcd; you do still patch nodes, rotate credentials, and test r
 
 ## Hands-on Lab
 
-
-
 ### Objective
 
-Build and verify a working Kubernetes solution for **Managed Kubernetes — EKS, AKS, GKE** that you can inspect, prove, and tear down safely.
+Bootstrap a **kind** cluster, run a kubeconfig context checklist against it, apply a labelled namespace, and compare local node metadata with what managed EKS/AKS/GKE clusters expose — using live command output, not a principles worksheet.
 
 ### Prerequisites
 
-- kubectl configured against a lab cluster (kind/minikube preferred)
-- Cluster-admin or namespace-create rights in the lab cluster
+- **kind** installed (`kind version`)
+- kubectl installed
+- Docker Engine running (kind requirement)
 - Writable workspace at `~/rebash-k8s/module-19`
 
 ### Lab environment
 
 Workspace: `~/rebash-k8s/module-19`
 
-Local kind/minikube or a dedicated sandbox cluster. Never target a shared production API server.
-
 ```bash
 mkdir -p ~/rebash-k8s/module-19 && cd ~/rebash-k8s/module-19
+kind create cluster --name rebash-m19 2>/dev/null || kind get clusters | grep -q rebash-m19
+kubectl cluster-info | tee cluster-info.txt
+kubectl get nodes | tee nodes-ready.txt
+grep -q Ready nodes-ready.txt
 ```
 
 ### Real-world scenario
 
-Your platform team is rolling out **Managed Kubernetes — EKS, AKS, GKE** for a new microservice. You must apply the change in an isolated namespace, prove it works with kubectl, and leave evidence for the on-call handover.
+Your team evaluates EKS, AKS, and GKE for a migration. Platform engineers run a pre-flight script that checks kubeconfig context, cluster endpoint, and node metadata before any cloud CLI runs. You bootstrap a local kind cluster, run the checklist, apply a labelled namespace, and document how local node fields differ from managed provider IDs.
 
 ### Step-by-step tasks
 
-#### Task 1 – Apply a topic workload
+#### Task 1 – Create kubeconfig context checklist script
 
-Create a namespace and a small Deployment to practise **What it is** against a live API.
-
-```bash
-kubectl create namespace rebash-lab --dry-run=client -o yaml | kubectl apply -f -
-kubectl create deployment topic --image=nginx:1.27-alpine -n rebash-lab
-kubectl rollout status deployment/topic -n rebash-lab
-kubectl get all -n rebash-lab
-```
-
-**Expected output:** Deployment Ready; Pods listed under the namespace.
-
-#### Task 2 – Inspect and gather evidence
-
-Production changes always leave an audit trail of describe/Events.
+Create `kubeconfig-context-check.sh`:
 
 ```bash
-kubectl describe deploy topic -n rebash-lab | tee describe.txt
-kubectl get events -n rebash-lab --sort-by=.lastTimestamp | tail -n 15 | tee events.txt
+#!/usr/bin/env bash
+set -euo pipefail
+
+OUT="${1:-context-check.txt}"
+: > "${OUT}"
+
+echo "=== kubeconfig context checklist (read-only) ===" | tee -a "${OUT}"
+echo "No cloud APIs called. Uses local kubeconfig only." | tee -a "${OUT}"
+echo | tee -a "${OUT}"
+
+kubectl config current-context | tee -a "${OUT}"
+kubectl config view --minify -o jsonpath='{.clusters[0].cluster.server}{"\n"}' | tee -a "${OUT}"
+kubectl config view --minify -o jsonpath='{.contexts[0].context.user}{"\n"}' | tee -a "${OUT}"
+
+echo "--- cluster info ---" | tee -a "${OUT}"
+kubectl cluster-info | tee -a "${OUT}"
+
+echo "--- nodes (if permitted) ---" | tee -a "${OUT}"
+kubectl get nodes -o wide | tee -a "${OUT}" || echo "nodes: access denied or unavailable" | tee -a "${OUT}"
+
+echo "--- auth can-i sample ---" | tee -a "${OUT}"
+kubectl auth can-i get pods --all-namespaces | tee -a "${OUT}" || true
+
+echo | tee -a "${OUT}"
+echo "Checklist complete. Review ${OUT} before targeting production contexts." | tee -a "${OUT}"
 ```
 
-**Expected output:** describe.txt and events.txt capture healthy Objects/Events.
+Run against your local context:
+
+```bash
+cd ~/rebash-k8s/module-19
+chmod +x kubeconfig-context-check.sh
+./kubeconfig-context-check.sh context-check.txt
+grep -q 'kubeconfig context checklist' context-check.txt
+grep -q 'cluster info' context-check.txt
+```
+
+**Expected output:** `context-check.txt` lists current context, API server URL, and cluster-info output.
+
+#### Task 3 – Apply labelled namespace and inspect node metadata
+
+Create `namespace.yaml`:
+
+```yaml
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: rebash-managed-lab
+  labels:
+    environment: dev
+    cloud-provider: local-kind
+    app.kubernetes.io/managed-by: rebash-lab
+```
+
+Apply and capture managed-style metadata:
+
+```bash
+cd ~/rebash-k8s/module-19
+kubectl apply -f namespace.yaml
+kubectl get ns rebash-managed-lab --show-labels | tee namespace-evidence.txt
+kubectl get nodes -o jsonpath='{range .items[*]}{.metadata.name}{"\t"}{.spec.providerID}{"\t"}{.metadata.labels}{"\n"}{end}' | tee node-provider-metadata.txt
+grep -q 'rebash-managed-lab' namespace-evidence.txt
+grep -q 'local-kind' namespace-evidence.txt
+```
+
+**Expected output:** Namespace is `Active` with labels; `node-provider-metadata.txt` shows empty or local provider IDs (kind differs from EKS/AKS/GKE cloud provider IDs).
+
+#### Task 4 – Pack evidence for review
+
+```bash
+cd ~/rebash-k8s/module-19
+tar -czf module-19-managed-evidence.tgz \
+  cluster-info.txt nodes-ready.txt context-check.txt \
+  namespace.yaml namespace-evidence.txt node-provider-metadata.txt \
+  kubeconfig-context-check.sh
+ls -l module-19-managed-evidence.tgz | tee evidence-ls.txt
+test -s module-19-managed-evidence.tgz
+```
+
+**Expected output:** Evidence tarball is non-empty and includes context check plus namespace/node metadata.
 
 ### Validation steps
 
-- [ ] Namespace `rebash-lab` contains the expected Ready objects
-- [ ] You can explain each Task command from the Theory section
-- [ ] Cleanup deletes the namespace without leftover workloads
+- [ ] kind cluster `rebash-m19` is Ready
+- [ ] Context checklist runs read-only against local kubeconfig
+- [ ] Namespace `rebash-managed-lab` applied with GitOps-style labels
+- [ ] `node-provider-metadata.txt` captured from live nodes
+- [ ] Evidence tarball contains checklist and namespace output
 
 ### Common errors and fixes
 
 | Error | Cause | Fix |
 |-------|-------|-----|
-| ImagePullBackOff | Wrong tag or registry auth | Fix image reference; check pull secrets |
-| Pending Pod | Scheduling / quota / PVC | `kubectl describe pod` and read Events |
-| Empty Endpoints | Selector or readiness mismatch | Compare Service selector to Pod labels and Ready |
+| `kind: command not found` | kind not installed | Install kind; or use existing lab cluster and skip create |
+| current-context empty | No kubeconfig | Export `KUBECONFIG`; run `kind create cluster --name rebash-m19` |
+| cluster-info fails | Cluster stopped | `kind start` or recreate cluster |
+| Namespace apply denied | Read-only kubeconfig | Use kind with admin context |
+| Wrong cluster targeted | Multiple contexts | `kubectl config use-context kind-rebash-m19` first |
 
 ### Challenge exercise
 
-Add a readinessProbe and a ResourceQuota to the namespace, then show that over-quota creates are rejected.
+Add one line to `node-provider-metadata.txt` explaining which field EKS would populate on nodes (`spec.providerID` with `aws://…`) that kind leaves empty — append via a one-line note file `managed-contrast.txt` generated from your observation, not a copied glossary.
 
 ### Learning outcomes
 
-- Applied a real cluster change for Managed Kubernetes — EKS, AKS, GKE
-- Used describe/Events for verification
-- Destroyed lab resources cleanly
+- Bootstrapped a disposable kind cluster for managed-Kubernetes comparisons
+- Built and ran a read-only kubeconfig pre-flight checklist
+- Applied labelled namespace demonstrating cloud-agnostic GitOps metadata
+- Compared local node provider metadata with managed-cluster expectations
 
 ### Cleanup
 
 ```bash
-kubectl delete namespace rebash-lab --ignore-not-found
-# Keep ~/rebash-kubernetes/ for later tutorials
+kubectl delete namespace rebash-managed-lab --ignore-not-found --wait=true
+kind delete cluster --name rebash-m19 2>/dev/null || true
+rm -f ~/rebash-k8s/module-19/context-check.txt ~/rebash-k8s/module-19/namespace-evidence.txt ~/rebash-k8s/module-19/module-19-managed-evidence.tgz
 ```
 
 ## Validation

@@ -170,11 +170,9 @@ A deploy helper must accept a list of services, including one display name with 
 
 #### Task 1 – Indexed array create, append, and safe iterate
 
-```bash
-cd ~/rebash-shell/lab08
-set -euo pipefail
+Create `array-demo.sh`:
 
-cat > array-demo.sh << 'EOF'
+```bash
 #!/usr/bin/env bash
 set -euo pipefail
 outdir="./out"
@@ -194,20 +192,26 @@ printf 'joined=%s\n' "${services[*]}" | tee "$outdir/services-joined.txt"
 
 grep -c '^svc=' "$outdir/services-listed.txt" | grep -qx 4
 grep -F 'svc=auth api' "$outdir/services-listed.txt"
-EOF
-chmod +x array-demo.sh
-./array-demo.sh
 ```
 
-**Expected output:** `array-count.txt` is `count=4`; `services-listed.txt` has four `svc=` lines including `svc=auth api` as one line.
-
-#### Task 2 – String length, slice, and replace
+Run:
 
 ```bash
 cd ~/rebash-shell/lab08
 set -euo pipefail
 
-cat > string-demo.sh << 'EOF'
+chmod +x array-demo.sh
+./array-demo.sh
+```
+
+
+**Expected output:** `array-count.txt` is `count=4`; `services-listed.txt` has four `svc=` lines including `svc=auth api` as one line.
+
+#### Task 2 – String length, slice, and replace
+
+Create `string-demo.sh`:
+
+```bash
 #!/usr/bin/env bash
 set -euo pipefail
 outdir="./out"
@@ -228,20 +232,26 @@ printf 'backup=%s-%s-backup.tar\n' "$base" "$env_norm" | tee "$outdir/backup-nam
 grep -qx 'slice=billing' "$outdir/str-slice.txt"
 grep -qx 'replaced=billing.prod.log' "$outdir/str-replace.txt"
 grep -qx 'backup=billing-prod-backup.tar' "$outdir/backup-name.txt"
-EOF
-chmod +x string-demo.sh
-./string-demo.sh
 ```
 
-**Expected output:** slice starts with `billing`; replace lowercases only via pattern `Prod`→`prod`; backup name is `billing-prod-backup.tar`.
-
-#### Task 3 – Combine array + strings and pack evidence
+Run:
 
 ```bash
 cd ~/rebash-shell/lab08
 set -euo pipefail
 
-cat > build-names.sh << 'EOF'
+chmod +x string-demo.sh
+./string-demo.sh
+```
+
+
+**Expected output:** slice starts with `billing`; replace lowercases only via pattern `Prod`→`prod`; backup name is `billing-prod-backup.tar`.
+
+#### Task 3 – Combine array + strings and pack evidence
+
+Create `build-names.sh`:
+
+```bash
 #!/usr/bin/env bash
 set -euo pipefail
 outdir="./out"
@@ -254,7 +264,14 @@ for s in "${services[@]}"; do
 done
 grep -qx 'billing-prod-backup.tar' <(head -n1 "$outdir/artefact-names.txt")
 test "$(wc -l <"$outdir/artefact-names.txt" | tr -d ' ')" -eq 3
-EOF
+```
+
+Run:
+
+```bash
+cd ~/rebash-shell/lab08
+set -euo pipefail
+
 chmod +x build-names.sh
 ./build-names.sh
 
@@ -265,6 +282,7 @@ tar -czf out/arrays-evidence.tgz \
   out/artefact-names.txt
 ls -l out/arrays-evidence.tgz | tee out/evidence-ls.txt
 ```
+
 
 **Expected output:** three artefact names; evidence archive is not empty.
 

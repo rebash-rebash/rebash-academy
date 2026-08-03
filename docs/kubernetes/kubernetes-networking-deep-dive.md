@@ -33,7 +33,7 @@ tags:
   - cni
   - coredns
 author: Shaik Basha
-last_updated: "2026-07-31"
+last_updated: "2026-08-03"
 comments: false
 ---
 
@@ -152,23 +152,19 @@ Flat Pod network + Services + DNS is the mental model; overlays and cloud routin
 
 ## Hands-on Lab
 
-
-
 ### Objective
 
-Build and verify a working Kubernetes solution for **Kubernetes Networking Deep Dive** that you can inspect, prove, and tear down safely.
+Deploy a backend Service with Endpoints, prove CoreDNS resolution from a client Pod, then apply a NetworkPolicy that blocks and later allows traffic between labelled Pods.
 
 ### Prerequisites
 
-- kubectl configured against a lab cluster (kind/minikube preferred)
-- Cluster-admin or namespace-create rights in the lab cluster
+- kubectl configured against a lab cluster (kind or minikube)
+- CNI with NetworkPolicy support recommended (kind default works)
 - Writable workspace at `~/rebash-k8s/module-11`
 
 ### Lab environment
 
-Workspace: `~/rebash-k8s/module-11`
-
-Local kind/minikube or a dedicated sandbox cluster. Never target a shared production API server.
+Workspace: `~/rebash-k8s/module-11` on a disposable lab cluster.
 
 ```bash
 mkdir -p ~/rebash-k8s/module-11 && cd ~/rebash-k8s/module-11
@@ -176,63 +172,202 @@ mkdir -p ~/rebash-k8s/module-11 && cd ~/rebash-k8s/module-11
 
 ### Real-world scenario
 
-Your platform team is rolling out **Kubernetes Networking Deep Dive** for a new microservice. You must apply the change in an isolated namespace, prove it works with kubectl, and leave evidence for the on-call handover.
+An on-call engineer reports intermittent 503 errors. You must verify Service Endpoints are populated, confirm in-cluster DNS resolves the Service name, and demonstrate how a default-deny NetworkPolicy can isolate workloads until explicit allow rules are added.
 
 ### Step-by-step tasks
 
-#### Task 1 – Apply a topic workload
+#### Task 1 – Namespace, backend, and Service
 
-Create a namespace and a small Deployment to practise **What it is** against a live API.
+Create `namespace.yaml`:
 
-```bash
-kubectl create namespace rebash-lab --dry-run=client -o yaml | kubectl apply -f -
-kubectl create deployment topic --image=nginx:1.27-alpine -n rebash-lab
-kubectl rollout status deployment/topic -n rebash-lab
-kubectl get all -n rebash-lab
+```yaml
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: rebash-m11
 ```
 
-**Expected output:** Deployment Ready; Pods listed under the namespace.
+Create `backend.yaml`:
 
-#### Task 2 – Inspect and gather evidence
-
-Production changes always leave an audit trail of describe/Events.
-
-```bash
-kubectl describe deploy topic -n rebash-lab | tee describe.txt
-kubectl get events -n rebash-lab --sort-by=.lastTimestamp | tail -n 15 | tee events.txt
+```yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: api-backend
+  namespace: rebash-m11
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: api-backend
+  template:
+    metadata:
+      labels:
+        app: api-backend
+        role: backend
+    spec:
+      containers:
+        - name: api
+          image: hashicorp/http-echo:1.0.0
+          args: ["-text=ok-from-backend"]
+          ports:
+            - containerPort: 5678
 ```
 
-**Expected output:** describe.txt and events.txt capture healthy Objects/Events.
+Create `service.yaml`:
+
+```yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: api-svc
+  namespace: rebash-m11
+spec:
+  selector:
+    app: api-backend
+  ports:
+    - port: 80
+      targetPort: 5678
+```
+
+Apply and check Endpoints:
+
+```bash
+cd ~/rebash-k8s/module-11
+kubectl apply -f namespace.yaml -f backend.yaml -f service.yaml
+kubectl rollout status deployment/api-backend -n rebash-m11 --timeout=120s
+kubectl get endpoints api-svc -n rebash-m11 | tee endpoints-m11.txt
+kubectl get svc api-svc -n rebash-m11 -o wide | tee svc-m11.txt
+```
+
+**Expected output:** Endpoints show at least one IP address; Service has ClusterIP.
+
+#### Task 2 – Client Pod, DNS, and connectivity
+
+Create `client-pod.yaml`:
+
+```yaml
+apiVersion: v1
+kind: Pod
+metadata:
+  name: net-client
+  namespace: rebash-m11
+  labels:
+    role: client
+spec:
+  containers:
+    - name: client
+      image: busybox:1.36.1
+      command: ["sh", "-c", "sleep 3600"]
+```
+
+Apply and test DNS plus HTTP:
+
+```bash
+cd ~/rebash-k8s/module-11
+kubectl apply -f client-pod.yaml
+kubectl wait --for=condition=Ready pod/net-client -n rebash-m11 --timeout=120s
+kubectl exec -n rebash-m11 net-client -- nslookup api-svc.rebash-m11.svc.cluster.local | tee dns-m11.txt
+kubectl exec -n rebash-m11 net-client -- wget -qO- http://api-svc.rebash-m11.svc.cluster.local | tee curl-m11.txt
+grep -q 'ok-from-backend' curl-m11.txt
+kubectl get pods -n kube-system -l k8s-app=kube-dns -o wide 2>/dev/null | tee coredns-m11.txt || \
+  kubectl get pods -n kube-system -l k8s-app=coredns -o wide | tee coredns-m11.txt
+```
+
+**Expected output:** DNS resolves; `curl-m11.txt` contains `ok-from-backend`; CoreDNS Pods are Running.
+
+#### Task 3 – NetworkPolicy deny then allow
+
+Create `networkpolicy-deny.yaml`:
+
+```yaml
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: deny-client-to-backend
+  namespace: rebash-m11
+spec:
+  podSelector:
+    matchLabels:
+      app: api-backend
+  policyTypes:
+    - Ingress
+  ingress: []
+```
+
+Create `networkpolicy-allow.yaml`:
+
+```yaml
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-client-to-backend
+  namespace: rebash-m11
+spec:
+  podSelector:
+    matchLabels:
+      app: api-backend
+  policyTypes:
+    - Ingress
+  ingress:
+    - from:
+        - podSelector:
+            matchLabels:
+              role: client
+      ports:
+        - protocol: TCP
+          port: 5678
+```
+
+Test policy effect (skip deny test if your CNI does not enforce policies):
+
+```bash
+cd ~/rebash-k8s/module-11
+kubectl apply -f networkpolicy-deny.yaml
+if kubectl exec -n rebash-m11 net-client -- wget -qO- --timeout=3 http://api-svc 2>netpol-deny.txt; then
+  echo "CNI may not enforce NetworkPolicy — document in lab notes" | tee -a netpol-deny.txt
+else
+  echo "connection blocked as expected" | tee netpol-result.txt
+fi
+kubectl delete -f networkpolicy-deny.yaml
+kubectl apply -f networkpolicy-allow.yaml
+kubectl exec -n rebash-m11 net-client -- wget -qO- http://api-svc | tee netpol-allow.txt
+grep -q 'ok-from-backend' netpol-allow.txt
+```
+
+**Expected output:** With enforcing CNI, traffic fails under deny and succeeds under allow; otherwise document CNI limitation.
 
 ### Validation steps
 
-- [ ] Namespace `rebash-lab` contains the expected Ready objects
-- [ ] You can explain each Task command from the Theory section
-- [ ] Cleanup deletes the namespace without leftover workloads
+- [ ] Service Endpoints are non-empty for Ready backend Pods
+- [ ] Client resolves `api-svc` via cluster DNS
+- [ ] HTTP request succeeds before restrictive policy (or after allow rule)
+- [ ] CoreDNS Pods visible in `kube-system`
 
 ### Common errors and fixes
 
 | Error | Cause | Fix |
 |-------|-------|-----|
-| ImagePullBackOff | Wrong tag or registry auth | Fix image reference; check pull secrets |
-| Pending Pod | Scheduling / quota / PVC | `kubectl describe pod` and read Events |
-| Empty Endpoints | Selector or readiness mismatch | Compare Service selector to Pod labels and Ready |
+| Empty Endpoints | Pods not Ready or selector mismatch | Compare Service selector to Pod labels |
+| DNS lookup fails | CoreDNS unhealthy | Check `kube-system` CoreDNS Pods and logs |
+| wget timeout with policy | Expected under default deny | Apply allow rule or remove policy |
+| Policy has no effect | CNI lacks NetworkPolicy | Use kind/Calico/Cilium; note in evidence |
 
 ### Challenge exercise
 
-Add a readinessProbe and a ResourceQuota to the namespace, then show that over-quota creates are rejected.
+Add a label `tier: frontend` to the client Pod and tighten the allow policy to require both `role: client` and `tier: frontend` labels.
 
 ### Learning outcomes
 
-- Applied a real cluster change for Kubernetes Networking Deep Dive
-- Used describe/Events for verification
-- Destroyed lab resources cleanly
+- Verified Service Endpoints reflect Ready Pod backends
+- Tested in-cluster DNS resolution via CoreDNS
+- Applied deny/allow NetworkPolicy manifests
+- Understood CNI dependency for policy enforcement
 
 ### Cleanup
 
 ```bash
-kubectl delete namespace rebash-lab --ignore-not-found
-# Keep ~/rebash-kubernetes/ for later tutorials
+kubectl delete namespace rebash-m11 --ignore-not-found
 ```
 
 ## Validation

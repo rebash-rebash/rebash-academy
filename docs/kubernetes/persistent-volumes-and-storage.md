@@ -32,7 +32,7 @@ tags:
   - storageclass
   - csi
 author: Shaik Basha
-last_updated: "2026-07-31"
+last_updated: "2026-08-03"
 comments: false
 ---
 
@@ -142,87 +142,175 @@ Databases, queues, and ML artefacts need data that survives Pod restarts and res
 
 ## Hands-on Lab
 
-
-
 ### Objective
 
-Build and verify a working Kubernetes solution for **Persistent Volumes and Storage** that you can inspect, prove, and tear down safely.
+Provision a PVC, mount it in a Pod, write data, delete the Pod, recreate it, and prove the file persists on the same volume.
 
 ### Prerequisites
 
-- kubectl configured against a lab cluster (kind/minikube preferred)
-- Cluster-admin or namespace-create rights in the lab cluster
+- A working Kubernetes cluster (**kind**, **minikube**, or any lab cluster)
+- A default **StorageClass** (kind and minikube provide one) or permission to use `standard`
+- **kubectl** with namespace-create rights
 - Writable workspace at `~/rebash-k8s/module-07`
 
 ### Lab environment
 
 Workspace: `~/rebash-k8s/module-07`
 
-Local kind/minikube or a dedicated sandbox cluster. Never target a shared production API server.
-
 ```bash
 mkdir -p ~/rebash-k8s/module-07 && cd ~/rebash-k8s/module-07
+kubectl get storageclass | tee storageclasses.txt
 ```
 
 ### Real-world scenario
 
-Your platform team is rolling out **Persistent Volumes and Storage** for a new microservice. You must apply the change in an isolated namespace, prove it works with kubectl, and leave evidence for the on-call handover.
+A stateful demo app stores upload metadata on disk. You must prove that deleting the Pod does not delete user data when the PVC remains— the same guarantee teams expect before running databases on Kubernetes.
 
 ### Step-by-step tasks
 
-#### Task 1 – Apply a topic workload
+#### Task 1 – Namespace, PVC, and writer Pod
 
-Create a namespace and a small Deployment to practise **What it is** against a live API.
+Create `namespace.yaml`:
 
-```bash
-kubectl create namespace rebash-lab --dry-run=client -o yaml | kubectl apply -f -
-kubectl create deployment topic --image=nginx:1.27-alpine -n rebash-lab
-kubectl rollout status deployment/topic -n rebash-lab
-kubectl get all -n rebash-lab
+```yaml
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: rebash-m07
 ```
 
-**Expected output:** Deployment Ready; Pods listed under the namespace.
+Create `pvc.yaml`:
 
-#### Task 2 – Inspect and gather evidence
-
-Production changes always leave an audit trail of describe/Events.
-
-```bash
-kubectl describe deploy topic -n rebash-lab | tee describe.txt
-kubectl get events -n rebash-lab --sort-by=.lastTimestamp | tail -n 15 | tee events.txt
+```yaml
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: data
+  namespace: rebash-m07
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 1Gi
 ```
 
-**Expected output:** describe.txt and events.txt capture healthy Objects/Events.
+Create `writer-pod.yaml`:
+
+```yaml
+apiVersion: v1
+kind: Pod
+metadata:
+  name: writer
+  namespace: rebash-m07
+spec:
+  containers:
+    - name: busybox
+      image: busybox:1.36
+      command: ["sh", "-c", "echo rebash-persist-$(date +%s) > /data/persist.txt && cat /data/persist.txt && sleep 3600"]
+      volumeMounts:
+        - name: data
+          mountPath: /data
+  volumes:
+    - name: data
+      persistentVolumeClaim:
+        claimName: data
+```
+
+Apply and write:
+
+```bash
+cd ~/rebash-k8s/module-07
+kubectl apply -f namespace.yaml
+kubectl apply -f pvc.yaml
+kubectl wait --for=jsonpath='{.status.phase}'=Bound pvc/data -n rebash-m07 --timeout=120s
+kubectl apply -f writer-pod.yaml
+kubectl wait --for=condition=Ready pod/writer -n rebash-m07 --timeout=120s
+kubectl logs writer -n rebash-m07 | tee write-log.txt
+grep rebash-persist write-log.txt | tee persist-token.txt
+```
+
+**Expected output:** PVC Bound; log line contains `rebash-persist-<timestamp>`.
+
+#### Task 2 – Delete Pod and recreate reader
+
+Create `reader-pod.yaml`:
+
+```yaml
+apiVersion: v1
+kind: Pod
+metadata:
+  name: reader
+  namespace: rebash-m07
+spec:
+  containers:
+    - name: busybox
+      image: busybox:1.36
+      command: ["sh", "-c", "cat /data/persist.txt && sleep 3600"]
+      volumeMounts:
+        - name: data
+          mountPath: /data
+  volumes:
+    - name: data
+      persistentVolumeClaim:
+        claimName: data
+```
+
+Recreate and verify same file:
+
+```bash
+cd ~/rebash-k8s/module-07
+kubectl delete pod writer -n rebash-m07 --wait=true
+kubectl apply -f reader-pod.yaml
+kubectl wait --for=condition=Ready pod/reader -n rebash-m07 --timeout=120s
+kubectl logs reader -n rebash-m07 | tee read-log.txt
+TOKEN=$(cat persist-token.txt)
+grep -F "$(echo "$TOKEN" | tail -n1)" read-log.txt
+```
+
+**Expected output:** `read-log.txt` contains the same token written in Task 1.
+
+#### Task 3 – PVC status evidence
+
+```bash
+cd ~/rebash-k8s/module-07
+kubectl get pvc data -n rebash-m07 | tee pvc-bound.txt
+kubectl describe pvc data -n rebash-m07 | sed -n '/Status:/,/Events:/p' | tee pvc-describe.txt
+grep Bound pvc-bound.txt
+```
+
+**Expected output:** PVC remains Bound with same volume after Pod replacement.
 
 ### Validation steps
 
-- [ ] Namespace `rebash-lab` contains the expected Ready objects
-- [ ] You can explain each Task command from the Theory section
-- [ ] Cleanup deletes the namespace without leftover workloads
+- [ ] PVC reached Bound before Pod schedule
+- [ ] Data written in first Pod readable after Pod delete/recreate
+- [ ] PVC still Bound at end of lab
+- [ ] StorageClass used matches cluster default (see `storageclasses.txt`)
 
 ### Common errors and fixes
 
 | Error | Cause | Fix |
 |-------|-------|-----|
-| ImagePullBackOff | Wrong tag or registry auth | Fix image reference; check pull secrets |
-| Pending Pod | Scheduling / quota / PVC | `kubectl describe pod` and read Events |
-| Empty Endpoints | Selector or readiness mismatch | Compare Service selector to Pod labels and Ready |
+| PVC Pending | No StorageClass/provisioner | `kubectl get sc`; install default on kind |
+| Pod Pending volume | PVC not Bound | Wait for Bound; describe PVC Events |
+| Multi-attach error | RWO on another node | Delete old Pod fully before reader |
+| Empty read-log | Wrong mount path | Confirm `claimName: data` and `/data` |
 
 ### Challenge exercise
 
-Add a readinessProbe and a ResourceQuota to the namespace, then show that over-quota creates are rejected.
+Add `storageClassName: standard` explicitly to `pvc.yaml` (match your cluster’s default from `storageclasses.txt`) and document reclaim policy behaviour in a comment at the top of the file.
 
 ### Learning outcomes
 
-- Applied a real cluster change for Persistent Volumes and Storage
-- Used describe/Events for verification
-- Destroyed lab resources cleanly
+- Requested storage with a PersistentVolumeClaim
+- Mounted PVCs in Pod specs
+- Proved data survives Pod lifecycle when PVC is retained
 
 ### Cleanup
 
 ```bash
-kubectl delete namespace rebash-lab --ignore-not-found
-# Keep ~/rebash-kubernetes/ for later tutorials
+kubectl delete namespace rebash-m07 --ignore-not-found --wait=true
 ```
 
 ## Validation

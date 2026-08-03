@@ -33,7 +33,7 @@ tags:
   - gitops
   - argocd
 author: Shaik Basha
-last_updated: "2026-07-31"
+last_updated: "2026-08-03"
 comments: false
 ---
 
@@ -149,89 +149,278 @@ Prefer controller-managed upgrades for production; reserve direct Helm CLI for b
 
 ### Objective
 
-Create, lint, render, install, and uninstall a Helm chart demonstrating **Helm GitOps Integration**.
+Lay out a GitOps-friendly repo with a chart, per-environment values overlays, an Argo CD Application stub, and offline `helm template` evidence for dev.
 
 ### Prerequisites
 
-- helm CLI
-- kubectl + lab cluster
-- Ability to create namespaces
+- Helm 3 CLI (kubectl optional for this lab — render is offline)
+- Familiarity with [GitOps fundamentals](../git/gitops-fundamentals.md)
 
 ### Lab environment
 
-Workspace: `~/rebash-helm/module-10/{charts/rebash-app,envs/dev,envs/prod}`
+Workspace: `~/rebash-helm/module-10`
 
-Helm 3 against kind/minikube; release namespace `rebash-helm`.
+Offline Helm render; optional cluster for later Argo CD sync. Namespace for future deploys: `rebash-helm-m10`.
 
 ```bash
-mkdir -p ~/rebash-helm/module-10/{charts/rebash-app,envs/dev,envs/prod} && cd ~/rebash-helm/module-10/{charts/rebash-app,envs/dev,envs/prod}
+mkdir -p ~/rebash-helm/module-10/charts/rebash-app/templates \
+  ~/rebash-helm/module-10/envs/dev \
+  ~/rebash-helm/module-10/envs/prod \
+  ~/rebash-helm/module-10/argocd && cd ~/rebash-helm/module-10
 ```
 
 ### Real-world scenario
 
-A team wants **Helm GitOps Integration** packaged as a chart so GitOps can promote the same artefact across environments.
+Platform engineering stores one application chart in Git with environment-specific values. Argo CD watches the repo and upgrades Helm releases when values change. You structure the repo and prove dev renders correctly before any controller sync.
 
 ### Step-by-step tasks
 
-#### Task 1 – Create and lint a chart
+#### Task 1 – Create the application chart
 
-Scaffold a chart and fail the build on lint errors before install.
+Create `charts/rebash-app/Chart.yaml`:
 
-```bash
-helm version
-helm create labchart
-helm lint ./labchart | tee lint.txt
-helm template labchart ./labchart | egrep '^kind:' | sort | uniq -c | tee kinds.txt
+```yaml
+apiVersion: v2
+name: rebash-app
+description: Sample app chart for GitOps layout
+type: application
+version: 1.0.0
+appVersion: "1.27.4"
 ```
 
-**Expected output:** lint reports no failures; kinds.txt lists Deployment/Service/etc.
+Create `charts/rebash-app/values.yaml`:
 
-#### Task 2 – Install with values override
-
-Prove values change rendered replicas, then install with wait.
-
-```bash
-kubectl create namespace rebash-helm --dry-run=client -o yaml | kubectl apply -f -
-cat > myvalues.yaml << 'EOF'
-replicaCount: 2
-EOF
-helm template labchart ./labchart -f myvalues.yaml | egrep 'replicas:' | head
-helm upgrade --install labchart ./labchart -n rebash-helm -f myvalues.yaml --wait --timeout 2m
-helm list -n rebash-helm
-kubectl get deploy -n rebash-helm
+```yaml
+replicaCount: 1
+image:
+  repository: nginx
+  tag: "1.27.4-alpine"
+ingress:
+  enabled: false
+  host: app.example.internal
+resources:
+  requests:
+    cpu: 50m
+    memory: 64Mi
+  limits:
+    cpu: 200m
+    memory: 128Mi
 ```
 
-**Expected output:** Release deployed; Deployment shows 2 replicas (or Ready pods).
+Create `charts/rebash-app/templates/deployment.yaml`:
+
+```yaml
+{% raw %}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Release.Name }}-web
+  labels:
+    app.kubernetes.io/name: {{ .Chart.Name }}
+    app.kubernetes.io/instance: {{ .Release.Name }}
+spec:
+  replicas: {{ .Values.replicaCount }}
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: {{ .Chart.Name }}
+      app.kubernetes.io/instance: {{ .Release.Name }}
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: {{ .Chart.Name }}
+        app.kubernetes.io/instance: {{ .Release.Name }}
+    spec:
+      containers:
+        - name: web
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+          resources:
+            {{- toYaml .Values.resources | nindent 12 }}
+          ports:
+            - containerPort: 80
+{% endraw %}
+```
+
+Create `charts/rebash-app/templates/service.yaml`:
+
+```yaml
+{% raw %}
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ .Release.Name }}-web
+spec:
+  selector:
+    app.kubernetes.io/name: {{ .Chart.Name }}
+    app.kubernetes.io/instance: {{ .Release.Name }}
+  ports:
+    - port: 80
+      targetPort: 80
+{% endraw %}
+```
+
+Lint the chart:
+
+```bash
+cd ~/rebash-helm/module-10
+helm lint ./charts/rebash-app | tee lint.txt
+grep -q '0 chart(s) failed' lint.txt
+```
+
+**Expected output:** Chart lint passes with zero failures.
+
+#### Task 2 – Add environment value overlays
+
+Create `envs/dev/values.yaml`:
+
+```yaml
+replicaCount: 1
+image:
+  repository: nginx
+  tag: "1.27.4-alpine"
+ingress:
+  enabled: false
+  host: rebash-app.dev.example.internal
+```
+
+Create `envs/prod/values.yaml`:
+
+```yaml
+replicaCount: 3
+image:
+  repository: nginx
+  tag: "1.27.4-alpine"
+ingress:
+  enabled: true
+  host: rebash-app.prod.example.internal
+resources:
+  requests:
+    cpu: 100m
+    memory: 128Mi
+  limits:
+    cpu: 500m
+    memory: 256Mi
+```
+
+Render dev and prod offline and compare replica counts:
+
+```bash
+cd ~/rebash-helm/module-10
+helm template rebash-app-dev ./charts/rebash-app -f envs/dev/values.yaml \
+  | grep 'replicas:' | head -1 | tee dev-replicas.txt
+helm template rebash-app-prod ./charts/rebash-app -f envs/prod/values.yaml \
+  | grep 'replicas:' | head -1 | tee prod-replicas.txt
+grep -q 'replicas: 1' dev-replicas.txt
+grep -q 'replicas: 3' prod-replicas.txt
+```
+
+**Expected output:** Dev render shows one replica; prod render shows three.
+
+#### Task 3 – Create an Argo CD Application stub
+
+Create `argocd/application-dev.yaml`:
+
+```yaml
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: rebash-app-dev
+  namespace: argocd
+spec:
+  project: default
+  source:
+    repoURL: https://github.com/example/platform-gitops.git
+    targetRevision: main
+    path: charts/rebash-app
+    helm:
+      valueFiles:
+        - ../../envs/dev/values.yaml
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: rebash-helm-m10
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true
+```
+
+Validate the Application manifest and capture offline render evidence:
+
+```bash
+cd ~/rebash-helm/module-10
+kubectl apply --dry-run=client -f argocd/application-dev.yaml 2>&1 | tee argocd-dryrun.txt || true
+helm template rebash-app-dev ./charts/rebash-app -f envs/dev/values.yaml \
+  | grep -E '^kind:' | sort | uniq -c | tee dev-kinds.txt
+grep -q 'Deployment' dev-kinds.txt
+```
+
+**Expected output:** Application YAML is valid client-side; dev template lists Deployment (and Service if rendered).
 
 ### Validation steps
 
-- [ ] helm lint clean
-- [ ] Release listed in namespace
-- [ ] Uninstall removes the release
+- [ ] Chart lives under `charts/rebash-app/` with pinned image tag
+- [ ] Dev and prod overlays produce different replica counts offline
+- [ ] Argo CD Application stub references chart path and dev values file
+- [ ] `helm template -f envs/dev/values.yaml` succeeds without cluster access
 
 ### Common errors and fixes
 
 | Error | Cause | Fix |
 |-------|-------|-----|
-| PENDING_INSTALL | Image pull / probes | `helm status` + `kubectl describe` |
-| lint failed | Template YAML break | Fix templates; re-run helm lint |
-| context deadline | Slow cluster | Increase --timeout or fix readiness |
+| Wrong replica count in render | Overlay path incorrect | Pass `-f envs/dev/values.yaml` relative to repo root |
+| Argo CD path mismatch | `valueFiles` path wrong relative to chart | Adjust paths — Argo resolves from chart directory |
+| Dual controllers | CI runs `helm upgrade` and GitOps syncs same release | Choose one writer; GitOps merges values in Git |
+| Secrets in env values | Password copied into overlay | Use sealed-secrets or external-secrets; reference only |
 
 ### Challenge exercise
 
-Add a ConfigMap template driven by values and prove it with `helm get manifest`.
+Create a Flux `HelmRelease` stub at `flux/helmrelease-dev.yaml` pointing at the same chart and dev values, then render offline:
+
+```yaml
+apiVersion: helm.toolkit.fluxcd.io/v2
+kind: HelmRelease
+metadata:
+  name: rebash-app-dev
+  namespace: rebash-helm-m10
+spec:
+  interval: 5m
+  chart:
+    spec:
+      chart: ./charts/rebash-app
+      sourceRef:
+        kind: GitRepository
+        name: platform-gitops
+        namespace: flux-system
+      valuesFiles:
+        - envs/dev/values.yaml
+  install:
+    createNamespace: true
+```
+
+```bash
+cd ~/rebash-helm/module-10
+kubectl apply --dry-run=client -f flux/helmrelease-dev.yaml 2>&1 | tee flux-dryrun.txt || true
+helm template rebash-app-dev ./charts/rebash-app -f envs/dev/values.yaml | grep -q 'kind: Deployment'
+```
+
+**Expected output:** HelmRelease YAML validates client-side; offline render still succeeds.
 
 ### Learning outcomes
 
-- Packaged Kubernetes YAML as a chart
-- Overrode values safely
-- Cleaned up the release
+- Structured a mono-repo with chart source and environment overlays
+- Rendered environment-specific manifests without touching a cluster
+- Authored an Argo CD Application stub wiring chart path to values
+- Separated image CI concerns from GitOps configuration merges
 
 ### Cleanup
 
+No cluster resources are created in the offline path. If you installed manually for experimentation:
+
 ```bash
-helm uninstall labchart -n rebash-helm 2>/dev/null || true
-kubectl delete namespace rebash-helm --ignore-not-found
+helm uninstall rebash-app-dev -n rebash-helm-m10 2>/dev/null || true
+kubectl delete namespace rebash-helm-m10 --ignore-not-found
+rm -rf ~/rebash-helm/module-10
 ```
 
 ## Validation
@@ -242,10 +431,10 @@ kubectl delete namespace rebash-helm --ignore-not-found
 
 
 
-- [ ] Lab commands run under `~/rebash-helm/module-10/{charts/rebash-app,envs/dev,envs/prod}/`
-- [ ] You can explain each Theory section in your own words
-- [ ] You used modern tooling where it applies to this topic
-- [ ] You can describe one production failure mode for this topic
+- [ ] Lab commands run under `~/rebash-helm/module-10/`
+- [ ] Dev and prod overlays render different replica counts offline
+- [ ] Argo CD Application stub references chart path and values file
+- [ ] You can describe one production failure mode for Helm GitOps
 
 ## Code Walkthrough
 

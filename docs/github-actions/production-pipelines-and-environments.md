@@ -1,405 +1,478 @@
 ---
 title: "Production Pipelines and Environments"
-description: "Promote immutable artefacts through multi-environment GitHub Actions pipelines with protected environments, approvals, rollback, blue/green, and canary."
-difficulty: advanced
-estimated_time: "50–65 min"
+description: "Design multi-environment GitHub Actions pipelines with protected environments, manual approvals, promotion, and rollback patterns including blue/green and canary notes."
+difficulty: expert
+estimated_time: "55–75 min"
 technology: github-actions
 category: github-actions
 module: "Module 15 · Production Pipelines"
 career_paths:
   - devops-engineer
-  - cloud-engineer
   - platform-engineer
   - site-reliability-engineer
-  - devsecops-engineer
+  - cloud-engineer
 skills:
   - github-actions
+  - cd
   - environments
-  - progressive-delivery
-  - approvals
+  - deployment-strategies
 prerequisites:
   - github-actions/composite-actions-and-reusable-workflows
+  - github-actions/multi-cloud-deployments-with-github-actions
 next:
   - github-actions/troubleshooting-github-actions
 related:
   - github-actions/kubernetes-deployments-with-github-actions
-  - github-actions/security-scanning-and-supply-chain
-labs: []
-projects: []
-interview: interview/github-actions
-certifications:
-  - GitHub Actions
-  - GitHub Administration
+  - github-actions/terraform-pipelines-with-github-actions
 tags:
   - github-actions
   - production
   - environments
-  - progressive-delivery
+  - blue-green
+  - canary
 author: Shaik Basha
-last_updated: "2026-07-31"
+last_updated: "2026-08-03"
 comments: false
 ---
-
 
 # Production Pipelines and Environments
 
 ## Overview
 
+Production delivery needs more than a green build on `main`. GitHub **Environments** (`staging`, `production`) add required reviewers, wait timers, and scoped secrets. **Promotion** moves tested artefacts forward; **rollback** redeploys a prior version; **blue/green** and **canary** strategies reduce downtime and blast radius when releases go wrong.
 
-
-
-
-
-
-
-Design environment promotion (dev → staging → production) with protected environments, required reviewers, rollback paths, and progressive delivery patterns (blue/green and canary).
-
-Production CI/CD is controlled promotion of an **immutable artefact** through named **environments**, not “deploy on every push to main”. GitHub **Environments** encode wait timers, required reviewers, and environment secrets so only approved identities promote to production.
-
-This is a core tutorial in **Module 15 · Production Pipelines** of the REBASH Academy **GitHub Actions for Cloud & DevOps Engineers** series — written for Cloud, DevOps, Platform, and SRE engineers.
+This is **Tutorial 15** in **Module 15: Production Pipelines** of the REBASH Academy **GitHub Actions for Cloud & DevOps Engineers** series — written for Cloud, DevOps, Platform, and SRE engineers.
 
 ## Prerequisites
 
-
-
-
-
-
-
-
 - [Composite Actions and Reusable Workflows](composite-actions-and-reusable-workflows.md)
-- Deploy awareness from Kubernetes or multi-cloud modules (or equivalent)
+- [Multi-Cloud Deployments with GitHub Actions](multi-cloud-deployments-with-github-actions.md)
+- [Testing in GitHub Actions](testing-in-github-actions.md)
 
 ## Learning Objectives
 
-
-
-
-
-
-
-
 By the end of this tutorial, you will be able to:
 
-- [ ] Model env promotion with `environment:` and job `needs`  
-- [ ] Protect production with required reviewers and deployment branches  
-- [ ] Document rollback to a previous digest / release  
-- [ ] Outline blue/green and canary versus all-at-once
+- [ ] Configure GitHub Environments with protection rules and secrets
+- [ ] Model staging → production promotion in one workflow graph
+- [ ] Implement manual approval gates before production deploy
+- [ ] Document rollback using prior tag or Helm revision
+- [ ] Explain blue/green and canary at a high level for Actions-driven deploys
 
 ## Architecture
 
+Build once; deploy to staging automatically; production requires environment approval and promotion of the same artefact digest.
 
-
-
-
-
-
-
-This topic’s control points and relationships are shown below.
-
-![Production pipelines](../assets/excalidraw/gha-production.svg)
+![Production pipeline with environments](../assets/excalidraw/gha-production.svg)
 
 ## Theory
 
-
-
-
-
-
-
-
 ### What it is
 
-A **production pipeline** promotes the same build (image digest, package version) across **environments** — logical targets such as `development`, `staging`, and `production`. In GitHub Actions, `jobs.<id>.environment` binds a job to an Environment that can require reviewers, restrict which branches may deploy, and hold environment-scoped secrets. **Progressive delivery** reduces blast radius: **blue/green** switches traffic between two complete stacks; **canary** sends a fraction of traffic to the new revision before full rollout. Feature flags (application-level) further decouple *deploy* from *release*.
+| Concept | Purpose |
+|---------|---------|
+| Environment | Named target (`staging`, `production`) with rules + secrets |
+| Protection rules | Required reviewers, wait timer, deployment branches |
+| Promotion | Same artefact/image digest advances after staging success |
+| Rollback | Redeploy last known-good version (tag, Helm rev, prior stack) |
+| Blue/green | Two stacks; switch traffic atomically |
+| Canary | Route small % traffic to new version; increase if healthy |
 
-| Control | Intent |
-|---------|--------|
-| Environment name | Track URL, history, protection rules |
-| Required reviewers | Human promote / confirm |
-| Deployment branches | Only `main` / release tags may deploy |
-| Immutable artefact | Same SHA/digest every stage |
-| Wait timer | Soak before production unlock |
+Jobs declare {% raw %}`environment: production`{% endraw %} to trigger protection UI and inject environment secrets.
 
 ### Why it matters
 
-Auto-deploying every merge to production maximises speed and incident rate. Enterprises need auditable promotion: who approved, which digest is live, and how to roll back in minutes. Progressive delivery lets platform teams ship continuously while limiting blast radius — essential for multi-tenant cloud services and regulated workloads.
+Auto-deploying every merge to production removes human judgement for high-risk changes. Shared staging catches integration issues. Rollback without a documented path extends incidents. Blue/green and canary limit user impact during partial failures.
 
 ### How it works
 
-1. **Build once** — tag image/package with commit SHA or SemVer; never rebuild for prod.  
-2. **Deploy to non-prod** automatically after tests; run smoke checks.  
-3. **Staging** — optional auto or short wait; acceptance tests against staging URLs.  
-4. **Production** — job with `environment: production` and required reviewers; deploy the same digest.  
-5. **Verify** — health checks, dashboards, error budgets; keep the previous revision ready.  
-6. **Rollback** — redeploy previous digest / shift traffic / Helm rollback; keep a manual workflow job or runbook.  
-7. **Progressive patterns** — blue/green cutover after smoke on green; canary ramp (mesh, Ingress weights, or cloud slots) with abort criteria.
+1. **Build job** — produce immutable artefact (container digest, Terraform plan ID).
+2. **Deploy staging** — `environment: staging`, automatic on `main`.
+3. **Smoke tests** — validate staging (Module 12).
+4. **Deploy production** — `environment: production`, waits for required reviewers.
+5. **Rollback job** — `workflow_dispatch` with `version:` input redeploys prior tag (documented runbook).
+6. **Blue/green note** — Actions updates inactive stack, runs health checks, switches Service/Ingress or load balancer target group.
+7. **Canary note** — progressive weight increase (service mesh, ALB weights, Flagger) with automated metric gates.
 
-Keep production secrets on the Environment — not in repository secrets shared with pull-request workflows. Prefer OpenID Connect (OIDC) roles scoped per environment.
+Example production gate (documentation):
+
+{% raw %}
+```yaml
+deploy-production:
+  needs: [deploy-staging, smoke]
+  runs-on: ubuntu-latest
+  environment:
+    name: production
+    url: https://app.example.com
+  steps:
+    - run: echo "Deploy digest ${{ needs.build.outputs.digest }}"
+```
+{% endraw %}
 
 ### Key concepts and comparisons
 
-| Pattern | Blast radius | Notes |
-|---------|--------------|-------|
-| All-at-once | High | Simple; largest risk |
-| Blue/green | Medium | Cutover after green smoke |
-| Canary | Low | Ramp traffic; define abort metrics |
-| Feature flags | Behaviour | Decouple deploy from release |
-
-**Continuous Delivery** keeps artefacts ready with a human gate; **Continuous Deployment** promotes automatically when green.
+| Strategy | Downtime | Complexity | Rollback speed |
+|----------|----------|------------|----------------|
+| Rolling (default K8s) | Low | Low | Redeploy prior RS |
+| Blue/green | Very low | Medium | Switch traffic back |
+| Canary | Minimal | High | Reduce canary weight |
+| Recreate | Higher | Low | Redeploy old version |
 
 ### Common pitfalls
 
-- Rebuilding the image in production — digests diverge from staging.  
-- Unprotected `production` — any writer can deploy.  
-- Rollback untested until an outage — practice in staging.  
-- Canary without abort metrics (error rate, latency).
+- Different image tag in staging vs production — not true promotion.
+- Production environment without required reviewers — cosmetic gate only.
+- Rollback workflow shares production credentials without extra approval.
+- Skipping smoke tests after staging deploy.
+- Conflating GitHub Environment with cloud environment account — naming collision confusion.
 
 ## Hands-on Lab
 
-
-
 ### Objective
 
-Author a GitHub Actions workflow that implements **Production Pipelines and Environments** and validate YAML structure locally.
+Author a promotion workflow with staging and production environments (YAML stubs), encode deployment strategies as YAML, and validate structure offline.
 
 ### Prerequisites
 
 - Python 3 with PyYAML
-- Optional: GitHub repo to run the workflow
 
 ### Lab environment
 
-Workspace: `~/rebash-github-actions/module-15/.github/workflows`
-
-Workflows under `.github/workflows/`. In docs, wrap GitHub Actions expressions in Jinja raw blocks so MkDocs macros do not parse them; use heredocs in the lab.
+Workspace: `~/rebash-github-actions/module-15`
 
 ```bash
-mkdir -p ~/rebash-github-actions/module-15/.github/workflows && cd ~/rebash-github-actions/module-15/.github/workflows
+mkdir -p ~/rebash-github-actions/module-15/.github/workflows && cd ~/rebash-github-actions/module-15
+set -euo pipefail
 ```
 
 ### Real-world scenario
 
-Platform engineering wants **Production Pipelines and Environments** as a reusable workflow pattern. You prototype YAML that passes review and runs on `ubuntu-latest`.
+Release managers require automatic staging deploy on `main`, manual approval for production, same artefact digest promoted, and a rollback `workflow_dispatch` job backed by validated strategy YAML.
 
 ### Step-by-step tasks
 
-#### Task 1 – Create workflow file
+#### Task 1 – Promotion workflow with environments
 
-Jobs and steps must be explicit; pin mainstream actions.
+Create `.github/workflows/promote.yml`:
 
-```bash
-mkdir -p .github/workflows
-cat > .github/workflows/lab.yml << 'EOF'
-name: lab
+{% raw %}
+```yaml
+name: Promote
 on:
-  workflow_dispatch:
   push:
+    branches: [main]
+  workflow_dispatch:
+
 permissions:
   contents: read
+
 jobs:
   build:
     runs-on: ubuntu-latest
+    outputs:
+      digest: ${{ steps.meta.outputs.digest }}
     steps:
       - uses: actions/checkout@v4
-      - name: Prove workspace
+      - id: meta
         run: |
-          mkdir -p out
-          echo ok > out/marker.txt
-          test -s out/marker.txt
-EOF
-python3 -c "import yaml; yaml.safe_load(open('.github/workflows/lab.yml')); print('workflow OK')"
+          echo "digest=sha256:lab-$(git rev-parse --short HEAD)" >> "$GITHUB_OUTPUT"
+
+  deploy-staging:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: staging
+      url: https://staging.example.com
+    steps:
+      - run: echo "Deploy ${{ needs.build.outputs.digest }} to staging"
+
+  smoke-staging:
+    needs: deploy-staging
+    runs-on: ubuntu-latest
+    steps:
+      - run: echo "Smoke check staging"
+      - run: test 0 -eq 0
+
+  deploy-production:
+    needs: [build, smoke-staging]
+    runs-on: ubuntu-latest
+    environment:
+      name: production
+      url: https://app.example.com
+    steps:
+      - run: echo "Deploy SAME digest ${{ needs.build.outputs.digest }} to production"
 ```
+{% endraw %}
 
-**Expected output:** `workflow OK` printed; file exists under `.github/workflows/`.
-
-#### Task 2 – Dry-run the shell steps locally
-
-The `run:` block should work in a normal shell before CI.
+Validate offline:
 
 ```bash
-mkdir -p out && echo ok > out/marker.txt
-test -s out/marker.txt && cat out/marker.txt
+cd ~/rebash-github-actions/module-15
+set -euo pipefail
+python3 -c "import yaml; yaml.safe_load(open('.github/workflows/promote.yml')); print('promote workflow OK')"
+grep -q 'environment:' .github/workflows/promote.yml
+grep -q 'deploy-production' .github/workflows/promote.yml
 ```
 
-**Expected output:** Prints `ok`.
+**Expected output:** `promote workflow OK`; staging and production environments referenced.
+
+#### Task 2 – Rollback workflow stub
+
+Create `.github/workflows/rollback.yml`:
+
+{% raw %}
+```yaml
+name: Rollback
+on:
+  workflow_dispatch:
+    inputs:
+      target-tag:
+        description: 'Prior release tag to redeploy (e.g. v1.2.3)'
+        required: true
+
+permissions:
+  contents: read
+
+jobs:
+  rollback:
+    runs-on: ubuntu-latest
+    environment: production
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.target-tag }}
+      - run: echo "Rollback deploy for tag ${{ inputs.target-tag }}"
+      - run: echo "In Kubernetes: helm rollback or kubectl rollout undo"
+```
+{% endraw %}
+
+Validate offline:
+
+```bash
+cd ~/rebash-github-actions/module-15
+set -euo pipefail
+python3 -c "import yaml; yaml.safe_load(open('.github/workflows/rollback.yml')); print('rollback workflow OK')"
+grep -q 'workflow_dispatch' .github/workflows/rollback.yml
+```
+
+**Expected output:** `rollback workflow OK`
+
+#### Task 3 – Deployment strategies as YAML
+
+Create `deployment-strategies.yaml`:
+
+```yaml
+# Deployment strategies (Module 15)
+strategies:
+  blue_green:
+    description: Maintain blue (current) and green (new) stacks
+    steps:
+      - deploy green with new digest
+      - run health checks on green
+      - switch Service or Ingress to green
+    rollback: switch traffic back to blue without rebuild
+  canary:
+    description: Route small traffic percentage to new version
+    initial_weight_percent: 10
+    watch: [error_rate, latency_slo]
+    abort_on: alert_fires
+    tools: [Flagger, Argo Rollouts, mesh traffic split, ALB weights]
+github_environments:
+  staging:
+    deploy_trigger: auto on main
+  production:
+    required_reviewers: true
+    promotion: same digest from build job output
+```
+
+Validate offline:
+
+```bash
+cd ~/rebash-github-actions/module-15
+set -euo pipefail
+python3 -c "
+import yaml
+with open('deployment-strategies.yaml') as f:
+    doc = yaml.safe_load(f)
+assert 'blue_green' in doc['strategies']
+assert doc['github_environments']['production']['promotion'] == 'same digest from build job output'
+print('deployment-strategies.yaml OK')
+"
+```
+
+**Expected output:** `deployment-strategies.yaml OK`
+
+#### Task 4 – Offline validation bundle
+
+Create `validate-module-15.sh`:
+
+```bash
+#!/usr/bin/env bash
+set -euo pipefail
+python3 -c "import yaml; yaml.safe_load(open('.github/workflows/promote.yml')); yaml.safe_load(open('.github/workflows/rollback.yml')); yaml.safe_load(open('deployment-strategies.yaml'))"
+grep -q 'needs: build' .github/workflows/promote.yml
+grep -q 'SAME digest' .github/workflows/promote.yml
+echo 'module-15 validation passed'
+```
+
+Run and archive:
+
+```bash
+cd ~/rebash-github-actions/module-15
+set -euo pipefail
+chmod +x validate-module-15.sh
+./validate-module-15.sh | tee validation.txt
+tar -czf module-15-evidence.tgz .github/workflows/*.yml deployment-strategies.yaml validate-module-15.sh
+ls -l module-15-evidence.tgz | tee evidence.txt
+```
+
+**Expected output:** `module-15 validation passed`
 
 ### Validation steps
 
-- [ ] Workflow YAML parses
-- [ ] Local run steps succeed
+- [ ] Promotion workflow deploys staging before production
+- [ ] Production job uses `environment: production`
+- [ ] Build output digest referenced in both deploy jobs
+- [ ] Rollback workflow accepts target tag input
+- [ ] `deployment-strategies.yaml` defines blue/green and canary and parses with Python
 
 ### Common errors and fixes
 
 | Error | Cause | Fix |
 |-------|-------|-----|
-| Invalid workflow file | YAML/indent | Validate with PyYAML / actionlint |
-| Action not found | Bad uses ref | Pin `actions/checkout@v4` |
-| Permission denied | Missing permissions/OIDC | Set least-privilege `permissions:` |
+| Production deploy without approval | Environment rules not set | Add required reviewers in Settings |
+| Staging/prod different builds | Rebuild in prod job | Pass digest artefact from build |
+| Rollback checks out wrong ref | Input tag typo | Validate tag exists; protect tags |
+| Smoke skipped | Missing `needs` | Chain smoke between staging and prod |
+| Environment secret missing | Secret on wrong scope | Add secrets to `production` environment |
 
 ### Challenge exercise
 
-Add a second job with `needs: build` that uploads `out/` as an artefact (YAML only is fine offline).
+Add `concurrency: group: production` with `cancel-in-progress: false` on production deploy in `promote.yml`. Extend `validate-module-15.sh` to grep for the concurrency block.
 
 ### Learning outcomes
 
-- Created a real workflow file
-- Validated structure before push
+- Modelled staging → production promotion graph
+- Authored rollback dispatch workflow
+- Encoded blue/green and canary strategies as validated YAML
+- Enforced same-digest promotion pattern
 
 ### Cleanup
 
 ```bash
-# Keep workflow stubs under ~/rebash-github-actions/
+ls ~/rebash-github-actions/module-15/.github/workflows/
 ```
 
 ## Validation
 
-
-
-
-
-
-
-
-- [ ] Lab commands run under `~/rebash-github-actions/module-15/.github/workflows/`
-- [ ] You can explain each Theory section in your own words
-- [ ] You used modern tooling where it applies to this topic
-- [ ] You can describe one production failure mode for this topic
+- [ ] Lab completed under `~/rebash-github-actions/module-15/`
+- [ ] You can configure environment protection rules in GitHub UI
+- [ ] You can explain promotion vs rebuild
+- [ ] You can describe rollback without rebuilding
 
 ## Code Walkthrough
 
-
-
-
-
-
-
-
-Production practice for **Production Pipelines and Environments** always combines:
-
-1. Inspect before you change (status, plan, logs, dry-run)
-2. Prefer reversible, documented changes (Git, IaC, drop-ins, version pins)
-3. Capture evidence (command output, pipeline logs) for handovers
-4. Prefer current tools and APIs over legacy shortcuts
-5. Least privilege — escalate credentials only when required
-
-Keep runbooks short enough to follow under pressure. Automate checks; keep humans for judgement.
+1. **Build once** — digest/tag is promotion unit.
+2. **Staging automatic** — catch integration issues early.
+3. **Production gated** — environment reviewers + smoke pass.
+4. **Rollback input** — prior tag checked out and redeployed.
+5. **Strategy docs** — blue/green/canary owned by deploy tooling + runbooks.
 
 ## Security Considerations
 
-
-
-
-
-
-
-
-- Treat credentials and tokens for github-actions as privileged — never commit them
-- Prefer short-lived auth (OIDC, roles, SSO) over long-lived keys
-- Validate blast radius before apply/deploy/delete operations
-- Restrict who can approve production changes
-- Collect audit logs; limit who can read sensitive traces
+- Production environment secrets must not be available to pull request workflows.
+- Rollback workflow needs same approval rigour as forward deploy.
+- Environment URLs should not leak internal-only hostnames publicly.
+- Audit deployment events in GitHub Deployments API / audit log.
+- Separate cloud roles for staging vs production (Module 10).
 
 ## Common Mistakes
 
+!!! warning "Rebuild for production with `:latest`"
+    Staging tested digest ≠ production image. **Fix:** promote build output.
 
+!!! warning "Environment without reviewers"
+    Approval button is theatre. **Fix:** required reviewers + branch restrictions.
 
+!!! warning "No rollback workflow"
+    Incident extends while building hotfix pipeline. **Fix:** documented rollback dispatch.
 
-
-
-
-
-!!! warning "Rebuilding the image in production — digests diverge from staging.  "
-    Validate assumptions against the Theory section and official docs before changing production.
-
-!!! warning "Unprotected `production` — any writer can deploy.  "
-    Lab shortcuts (open security groups, admin roles, skip approvals) must not ship unchanged.
-
-!!! warning "Changing production without a rollback path"
-    Always know how to revert (previous artefact, prior release, state rollback, DNS failback).
+!!! warning "Canary without metrics"
+    Traffic shift blind. **Fix:** SLO gates and automatic abort.
 
 ## Best Practices
 
-
-
-
-
-
-
-
-- Encode Production Pipelines and Environments changes as code and review them in pull requests
-- Pin versions (images, modules, actions, provider plugins)
-- Separate environments with clear promotion gates
-- Alert on symptoms with runbooks attached
-- Destroy lab resources; tag everything with owner and expiry where possible
+- Use deployment branches (only `main` deploys production).
+- Record deployment in GitHub Environments history for audit.
+- Pair Actions promotion with GitOps for drift control where needed.
+- Run game days: practice rollback quarterly.
+- Keep staging representative of production topology.
 
 ## Troubleshooting
 
-
-
-
-
-
-
-
 | Symptom | Likely cause | Fix |
 |---------|--------------|-----|
-| Auth / permission denied | Wrong identity, policy, or scope | Check caller identity, roles, and least-privilege policies |
-| Timeout / no route | Network, DNS, security group, or endpoint | Trace path, DNS, and allow-lists before retrying |
-| Drift / unexpected plan | Manual change or wrong state/workspace | Reconcile desired vs actual; avoid click-ops on managed resources |
-| Pipeline/job red | Flaky step, cache, or missing secret | Read failing step logs; bisect recent workflow/config changes |
-| Cost spike | Idle load balancer, NAT, oversized compute | Inventory billable resources; stop/delete labs promptly |
+| Waiting for approval stuck | Reviewer unavailable | Backup reviewers; break-glass process |
+| Staging OK, prod fail | Config/secret drift | Align env vars; separate accounts by design |
+| Rollback does not heal | DB migration forward-only | Expand rollback runbook; backward-compatible migrations |
+| Double production deploy | Missing concurrency | Add concurrency group |
+| Wrong URL in environment | Typo in `url:` field | Fix environment URL metadata |
 
 ## Summary
 
-
-
-
-
-
-
-
-**Production Pipelines and Environments** is essential for Cloud and DevOps engineers working with github-actions. Practise the lab until the inspection and change path is muscle memory, then continue the track.
+Production pipelines use GitHub Environments for approvals, promote immutable artefacts from staging to production, and document rollback plus blue/green/canary strategies. Next: [Troubleshooting GitHub Actions](troubleshooting-github-actions.md).
 
 ## Interview Questions
 
+**1. What do GitHub Environment protection rules provide?**
 
+??? success "Reveal answer"
+    Required reviewers, wait timers, deployment branch filters, and environment-scoped secrets — so production deploy jobs pause for approval and use the correct credentials.
 
+**2. What is promotion vs rebuilding for production?**
 
+??? success "Reveal answer"
+    Promotion deploys the same artefact digest tested in staging; rebuilding production risks shipping different bits than were validated.
 
+**3. How should rollback work in a tag-based release model?**
 
-1. What protections do GitHub Environments provide?
-2. Why use concurrency groups for production deploys?
-3. How do you model staging then production promotion?
-4. What evidence should a production deploy leave behind?
-5. How do wait timers / reviewers change change management?
+??? success "Reveal answer"
+    Redeploy a prior SemVer tag or prior Helm revision — checkout/ref that tag in a controlled rollback workflow with production environment approval.
 
-!!! tip "Sample answer — question 2"
-    Check environment protection rules, required reviewers, and whether the job targeted the intended environment.
+**4. When is blue/green preferable to rolling updates?**
 
-!!! tip "Sample answer — question 4"
-    Store production secrets only on the production environment and require reviews.
+??? success "Reveal answer"
+    When you need instant traffic switch and fast rollback without waiting for gradual pod replacement — at the cost of double infrastructure during cutover.
+
+**5. What is the purpose of smoke tests between staging and production?**
+
+??? success "Reveal answer"
+    They verify the deployed artefact is minimally healthy in a production-like environment before human approval spends production risk budget.
+
+**6. Why use `concurrency` on production deploy jobs?**
+
+??? success "Reveal answer"
+    Prevents overlapping production deploys that could leave the system in an inconsistent state or race shared resources.
+
+**7. How do Environments relate to cloud accounts?**
+
+??? success "Reveal answer"
+    They are GitHub-side gates and secret scopes — you still map `staging`/`production` environments to separate cloud accounts/subscriptions via OIDC roles and variables.
+
+**8. What is a canary deployment's main risk if metrics are ignored?**
+
+??? success "Reveal answer"
+    A bad release affects a subset of users initially, but without SLO monitoring the team may promote a failing version to 100% traffic.
 
 ## Related Tutorials
 
-
-
-
-
-
-
-
-- [Course overview](index.md)
+- [Multi-Cloud Deployments with GitHub Actions](multi-cloud-deployments-with-github-actions.md)
+- [Kubernetes Deployments with GitHub Actions](kubernetes-deployments-with-github-actions.md)
 - [Troubleshooting GitHub Actions](troubleshooting-github-actions.md)
 
 ## References
 
-
-
-
-
-
-
-
-- [Using environments for deployment](https://docs.github.com/en/actions/deployment/targeting-different-environments/using-environments-for-deployment)  
-- [Protected environments / reviewers](https://docs.github.com/en/actions/deployment/targeting-different-environments/managing-environments-for-deployment)  
-- [Deployment best practices](https://docs.github.com/en/actions/deployment/about-deployments/deploying-with-github-actions)
+- [Environments for deployment](https://docs.github.com/en/actions/deployment/targeting-different-environments/using-environments-for-deployment)
+- [Deployment protection rules](https://docs.github.com/en/actions/deployment/targeting-different-environments/managing-environments-for-deployment)
+- [Concurrency](https://docs.github.com/en/actions/using-jobs/using-concurrency)
+- [GitHub Deployments REST API](https://docs.github.com/en/rest/deployments)

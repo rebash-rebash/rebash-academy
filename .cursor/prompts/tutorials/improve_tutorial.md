@@ -209,6 +209,8 @@ If not, improve the explanation.
 
 # Improve Hands-on Labs
 
+Raise every lab to **production-grade interview preparation** (not simple demos). Prefer live sandbox/kind/LocalStack apply over validate-only or `null` stubs.
+
 Ensure every step contains:
 
 Objective
@@ -219,11 +221,11 @@ Commands
 
 Expected Result
 
-Validation
+Validation (system state, not syntax-check alone)
 
 Next Step
 
-Avoid unexplained command sequences.
+Avoid unexplained command sequences. Full bar: `.cursor/prompts/tutorials/create_lab.md`.
 
 ---
 

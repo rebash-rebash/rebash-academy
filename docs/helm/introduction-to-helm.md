@@ -30,7 +30,7 @@ tags:
   - helm
   - kubernetes
 author: Shaik Basha
-last_updated: "2026-07-31"
+last_updated: "2026-08-03"
 comments: false
 ---
 
@@ -136,93 +136,197 @@ You (or CI/GitOps) run the Helm CLI against a cluster kubeconfig. Helm fetches t
 
 ## Hands-on Lab
 
-
-
 ### Objective
 
-Create, lint, render, install, and uninstall a Helm chart demonstrating **Introduction to Helm**.
+Author a minimal Helm chart by hand, lint and render it offline, then install a **release** and capture evidence that distinguishes the **chart** (source package) from the **release** (named cluster instance).
 
 ### Prerequisites
 
-- helm CLI
-- kubectl + lab cluster
-- Ability to create namespaces
+- Helm 3.x (`helm version`)
+- kubectl configured against kind or minikube (optional for install)
+- Writable workspace at `~/rebash-helm/module-01`
 
 ### Lab environment
 
-Workspace: `~/rebash-helm/module-01`
-
-Helm 3 against kind/minikube; release namespace `rebash-helm`.
+Workspace: `~/rebash-helm/module-01` on your workstation; cluster optional until Task 4.
 
 ```bash
-mkdir -p ~/rebash-helm/module-01 && cd ~/rebash-helm/module-01
+mkdir -p ~/rebash-helm/module-01/rebash-app/templates && cd ~/rebash-helm/module-01
 ```
 
 ### Real-world scenario
 
-A team wants **Introduction to Helm** packaged as a chart so GitOps can promote the same artefact across environments.
+Your platform team ships internal services as small Helm charts. Before merging, you must prove the chart lints cleanly, renders expected Kubernetes kinds, and — when a cluster is available — installs as a named release in an isolated namespace.
 
 ### Step-by-step tasks
 
-#### Task 1 – Create and lint a chart
+#### Task 1 – Chart metadata and defaults
 
-Scaffold a chart and fail the build on lint errors before install.
+Create `rebash-app/Chart.yaml`:
 
-```bash
-helm version
-helm create labchart
-helm lint ./labchart | tee lint.txt
-helm template labchart ./labchart | egrep '^kind:' | sort | uniq -c | tee kinds.txt
+```yaml
+apiVersion: v2
+name: rebash-app
+description: Minimal REBASH introduction chart
+type: application
+version: 0.1.0
+appVersion: "1.27"
 ```
 
-**Expected output:** lint reports no failures; kinds.txt lists Deployment/Service/etc.
+Create `rebash-app/values.yaml`:
 
-#### Task 2 – Install with values override
-
-Prove values change rendered replicas, then install with wait.
-
-```bash
-kubectl create namespace rebash-helm --dry-run=client -o yaml | kubectl apply -f -
-cat > myvalues.yaml << 'EOF'
-replicaCount: 2
-EOF
-helm template labchart ./labchart -f myvalues.yaml | egrep 'replicas:' | head
-helm upgrade --install labchart ./labchart -n rebash-helm -f myvalues.yaml --wait --timeout 2m
-helm list -n rebash-helm
-kubectl get deploy -n rebash-helm
+```yaml
+replicaCount: 1
+image:
+  repository: nginxinc/nginx-unprivileged
+  tag: "1.27-alpine"
+  pullPolicy: IfNotPresent
+service:
+  type: ClusterIP
+  port: 8080
 ```
 
-**Expected output:** Release deployed; Deployment shows 2 replicas (or Ready pods).
+#### Task 2 – Deployment and Service templates
+
+Create `rebash-app/templates/_helpers.tpl`:
+
+{% raw %}
+```
+{{- define "rebash-app.name" -}}
+{{- default .Chart.Name .Values.nameOverride | trunc 63 | trimSuffix "-" }}
+{{- end }}
+
+{{- define "rebash-app.fullname" -}}
+{{- printf "%s-%s" .Release.Name .Chart.Name | trunc 63 | trimSuffix "-" }}
+{{- end }}
+```
+{% endraw %}
+
+Create `rebash-app/templates/deployment.yaml`:
+
+{% raw %}
+```yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "rebash-app.fullname" . }}
+  labels:
+    app.kubernetes.io/name: {{ include "rebash-app.name" . }}
+    app.kubernetes.io/instance: {{ .Release.Name }}
+spec:
+  replicas: {{ .Values.replicaCount }}
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: {{ include "rebash-app.name" . }}
+      app.kubernetes.io/instance: {{ .Release.Name }}
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: {{ include "rebash-app.name" . }}
+        app.kubernetes.io/instance: {{ .Release.Name }}
+    spec:
+      containers:
+        - name: web
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          ports:
+            - containerPort: {{ .Values.service.port }}
+```
+{% endraw %}
+
+Create `rebash-app/templates/service.yaml`:
+
+{% raw %}
+```yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "rebash-app.fullname" . }}
+spec:
+  type: {{ .Values.service.type }}
+  ports:
+    - port: {{ .Values.service.port }}
+      targetPort: {{ .Values.service.port }}
+  selector:
+    app.kubernetes.io/name: {{ include "rebash-app.name" . }}
+    app.kubernetes.io/instance: {{ .Release.Name }}
+```
+{% endraw %}
+
+#### Task 3 – Lint and render (offline)
+
+```bash
+cd ~/rebash-helm/module-01
+helm lint rebash-app | tee lint-m01.txt
+helm template demo rebash-app --namespace rebash-helm-m01 | tee render-m01.yaml
+grep -E '^kind:' render-m01.yaml | sort | uniq -c | tee kinds-m01.txt
+grep -q 'kind: Deployment' render-m01.yaml
+grep -q 'kind: Service' render-m01.yaml
+grep -q 'nginxinc/nginx-unprivileged:1.27-alpine' render-m01.yaml
+```
+
+**Expected output:** `lint-m01.txt` shows 0 chart(s) failed; `kinds-m01.txt` lists Deployment and Service; rendered image uses the pinned tag.
+
+#### Task 4 – Install release and prove chart vs release
+
+Create `namespace.yaml`:
+
+```yaml
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: rebash-helm-m01
+```
+
+```bash
+cd ~/rebash-helm/module-01
+if command -v helm >/dev/null && kubectl cluster-info >/dev/null 2>&1; then
+  kubectl apply -f namespace.yaml
+  helm upgrade --install demo rebash-app -n rebash-helm-m01 --wait --timeout 120s | tee install-m01.txt
+  helm list -n rebash-helm-m01 | tee list-m01.txt
+  helm get metadata demo -n rebash-helm-m01 | tee metadata-m01.txt
+  grep -E '^name:|^version:|^app_version:' metadata-m01.txt | tee chart-vs-release-m01.txt
+  kubectl get deploy,svc -n rebash-helm-m01 | tee objects-m01.txt
+else
+  echo "Skipping install — helm or cluster unavailable; offline lint/template is sufficient" | tee install-m01.txt
+fi
+```
+
+**Expected output:** `list-m01.txt` shows release name `demo` with chart `rebash-app-0.1.0`; `chart-vs-release-m01.txt` shows chart metadata (`name`, `version`, `app_version`) distinct from the release name `demo`.
 
 ### Validation steps
 
-- [ ] helm lint clean
-- [ ] Release listed in namespace
-- [ ] Uninstall removes the release
+- [ ] Chart directory contains `Chart.yaml`, `values.yaml`, and templates
+- [ ] `helm lint` passes with no failures
+- [ ] `helm template` renders Deployment and Service with pinned image
+- [ ] Evidence files distinguish chart package version from release name (when install runs)
+- [ ] Optional install completes in namespace `rebash-helm-m01`
 
 ### Common errors and fixes
 
 | Error | Cause | Fix |
 |-------|-------|-----|
-| PENDING_INSTALL | Image pull / probes | `helm status` + `kubectl describe` |
-| lint failed | Template YAML break | Fix templates; re-run helm lint |
-| context deadline | Slow cluster | Increase --timeout or fix readiness |
+| `helm lint` template undefined | Missing `_helpers.tpl` | Add `rebash-app.name` and `rebash-app.fullname` helpers |
+| Rendered YAML invalid | Bad indentation in template | Re-run `helm template` and inspect `render-m01.yaml` |
+| Install watch timeout | Image pull or readiness | `kubectl describe pod -n rebash-helm-m01` |
+| Confusing chart and release | Same string used for both | Release name is `demo`; chart name is `rebash-app` — compare `helm list` vs `Chart.yaml` |
 
 ### Challenge exercise
 
-Add a ConfigMap template driven by values and prove it with `helm get manifest`.
+Bump `replicaCount` to `2` in a separate `values-scale.yaml` file, re-run `helm template demo rebash-app -f values-scale.yaml`, and assert `replicas: 2` appears in the rendered Deployment.
 
 ### Learning outcomes
 
-- Packaged Kubernetes YAML as a chart
-- Overrode values safely
-- Cleaned up the release
+- Built a minimal chart without `helm create` scaffolding noise
+- Ran offline validation with `helm lint` and `helm template`
+- Explained the difference between chart (package) and release (installed instance)
+- Installed a pinned-image release into an isolated namespace when a cluster is available
 
 ### Cleanup
 
 ```bash
-helm uninstall labchart -n rebash-helm 2>/dev/null || true
-kubectl delete namespace rebash-helm --ignore-not-found
+helm uninstall demo -n rebash-helm-m01 2>/dev/null || true
+kubectl delete namespace rebash-helm-m01 --ignore-not-found
 ```
 
 ## Validation

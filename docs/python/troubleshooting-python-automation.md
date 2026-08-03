@@ -172,11 +172,9 @@ A nightly inventory job started failing after a hurried change. On-call sees a n
 
 Create a broken job and a triage runner that records fingerprint + traceback.
 
-```bash
-cd ~/rebash-python/lab27
-set -euo pipefail
+Create `broken_job.py`:
 
-cat > broken_job.py << 'EOF'
+```python
 """Intentionally broken automation for troubleshooting practice."""
 from __future__ import annotations
 
@@ -219,9 +217,11 @@ def main() -> int:
 
 if __name__ == "__main__":
     raise SystemExit(main())
-EOF
+```
 
-cat > triage.py << 'EOF'
+Create `triage.py`:
+
+```python
 """Capture environment fingerprint + traceback for a target script."""
 from __future__ import annotations
 
@@ -281,8 +281,13 @@ def main() -> int:
 
 if __name__ == "__main__":
     raise SystemExit(main())
-EOF
+```
 
+Run:
+
+```bash
+cd ~/rebash-python/lab27
+set -euo pipefail
 set +e
 python3 triage.py broken_job.py >before-triage.stdout 2>before-triage.stderr
 before_rc=$?
@@ -297,17 +302,17 @@ grep -E 'NameError|ImportError|ModuleNotFoundError' traceback-before.txt
 grep -F 'python_executable=' env-fingerprint-before.txt
 ```
 
+
 **Expected output:** triage fails; `traceback-before.txt` mentions `NameError` and/or import failure; fingerprint file is non-empty.
 
 Note: because `load_rules` swallows exceptions, you may see **`NameError: name 'servcie' is not defined`** first (empty rules still reach `render_report`). That is intentional — bad `except` changes what you see.
 
 #### Task 2 – Fix the script (imports, exceptions, NameError)
 
-```bash
-cd ~/rebash-python/lab27
-set -euo pipefail
 
-cat > fixed_job.py << 'EOF'
+Create `fixed_job.py`:
+
+```python
 """Fixed automation after triage (lab27)."""
 from __future__ import annotations
 
@@ -351,8 +356,13 @@ def main() -> int:
 
 if __name__ == "__main__":
     raise SystemExit(main())
-EOF
+```
 
+Run:
+
+```bash
+cd ~/rebash-python/lab27
+set -euo pipefail
 python3 -m py_compile fixed_job.py
 ```
 

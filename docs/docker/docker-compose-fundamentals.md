@@ -28,7 +28,7 @@ tags:
   - docker
   - compose
 author: Shaik Basha
-last_updated: "2026-07-31"
+last_updated: "2026-08-03"
 comments: false
 ---
 
@@ -135,22 +135,20 @@ Keep Compose files readable: one service per concern, explicit image tags or dig
 
 ## Hands-on Lab
 
-
-
 ### Objective
 
-Build or run a real Docker solution for **Docker Compose Fundamentals** and prove it with inspect/logs/HTTP.
+Define a two-service Compose stack with a named volume, start it detached, verify with `curl`, and tear down including volumes.
 
 ### Prerequisites
 
-- Docker Engine or Docker Desktop
-- Permission to run containers
+- Docker Engine with Compose plugin (`docker compose version`)
+- `curl` on the host
 
 ### Lab environment
 
 Workspace: `~/rebash-docker/module-09`
 
-Local Docker daemon. Clean up containers/images after the lab.
+Host port **18087** maps to the web service.
 
 ```bash
 mkdir -p ~/rebash-docker/module-09 && cd ~/rebash-docker/module-09
@@ -158,87 +156,129 @@ mkdir -p ~/rebash-docker/module-09 && cd ~/rebash-docker/module-09
 
 ### Real-world scenario
 
-You are validating **Docker Compose Fundamentals** before it lands in CI. The change must be reproducible with copy-paste commands and leave no orphan containers.
+Locally you replicate a minimal production pair: nginx serves a static page while Redis holds session keys. Compose wires service DNS, mounts a volume for Redis data, publishes only the web port, and lets you run the same file in CI with `docker compose up -d`.
 
 ### Step-by-step tasks
 
-#### Task 1 – Write Compose file and start stack
+#### Task 1 – Create Compose file and static page
 
-Compose is how many teams run multi-container apps locally and in CI.
+Create `html/index.html`:
 
-```bash
-cat > compose.yaml << 'EOF'
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head><meta charset="utf-8"><title>REBASH mod09</title></head>
+<body><h1>compose stack ok</h1></body>
+</html>
+```
+
+Create `compose.yaml`:
+
+```yaml
 services:
   web:
-    image: nginx:alpine
-    ports: ["18080:80"]
-    healthcheck:
-      test: ["CMD", "wget", "-qO-", "http://127.0.0.1/"]
-      interval: 5s
-      retries: 5
-EOF
-docker compose up -d
-docker compose ps
-curl -sI http://127.0.0.1:18080 | head -n 5 | tee headers.txt
+    image: nginx:1.27-alpine
+    ports:
+      - "18087:80"
+    depends_on:
+      - redis
+    volumes:
+      - ./html:/usr/share/nginx/html:ro
+  redis:
+    image: redis:7.4-alpine
+    volumes:
+      - redis-data:/data
+    command: ["redis-server", "--save", "", "--appendonly", "no"]
+
+volumes:
+  redis-data:
 ```
 
-**Expected output:** Service healthy/running; headers show HTTP/1.1 200.
+**Expected output:** `compose.yaml` and `html/index.html` exist in the lab directory.
 
-#### Task 2 – Inspect and stop cleanly
-
-Always tear down Compose projects so ports and networks do not leak.
+#### Task 2 – Start stack and check status
 
 ```bash
-docker compose logs --tail=20 web | tee compose.log
-docker compose down
-test ! -z "$(cat headers.txt)"
+cd ~/rebash-docker/module-09
+docker compose up -d
+docker compose ps | tee compose-ps.txt
+grep -E 'web|redis' compose-ps.txt
+curl -s http://127.0.0.1:18087/ | tee compose-curl.txt
+grep -q 'compose stack ok' compose-curl.txt
 ```
 
-**Expected output:** Logs captured; containers removed after down.
+**Expected output:** `compose-ps.txt` shows web and redis running; curl returns the custom heading.
+
+#### Task 3 – Prove Redis volume and fetch logs
+
+```bash
+cd ~/rebash-docker/module-09
+docker compose exec redis redis-cli PING | tee redis-ping.txt
+grep -q 'PONG' redis-ping.txt
+docker compose logs --tail=10 web | tee compose-web-logs.txt
+test -s compose-web-logs.txt
+```
+
+**Expected output:** `redis-ping.txt` is `PONG`; web logs captured.
 
 ### Validation steps
 
-- [ ] Container or image behaves as Expected output describes
-- [ ] Ports respond or command output matches
-- [ ] Cleanup removes lab resources
+- [ ] `docker compose ps` shows web and redis services up
+- [ ] `compose-curl.txt` serves custom HTML on port 18087
+- [ ] `redis-ping.txt` confirms Redis responds inside the stack
 
 ### Common errors and fixes
 
 | Error | Cause | Fix |
 |-------|-------|-----|
-| port is already allocated | Previous lab left a container | `docker rm -f` the old name or change port |
-| permission denied | User not in docker group | Use rootless Docker or fix group membership |
-| manifest unknown | Bad tag | Pin a real tag such as `nginx:alpine` |
+| port is already allocated | 18087 in use | Edit host port in `compose.yaml` |
+| service "web" depends on undefined service | Typo in `depends_on` | Match service names exactly |
+| bind mount not found | Missing `html/` | Create `html/index.html` before `up` |
 
 ### Challenge exercise
 
-Add a non-root USER (or Compose healthcheck) and prove it with inspect.
+Scale web to two replicas is not valid with static published ports — instead add a healthcheck to web and prove Compose reports healthy state:
+
+Add under `web:` in `compose.yaml`:
+
+```yaml
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://127.0.0.1/"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+```
+
+Reconcile and verify:
+
+```bash
+cd ~/rebash-docker/module-09
+docker compose up -d
+docker compose ps | tee compose-ps-health.txt
+grep -i 'healthy\|running' compose-ps-health.txt
+```
+
+**Expected output:** After a short wait, `compose-ps-health.txt` shows web as healthy or running with healthcheck configured.
 
 ### Learning outcomes
 
-- Executed a real Docker workflow
-- Captured evidence files
-- Removed disposable resources
+- Authored a multi-service `compose.yaml` with pinned images
+- Started and inspected a stack with `docker compose ps` and logs
+- Verified HTTP and Redis connectivity before teardown
 
 ### Cleanup
 
 ```bash
-docker rm -f rebash-lab 2>/dev/null || true
-docker rmi rebash-lab:local 2>/dev/null || true
-docker compose down -v 2>/dev/null || true
+cd ~/rebash-docker/module-09
+docker compose down -v
+docker rmi nginx:1.27-alpine redis:7.4-alpine 2>/dev/null || true
 ```
 
 ## Validation
 
-
-
-
-
-
-
 - [ ] Lab commands run under `~/rebash-docker/module-09/`
+- [ ] `compose-ps.txt` and `compose-curl.txt` prove the stack ran correctly
 - [ ] You can explain each Theory section in your own words
-- [ ] You used modern tooling where it applies to this topic
 - [ ] You can describe one production failure mode for this topic
 
 ## Code Walkthrough

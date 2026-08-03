@@ -29,7 +29,7 @@ tags:
   - docker
   - cli
 author: Shaik Basha
-last_updated: "2026-07-31"
+last_updated: "2026-08-03"
 comments: false
 ---
 
@@ -133,22 +133,20 @@ If you cannot start a container, read its logs, and confirm the process exit cod
 
 ## Hands-on Lab
 
-
-
 ### Objective
 
-Build or run a real Docker solution for **Running Your First Container — Docker CLI** and prove it with inspect/logs/HTTP.
+Walk a full container lifecycle with the Docker CLI: run detached, inspect, logs, exec, graceful stop, and remove — using uniquely named `rebash-cli-*` resources.
 
 ### Prerequisites
 
 - Docker Engine or Docker Desktop
-- Permission to run containers
+- `curl` available on the host
 
 ### Lab environment
 
 Workspace: `~/rebash-docker/module-03`
 
-Local Docker daemon. Clean up containers/images after the lab.
+Host port **18083** is reserved for this lab to avoid clashes with other modules.
 
 ```bash
 mkdir -p ~/rebash-docker/module-03 && cd ~/rebash-docker/module-03
@@ -156,77 +154,94 @@ mkdir -p ~/rebash-docker/module-03 && cd ~/rebash-docker/module-03
 
 ### Real-world scenario
 
-You are validating **Running Your First Container — Docker CLI** before it lands in CI. The change must be reproducible with copy-paste commands and leave no orphan containers.
+You deploy a sidecar nginx container on a jump server to serve a static health page during a migration. You need to prove the container is up, read its logs, run a command inside it, stop it cleanly, and remove it — the everyday CLI workflow before Compose or Kubernetes.
 
 ### Step-by-step tasks
 
-#### Task 1 – Run and inspect a container
-
-Start from a known image, publish a port, and verify HTTP.
+#### Task 1 – Run detached with a unique name and published port
 
 ```bash
-docker run -d --name rebash-lab -p 18080:80 nginx:alpine
-docker ps --filter name=rebash-lab
-curl -sI http://127.0.0.1:18080 | head -n 5 | tee headers.txt
-docker logs rebash-lab 2>&1 | head -n 10 | tee logs.txt
+cd ~/rebash-docker/module-03
+docker run -d --name rebash-cli-web -p 18083:80 nginx:1.27-alpine
+docker ps --filter name=rebash-cli-web --format 'table {{ "{{" }}.Names{{ "}}" }}\t{{ "{{" }}.Status{{ "}}" }}\t{{ "{{" }}.Ports{{ "}}" }}' | tee cli-ps.txt
+grep -q 'rebash-cli-web' cli-ps.txt
+curl -sI http://127.0.0.1:18083 | head -n 5 | tee cli-headers.txt
+grep -qi 'HTTP/' cli-headers.txt
 ```
 
-**Expected output:** Container Up; HTTP 200 in headers.txt.
+**Expected output:** `cli-ps.txt` shows `rebash-cli-web` Up with `18083->80`; headers include `HTTP/1.1 200` or `HTTP/2 200`.
 
-#### Task 2 – Inspect runtime config
-
-Use inspect for status — production debugging rarely starts with guesswork.
+#### Task 2 – Logs and exec into the running container
 
 ```bash
-docker inspect rebash-lab --format '{{ "{{" }}.State.Status{{ "}}" }} {{ "{{" }}.Config.Image{{ "}}" }}' | tee inspect.txt
-test -s inspect.txt
+cd ~/rebash-docker/module-03
+docker logs rebash-cli-web 2>&1 | tail -n 15 | tee cli-logs.txt
+docker exec rebash-cli-web nginx -v 2>&1 | tee cli-exec-nginx-v.txt
+grep -qi 'nginx' cli-exec-nginx-v.txt
 ```
 
-**Expected output:** inspect.txt shows `running` and the nginx image.
+**Expected output:** `cli-logs.txt` has nginx startup lines; `cli-exec-nginx-v.txt` prints an nginx version.
+
+#### Task 3 – Stop, confirm exited, and remove
+
+```bash
+cd ~/rebash-docker/module-03
+docker stop rebash-cli-web | tee cli-stop.txt
+docker ps -a --filter name=rebash-cli-web --format '{{ "{{" }}.Status{{ "}}" }}' | tee cli-status-after-stop.txt
+grep -qi 'exited' cli-status-after-stop.txt
+docker rm rebash-cli-web | tee cli-rm.txt
+! docker ps -a --filter name=rebash-cli-web --quiet | grep -q .
+```
+
+**Expected output:** Status shows `Exited`; container name no longer appears in `docker ps -a`.
 
 ### Validation steps
 
-- [ ] Container or image behaves as Expected output describes
-- [ ] Ports respond or command output matches
-- [ ] Cleanup removes lab resources
+- [ ] `rebash-cli-web` reached running state with port `18083` published
+- [ ] `cli-logs.txt` and `cli-exec-nginx-v.txt` prove logs and exec worked
+- [ ] Container was stopped and removed without orphan name conflicts
 
 ### Common errors and fixes
 
 | Error | Cause | Fix |
 |-------|-------|-----|
-| port is already allocated | Previous lab left a container | `docker rm -f` the old name or change port |
-| permission denied | User not in docker group | Use rootless Docker or fix group membership |
-| manifest unknown | Bad tag | Pin a real tag such as `nginx:alpine` |
+| port is already allocated | Previous lab on 18083 | `docker rm -f` the old container or pick another high port |
+| Error response from daemon: No such container | Typo in name | Use `docker ps -a` to confirm exact name |
+| exec failed: container is not running | Stopped too early | Run exec before `docker stop` |
 
 ### Challenge exercise
 
-Add a non-root USER (or Compose healthcheck) and prove it with inspect.
+Re-run the lifecycle with `--rm` so removal is automatic after stop:
+
+```bash
+cd ~/rebash-docker/module-03
+docker run -d --rm --name rebash-cli-auto -p 18084:80 nginx:1.27-alpine
+docker stop rebash-cli-auto
+! docker ps -a --filter name=rebash-cli-auto --quiet | grep -q .
+echo 'auto-removed ok' | tee cli-challenge.txt
+```
+
+**Expected output:** `cli-challenge.txt` exists; `rebash-cli-auto` is gone after stop.
 
 ### Learning outcomes
 
-- Executed a real Docker workflow
-- Captured evidence files
-- Removed disposable resources
+- Used `docker run -d`, `-p`, and `--name` for a detached web container
+- Retrieved logs and ran a command with `docker exec`
+- Performed graceful `docker stop` and `docker rm` (and optional `--rm`)
 
 ### Cleanup
 
 ```bash
-docker rm -f rebash-lab 2>/dev/null || true
-docker rmi rebash-lab:local 2>/dev/null || true
-docker compose down -v 2>/dev/null || true
+cd ~/rebash-docker/module-03
+docker rm -f rebash-cli-web rebash-cli-auto 2>/dev/null || true
+docker rmi nginx:1.27-alpine 2>/dev/null || true
 ```
 
 ## Validation
 
-
-
-
-
-
-
 - [ ] Lab commands run under `~/rebash-docker/module-03/`
+- [ ] Evidence files (`cli-ps.txt`, `cli-headers.txt`, `cli-logs.txt`) document the lifecycle
 - [ ] You can explain each Theory section in your own words
-- [ ] You used modern tooling where it applies to this topic
 - [ ] You can describe one production failure mode for this topic
 
 ## Code Walkthrough

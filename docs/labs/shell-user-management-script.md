@@ -74,16 +74,14 @@ cd ~/rebash-lab-shell/users
 
 ### Task 1 — CLI skeleton
 
-Create `bin/usermgr.sh` with subcommands: `list`, `create`, `disable`, `help`.
+Create `bin/usermgr.sh` with subcommands: `list`, `create`, `disable`, and `help`:
 
 ```bash
-cat > bin/usermgr.sh << 'EOF'
 #!/usr/bin/env bash
 set -euo pipefail
 LOG_DIR="${LOG_DIR:-$HOME/rebash-lab-shell/users/logs}"
 mkdir -p "$LOG_DIR"
-log() { printf '%s %s
-' "$(date -u +%Y-%m-%dT%H:%M:%SZ)" "$*" >>"$LOG_DIR/usermgr.log"; }
+log() { printf '%s %s\n' "$(date -u +%Y-%m-%dT%H:%M:%SZ)" "$*" >>"$LOG_DIR/usermgr.log"; }
 
 usage() {
   cat >&2 <<'USAGE'
@@ -99,9 +97,14 @@ case "$cmd" in
   list|create|disable) ;;
   *) usage; exit 2 ;;
 esac
-EOF
+```
+
+Run:
+
+```bash
 chmod +x bin/usermgr.sh
 ```
+
 
 ### Task 2 — Implement list
 

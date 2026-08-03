@@ -1,8 +1,8 @@
 ---
 title: "Installing Terraform and the CLI Workflow"
 description: "Install the Terraform CLI, manage versions with tfenv or asdf, verify providers from the Terraform Registry, and prepare a clean working directory."
-difficulty: intermediate
-estimated_time: "35–50 min"
+difficulty: beginner
+estimated_time: "45–55 min"
 technology: terraform
 category: terraform
 module: "Module 2 · Installing Terraform"
@@ -31,358 +31,448 @@ tags:
   - cli
   - installation
 author: Shaik Basha
-last_updated: "2026-07-31"
+last_updated: "2026-08-03"
 comments: false
 ---
-
 
 # Installing Terraform and the CLI Workflow
 
 ## Overview
 
+Before you can plan or apply infrastructure, you need a **pinned Terraform CLI**, a clean project directory, and clarity on **when providers download** (at `init`, not at OS package install). Platform teams standardise versions so CI and laptops produce identical plans. HashiCorp publishes signed binaries; version managers (**tfenv**, **asdf**) make switching between project pins practical.
 
+The **Terraform Registry** hosts provider plugins. Your `terraform` block declares `required_providers`; **`terraform init`** downloads matching binaries into `.terraform/providers/`. Understanding install vs init prevents the common mistake of “Terraform is installed but plan fails — provider not found.”
 
-
-
-
-
-Install Terraform 1.x, pin a version with tfenv or asdf, verify the binary, and understand how providers arrive from the Terraform Registry on `init`.
-
-Install via package manager, HashiCorp packages, or a version manager. Pin the CLI version for every root module with `required_version`. Providers download from the **Terraform Registry** on first `terraform init` — not at install time.
-
-This is a core tutorial in **Module 2 · Installing Terraform** of the REBASH Academy **Terraform for Cloud & DevOps Engineers** series — written for Cloud, DevOps, Platform, and SRE engineers.
+This is **Tutorial 2** in **Module 2: Installing Terraform** of the REBASH Academy **Terraform for Cloud & DevOps Engineers** series — written for Cloud, DevOps, Platform, and SRE engineers. You will install and verify the CLI, pin versions in HCL, initialise providers from the Registry, and document evidence suitable for an onboarding checklist.
 
 ## Prerequisites
 
-
-
-
-
-
-
 - [Introduction to Terraform and IaC](introduction-to-terraform-and-iac.md)
-- Network access to download the CLI and (later) providers
+- Ubuntu 22.04/24.04, macOS, or Linux with `curl`, `unzip`, and network access
+- Optional: [Linux package management](../linux/package-management.md) familiarity
 
 ## Learning Objectives
 
-
-
-
-
-
-
 By the end of this tutorial, you will be able to:
 
-- [ ] Install and verify `terraform version`  
-- [ ] Pin versions with tfenv or asdf  
-- [ ] Explain when providers download (init + Registry)  
-- [ ] List core CLI verbs you will use daily
+- [ ] Install Terraform from HashiCorp packages or a version manager and verify `terraform version`
+- [ ] Pin CLI and provider versions with `required_version` and `required_providers`
+- [ ] Explain when providers install and where they live on disk after `init`
+- [ ] Use core CLI verbs: `version`, `fmt`, `validate`, `init`, and `-help`
+- [ ] Produce install and init evidence files for team standards
 
 ## Architecture
 
+The Terraform CLI is a single binary. Provider plugins are separate executables discovered at init time. Version constraints in HCL drive which plugin builds download from the Registry.
 
-
-
-
-
-
-This topic’s control points and relationships are shown below.
-
-![Terraform CLI commands](../assets/excalidraw/terraform-cli-commands.svg)
+![Terraform CLI, version pin, init, and Registry provider download](../assets/excalidraw/terraform-install-cli.svg)
 
 ## Theory
 
-
-
-
-
-
-
 ### What it is
 
-Installing Terraform means putting the **Terraform CLI** on your workstation or CI image. The binary alone does not ship cloud plugins; **providers** are separate plugins resolved from the [Terraform Registry](https://registry.terraform.io/) (or a private mirror) when you run `terraform init` in a configuration that declares `required_providers`.
+**Terraform installation** means placing the **`terraform` CLI** on your `PATH` at a version compatible with your organisation’s modules. Installation does **not** include AWS, Azure, or Kubernetes providers — those are **plugins** resolved per project.
 
-**Version managers** such as **tfenv** or **asdf** (with a Terraform plugin) let you switch CLI versions per project — essential when repos pin different `required_version` constraints.
+| Artefact | When it arrives | Typical location |
+|----------|-----------------|------------------|
+| Terraform CLI | OS install, package manager, tfenv, asdf | `/usr/bin/terraform` or `~/.tfenv/versions/...` |
+| Provider plugins | `terraform init` in a project | `.terraform/providers/` |
+| Lock file | First successful init with 1.1+ | `.terraform.lock.hcl` (commit to Git) |
+| Modules | `terraform init` | `.terraform/modules/` |
 
-| Action | Purpose |
-|--------|---------|
-| `terraform version` | Confirm CLI (and later, provider versions after init) |
-| `terraform init` | Download providers/modules; prepare backend |
-| `terraform fmt` / `validate` | Format and syntax-check |
-| `terraform plan` / `apply` | Preview and execute changes |
+The **Terraform Registry** (`registry.terraform.io`) is the default source for public providers and modules. Private registries (Terraform Cloud, Artifactory) use the same init mechanism with different `source` addresses.
 
 ### Why it matters
 
-Production teams pin Terraform and provider versions so plans are reproducible across laptops and pipelines. A floating “latest” binary on one engineer’s machine and an older image in CI is a classic source of “works locally” plan diffs. Enterprises often mirror the Registry or use HCP Terraform / private registries so CI does not pull unapproved plugins.
+Version skew causes expensive mistakes:
+
+- Engineer A plans with Terraform 1.4; CI applies with 1.9 — different validation rules or state format expectations
+- Provider `~> 5.0` resolves to 5.40 on Monday and 5.41 on Friday — unexpected attribute defaults change plans
+- “Works on my machine” when `.terraform/` is gitignored but lock file is missing
+
+Production teams document:
+
+- Approved Terraform versions per repo or monorepo
+- How to install (package vs tfenv vs container image in CI)
+- That **every root module** commits `.terraform.lock.hcl`
 
 ### How it works
 
-1. Install Terraform 1.x via Homebrew, Linux packages from HashiCorp, a direct zip, or `tfenv` / `asdf`.
-2. Verify with `terraform version` (expect 1.x).
-3. Optionally set a `.terraform-version` (tfenv) or `.tool-versions` (asdf) in the repo.
-4. Declare `required_version` and `required_providers` in a `terraform` block.
-5. On `terraform init`, the CLI reads those constraints, downloads matching provider plugins into `.terraform/`, and writes a lock file (`.terraform.lock.hcl`).
+#### Installation methods
 
-You do not install AWS or Azure providers with a separate package manager for day-to-day use — `init` does that from the Registry.
+| Method | Best for | Notes |
+|--------|----------|-------|
+| **HashiCorp apt/yum repo** | Servers and golden images | GPG-signed packages; pin package version |
+| **Official zip + `PATH`** | Quick lab setup | Verify checksums from releases.hashicorp.com |
+| **tfenv** | Multiple projects, different pins | `tfenv install 1.9.8`; `.terraform-version` file |
+| **asdf** | Polyglot teams (Node, Python, Terraform) | `asdf plugin add terraform`; `.tool-versions` |
+| **Container image** | CI pipelines | `hashicorp/terraform:1.9` — pin tag, not `latest` |
 
-### Key concepts and comparisons
+Verify after install:
 
-| Method | Fit |
-|--------|-----|
-| Package manager (`brew`, apt repo) | Quick local install |
-| tfenv / asdf | Multi-version teams and CI parity |
-| Official zip / container image | Locked CI images and air-gapped builds |
-| Registry on `init` | Provider and module distribution |
+```bash
+terraform version
+# Terraform v1.9.x
+# on linux_amd64
+```
+
+#### CLI essentials
+
+| Command | Purpose |
+|---------|---------|
+| `terraform version` | CLI build; `-json` for automation |
+| `terraform -help` | Subcommand discovery |
+| `terraform fmt -recursive` | Format `.tf` files |
+| `terraform validate` | Check configuration syntax and consistency (after init) |
+| `terraform init` | Providers, modules, backend |
+| `terraform providers` | List required providers in tree |
+
+Full workflow commands (`plan`, `apply`, `destroy`) are Module 3.
+
+#### Provider installation model
+
+1. Configuration declares:
+
+```hcl
+terraform {
+  required_providers {
+    local = {
+      source  = "hashicorp/local"
+      version = "~> 2.5"
+    }
+  }
+}
+```
+
+2. **`terraform init`** reads constraints, queries Registry, downloads plugin for OS/architecture, writes `.terraform.lock.hcl` with checksums.
+3. Later inits use lock file unless `-upgrade` requests newer versions within constraints.
+
+Providers are **not** global npm packages — each project directory has its own `.terraform/` tree (unless using shared plugin cache — advanced).
+
+#### Version management
+
+**tfenv** example:
+
+```bash
+tfenv install 1.9.8
+tfenv use 1.9.8
+echo "1.9.8" > .terraform-version
+```
+
+**asdf** example:
+
+```bash
+asdf plugin add terraform
+asdf install terraform 1.9.8
+asdf local terraform 1.9.8
+```
+
+Match **`required_version`** in HCL with the active CLI:
+
+```hcl
+terraform {
+  required_version = ">= 1.5.0, < 2.0.0"
+}
+```
 
 ### Common pitfalls
 
-- Installing Terraform once and never pinning — plans diverge across machines.
-- Expecting providers to appear after CLI install without a configuration and `init`.
-- Mixing Terraform 0.11/0.12 habits with modern 1.x workflows.
-- Committing `.terraform/` (plugins cache) — commit `.terraform.lock.hcl`, not the plugin directory.
-- Using a personal laptop binary for production applies — prefer CI with a pinned image.
+- Committing `.terraform/` directory — large, machine-specific; commit **lock file** instead.
+- Using `latest` Terraform in CI — pin image tag or tfenv version per branch.
+- Running `validate` before `init` — validation needs provider schemas; init first.
+- Ignoring GPG/checksum verification when downloading zip manually.
+- Mixing Homebrew Terraform on macOS with corporate tfenv policy without documenting which wins on `PATH`.
 
 ## Hands-on Lab
 
-
-
 ### Objective
 
-Run a complete Terraform workflow (init → plan → apply → prove → destroy) for **Installing Terraform and the CLI Workflow** without paid cloud resources.
+Install or verify Terraform, create a version-pinned root module with the **`kreuzwerker/docker`** provider, run `terraform init`, capture provider install evidence, apply a real Docker network, and prove it with `docker network ls`.
 
 ### Prerequisites
 
-- Terraform CLI ≥ 1.5
-- Network access to download the null provider once
+- **Terraform ≥ 1.5** (`terraform version`)
+- **Docker Engine running** (`docker info` succeeds)
+- Network access to `releases.hashicorp.com` and `registry.terraform.io`
+- Completed Module 1 concepts (IaC workflow)
 
 ### Lab environment
 
 Workspace: `~/rebash-terraform/module-02`
 
-Local Terraform only (`null`/`local` providers). No AWS/GCP/Azure credentials required.
-
 ```bash
 mkdir -p ~/rebash-terraform/module-02 && cd ~/rebash-terraform/module-02
 ```
 
+Uses **kreuzwerker/docker** against local Docker Engine.
+
 ### Real-world scenario
 
-You are automating **Installing Terraform and the CLI Workflow** for a platform repo. Reviewers expect a clean plan artefact, applied evidence, and a destroy path before merge.
+Your platform team publishes a **golden Terraform version** (1.9.x) and requires every repo to commit a lock file after init. Ticket **PLAT-102**: prove your laptop matches the standard, pin the Docker provider, show `.terraform/providers/` contains the expected plugin binary, and apply a disposable bridge network before Module 3 expands the stack.
 
 ### Step-by-step tasks
 
-#### Task 1 – Author and initialise configuration
+#### Task 1 – Record CLI install evidence
 
-Use local/null providers so the lab never bills a cloud account.
+Create `install-check.sh`:
 
 ```bash
-cat > versions.tf << 'EOF'
+#!/usr/bin/env bash
+set -euo pipefail
+cd ~/rebash-terraform/module-02
+terraform version | tee terraform-version.txt
+terraform version -json | tee terraform-version.json
+grep -q '"terraform_version"' terraform-version.json
+echo "CLI evidence OK" | tee cli-evidence.txt
+```
+
+Run:
+
+```bash
+chmod +x ~/rebash-terraform/module-02/install-check.sh
+~/rebash-terraform/module-02/install-check.sh
+```
+
+**Expected output:** `terraform-version.txt` shows `Terraform v1.x.x`; `cli-evidence.txt` contains `CLI evidence OK`.
+
+If Terraform is missing, install via HashiCorp packages ([Install Terraform](https://developer.hashicorp.com/terraform/install)) or tfenv, then re-run the script.
+
+#### Task 2 – Pin CLI and Docker provider in HCL
+
+Create `versions.tf`:
+
+```hcl
 terraform {
-  required_version = ">= 1.5.0"
+  required_version = ">= 1.5.0, < 2.0.0"
+
   required_providers {
-    null = { source = "hashicorp/null", version = "~> 3.2" }
+    docker = {
+      source  = "kreuzwerker/docker"
+      version = "~> 3.0"
+    }
   }
 }
-EOF
-cat > main.tf << 'EOF'
-resource "null_resource" "lab" {
-  triggers = { topic = "rebash-lab" }
-  provisioner "local-exec" {
-    command = "echo applied > applied.txt"
-  }
-}
-output "note" { value = null_resource.lab.triggers.topic }
-EOF
-terraform init
-terraform validate
+
+provider "docker" {}
 ```
 
-**Expected output:** `Terraform has been successfully initialized` and validate succeeds.
+Create `main.tf`:
 
-#### Task 2 – Plan, apply, and prove outputs
+```hcl
+resource "docker_network" "install_marker" {
+  name = "rebash-module-02-net"
+}
+```
 
-Treat the plan as the change ticket — review before apply.
+**Expected output:** `versions.tf` and `main.tf` exist with pinned `source` and `version` for the Docker provider.
 
+#### Task 3 – Init, apply, and verify Registry provider layout
+
+Run:
+
+{% raw %}
 ```bash
-terraform plan -out=tfplan
-terraform show -no-color tfplan | tee plan.txt
-terraform apply tfplan
-terraform output
-test -f applied.txt && cat applied.txt
+cd ~/rebash-terraform/module-02
+terraform fmt -recursive
+terraform init | tee init-output.txt
+test -f .terraform.lock.hcl
+find .terraform/providers -type f | tee provider-files.txt
+grep -q 'kreuzwerker/docker' provider-files.txt
+terraform providers | tee providers-tree.txt
+terraform apply -auto-approve | tee apply-output.txt
+docker network ls --filter name=rebash-module-02-net --format '{{.Name}}' | tee docker-net.txt
+grep -q 'rebash-module-02-net' docker-net.txt
+echo "provider install evidence OK" | tee provider-evidence.txt
 ```
+{% endraw %}
 
-**Expected output:** plan.txt shows create; `applied` written; output prints the note.
+**Expected output:** `init-output.txt` shows Docker provider installed; `provider-files.txt` lists plugin binaries under `.terraform/providers/registry.terraform.io/kreuzwerker/`; `docker-net.txt` contains `rebash-module-02-net`; `provider-evidence.txt` contains `provider install evidence OK`.
 
 ### Validation steps
 
-- [ ] terraform validate passes
-- [ ] Plan was saved and reviewed before apply
-- [ ] Destroy completes with empty state (or resources removed)
+- [ ] `terraform version` output saved and shows 1.5+
+- [ ] `required_version` and `required_providers` blocks present in `versions.tf`
+- [ ] `.terraform.lock.hcl` created after init
+- [ ] Provider binaries exist under `.terraform/providers/`
+- [ ] `terraform apply` created a real Docker network visible in `docker network ls`
 
 ### Common errors and fixes
 
 | Error | Cause | Fix |
 |-------|-------|-----|
-| Provider not found | Missing init / network | Run `terraform init` again |
-| State locked | Concurrent apply | Wait or coordinate; never force-unlock casually |
-| Unexpected destroy in plan | Drift or wrong workspace | Read plan line-by-line before apply |
+| `terraform: command not found` | Not installed or wrong `PATH` | Install CLI; `hash -r`; check `which terraform` |
+| `Cannot connect to the Docker daemon` | Docker not running | Start Docker Engine; verify `docker info` |
+| `does not match configured version constraint` | CLI too old for `required_version` | Upgrade Terraform or adjust constraint in lab only |
+| `Failed to query available provider packages` | Network or registry outage | Retry; configure `HTTPS_PROXY`; use air-gap mirror if corporate |
+| `validate` fails before init | Providers not installed | Run `terraform init` first |
 
 ### Challenge exercise
 
-Add an input variable with a validation block and fail the plan with an illegal value, then fix it.
+Create `pin-report.sh`:
+
+{% raw %}
+```bash
+#!/usr/bin/env bash
+set -euo pipefail
+cd ~/rebash-terraform/module-02
+grep -q 'required_version' versions.tf
+grep -q 'kreuzwerker/docker' versions.tf
+test -s .terraform.lock.hcl
+terraform version -json | python3 -c "
+import json, sys
+v = json.load(sys.stdin)['terraform_version']
+parts = v.split('.')
+assert int(parts[0]) >= 1
+print('pinned toolchain OK', v)
+" | tee pin-report.txt
+docker network inspect rebash-module-02-net --format '{{.Name}}' | grep -q rebash-module-02-net
+```
+{% endraw %}
+
+Run:
+
+```bash
+chmod +x ~/rebash-terraform/module-02/pin-report.sh
+~/rebash-terraform/module-02/pin-report.sh
+```
+
+**Expected output:** `pin-report.txt` contains `pinned toolchain OK` with your version string; network inspect succeeds.
 
 ### Learning outcomes
 
-- Completed a reviewable plan/apply cycle
-- Proved outputs/files exist
-- Destroyed lab state
+- You verified CLI version and captured JSON evidence for automation
+- You pinned Terraform and the Docker provider using Registry `source` addresses
+- You understand providers download at `init` into `.terraform/providers/`
+- You applied real infrastructure and proved it with the Docker CLI
 
 ### Cleanup
 
 ```bash
+cd ~/rebash-terraform/module-02
 terraform destroy -auto-approve
-rm -rf .terraform tfplan 2>/dev/null || true
+rm -f terraform-version.txt terraform-version.json cli-evidence.txt \
+  init-output.txt provider-files.txt providers-tree.txt apply-output.txt \
+  docker-net.txt provider-evidence.txt pin-report.txt
+rm -rf .terraform .terraform.lock.hcl terraform.tfstate terraform.tfstate.backup
 ```
 
 ## Validation
 
-
-
-
-
-
-
-- [ ] Lab commands run under `~/rebash-terraform/module-02/`
-- [ ] You can explain each Theory section in your own words
-- [ ] You used modern tooling where it applies to this topic
-- [ ] You can describe one production failure mode for this topic
+- [ ] Completed lab under `~/rebash-terraform/module-02` with provider path and Docker network evidence
+- [ ] Can explain difference between CLI install and `terraform init`
+- [ ] Used `terraform version`, `fmt`, `init`, and `apply` successfully
+- [ ] Can describe one production failure mode (e.g. missing lock file in CI)
 
 ## Code Walkthrough
 
-
-
-
-
-
-
-Production practice for **Installing Terraform and the CLI Workflow** always combines:
-
-1. Inspect before you change (status, plan, logs, dry-run)
-2. Prefer reversible, documented changes (Git, IaC, drop-ins, version pins)
-3. Capture evidence (command output, pipeline logs) for handovers
-4. Prefer current tools and APIs over legacy shortcuts
-5. Least privilege — escalate credentials only when required
-
-Keep runbooks short enough to follow under pressure. Automate checks; keep humans for judgement.
+1. **Pin before init** — `required_providers` belongs in Git before anyone runs init locally.
+2. **Commit lock file** — `.terraform.lock.hcl` prevents silent provider upgrades across laptops and CI.
+3. **Evidence scripts** — onboarding checklists should be executable (`install-check.sh`), not PDFs.
+4. **Separate CLI from plugins** — troubleshooting “provider not found” starts with `init`, not reinstalling OS packages.
+5. **Match CI image** — pipeline Terraform version must satisfy every module’s `required_version`.
 
 ## Security Considerations
 
-
-
-
-
-
-
-- Treat credentials and tokens for terraform as privileged — never commit them
-- Prefer short-lived auth (OIDC, roles, SSO) over long-lived keys
-- Validate blast radius before apply/deploy/delete operations
-- Restrict who can approve production changes
-- Collect audit logs; limit who can read sensitive traces
+- Download Terraform only from [HashiCorp releases](https://releases.hashicorp.com/terraform/) or signed package repos; verify checksums.
+- Treat `.terraform/` as build output — it can be recreated; do not share it as a secret store.
+- Lock files include provider checksums — commit them to detect supply-chain tampering on init.
+- Restrict write access to CI roles that run `init -upgrade` — upgrades change lock files organisation-wide.
+- Do not embed cloud credentials in install scripts; providers authenticate separately (Module 5).
 
 ## Common Mistakes
 
+!!! warning "Assuming terraform install includes AWS"
+    The CLI alone cannot plan AWS resources until `init` downloads `hashicorp/aws`.  
+    **Fix:** Document “clone repo → tfenv use → terraform init” in README.
 
+!!! warning "Gitignoring the lock file"
+    Without `.terraform.lock.hcl`, teammates resolve different provider builds.  
+    **Fix:** Commit lock file; use `-upgrade` intentionally in upgrade PRs.
 
+!!! warning "Floating `required_version = ">= 1.0"`"
+    Too-wide constraints hide CI drift until a breaking release.  
+    **Fix:** Upper bound (`< 2.0.0`) plus documented upgrade cadence.
 
-
-
-
-!!! warning "Installing Terraform once and never pinning — plans diverge across machines."
-    Validate assumptions against the Theory section and official docs before changing production.
-
-!!! warning "Expecting providers to appear after CLI install without a configuration and `init`."
-    Lab shortcuts (open security groups, admin roles, skip approvals) must not ship unchanged.
-
-!!! warning "Changing production without a rollback path"
-    Always know how to revert (previous artefact, prior release, state rollback, DNS failback).
+!!! warning "Running init as root habitually"
+    Init as root creates root-owned `.terraform/` — friction for normal users.  
+    **Fix:** Run as your deployment user; fix ownership if needed.
 
 ## Best Practices
 
-
-
-
-
-
-
-- Encode Installing Terraform and the CLI Workflow changes as code and review them in pull requests
-- Pin versions (images, modules, actions, provider plugins)
-- Separate environments with clear promotion gates
-- Alert on symptoms with runbooks attached
-- Destroy lab resources; tag everything with owner and expiry where possible
+- Add `.terraform/` to `.gitignore`; never ignore `.terraform.lock.hcl`.
+- Document one blessed install path (tfenv + `.terraform-version`) in team handbook.
+- Run `terraform fmt -check -recursive` in CI on every pull request.
+- Pin provider versions with pessimistic constraint operator (`~> 5.0`) not bare `>=`.
+- Mirror Registry in air-gapped environments rather than disabling verification.
 
 ## Troubleshooting
 
-
-
-
-
-
-
 | Symptom | Likely cause | Fix |
 |---------|--------------|-----|
-| Auth / permission denied | Wrong identity, policy, or scope | Check caller identity, roles, and least-privilege policies |
-| Timeout / no route | Network, DNS, security group, or endpoint | Trace path, DNS, and allow-lists before retrying |
-| Drift / unexpected plan | Manual change or wrong state/workspace | Reconcile desired vs actual; avoid click-ops on managed resources |
-| Pipeline/job red | Flaky step, cache, or missing secret | Read failing step logs; bisect recent workflow/config changes |
-| Cost spike | Idle load balancer, NAT, oversized compute | Inventory billable resources; stop/delete labs promptly |
+| Wrong Terraform version active | Multiple installs on `PATH` | `which -a terraform`; tfenv/asdf rehash |
+| Init slow every time | Plugin cache disabled or cleaned | Set `TF_PLUGIN_CACHE_DIR` consistently in team docs |
+| `Provider registry unreachable` | Proxy or DNS | Export proxy vars; test `curl registry.terraform.io` |
+| Lock file merge conflict | Two branches upgraded providers | Pick one side; run `terraform init` locally; commit resolved lock |
+| M1/M2 Mac vs Linux CI checksum mismatch | Cross-platform team | Commit lock with multiple platform hashes (Terraform adds them on init per OS) |
 
 ## Summary
 
-
-
-
-
-
-
-**Installing Terraform and the CLI Workflow** is essential for Cloud and DevOps engineers working with terraform. Practise the lab until the inspection and change path is muscle memory, then continue the track.
+Installing Terraform means pinning the CLI and understanding that **providers arrive at init** from the Registry into `.terraform/providers/`. You verified versions, declared `required_providers` for `local` and `null`, initialised the project, and captured plugin path evidence. Next, run the full daily loop: **Terraform Workflow: Init, Plan, and Apply**.
 
 ## Interview Questions
 
+**1. What is the difference between installing Terraform and running terraform init?**
 
+??? success "Reveal answer"
+    **Installing Terraform** places the core CLI binary on the system. **`terraform init`** prepares a **specific project**: downloads **provider plugins** and modules per `required_providers`, configures the **backend**, and writes **`.terraform.lock.hcl`**. You can have Terraform installed globally while a new clone still needs `init` before plan/apply.
 
+**2. Where do provider plugins live, and when are they downloaded?**
 
+??? success "Reveal answer"
+    Providers download during **`terraform init`** (or init with `-upgrade`) into **`.terraform/providers/`**, organised by registry hostname, namespace, name, and version. They are per-project unless using a shared plugin cache. The CLI loads them at plan/apply time based on configuration.
 
+**3. Why commit .terraform.lock.hcl but gitignore .terraform/?**
 
-1. What does `terraform init` download and create?
-2. Why separate plan and apply in team workflows?
-3. What does `terraform validate` check versus `terraform plan`?
-4. Why must destroy be treated as carefully as apply in shared environments?
-5. What files should normally be committed versus ignored?
+??? success "Reveal answer"
+    **`.terraform.lock.hcl`** records exact provider versions and checksums for reproducible init across laptops and CI — small, reviewable, security-relevant. **`.terraform/`** is a regenerable cache of plugins and module downloads — large and machine-local. Losing lock file causes inconsistent provider resolution; losing `.terraform/` is fixed by re-init.
 
-!!! tip "Sample answer — question 2"
-    Plan shows the proposed changeset without mutating (unless using certain targets). Applying a saved plan ensures CI applies exactly what was reviewed, reducing surprise drift between plan and apply.
+**4. How would you manage multiple Terraform versions across projects?**
 
-!!! tip "Sample answer — question 4"
-    Destroy removes managed resources and can delete data. In shared environments it needs the same approvals, state locking awareness, and backups as any production change.
+??? success "Reveal answer"
+    Use **tfenv** (`.terraform-version` per repo) or **asdf** (`.tool-versions`), or CI container images pinned per pipeline. Each root module’s **`required_version`** must accept the active CLI. Document upgrade process: bump pin, run full plan in non-prod, update CI image, communicate breaking changes from release notes.
+
+**5. What does the Terraform Registry provide?**
+
+??? success "Reveal answer"
+    The public **Terraform Registry** hosts **provider** and **module** packages with versioned releases, documentation, and download URLs used by init. `required_providers` **`source`** addresses (e.g. `hashicorp/aws`) resolve here by default. Private registries use custom hostnames in `source` with the same init flow.
+
+**6. Explain required_version vs required_providers version constraints.**
+
+??? success "Reveal answer"
+    **`required_version`** constrains the **Terraform CLI** binary. **`required_providers`** constrains each **plugin** (e.g. AWS provider 5.x). Both use constraint syntax (`>=`, `~>`, `=`). Init fails if CLI or resolved provider violates constraints. They solve different problems — never confuse CLI 1.9 with AWS provider 5.40.
+
+**7. A CI job fails with “terraform validate” before init. Is that valid?**
+
+??? success "Reveal answer"
+    **`terraform validate`** needs provider schemas loaded — typically after **`init`**. CI should order: checkout → install CLI → **`terraform init -backend=false`** (for pure config validation) → **`fmt -check`** → **`validate`**. Skipping init causes missing provider schema errors. Backend=false skips remote state setup when only syntax is tested.
+
+**8. How do you verify a Terraform zip download is trustworthy?**
+
+??? success "Reveal answer"
+    Download from **releases.hashicorp.com**, compare **SHA256 checksums** published alongside the release, and optionally verify **GPG signatures** using HashiCorp’s signing key. Never use unofficial mirrors in production. Package repos (apt/yum) should use HashiCorp’s signed repository instructions.
 
 ## Related Tutorials
 
-
-
-
-
-
-
-- [Course overview](index.md)
-- [Terraform Workflow: Init, Plan, Apply](terraform-workflow-init-plan-apply.md)
+- [Terraform course index](index.md)
+- **Previous:** [Introduction to Terraform and IaC](introduction-to-terraform-and-iac.md)
+- **Next:** [Terraform Workflow: Init, Plan, and Apply](terraform-workflow-init-plan-apply.md)
+- [Providers and the Terraform Plugin Model](providers-and-the-terraform-plugin-model.md)
 
 ## References
 
-
-
-
-
-
-
-- [Install Terraform](https://developer.hashicorp.com/terraform/install)  
+- [Install Terraform](https://developer.hashicorp.com/terraform/install)
+- [Terraform CLI commands](https://developer.hashicorp.com/terraform/cli/commands)
+- [Provider requirements](https://developer.hashicorp.com/terraform/language/providers/requirements)
+- [Dependency lock file](https://developer.hashicorp.com/terraform/language/files/dependency-lock)
 - [Terraform Registry](https://registry.terraform.io/)
+- [REBASH Terraform course index](index.md)

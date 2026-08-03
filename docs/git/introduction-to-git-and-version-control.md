@@ -1,8 +1,8 @@
 ---
 title: "Introduction to Git and Version Control"
-description: "Understand version control for DevOps, local vs centralised vs distributed VCS, why Git dominates IaC and CI/CD, and core Git architecture vocabulary."
+description: "Define version control for DevOps, compare local, centralised, and distributed VCS models, and map repository, commit, branch, remote, and working tree before you install Git."
 difficulty: beginner
-estimated_time: "35–50 min"
+estimated_time: "45–60 min"
 technology: git
 category: git
 module: "Module 1 · Version Control Fundamentals"
@@ -12,6 +12,7 @@ career_paths:
   - cloud-engineer
   - platform-engineer
   - site-reliability-engineer
+  - devsecops-engineer
 skills:
   - git
   - version-control
@@ -22,338 +23,306 @@ next:
 related:
   - linux/index
   - git/git-installation-and-configuration
-labs: []
-projects: []
-interview: interview/git
-certifications:
-  - GitHub Foundations
 tags:
   - git
   - version-control
   - devops
 author: Shaik Basha
-last_updated: "2026-07-31"
+last_updated: "2026-08-03"
 comments: false
 ---
-
 
 # Introduction to Git and Version Control
 
 ## Overview
 
+Incidents ask “what changed?” Compliance asks “who approved?” Delivery asks “can we roll this back?” **Version control** answers those questions with a reviewable history of files — not a folder of `final_v3_really.zip` on someone’s laptop.
 
+**Git** is the distributed Version Control System (VCS) that dominates Cloud and DevOps work: Infrastructure as Code (IaC), application source, pipeline definitions, and GitOps desired state all live as commits. This course is **Git & GitHub for Cloud & DevOps Engineers** — collaboration, recovery, and production workflows, not Git as trivia.
 
-
-
-
-Explain why version control is the system of record for DevOps, compare VCS models, and use Git vocabulary (repo, commit, branch, remote) correctly before installing tools.
-
-Incidents ask “what changed?” Compliance asks “who approved?” Git answers both. This course is **Git & GitHub for Cloud & DevOps Engineers** — workflows for IaC, GitOps, and CI/CD, not Git as trivia.
-
-This is a core tutorial in **Module 1 · Version Control Fundamentals** of the REBASH Academy **Git for Cloud & DevOps Engineers** series — written for Cloud, DevOps, Platform, and SRE engineers.
+This is **Tutorial 1** in **Module 1: Version Control Fundamentals** of the REBASH Academy **Git & GitHub for Cloud & DevOps Engineers** series — written for Cloud, DevOps, Platform, and Site Reliability Engineering (SRE) engineers. By the end you will compare VCS models, use core Git vocabulary correctly, and leave evidence of a change timeline with and without Git.
 
 ## Prerequisites
 
-
-
-
-
-
-### Required
-
-- [Linux Fundamentals](../linux/index.md)
-- Comfort with a terminal
+- [Linux Fundamentals](../linux/index.md) — shell, files, and paths
+- Comfort with a terminal (macOS, Linux, or Windows Subsystem for Linux (WSL))
+- No GitHub account required for this tutorial
 
 ## Learning Objectives
 
-
-
-
-
-
 By the end of this tutorial, you will be able to:
 
-- [ ] State problems VCS solves for ops teams  
-- [ ] Compare local, centralised, and distributed VCS  
-- [ ] Explain why Git fits cloud-native delivery  
-- [ ] Define repository, commit, branch, remote, working tree  
-- [ ] Sketch the working → staging → commit → remote flow
+- [ ] State the problems version control solves for infrastructure and delivery teams
+- [ ] Compare local, centralised, and distributed VCS models
+- [ ] Explain why Git fits Cloud-native and IaC workflows
+- [ ] Define repository, commit, branch, remote, working tree, and staging area
+- [ ] Produce a lab evidence pack under `~/rebash-git/module-01` that contrasts “folder copy” history with Git commits
 
 ## Architecture
 
+Edits move from the working tree through the staging area into commits; branches point at commits; remotes share those objects with teammates and CI.
 
-
-
-
-
-Daily Git flow from edits to remotes and pipelines:
-
-![Git workflow](../assets/excalidraw/git-workflow.svg)
+![Git workflow — working tree, staging, commit, and remote](../assets/excalidraw/git-workflow.svg)
 
 ## Theory
 
+### What it is
 
+A **Version Control System (VCS)** records snapshots of a project over time, who made each change, and how to reconstruct earlier states. **Local** VCS tools keep history on one machine. **Centralised** VCS (for example older Subversion-style workflows) require a shared server for almost every operation. **Distributed** VCS — Git — gives every clone a full object database so you can commit, branch, and inspect history offline, then synchronise with remotes when ready.
 
+**Git** stores content-addressed objects (blobs, trees, commits) and moves lightweight pointers called **branches**. A **repository** is that database plus refs. The **working tree** is the checked-out files you edit. The **staging area** (index) is what the next commit will contain. A **remote** is another repository URL (often on GitHub) you fetch from and push to.
 
+### Why it matters
 
-
-### What
-
-A **version control system (VCS)** records how files change over time so people can collaborate, audit decisions, and roll back mistakes. Git is a **distributed** VCS: every clone holds a full repository history, not just the latest checkout. For Cloud and DevOps work, that history covers application code **and** infrastructure definitions — Terraform, Kubernetes manifests, Ansible, pipeline YAML, and policy-as-code.
-
-### Why
-
-Without version control, change management collapses into tickets, shared folders, and “who last edited prod?”. Git gives you an append-only trail of snapshots, cheap branching for parallel work, and remotes that coordinate teams. Hosting platforms (GitHub, GitLab, Bitbucket) add pull requests, CI triggers, and access control on top of that core. Treat Git as the **system of record** for anything you expect to deploy or review.
+Without Git, IaC drift becomes archaeology: nobody knows which Terraform change broke production. With Git, pull requests encode peer review, CI attaches status to commits, and `git revert` or a previous tag becomes a controlled rollback path. Platform and SRE teams treat the repository as the system of record — the same way they treat monitoring as the system of observation.
 
 ### How it works
 
-You edit files in the **working tree**. Interesting changes move into the **staging area** (index) with `git add`, then become an immutable **commit** — a snapshot plus metadata (author, message, parent). Local commits sit on a **branch** (a movable pointer). `git push` publishes commits to a **remote** such as `origin`. Colleagues `fetch` or `pull` those objects into their clones. Offline work is normal; sync happens when remotes are reachable.
+Mental model: **edit → stage → commit → (optional) push → review/merge on remote**.
 
-| Model | Idea | Example |
-|-------|------|---------|
-| Local | History on one machine | Early RCS-style tools |
-| Centralised | One server is authority | Subversion (SVN) |
-| Distributed | Every clone is a full repo | **Git** |
+1. You change files in the working tree.
+2. `git add` records selected changes in the index.
+3. `git commit` freezes the index as a new commit on the current branch.
+4. `git push` sends new objects and updates the remote branch tip.
+5. Teammates `git fetch` / `git pull` to obtain those commits; CI runs against the same SHAs.
 
-### Key concepts
+Branches let parallel work share a common history without overwriting each other. Remotes do not replace local commits — they publish them.
+
+### Key concepts and comparisons
+
+| Model | Strength | Weakness for DevOps |
+|-------|----------|---------------------|
+| Local VCS | Simple history on one disk | No collaboration or CI source of truth |
+| Centralised VCS | One server of record | Offline work and branching friction |
+| Distributed (Git) | Full history per clone; cheap branches | Requires discipline on remotes and shared history |
 
 | Term | Meaning |
 |------|---------|
-| Repository | Project history under `.git` |
-| Working tree | Files you edit |
-| Staging (index) | Snapshot prepared for the next commit |
-| Commit | Immutable snapshot + metadata |
+| Repository | `.git` database + working tree |
+| Commit | Immutable snapshot + metadata (author, message, parents) |
 | Branch | Movable pointer to a commit |
-| Remote | Named URL of another repository |
-| HEAD | Current checkout tip |
-
-Terraform modules, Kubernetes manifests, GitHub Actions workflows, and policy all live here. Treat `main` as production-intent unless your branching model says otherwise.
+| Remote | Named URL of another repo (`origin`) |
+| HEAD | The commit you currently have checked out |
 
 ### Common pitfalls
 
-- Treating Git as “backup only” and skipping meaningful commit messages  
-- Editing production by hand instead of merging reviewed commits  
-- Confusing the working tree with the repository (`.git`)  
-- Assuming a clone without a remote is “not real Git” — remotes are optional until you collaborate
+- Treating Git as “backup” and writing useless commit messages.
+- Editing production by hand instead of merging reviewed commits.
+- Assuming a private repo makes secrets safe to commit.
+- Confusing “files on disk” with “what the next commit contains” (always check `git status`).
 
 ## Hands-on Lab
 
-
-
 ### Objective
 
-Complete a real Git workflow for **Introduction to Git and Version Control** with commits you can inspect and recover.
+Contrast an ad-hoc folder timeline with a Git commit timeline for the same infrastructure note, and archive `git log` / `git status` evidence proving two commits on a clean tree.
 
 ### Prerequisites
 
-- Git 2.x installed
+- Git 2.x available as `git` (install comes next module if missing — this lab only needs `git` for Task 2–3)
+- A shell and write access under your home directory
 
 ### Lab environment
 
 Workspace: `~/rebash-git/module-01`
 
-Local Git repository only (no required remote).
-
 ```bash
 mkdir -p ~/rebash-git/module-01 && cd ~/rebash-git/module-01
+set -euo pipefail
 ```
 
 ### Real-world scenario
 
-A delivery team is standardising **Introduction to Git and Version Control**. You prototype the workflow in a throwaway repo and capture log evidence for the playbook.
+A platform team still shares “prod-firewall-rules-FINAL.docx” over chat. You must show why a Git-backed change log is safer for audit and rollback before the team standardises on GitHub.
 
 ### Step-by-step tasks
 
-#### Task 1 – Initialise a repository and first commit
-
-Every production change starts as a commit with clear identity config.
+#### Task 1 – Simulate change history without Git
 
 ```bash
+cd ~/rebash-git/module-01
+set -euo pipefail
+
+mkdir -p without-git
+cd without-git
+printf 'allow 10.0.0.0/8 to 443\n' > firewall-notes.txt
+cp firewall-notes.txt firewall-notes-v1.txt
+printf 'allow 10.0.0.0/8 to 443\nallow 10.1.0.0/16 to 22\n' > firewall-notes.txt
+cp firewall-notes.txt firewall-notes-v2.txt
+ls -1 | tee ../without-git-listing.txt
+diff -u firewall-notes-v1.txt firewall-notes-v2.txt | tee ../without-git-diff.txt || true
+cd ..
+```
+
+**Expected output:** Multiple copies and a diff file — history is manual and easy to lose.
+
+#### Task 2 – Same change as Git commits
+
+```bash
+cd ~/rebash-git/module-01
+set -euo pipefail
+
+rm -rf with-git
+mkdir with-git && cd with-git
 git init -b main
 git config user.email 'lab@rebash.local'
 git config user.name 'REBASH Lab'
-echo '# lab' > README.md
-git add README.md
-git commit -m 'Initial commit'
-git log --oneline | tee log.txt
+printf 'allow 10.0.0.0/8 to 443\n' > firewall-notes.txt
+git add firewall-notes.txt
+git commit -m 'feat: baseline HTTPS allow for RFC1918'
+printf 'allow 10.0.0.0/8 to 443\nallow 10.1.0.0/16 to 22\n' > firewall-notes.txt
+git add firewall-notes.txt
+git commit -m 'feat: allow SSH from 10.1.0.0/16'
+git log --oneline --decorate | tee ../with-git-log.txt
+git status | tee ../with-git-status.txt
+grep -q 'baseline HTTPS' ../with-git-log.txt
+grep -q 'allow SSH' ../with-git-log.txt
+grep -q 'nothing to commit, working tree clean' ../with-git-status.txt
+test "$(git rev-list --count HEAD)" -eq 2
+cd ..
+tar -czf module-01-evidence.tgz without-git-listing.txt without-git-diff.txt with-git-log.txt with-git-status.txt
+ls -l module-01-evidence.tgz | tee evidence.txt
 ```
 
-**Expected output:** log.txt shows the initial commit on `main`.
-
-#### Task 2 – Inspect status and diff discipline
-
-Clean working trees prevent accidental commits of secrets.
-
-```bash
-echo 'work' > work.txt
-git status
-git add work.txt
-git commit -m 'Add work.txt'
-git show --stat HEAD | tee show.txt
-```
-
-**Expected output:** show.txt lists work.txt in the commit.
+**Expected output:** Two commits on `main`; working tree clean; evidence tarball with log and status files.
 
 ### Validation steps
 
-- [ ] Repository has at least two commits or a merge as designed
-- [ ] log/graph evidence files exist
+- [ ] Without-Git listing shows versioned copies
+- [ ] `with-git-log.txt` shows two meaningful commits
+- [ ] `with-git-status.txt` reports a clean working tree
+- [ ] `module-01-evidence.tgz` contains log and status evidence
 
 ### Common errors and fixes
 
 | Error | Cause | Fix |
 |-------|-------|-----|
-| Author identity unknown | Missing user.name/email | Set local `git config user.*` as in Task 1 |
-| merge conflict | Overlapping edits | Edit file, `git add`, complete merge |
-| detached HEAD | Checked out a raw SHA | `git switch -c` a branch before committing |
+| `git: command not found` | Git not installed | Install Git (next tutorial) then re-run Task 2 |
+| Author identity unknown | Missing user.name/email | Use the `git config` lines in Task 2 |
+| Empty log | Commit failed | Re-run `git status` and commit again |
 
 ### Challenge exercise
 
-Use `git reflog` to recover a commit after a hard reset on a private branch.
+Add a third commit that *removes* the SSH allow line and use `git log -p -1` to prove the removal is recorded as a reversible change.
 
 ### Learning outcomes
 
-- Performed real Git operations
-- Left auditable history
-- Understood recovery basics
+- Contrasted folder copy history with Git commits
+- Used staging and commit messages for an ops-style change
+- Captured `git log` and `git status` evidence for audit comparison
 
 ### Cleanup
 
 ```bash
-# Safe local repo — delete the lab directory when finished:
-# rm -rf "$(pwd)"
+# Keep evidence; remove when finished:
+# rm -rf ~/rebash-git/module-01
+ls ~/rebash-git/module-01
 ```
 
 ## Validation
 
-
-
-
-
-
-- [ ] Lab commands run under `~/rebash-git/module-01/`
-- [ ] You can explain each Theory section in your own words
-- [ ] You used modern tooling where it applies to this topic
-- [ ] You can describe one production failure mode for this topic
+- [ ] Lab completed under `~/rebash-git/module-01/`
+- [ ] You can explain local vs centralised vs distributed VCS
+- [ ] You can define working tree, index, commit, branch, remote
+- [ ] You can name one production failure mode fixed by Git history
 
 ## Code Walkthrough
 
-
-
-
-
-
-Production practice for **Introduction to Git and Version Control** always combines:
-
-1. Inspect before you change (status, plan, logs, dry-run)
-2. Prefer reversible, documented changes (Git, IaC, drop-ins, version pins)
-3. Capture evidence (command output, pipeline logs) for handovers
-4. Prefer current tools and APIs over legacy shortcuts
-5. Least privilege — escalate credentials only when required
-
-Keep runbooks short enough to follow under pressure. Automate checks; keep humans for judgement.
+1. **Ask what changed** — prefer `git log` / PR history over chat archaeology.
+2. **Stage deliberately** — commits should be reviewable units of work.
+3. **Message the why** — future incident responders read messages under pressure.
+4. **Publish via remotes** — local commits are not a backup until they leave your laptop.
+5. **Never commit secrets** — private remotes still leak through forks, clones, and CI logs.
 
 ## Security Considerations
 
-
-
-
-
-
-- Treat credentials and tokens for git as privileged — never commit them
-- Prefer short-lived auth (OIDC, roles, SSO) over long-lived keys
-- Validate blast radius before apply/deploy/delete operations
-- Restrict who can approve production changes
-- Collect audit logs; limit who can read sensitive traces
+- Assume every commit may be cloned widely — no passwords, tokens, or keys in history.
+- Prefer short-lived credentials for remotes (SSH keys, SSO, OIDC) over shared passwords.
+- Treat “force push to main” as a privileged, rarely justified action.
+- Require review for production IaC paths (later: branch protection).
+- Keep auditability: meaningful authors and messages, not anonymous `root` commits on shared repos.
 
 ## Common Mistakes
 
+!!! warning "Using zip copies as version control"
+    You lose authorship, atomic undo, and CI hooks. **Fix:** one Git repo with commits per change.
 
+!!! warning "Empty commit messages"
+    History becomes noise. **Fix:** imperative summary plus why (for example `fix: pin provider to stop plan drift`).
 
-
-
-
-!!! warning "Treating Git as “backup only” and skipping meaningful commit messages  "
-    Validate assumptions against the Theory section and official docs before changing production.
-
-!!! warning "Editing production by hand instead of merging reviewed commits  "
-    Lab shortcuts (open security groups, admin roles, skip approvals) must not ship unchanged.
-
-!!! warning "Changing production without a rollback path"
-    Always know how to revert (previous artefact, prior release, state rollback, DNS failback).
+!!! warning "Believing private GitHub means secrets are safe"
+    Clones, forks, and logs still expose them. **Fix:** never stage secrets; use a secret manager.
 
 ## Best Practices
 
-
-
-
-
-
-- Encode Introduction to Git and Version Control changes as code and review them in pull requests
-- Pin versions (images, modules, actions, provider plugins)
-- Separate environments with clear promotion gates
-- Alert on symptoms with runbooks attached
-- Destroy lab resources; tag everything with owner and expiry where possible
+- One logical change per commit when practical.
+- Keep repositories focused (app, modules, or platform concern).
+- Agree vocabulary before arguing about branching strategies.
+- Record decisions in commits and pull requests, not only chat.
+- Move next to the object model so recovery commands make sense.
 
 ## Troubleshooting
 
-
-
-
-
-
 | Symptom | Likely cause | Fix |
 |---------|--------------|-----|
-| Auth / permission denied | Wrong identity, policy, or scope | Check caller identity, roles, and least-privilege policies |
-| Timeout / no route | Network, DNS, security group, or endpoint | Trace path, DNS, and allow-lists before retrying |
-| Drift / unexpected plan | Manual change or wrong state/workspace | Reconcile desired vs actual; avoid click-ops on managed resources |
-| Pipeline/job red | Flaky step, cache, or missing secret | Read failing step logs; bisect recent workflow/config changes |
-| Cost spike | Idle load balancer, NAT, oversized compute | Inventory billable resources; stop/delete labs promptly |
+| “Did we deploy that?” | No commit/tag linkage | Tag releases; store deploy SHA in release notes |
+| Two “final” folders disagree | Manual copy drift | Single Git source of truth |
+| Cannot explain a prod change | Missing messages/authors | Enforce identity config and reviews |
+| Fear of changing a file | No rollback story | Learn revert/restore in later modules |
 
 ## Summary
 
-
-
-
-
-
-- Git is the DevOps system of record  
-- Distributed clones enable offline work and collaboration  
-- Next: object model, then install
+Version control is the DevOps system of record. Git’s distributed model fits Cloud delivery because every engineer and every pipeline shares the same commit SHAs. Next: [Understanding the Git Object Model](understanding-the-git-object-model.md).
 
 ## Interview Questions
 
+**1. What problem does version control solve for infrastructure teams?**
 
+??? success "Reveal answer"
+    It records what changed, who changed it, and how to reconstruct or roll back earlier states — essential for IaC audit, incident response, and collaboration.
 
+**2. How does distributed VCS differ from centralised VCS?**
 
-1. What problem does version control solve for infrastructure teams?
-2. Working tree dirty unexpectedly — what commands do you run first?
-3. Difference between distributed VCS and centralised VCS?
-4. Why commit small, reviewable changes in DevOps repos?
-5. What should never be committed even in a private repo?
+??? success "Reveal answer"
+    Distributed systems like Git give each clone a full history so you can commit and branch offline; centralised systems typically need the server for most history operations.
 
-!!! tip "Sample answer — question 2"
-    Run git status and git diff to see whether changes are staged, unstaged, or untracked.
+**3. What is the staging area (index)?**
 
-!!! tip "Sample answer — question 4"
-    Exclude secrets, state files, and credentials with .gitignore and secret scanning.
+??? success "Reveal answer"
+    The index is the set of changes prepared for the next commit. It lets you craft a coherent snapshot instead of committing every dirty file on disk.
+
+**4. Working tree looks dirty — what do you run first?**
+
+??? success "Reveal answer"
+    `git status` and `git diff` (and `git diff --staged`) to see untracked, unstaged, and staged changes before adding or committing.
+
+**5. Why prefer small, reviewable commits in DevOps repos?**
+
+??? success "Reveal answer"
+    Reviewers can reason about blast radius, CI failures are easier to bisect, and reverts stay precise instead of undoing unrelated work.
+
+**6. What should never be committed even in a private repository?**
+
+??? success "Reveal answer"
+    Secrets, credentials, private keys, and often terraform state or large binaries — private remotes still get cloned, forked, and logged.
+
+**7. What is a branch in Git?**
+
+??? success "Reveal answer"
+    A movable pointer to a commit. Creating a branch is cheap because it does not copy the whole project tree.
+
+**8. Why is Git a good fit for GitOps?**
+
+??? success "Reveal answer"
+    Desired state is stored as commits that controllers can pull, verify, and reconcile — the same history humans review in pull requests.
 
 ## Related Tutorials
 
-
-
-
-
-
-- [Course overview](index.md)
-- [Understanding the Git Object Model](understanding-the-git-object-model.md)  
+- [Understanding the Git Object Model](understanding-the-git-object-model.md)
 - [Git Installation and Configuration](git-installation-and-configuration.md)
+- [Course overview](index.md)
 
 ## References
 
-
-
-
-
-
-- [Pro Git — Getting Started](https://git-scm.com/book/en/v2/Getting-Started-About-Version-Control)
+- [Pro Git — About Version Control](https://git-scm.com/book/en/v2/Getting-Started-About-Version-Control)
+- [Git documentation](https://git-scm.com/doc)

@@ -28,7 +28,7 @@ tags:
   - kubernetes
   - helm
 author: Shaik Basha
-last_updated: "2026-07-31"
+last_updated: "2026-08-03"
 comments: false
 ---
 
@@ -151,87 +151,174 @@ Prefer pinned chart versions in production; floating `latest` charts are supply-
 
 ## Hands-on Lab
 
-
-
 ### Objective
 
-Build and verify a working Kubernetes solution for **Helm Package Management** that you can inspect, prove, and tear down safely.
+Author a minimal Helm chart (`Chart.yaml`, `values.yaml`, `templates/deployment.yaml`), validate it with `helm lint` and `helm template`, install to a **kind** cluster, and prove Pods become Ready.
 
 ### Prerequisites
 
-- kubectl configured against a lab cluster (kind/minikube preferred)
-- Cluster-admin or namespace-create rights in the lab cluster
+- **kind** cluster running (`kubectl cluster-info`)
+- Helm 3.x installed (`helm version`)
+- kubectl configured against the kind context
 - Writable workspace at `~/rebash-k8s/module-14`
 
 ### Lab environment
 
-Workspace: `~/rebash-k8s/module-14`
-
-Local kind/minikube or a dedicated sandbox cluster. Never target a shared production API server.
+Workspace: `~/rebash-k8s/module-14` on your workstation with a disposable **kind** cluster.
 
 ```bash
-mkdir -p ~/rebash-k8s/module-14 && cd ~/rebash-k8s/module-14
+mkdir -p ~/rebash-k8s/module-14/rebash-web/templates && cd ~/rebash-k8s/module-14
+kubectl cluster-info | tee cluster-info.txt
+kubectl get nodes | tee nodes-ready.txt
+grep -q Ready nodes-ready.txt
 ```
 
 ### Real-world scenario
 
-Your platform team is rolling out **Helm Package Management** for a new microservice. You must apply the change in an isolated namespace, prove it works with kubectl, and leave evidence for the on-call handover.
+Your team packages internal microservices as Helm charts for GitOps. Before opening a pull request, you scaffold a minimal chart, lint it, render templates locally, and install into an isolated namespace on kind — then prove the release is healthy.
 
 ### Step-by-step tasks
 
-#### Task 1 – Apply a topic workload
+#### Task 1 – Chart metadata and values
 
-Create a namespace and a small Deployment to practise **What it is** against a live API.
+Create `rebash-web/Chart.yaml`:
 
-```bash
-kubectl create namespace rebash-lab --dry-run=client -o yaml | kubectl apply -f -
-kubectl create deployment topic --image=nginx:1.27-alpine -n rebash-lab
-kubectl rollout status deployment/topic -n rebash-lab
-kubectl get all -n rebash-lab
+```yaml
+apiVersion: v2
+name: rebash-web
+description: Minimal REBASH lab web chart
+type: application
+version: 0.1.0
+appVersion: "1.27.4"
 ```
 
-**Expected output:** Deployment Ready; Pods listed under the namespace.
+Create `rebash-web/values.yaml`:
 
-#### Task 2 – Inspect and gather evidence
-
-Production changes always leave an audit trail of describe/Events.
-
-```bash
-kubectl describe deploy topic -n rebash-lab | tee describe.txt
-kubectl get events -n rebash-lab --sort-by=.lastTimestamp | tail -n 15 | tee events.txt
+```yaml
+replicaCount: 1
+image:
+  repository: nginxinc/nginx-unprivileged
+  tag: "1.27-alpine"
+  pullPolicy: IfNotPresent
+service:
+  port: 8080
 ```
 
-**Expected output:** describe.txt and events.txt capture healthy Objects/Events.
+#### Task 2 – Deployment template
+
+Create `rebash-web/templates/deployment.yaml`:
+
+{% raw %}
+```yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "rebash-web.fullname" . }}
+  labels:
+    app.kubernetes.io/name: {{ include "rebash-web.name" . }}
+    app.kubernetes.io/instance: {{ .Release.Name }}
+spec:
+  replicas: {{ .Values.replicaCount }}
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: {{ include "rebash-web.name" . }}
+      app.kubernetes.io/instance: {{ .Release.Name }}
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: {{ include "rebash-web.name" . }}
+        app.kubernetes.io/instance: {{ .Release.Name }}
+    spec:
+      containers:
+        - name: web
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          ports:
+            - containerPort: {{ .Values.service.port }}
+```
+{% endraw %}
+
+Create `rebash-web/templates/_helpers.tpl`:
+
+{% raw %}
+```
+{{- define "rebash-web.name" -}}
+{{- default .Chart.Name .Values.nameOverride | trunc 63 | trimSuffix "-" }}
+{{- end }}
+
+{{- define "rebash-web.fullname" -}}
+{{- printf "%s-%s" .Release.Name .Chart.Name | trunc 63 | trimSuffix "-" }}
+{{- end }}
+```
+{% endraw %}
+
+#### Task 3 – Lint and render offline
+
+```bash
+cd ~/rebash-k8s/module-14
+helm lint rebash-web | tee helm-lint-m14.txt
+helm template rebash-web-demo rebash-web --namespace rebash-m14 | tee helm-template-m14.yaml
+grep -q 'kind: Deployment' helm-template-m14.yaml
+grep -q 'nginxinc/nginx-unprivileged:1.27-alpine' helm-template-m14.yaml
+```
+
+**Expected output:** `helm lint` reports 0 chart(s) failed; rendered YAML contains a Deployment with the pinned image.
+
+#### Task 4 – Install to kind and prove Ready Pods
+
+Create `namespace.yaml`:
+
+```yaml
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: rebash-m14
+```
+
+```bash
+cd ~/rebash-k8s/module-14
+kubectl apply -f namespace.yaml
+helm upgrade --install rebash-web-demo rebash-web -n rebash-m14 --wait --timeout 120s | tee helm-install-m14.txt
+kubectl get deploy,pods -n rebash-m14 | tee helm-release-m14.txt
+kubectl wait --for=condition=Ready pod -l app.kubernetes.io/instance=rebash-web-demo -n rebash-m14 --timeout=120s
+kubectl get pods -n rebash-m14 -o wide | tee pods-ready-m14.txt
+grep -q Running pods-ready-m14.txt
+```
+
+**Expected output:** Release installs; Pods reach Ready; `pods-ready-m14.txt` shows `Running`.
 
 ### Validation steps
 
-- [ ] Namespace `rebash-lab` contains the expected Ready objects
-- [ ] You can explain each Task command from the Theory section
-- [ ] Cleanup deletes the namespace without leftover workloads
+- [ ] Chart contains `Chart.yaml`, `values.yaml`, and templated Deployment
+- [ ] `helm lint` passes without errors
+- [ ] `helm template` renders valid Deployment YAML with pinned image
+- [ ] Release installs in namespace `rebash-m14` and Pods are Ready
 
 ### Common errors and fixes
 
 | Error | Cause | Fix |
 |-------|-------|-----|
-| ImagePullBackOff | Wrong tag or registry auth | Fix image reference; check pull secrets |
-| Pending Pod | Scheduling / quota / PVC | `kubectl describe pod` and read Events |
-| Empty Endpoints | Selector or readiness mismatch | Compare Service selector to Pod labels and Ready |
+| `helm lint` template undefined | Missing `_helpers.tpl` | Add helper templates for `fullname` and `name` |
+| Rendered YAML invalid | Indentation in template | Run `helm template` and validate with kubeconform if available |
+| Install fails watch timeout | Image pull or probes | `kubectl describe pod -n rebash-m14` |
+| MkDocs build breaks on Helm expressions | Unescaped templates | Wrap template fences in raw Jinja blocks in the tutorial |
 
 ### Challenge exercise
 
-Add a readinessProbe and a ResourceQuota to the namespace, then show that over-quota creates are rejected.
+Add a `Service` template exposing port 8080 and re-run `helm template`; verify Service selector labels match the Deployment pod template labels.
 
 ### Learning outcomes
 
-- Applied a real cluster change for Helm Package Management
-- Used describe/Events for verification
-- Destroyed lab resources cleanly
+- Scaffolded a minimal Helm chart with pinned image values
+- Validated charts with `helm lint` and `helm template`
+- Installed a release into an isolated namespace on kind
+- Proved Pods reached Ready before cleanup
 
 ### Cleanup
 
 ```bash
-kubectl delete namespace rebash-lab --ignore-not-found
-# Keep ~/rebash-kubernetes/ for later tutorials
+helm uninstall rebash-web-demo -n rebash-m14 2>/dev/null || true
+kubectl delete namespace rebash-m14 --ignore-not-found
 ```
 
 ## Validation

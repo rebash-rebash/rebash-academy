@@ -71,8 +71,9 @@ cd ~/rebash-lab-shell/monitor
 
 ### Task 1 — Implement `check-disk.sh`
 
+Create `check-disk.sh`:
+
 ```bash
-cat > check-disk.sh << 'EOF'
 #!/usr/bin/env bash
 set -euo pipefail
 THRESH="${1:-80}"
@@ -92,11 +93,16 @@ if (( alert )); then
 fi
 echo "RESULT status=ok metric=disk"
 exit 0
-EOF
+```
+
+Run:
+
+```bash
 chmod +x check-disk.sh
 ./check-disk.sh 80
 ./check-disk.sh 1 || true
 ```
+
 
 ### Task 2 — Document exit codes
 

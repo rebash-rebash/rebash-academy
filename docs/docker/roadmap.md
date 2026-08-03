@@ -9,6 +9,7 @@ category: docker
 tags:
   - docker
   - roadmap
+last_updated: "2026-08-03"
 ---
 
 # Docker — Learning Roadmap

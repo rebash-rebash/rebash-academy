@@ -1,8 +1,8 @@
 ---
 title: "Variables, Locals, and Outputs"
-description: "Define Terraform input variables with validation, load values via tfvars and TF_VAR_, use locals, and export outputs — including sensitive values."
+description: "Define Terraform input variables with validation, load values via tfvars and TF_VAR_, use locals for derived values, and export outputs — including sensitive values."
 difficulty: intermediate
-estimated_time: "40–55 min"
+estimated_time: "55–65 min"
 technology: terraform
 category: terraform
 module: "Module 7 · Variables & Outputs"
@@ -31,133 +31,154 @@ tags:
   - terraform
   - variables
   - outputs
+  - locals
 author: Shaik Basha
-last_updated: "2026-07-31"
+last_updated: "2026-08-03"
 comments: false
 ---
-
 
 # Variables, Locals, and Outputs
 
 ## Overview
 
+Hard-coded infrastructure names and sizes do not survive a second environment. **Input variables** parameterise modules at the boundary; **locals** hold computed values you do not want callers to set; **outputs** export results to humans, parent modules, and remote-state consumers.
 
+This tutorial covers typed **input variables**, **validation** blocks, **`.tfvars`** files, **`TF_VAR_` environment variables**, **locals**, **outputs**, and **sensitive** marking so secrets do not appear in logs. The lab builds a Docker container stack under `~/rebash-terraform/module-07` — real apply with `docker ps` proof, no cloud account required.
 
-
-
-
-
-Design clean module inputs and outputs: typed variables, validation, tfvars and `TF_VAR_`, locals for derived values, and sensitive outputs that do not leak in logs.
-
-**Variables** are the knobs at the module boundary. **Locals** hold computed values inside the module. **Outputs** export results to the CLI, parent modules, or remote state consumers. Prefer explicit types, descriptions, and validation over undocumented defaults.
-
-This is a core tutorial in **Module 7 · Variables & Outputs** of the REBASH Academy **Terraform for Cloud & DevOps Engineers** series — written for Cloud, DevOps, Platform, and SRE engineers.
+This is **Tutorial 7** in **Module 7: Variables & Outputs** of the REBASH Academy **Terraform for Cloud & DevOps Engineers** series — written for Cloud, DevOps, Platform, and SRE engineers who need clean module interfaces and safe output handling in production pipelines.
 
 ## Prerequisites
 
-
-
-
-
-
-
 - [Resources, Dependencies, and Meta-Arguments](resources-dependencies-and-meta-arguments.md)
+- [HCL Fundamentals](hcl-fundamentals-blocks-arguments-and-expressions.md)
+- Terraform CLI ≥ 1.5 installed locally
+- Completed Module 6 lab (`~/rebash-terraform/module-06`)
 
 ## Learning Objectives
 
-
-
-
-
-
-
 By the end of this tutorial, you will be able to:
 
-- [ ] Declare typed variables with `validation` blocks  
-- [ ] Load values via `.tfvars` and `TF_VAR_`  
-- [ ] Use locals for derived names without exposing them as inputs  
-- [ ] Mark sensitive outputs and confirm CLI redaction
+- [ ] Declare typed input variables with descriptions, defaults, and `validation` rules
+- [ ] Load values from `terraform.tfvars`, `-var`, and `TF_VAR_` environment variables
+- [ ] Use `locals` for derived resource names without exposing them as module inputs
+- [ ] Export outputs and mark sensitive values so the CLI redacts them in normal output
+- [ ] Explain variable precedence when debugging unexpected plan values
 
 ## Architecture
 
+Variables enter the root module from files, CLI flags, and environment; locals are computed inside the module; outputs leave the module boundary to the CLI or downstream stacks.
 
-
-
-
-
-
-This topic’s control points and relationships are shown below.
-
-![Terraform variables flow](../assets/excalidraw/terraform-variables-flow.svg)
+![Terraform variables, locals, and outputs flow](../assets/excalidraw/terraform-variables-flow.svg)
 
 ## Theory
 
-
-
-
-
-
-
 ### What it is
 
-Input variables are referenced as `var.name`. Declare `type`, `description`, optional `default`, and `validation` so bad values fail before any cloud API call. Values arrive from `-var` / `-var-file`, `*.auto.tfvars`, `terraform.tfvars`, `TF_VAR_<name>` environment variables, then defaults — pick one clear source per pipeline.
+**Input variables** (`variable` blocks) declare module inputs:
 
-**Locals** hold derived expressions (`local.name_prefix`). **Outputs** export values for humans and composition. Set `sensitive = true` on variables or outputs to redact CLI display — state may still store the value, so protect backends separately.
+```hcl
+variable "environment" {
+  type        = string
+  description = "Deployment tier: dev, staging, or prod"
+  default     = "dev"
+
+  validation {
+    condition     = contains(["dev", "staging", "prod"], var.environment)
+    error_message = "environment must be dev, staging, or prod."
+  }
+}
+```
+
+**Locals** (`locals` blocks) hold intermediate values — not settable from outside:
+
+```hcl
+locals {
+  name_prefix = "rebash-${var.environment}"
+  common_tags = {
+    environment = var.environment
+    managed_by  = "terraform"
+  }
+}
+```
+
+**Outputs** (`output` blocks) export values after apply:
+
+```hcl
+output "service_id" {
+  description = "Identifier for downstream modules"
+  value       = null_resource.service.id
+}
+
+output "bootstrap_token" {
+  description = "One-time token — treat as secret"
+  value       = var.bootstrap_token
+  sensitive   = true
+}
+```
+
+**`.tfvars` files** assign variable values (`terraform.tfvars`, `dev.tfvars`, `prod.tfvars`). Pass a specific file with `terraform apply -var-file=staging.tfvars`.
+
+**Environment variables** use the prefix `TF_VAR_` — `export TF_VAR_environment=staging` sets `var.environment`.
 
 ### Why it matters
 
-Typed inputs are the contract between platform modules and application teams. Validation fails fast in CI. Sensitive flags reduce secret printing in pipeline logs. Locals stop copy-pasted string templates from drifting across resources.
+Modules without typed variables become copy-paste forks. Validation catches illegal values at **plan** time instead of after a failed cloud API call. Locals keep naming conventions DRY without leaking internal details to module consumers. Sensitive outputs reduce accidental secret exposure in CI logs — though state still stores the value, so protect state files too.
 
 ### How it works
 
-1. Declare `variable` blocks with types and validation.
-2. Supply values with `-var-file=dev.tfvars` or `TF_VAR_environment=stage`.
-3. Compute shared names and tags in `locals`.
-4. Wire `var.*` / `local.*` into resources; export `output` values.
-5. Read results with `terraform output` (use `-json` carefully — it can reveal sensitive values).
+**Variable precedence** (highest wins):
 
-Prefer explicit `-var-file` in CI over ambient `terraform.tfvars` so the wrong environment cannot auto-load.
+1. `-var` and `-var-file` on the command line
+2. `*.auto.tfvars` files (alphabetical order within tier)
+3. `terraform.tfvars` in the working directory
+4. `TF_VAR_*` environment variables
+5. Variable `default` in the block
+
+Terraform evaluates variables before building the resource graph. Locals can reference variables, resources, data sources, and other locals. Outputs evaluate after apply (or from state on `terraform output`).
+
+**Sensitive values:** marking `sensitive = true` on a variable or output redacts it in normal CLI output. It does **not** encrypt state — use remote backends with encryption and restricted IAM for production secrets.
 
 ### Key concepts and comparisons
 
-| Construct | Scope | Typical use |
-|-----------|-------|-------------|
-| `variable` | Module input | Env name, CIDR, size |
-| `local` | Internal | Prefixed names, tags |
-| `output` | Module export | IDs, endpoints |
+| Mechanism | Set from outside? | Typical use |
+|-----------|-----------------|-------------|
+| `variable` | Yes | Environment name, instance size, feature flags |
+| `local` | No | Computed names, merged tag maps |
+| `output` | Read-only export | IDs for remote state, connection strings |
+| `.tfvars` | Git-reviewed config per env | `dev.tfvars`, `prod.tfvars` |
+| `TF_VAR_` | CI/CD injection | Pipeline parameters without committing secrets |
 
-| Source | Example |
-|--------|---------|
-| Default | `default = "dev"` |
-| tfvars | `environment = "stage"` |
-| CLI | `-var='environment=prod'` |
-| Environment | `TF_VAR_environment=prod` |
+| Loading method | Example |
+|----------------|---------|
+| Default in block | `default = "dev"` |
+| terraform.tfvars | `environment = "staging"` |
+| -var-file | `terraform plan -var-file=prod.tfvars` |
+| -var | `terraform plan -var='environment=prod'` |
+| TF_VAR_ | `export TF_VAR_environment=prod` |
 
 ### Common pitfalls
 
-- Using `any` everywhere — you lose validation and clarity.
-- Committing tfvars that contain credentials.
-- Expecting `sensitive = true` to encrypt state — it only redacts display.
-- Exposing every local as a variable — keep the interface small.
+- Putting computed naming logic in variables instead of locals — callers can override your convention.
+- Validation that only runs regex on strings but allows empty values when `default = ""` — combine `nullable = false` (Terraform 1.1+) or explicit checks.
+- Assuming `sensitive = true` hides values in state — it does not; restrict state access.
+- Committing `terraform.tfvars` with secrets — use CI secrets + `TF_VAR_` or a vault integration.
+- Duplicate variable names across `.tf` files in one module — Terraform merges blocks; keep one definition per variable.
 
 ## Hands-on Lab
 
-
-
 ### Objective
 
-Run a complete Terraform workflow (init → plan → apply → prove → destroy) for **Variables, Locals, and Outputs** without paid cloud resources.
+Build a root module under `~/rebash-terraform/module-07` with validated variables, locals for naming, standard and sensitive outputs, a real **Docker container**, and an evidence script proving `TF_VAR_` override behaviour with `docker ps`.
 
 ### Prerequisites
 
-- Terraform CLI ≥ 1.5
-- Network access to download the null provider once
+- **Terraform ≥ 1.5**
+- **Docker Engine running** (`docker info` succeeds)
+- Network access to download the Docker provider once
 
 ### Lab environment
 
 Workspace: `~/rebash-terraform/module-07`
-
-Local Terraform only (`null`/`local` providers). No AWS/GCP/Azure credentials required.
 
 ```bash
 mkdir -p ~/rebash-terraform/module-07 && cd ~/rebash-terraform/module-07
@@ -165,233 +186,381 @@ mkdir -p ~/rebash-terraform/module-07 && cd ~/rebash-terraform/module-07
 
 ### Real-world scenario
 
-You are automating **Variables, Locals, and Outputs** for a platform repo. Reviewers expect a clean plan artefact, applied evidence, and a destroy path before merge.
+Platform engineering requires every stack to accept `environment` and `owner` inputs, enforce allowed environment values at plan time, export a service identifier for downstream modules, and redact bootstrap tokens in CI logs. Ticket **PLAT-207**: reproduce that contract with a labelled Alpine container before the team promotes the module to AWS.
 
 ### Step-by-step tasks
 
-#### Task 1 – Author and initialise configuration
+#### Task 1 – Provider, variables, locals, and main resources
 
-Use local/null providers so the lab never bills a cloud account.
+Create `versions.tf`:
 
-```bash
-cat > versions.tf << 'EOF'
+```hcl
 terraform {
   required_version = ">= 1.5.0"
+
   required_providers {
-    null = { source = "hashicorp/null", version = "~> 3.2" }
+    docker = {
+      source  = "kreuzwerker/docker"
+      version = "~> 3.0"
+    }
   }
 }
-EOF
-cat > main.tf << 'EOF'
-resource "null_resource" "lab" {
-  triggers = { topic = "rebash-lab" }
-  provisioner "local-exec" {
-    command = "echo applied > applied.txt"
+
+provider "docker" {}
+```
+
+Create `variables.tf`:
+
+```hcl
+variable "environment" {
+  type        = string
+  description = "Deployment tier: dev, staging, or prod"
+
+  validation {
+    condition     = contains(["dev", "staging", "prod"], var.environment)
+    error_message = "environment must be dev, staging, or prod."
   }
 }
-output "note" { value = null_resource.lab.triggers.topic }
-EOF
+
+variable "owner" {
+  type        = string
+  description = "Team or individual responsible for this stack"
+}
+
+variable "bootstrap_token" {
+  type        = string
+  description = "Simulated secret passed into container labels"
+  sensitive   = true
+}
+```
+
+Create `locals.tf`:
+
+```hcl
+locals {
+  name_prefix = "rebash-${var.environment}"
+  common_tags = {
+    environment = var.environment
+    owner       = var.owner
+    managed_by  = "terraform"
+  }
+}
+```
+
+Create `main.tf`:
+
+```hcl
+resource "docker_image" "alpine" {
+  name = "alpine:3.20"
+}
+
+resource "docker_network" "service" {
+  name = "${local.name_prefix}-net"
+}
+
+resource "docker_container" "service" {
+  name  = "${local.name_prefix}-svc"
+  image = docker_image.alpine.image_id
+
+  command = ["sleep", "3600"]
+
+  networks_advanced {
+    name = docker_network.service.name
+  }
+
+  dynamic "labels" {
+    for_each = local.common_tags
+    content {
+      label = labels.key
+      value = labels.value
+    }
+  }
+
+  labels {
+    label = "bootstrap_token"
+    value = var.bootstrap_token
+  }
+}
+```
+
+Create `outputs.tf`:
+
+```hcl
+output "service_name" {
+  description = "Computed service name from locals"
+  value       = local.name_prefix
+}
+
+output "container_id" {
+  description = "Docker container identifier for downstream consumers"
+  value       = docker_container.service.id
+}
+
+output "bootstrap_token" {
+  description = "Sensitive token — redacted in normal CLI output"
+  value       = var.bootstrap_token
+  sensitive   = true
+}
+```
+
+Create `terraform.tfvars`:
+
+```hcl
+environment     = "dev"
+owner           = "platform-team"
+bootstrap_token = "lab-token-dev-only"
+```
+
+Run:
+
+```bash
+cd ~/rebash-terraform/module-07
 terraform init
 terraform validate
+terraform plan -out=tfplan | tee plan.txt
+grep -q 'docker_container.service' plan.txt
+echo "task1 OK" | tee task1-ok.txt
 ```
 
-**Expected output:** `Terraform has been successfully initialized` and validate succeeds.
+**Expected output:** `terraform validate` succeeds; plan shows network, image, and container to create.
 
-#### Task 2 – Plan, apply, and prove outputs
+#### Task 2 – Apply, inspect outputs, and prove with Docker CLI
 
-Treat the plan as the change ticket — review before apply.
+Run:
 
+{% raw %}
 ```bash
-terraform plan -out=tfplan
-terraform show -no-color tfplan | tee plan.txt
+cd ~/rebash-terraform/module-07
 terraform apply tfplan
 terraform output
-test -f applied.txt && cat applied.txt
+terraform output -json | tee outputs.json
+grep -q '<sensitive>' outputs.json || grep -q 'sensitive' outputs.json
+terraform output -raw service_name | tee service-name.txt
+test "$(cat service-name.txt)" = "rebash-dev"
+docker ps --filter name=rebash-dev-svc --format '{{.Names}} {{.Status}}' | tee docker-ps.txt
+grep -q 'Up' docker-ps.txt
+docker inspect rebash-dev-svc --format '{{index .Config.Labels "owner"}}' | grep -q platform-team
+echo "task2 OK" | tee task2-ok.txt
 ```
+{% endraw %}
 
-**Expected output:** plan.txt shows create; `applied` written; output prints the note.
+**Expected output:** `service_name` prints `rebash-dev`; `bootstrap_token` redacted in JSON; container **Up** with owner label; `task2-ok.txt` contains `task2 OK`.
 
-#### Task 3 – Inspect state safely
+#### Task 3 – TF_VAR_ override and validation failure
 
-State is the source of truth — list and show without hand-editing.
+Run:
 
 ```bash
-terraform state list | tee state-list.txt
-terraform state show null_resource.lab | tee state-show.txt
+cd ~/rebash-terraform/module-07
+export TF_VAR_environment=staging
+terraform plan -var='owner=ci-pipeline' | tee plan-staging.txt
+grep -q 'rebash-staging-svc' plan-staging.txt
+terraform plan -var='environment=invalid' 2>&1 | tee plan-invalid.txt || true
+grep -qi 'environment must be dev' plan-invalid.txt
+unset TF_VAR_environment
+echo "task3 OK" | tee task3-ok.txt
 ```
 
-**Expected output:** state-list.txt contains `null_resource.lab`.
+**Expected output:** Staging plan shows `rebash-staging-svc`; invalid environment plan fails validation with the custom error message.
+
+#### Task 4 – Create vars-evidence.sh audit script
+
+Create `vars-evidence.sh`:
+
+{% raw %}
+```bash
+#!/usr/bin/env bash
+set -euo pipefail
+cd ~/rebash-terraform/module-07
+terraform validate
+terraform output -raw service_name | grep -q '^rebash-'
+docker ps --filter name=rebash-dev-svc --format '{{.Names}}' | grep -q rebash-dev-svc
+export TF_VAR_environment=prod
+terraform plan -var='owner=audit' -detailed-exitcode -out=/dev/null
+unset TF_VAR_environment
+echo "vars-evidence PASS" | tee vars-evidence-pass.txt
+```
+{% endraw %}
+
+Run:
+
+```bash
+chmod +x ~/rebash-terraform/module-07/vars-evidence.sh
+~/rebash-terraform/module-07/vars-evidence.sh
+```
+
+**Expected output:** `vars-evidence-pass.txt` contains `vars-evidence PASS`.
 
 ### Validation steps
 
-- [ ] terraform validate passes
-- [ ] Plan was saved and reviewed before apply
-- [ ] Destroy completes with empty state (or resources removed)
+- [ ] Variables include validation for `environment`
+- [ ] Locals drive `name_prefix` visible in plan and output
+- [ ] Sensitive output redacted in default JSON output
+- [ ] `TF_VAR_environment` override changes planned container name
+- [ ] Invalid environment rejected at plan time
+- [ ] `docker ps` proves running container matches tfvars
 
 ### Common errors and fixes
 
 | Error | Cause | Fix |
 |-------|-------|-----|
-| Provider not found | Missing init / network | Run `terraform init` again |
-| State locked | Concurrent apply | Wait or coordinate; never force-unlock casually |
-| Unexpected destroy in plan | Drift or wrong workspace | Read plan line-by-line before apply |
+| `Invalid value for variable` | Value fails validation block | Use dev/staging/prod; read `error_message` |
+| Variable not set | No default and no tfvars | Add to `terraform.tfvars` or pass `-var` |
+| Sensitive still in plan debug | `-json` with debug logging | Redaction applies to normal output; restrict log access |
+| Wrong precedence | CLI `-var` lost to tfvars | Remember CLI `-var` and `-var-file` beat tfvars |
+| Container name conflict | Prior apply left container | `terraform destroy` or `docker rm -f rebash-dev-svc` |
 
 ### Challenge exercise
 
-Add an input variable with a validation block and fail the plan with an illegal value, then fix it.
+Create `prod.tfvars`:
+
+```hcl
+environment     = "prod"
+owner           = "sre-team"
+bootstrap_token = "prod-challenge-token"
+```
+
+Run a plan with `-var-file=prod.tfvars` and archive evidence:
+
+```bash
+cd ~/rebash-terraform/module-07
+terraform plan -var-file=prod.tfvars | tee plan-prod.txt
+grep -q 'rebash-prod-svc' plan-prod.txt
+echo "prod tfvars challenge OK"
+```
+
+**Expected output:** Plan references `rebash-prod-svc` container name (plan only — do not apply prod naming if dev stack still exists without destroy first).
 
 ### Learning outcomes
 
-- Completed a reviewable plan/apply cycle
-- Proved outputs/files exist
-- Destroyed lab state
+- Typed variables with validation at plan time
+- Locals for internal naming conventions driving real Docker resources
+- tfvars and `TF_VAR_` loading patterns
+- Sensitive output handling in CLI and operational proof with `docker ps`
 
 ### Cleanup
 
 ```bash
+cd ~/rebash-terraform/module-07
 terraform destroy -auto-approve
-rm -rf .terraform tfplan 2>/dev/null || true
+rm -f tfplan plan.txt task*-ok.txt outputs.json service-name.txt docker-ps.txt \
+  plan-staging.txt plan-invalid.txt vars-evidence-pass.txt plan-prod.txt
+rm -rf .terraform .terraform.lock.hcl terraform.tfstate terraform.tfstate.backup
 ```
 
 ## Validation
 
-
-
-
-
-
-
-- [ ] Lab commands run under `~/rebash-terraform/module-07/`
-- [ ] You can explain each Theory section in your own words
-- [ ] You used modern tooling where it applies to this topic
-- [ ] You can describe one production failure mode for this topic
+- [ ] Completed module-07 lab with evidence script and `docker ps` proof
+- [ ] Can explain variable precedence from memory
+- [ ] Can describe difference between variables and locals
+- [ ] Know that sensitive marking does not encrypt state
 
 ## Code Walkthrough
 
-
-
-
-
-
-
-Production practice for **Variables, Locals, and Outputs** always combines:
-
-1. Inspect before you change (status, plan, logs, dry-run)
-2. Prefer reversible, documented changes (Git, IaC, drop-ins, version pins)
-3. Capture evidence (command output, pipeline logs) for handovers
-4. Prefer current tools and APIs over legacy shortcuts
-5. Least privilege — escalate credentials only when required
-
-Keep runbooks short enough to follow under pressure. Automate checks; keep humans for judgement.
+1. **Validation at the module boundary** — reject illegal `environment` values before any provider calls.
+2. **Locals for naming** — `name_prefix` stays internal; callers only pass `environment`.
+3. **tfvars for Git-reviewed defaults** — `terraform.tfvars` holds non-secret lab values; prod secrets via CI.
+4. **Sensitive on both variable and output** — defence in depth for tokens referenced multiple places.
+5. **Evidence script in CI** — `terraform validate` + plan exit codes gate merge requests.
 
 ## Security Considerations
 
-
-
-
-
-
-
-- Treat credentials and tokens for terraform as privileged — never commit them
-- Prefer short-lived auth (OIDC, roles, SSO) over long-lived keys
-- Validate blast radius before apply/deploy/delete operations
-- Restrict who can approve production changes
-- Collect audit logs; limit who can read sensitive traces
+- Never commit real secrets in `*.tfvars` — use `TF_VAR_` from CI secret stores.
+- `sensitive = true` redacts CLI output but values remain in state — encrypt remote state and restrict IAM.
+- Limit who can run `terraform output -raw` on sensitive outputs in production workspaces.
+- Audit `.tfvars` files in pull requests the same as application config.
+- Prefer external secret managers (Vault, cloud SM) over long-lived tokens in variables.
 
 ## Common Mistakes
 
+!!! warning "Using variables for computed names"
+    Exposing `name_prefix` as a variable lets callers break naming standards.  
+    **Fix:** Compute naming in `locals`; expose only meaningful inputs like `environment`.
 
+!!! warning "Assuming sensitive hides secrets everywhere"
+    State files, debug logs, and some CI plugins still capture values.  
+    **Fix:** Encrypt state, restrict backend access, and never log at TRACE in CI with secrets.
 
-
-
-
-
-!!! warning "Using `any` everywhere — you lose validation and clarity."
-    Validate assumptions against the Theory section and official docs before changing production.
-
-!!! warning "Committing tfvars that contain credentials."
-    Lab shortcuts (open security groups, admin roles, skip approvals) must not ship unchanged.
-
-!!! warning "Changing production without a rollback path"
-    Always know how to revert (previous artefact, prior release, state rollback, DNS failback).
+!!! warning "Validation without nullable check"
+    Empty strings can pass some regex validations unintentionally.  
+    **Fix:** Use `nullable = false` or explicit `length(var.name) > 0` conditions.
 
 ## Best Practices
 
-
-
-
-
-
-
-- Encode Variables, Locals, and Outputs changes as code and review them in pull requests
-- Pin versions (images, modules, actions, provider plugins)
-- Separate environments with clear promotion gates
-- Alert on symptoms with runbooks attached
-- Destroy lab resources; tag everything with owner and expiry where possible
+- Add `description` and `type` to every variable — modules are APIs.
+- Keep environment-specific values in `*.tfvars`, not duplicated in `.tf` files.
+- Use `validation` for invariants; use provider constraints for cloud-specific limits.
+- Export stable outputs (`id`, `arn`, `name`) that downstream modules actually need.
+- Document required `TF_VAR_` names in module README for pipeline authors.
 
 ## Troubleshooting
 
-
-
-
-
-
-
 | Symptom | Likely cause | Fix |
 |---------|--------------|-----|
-| Auth / permission denied | Wrong identity, policy, or scope | Check caller identity, roles, and least-privilege policies |
-| Timeout / no route | Network, DNS, security group, or endpoint | Trace path, DNS, and allow-lists before retrying |
-| Drift / unexpected plan | Manual change or wrong state/workspace | Reconcile desired vs actual; avoid click-ops on managed resources |
-| Pipeline/job red | Flaky step, cache, or missing secret | Read failing step logs; bisect recent workflow/config changes |
-| Cost spike | Idle load balancer, NAT, oversized compute | Inventory billable resources; stop/delete labs promptly |
+| Plan shows unexpected env value | Precedence surprise | Check `-var`, `TF_VAR_`, and tfvars order |
+| Validation error on legal value | Typo in allowed list | Update validation `condition` or input |
+| Output empty after apply | Output references destroyed resource | Re-apply; check `terraform state list` |
+| Sensitive output visible | Used `-raw` or debug mode | Expected for `-raw`; restrict who runs it |
+| Variable type error | String passed where number expected | Fix tfvars types or add `tolist()` coercion |
 
 ## Summary
 
-
-
-
-
-
-
-**Variables, Locals, and Outputs** is essential for Cloud and DevOps engineers working with terraform. Practise the lab until the inspection and change path is muscle memory, then continue the track.
+Variables parameterise modules; locals hold derived values; outputs export results safely. You validated inputs, loaded values from tfvars and `TF_VAR_`, and redacted sensitive tokens in CLI output. Next, [Terraform State Fundamentals](terraform-state-fundamentals.md) explains how Terraform tracks those resources in state.
 
 ## Interview Questions
 
+**1. What is the difference between a variable and a local in Terraform?**
 
+??? success "Reveal answer"
+    **Variables** are module inputs settable from `.tfvars`, `-var`, and `TF_VAR_` environment variables. **Locals** are computed inside the module and cannot be set from outside. Use variables at the API boundary; use locals for derived names, merged tags, and repeated expressions.
 
+**2. How does Terraform load variable values, and what is the precedence order?**
 
+??? success "Reveal answer"
+    Values come from defaults, `TF_VAR_*` env vars, `terraform.tfvars`, auto tfvars files, and finally CLI `-var`/`-var-file` (highest). When debugging wrong values, check CLI flags first, then tfvars, then env vars, then defaults.
 
+**3. What does `sensitive = true` on an output actually do?**
 
-1. How do input variables differ from locals?
-2. When should an output be marked sensitive?
-3. What precedence do tfvars and environment variables follow at a high level?
-4. Why can putting secrets in terraform.tfvars committed to Git be dangerous?
-5. How do typed variables improve module interfaces?
+??? success "Reveal answer"
+    It **redacts** the value in normal human-readable and JSON CLI output when Terraform prints outputs. It does **not** remove the value from **state** or from all log levels. Protect state backends and restrict `terraform output -raw` in production.
 
-!!! tip "Sample answer — question 2"
-    Outputs marked sensitive are redacted in CLI output but may still exist in state. Use them for credentials you must expose to callers carefully, and protect state storage.
+**4. When would you use a validation block on a variable?**
 
-!!! tip "Sample answer — question 4"
-    Committed tfvars often leak passwords and keys through Git history. Prefer secret managers, CI-injected TF_VAR_ values, and never commit real secrets.
+??? success "Reveal answer"
+    When invalid input would cause a costly or dangerous apply — wrong environment name, illegal CIDR, disallowed instance type. Validation runs at **plan** time and fails fast with a custom `error_message`, saving API calls and rollback work.
+
+**5. Why keep secrets out of committed tfvars files?**
+
+??? success "Reveal answer"
+    tfvars often live in Git and appear in pull request diffs. Secrets in Git are hard to rotate and easy to leak. Inject secrets via CI `TF_VAR_`, Vault, or cloud secret managers; commit only non-sensitive configuration.
+
+**6. How do outputs connect to other Terraform stacks?**
+
+??? success "Reveal answer"
+    Downstream stacks read outputs via **`terraform_remote_state`** data sources (remote backends) or by calling **child modules** with `module.name.output`. Outputs are the published contract between stacks — keep them stable and documented.
+
+**7. What is the purpose of `terraform.tfvars` versus `prod.tfvars`?**
+
+??? success "Reveal answer"
+    **`terraform.tfvars`** is loaded automatically for default lab/dev values. Named files like **`prod.tfvars`** are explicit — pass with `-var-file=prod.tfvars` in pipelines targeting production. Separating files prevents accidental prod applies from default dev values.
+
+**8. A plan shows `var.environment = "dev"` but CI exported `TF_VAR_environment=staging`. Why?**
+
+??? success "Reveal answer"
+    A higher-precedence source overrides env vars — typically **`-var` or `-var-file`** on the command line, or a value in **`terraform.tfvars`**. `-var` beats `TF_VAR_`. Inspect the pipeline script for `-var-file` and committed tfvars before blaming the environment export.
 
 ## Related Tutorials
 
-
-
-
-
-
-
-- [Course overview](index.md)
-- [Terraform State Fundamentals](terraform-state-fundamentals.md)
+- [Terraform course index](index.md)
+- **Previous:** [Resources, Dependencies, and Meta-Arguments](resources-dependencies-and-meta-arguments.md)
+- **Next:** [Terraform State Fundamentals](terraform-state-fundamentals.md)
+- [Modules — Creating Reusable Infrastructure](modules-creating-reusable-infrastructure.md)
+- [Terraform Security and Secrets](terraform-security-and-secrets.md)
 
 ## References
 
-
-
-
-
-
-
-- [Input variables](https://developer.hashicorp.com/terraform/language/values/variables)  
+- [Input variables](https://developer.hashicorp.com/terraform/language/values/variables)
 - [Outputs](https://developer.hashicorp.com/terraform/language/values/outputs)
+- [Locals](https://developer.hashicorp.com/terraform/language/values/locals)
+- [Variable definition reference](https://developer.hashicorp.com/terraform/language/block/variable)
+- [Sensitive values](https://developer.hashicorp.com/terraform/language/state/sensitive-data)

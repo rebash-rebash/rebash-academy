@@ -171,37 +171,45 @@ FinOps asks for a weekly bucket / resource-group inventory across clouds. Securi
 
 #### Task 1 – Fixture files for stub clients
 
-```bash
-cd ~/rebash-python/lab15
-set -euo pipefail
 
-cat > fixtures/aws-buckets.json << 'EOF'
+Create `fixtures/aws-buckets.json`:
+
+```json
 {
   "Buckets": [
     {"Name": "rebash-lab-demo-logs", "CreationDate": "2026-01-15T10:00:00+00:00"},
     {"Name": "rebash-lab-demo-artifacts", "CreationDate": "2026-02-01T08:30:00+00:00"}
   ]
 }
-EOF
+```
 
-cat > fixtures/azure-resource-groups.json << 'EOF'
+Create `fixtures/azure-resource-groups.json`:
+
+```json
 {
   "value": [
     {"name": "rg-rebash-lab-net", "location": "centralindia"},
     {"name": "rg-rebash-lab-app", "location": "centralindia"}
   ]
 }
-EOF
+```
 
-cat > fixtures/gcp-buckets.json << 'EOF'
+Create `fixtures/gcp-buckets.json`:
+
+```json
 {
   "items": [
     {"name": "rebash-lab-demo-gcs", "location": "ASIA-SOUTH1"},
     {"name": "rebash-lab-demo-tfstate", "location": "ASIA-SOUTH1"}
   ]
 }
-EOF
+```
 
+Run:
+
+```bash
+cd ~/rebash-python/lab15
+set -euo pipefail
 test -s fixtures/aws-buckets.json
 echo "fixtures ok"
 ```
@@ -210,13 +218,10 @@ echo "fixtures ok"
 
 #### Task 2 – Inventory CLI (live AWS list or stubs)
 
-```bash
-cd ~/rebash-python/lab15
-set -euo pipefail
-# shellcheck disable=SC1091
-source .venv/bin/activate
 
-cat > cloud_inventory.py << 'EOF'
+Create `cloud_inventory.py`:
+
+```python
 #!/usr/bin/env python3
 """
 Read-only cloud inventory. NEVER creates paid resources.
@@ -305,8 +310,15 @@ def main() -> int:
 
 if __name__ == "__main__":
     raise SystemExit(main())
-EOF
+```
 
+Run:
+
+```bash
+cd ~/rebash-python/lab15
+set -euo pipefail
+# shellcheck disable=SC1091
+source .venv/bin/activate
 python cloud_inventory.py | tee inventory-run.txt
 test -s cloud-inventory.json
 python -c 'import json; d=json.load(open("cloud-inventory.json")); assert d["policy"].startswith("read-only"); print(d["aws"]["mode"], len(d["aws"]["buckets"]))'
@@ -315,6 +327,24 @@ python -c 'import json; d=json.load(open("cloud-inventory.json")); assert d["pol
 **Expected output:** `cloud-inventory.json` with `aws.mode` of `live` or `stub`; Azure/GCP stub lists non-empty; `--create` is refused (see Task 3).
 
 #### Task 3 – Negative guard and evidence pack
+
+
+Create `pack_evidence.py`:
+
+```python
+import json
+from pathlib import Path
+d = json.loads(Path("cloud-inventory.json").read_text(encoding="utf-8"))
+assert d["aws"]["mode"] == "stub"
+pack = {
+    "inventory": d,
+    "create_denied_exit": 2,
+}
+Path("lab15-evidence.json").write_text(json.dumps(pack, indent=2) + "\n", encoding="utf-8")
+print("evidence ok")
+```
+
+Run:
 
 ```bash
 cd ~/rebash-python/lab15
@@ -330,18 +360,7 @@ test "$rc" -eq 2
 grep -F 'REFUSED' create-denied.txt
 
 LAB15_FORCE_STUB=1 python cloud_inventory.py >stub-run.txt
-python - << 'EOF'
-import json
-from pathlib import Path
-d = json.loads(Path("cloud-inventory.json").read_text(encoding="utf-8"))
-assert d["aws"]["mode"] == "stub"
-pack = {
-    "inventory": d,
-    "create_denied_exit": 2,
-}
-Path("lab15-evidence.json").write_text(json.dumps(pack, indent=2) + "\n", encoding="utf-8")
-print("evidence ok")
-EOF
+python pack_evidence.py
 ```
 
 **Expected output:** `--create` exits `2` with `REFUSED`; forced stub mode writes evidence; `lab15-evidence.json` exists.

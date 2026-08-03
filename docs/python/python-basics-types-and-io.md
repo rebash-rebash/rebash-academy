@@ -164,8 +164,11 @@ cd ~/rebash-python/lab02
 set -euo pipefail
 # shellcheck disable=SC1091
 source .venv/bin/activate
+```
 
-cat > parse_input.py << 'PY'
+Create `parse_input.py`:
+
+```python
 """Parse hostname/port/flags for a tiny DevOps input contract."""
 from __future__ import annotations
 
@@ -221,8 +224,11 @@ def main(argv: list[str]) -> int:
 
 if __name__ == "__main__":
     raise SystemExit(main(sys.argv))
-PY
+```
 
+Run:
+
+```bash
 test -f parse_input.py
 ```
 

@@ -70,8 +70,9 @@ cd ~/rebash-lab-shell
 
 ### Task 1 — Create the script skeleton
 
+Create `first-script.sh`:
+
 ```bash
-cat > first-script.sh << 'EOF'
 #!/usr/bin/env bash
 # first-script.sh — host snapshot for REBASH lab
 # Usage: ./first-script.sh [name]
@@ -82,9 +83,14 @@ echo "host=$(hostname)"
 echo "date=$(date -u +%Y-%m-%dT%H:%M:%SZ)" 
 echo "kernel=$(uname -r)" 
 exit 0
-EOF
+```
+
+Run:
+
+```bash
 chmod +x first-script.sh
 ```
+
 
 ### Task 2 — Run and inspect exit codes
 

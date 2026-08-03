@@ -190,8 +190,11 @@ getent hosts example.com | tee getent-example.txt || true
 ```bash
 cd ~/rebash-networking/lab10
 set -euo pipefail
+```
 
-cat > dns-fundamentals-evidence.sh << 'EOF'
+Create `dns-fundamentals-evidence.sh`:
+
+```bash
 #!/usr/bin/env bash
 set -euo pipefail
 OUT_DIR="$(cd "$(dirname "$0")" && pwd)"
@@ -208,7 +211,9 @@ OUT_DIR="$(cd "$(dirname "$0")" && pwd)"
   echo "=== dig SERVER ==="
   dig example.com A | awk '/^;; SERVER/ {print}'
 } | tee "$OUT_DIR/evidence-run.txt"
-EOF
+```
+
+```bash
 chmod +x dns-fundamentals-evidence.sh
 ./dns-fundamentals-evidence.sh
 test -s evidence-run.txt

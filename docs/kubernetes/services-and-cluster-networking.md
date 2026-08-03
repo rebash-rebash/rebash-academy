@@ -32,7 +32,7 @@ tags:
   - services
   - clusterip
 author: Shaik Basha
-last_updated: "2026-07-31"
+last_updated: "2026-08-03"
 comments: false
 ---
 
@@ -142,23 +142,19 @@ Pods are mortal — their IPs change on every reschedule. Applications and other
 
 ## Hands-on Lab
 
-
-
 ### Objective
 
-Build and verify a working Kubernetes solution for **Services and Cluster Networking** that you can inspect, prove, and tear down safely.
+Deploy nginx behind a ClusterIP Service, reach it by DNS from a debug Pod, and capture EndpointSlice evidence.
 
 ### Prerequisites
 
-- kubectl configured against a lab cluster (kind/minikube preferred)
-- Cluster-admin or namespace-create rights in the lab cluster
+- A working Kubernetes cluster (**kind**, **minikube**, or any lab cluster)
+- **kubectl** with namespace-create rights
 - Writable workspace at `~/rebash-k8s/module-05`
 
 ### Lab environment
 
 Workspace: `~/rebash-k8s/module-05`
-
-Local kind/minikube or a dedicated sandbox cluster. Never target a shared production API server.
 
 ```bash
 mkdir -p ~/rebash-k8s/module-05 && cd ~/rebash-k8s/module-05
@@ -166,64 +162,152 @@ mkdir -p ~/rebash-k8s/module-05 && cd ~/rebash-k8s/module-05
 
 ### Real-world scenario
 
-Your platform team is rolling out **Services and Cluster Networking** for a new microservice. You must apply the change in an isolated namespace, prove it works with kubectl, and leave evidence for the on-call handover.
+Your microservice `web` must be reachable at a stable DNS name inside the cluster while Pods restart during rollouts. You apply Deployment + Service manifests, curl from a debug Pod using the Service DNS name, and save EndpointSlice proof for the architecture review.
 
 ### Step-by-step tasks
 
-#### Task 1 – Expose a Deployment with a Service
+#### Task 1 – Deployment and ClusterIP Service
 
-Services give a stable virtual IP and DNS name while Pods churn.
+Create `namespace.yaml`:
 
-```bash
-kubectl create namespace rebash-lab --dry-run=client -o yaml | kubectl apply -f -
-kubectl create deployment web --image=nginx:1.27-alpine -n rebash-lab
-kubectl expose deployment web -n rebash-lab --port=80 --target-port=80 --name=web
-kubectl get svc,endpoints -n rebash-lab
+```yaml
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: rebash-m05
 ```
 
-**Expected output:** Service `web` has Endpoints populated.
+Create `web-stack.yaml`:
 
-#### Task 2 – Prove ClusterIP reachability
-
-Test from inside the cluster the way apps discover each other.
-
-```bash
-kubectl run curl --rm -it --restart=Never -n rebash-lab --image=curlimages/curl:8.5.0 -- \
-  curl -sS -o /dev/null -w '%{http_code}\n' http://web
-kubectl describe svc web -n rebash-lab | tee svc.txt
+```yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: web
+  namespace: rebash-m05
+  labels:
+    app: web
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: web
+  template:
+    metadata:
+      labels:
+        app: web
+    spec:
+      containers:
+        - name: nginx
+          image: nginx:1.27-alpine
+          ports:
+            - containerPort: 80
+          readinessProbe:
+            httpGet:
+              path: /
+              port: 80
+            initialDelaySeconds: 2
+            periodSeconds: 3
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: web
+  namespace: rebash-m05
+spec:
+  type: ClusterIP
+  selector:
+    app: web
+  ports:
+    - port: 80
+      targetPort: 80
 ```
 
-**Expected output:** HTTP status `200` printed; svc.txt shows selector and Endpoints.
+Apply and verify endpoints:
+
+```bash
+cd ~/rebash-k8s/module-05
+kubectl apply -f namespace.yaml
+kubectl apply -f web-stack.yaml
+kubectl rollout status deployment/web -n rebash-m05 --timeout=180s
+kubectl get svc,endpoints -n rebash-m05 | tee svc-endpoints.txt
+grep web svc-endpoints.txt
+```
+
+**Expected output:** Service `web` has Endpoints with two Pod IPs.
+
+#### Task 2 – Curl by DNS from debug Pod
+
+Create `debug-pod.yaml`:
+
+```yaml
+apiVersion: v1
+kind: Pod
+metadata:
+  name: curl-debug
+  namespace: rebash-m05
+spec:
+  restartPolicy: Never
+  containers:
+    - name: curl
+      image: curlimages/curl:8.5.0
+      command: ["sh", "-c", "curl -sS -o /dev/null -w '%{http_code}\\n' http://web.rebash-m05.svc.cluster.local/ | tee /tmp/http-code.txt && cat /tmp/http-code.txt && sleep 3600"]
+```
+
+Apply and read result:
+
+```bash
+cd ~/rebash-k8s/module-05
+kubectl apply -f debug-pod.yaml
+kubectl wait --for=condition=Ready pod/curl-debug -n rebash-m05 --timeout=120s
+kubectl logs curl-debug -n rebash-m05 | tee curl-dns.txt
+grep -q 200 curl-dns.txt
+```
+
+**Expected output:** `curl-dns.txt` contains `200`.
+
+#### Task 3 – EndpointSlice evidence
+
+```bash
+cd ~/rebash-k8s/module-05
+kubectl get endpointslices -n rebash-m05 | tee endpointslices.txt
+kubectl get endpointslices -n rebash-m05 -o yaml | grep -E 'addresses:|ready:' | tee endpointslices-detail.txt
+test -s endpointslices-detail.txt
+kubectl delete pod curl-debug -n rebash-m05 --ignore-not-found --wait=true
+```
+
+**Expected output:** EndpointSlice lists ready addresses backing Service `web`.
 
 ### Validation steps
 
-- [ ] Namespace `rebash-lab` contains the expected Ready objects
-- [ ] You can explain each Task command from the Theory section
-- [ ] Cleanup deletes the namespace without leftover workloads
+- [ ] Two Ready Pods behind Service `web`
+- [ ] DNS curl from debug Pod returned HTTP 200
+- [ ] EndpointSlice evidence captured
+- [ ] Selectors match Pod labels (`app=web`)
 
 ### Common errors and fixes
 
 | Error | Cause | Fix |
 |-------|-------|-----|
-| ImagePullBackOff | Wrong tag or registry auth | Fix image reference; check pull secrets |
-| Pending Pod | Scheduling / quota / PVC | `kubectl describe pod` and read Events |
-| Empty Endpoints | Selector or readiness mismatch | Compare Service selector to Pod labels and Ready |
+| Empty Endpoints | Selector mismatch | Compare Service selector to Pod labels |
+| curl exits non-zero | Pods not Ready | Wait for rollout; check readinessProbe |
+| Connection refused | Wrong port | Match `targetPort` to `containerPort` |
+| DNS failure | CoreDNS issue | `kubectl get pods -n kube-system -l k8s-app=kube-dns` |
 
 ### Challenge exercise
 
-Add a readinessProbe and a ResourceQuota to the namespace, then show that over-quota creates are rejected.
+Scale Deployment to three replicas in `web-stack.yaml`, re-apply, and prove EndpointSlice address count increased.
 
 ### Learning outcomes
 
-- Applied a real cluster change for Services and Cluster Networking
-- Used describe/Events for verification
-- Destroyed lab resources cleanly
+- Exposed a Deployment with a ClusterIP Service
+- Resolved in-cluster DNS (`service.namespace.svc.cluster.local`)
+- Verified backends via Endpoints and EndpointSlices
 
 ### Cleanup
 
 ```bash
-kubectl delete namespace rebash-lab --ignore-not-found
-# Keep ~/rebash-kubernetes/ for later tutorials
+kubectl delete namespace rebash-m05 --ignore-not-found --wait=true
 ```
 
 ## Validation

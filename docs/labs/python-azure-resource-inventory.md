@@ -69,14 +69,14 @@ python3 -m venv .venv && source .venv/bin/activate
 
 ## Initial State
 
-```bash
-cat > fixtures/resources.json << 'EOF'
+Create `fixtures/resources.json`:
+
+```json
 [
   {"name": "rg-payments", "type": "Microsoft.Resources/resourceGroups", "location": "uksouth", "tags": {"env": "prod"}},
   {"name": "saops01", "type": "Microsoft.Storage/storageAccounts", "location": "uksouth", "tags": {"env": "prod"}},
   {"name": "vm-batch", "type": "Microsoft.Compute/virtualMachines", "location": "westeurope", "tags": {}}
 ]
-EOF
 ```
 
 ## Task

@@ -1,349 +1,314 @@
 ---
 title: "Creating and Cloning Repositories"
-description: "Create local repos with git init, clone remotes safely, and understand bare vs non-bare repositories for DevOps workflows."
+description: "Initialise repositories with git init, create a bare remote, clone it, and verify remotes for DevOps workflows."
 difficulty: beginner
-estimated_time: "30–45 min"
+estimated_time: "45–60 min"
 technology: git
 category: git
 module: "Module 3 · Git Basics"
 career_paths:
-  - beginner
   - devops-engineer
   - cloud-engineer
+  - platform-engineer
+  - site-reliability-engineer
+  - devsecops-engineer
 skills:
   - git
-  - clone
-  - init
+  - repositories
 prerequisites:
   - git/git-installation-and-configuration
 next:
   - git/basic-git-workflow-add-commit-push
 related:
   - git/working-with-remotes
-labs: []
-projects: []
-interview: interview/git
-certifications:
-  - GitHub Foundations
 tags:
   - git
   - clone
   - init
 author: Shaik Basha
-last_updated: "2026-07-31"
+last_updated: "2026-08-03"
 comments: false
 ---
 
+    # Creating and Cloning Repositories
 
-# Creating and Cloning Repositories
+    ## Overview
 
-## Overview
+    Every delivery pipeline starts from a repository URL. You must know the difference between a working repository and a **bare** remote, how `git init -b main` bootstraps history, and what `git clone` actually copies.
 
+    This is **Tutorial 1** in **Module 3 : Git Basics** of the REBASH Academy **Git & GitHub for Cloud & DevOps Engineers** series — written for Cloud, DevOps, Platform, and Site Reliability Engineering (SRE) engineers.
 
+    ## Prerequisites
 
+    - [Git Installation and Configuration](git-installation-and-configuration.md)
+- Git 2.x on PATH
 
+    ## Learning Objectives
 
+    By the end of this tutorial, you will be able to:
 
-Initialise a local repository, clone a remote, and inspect `.git` so you know where history lives before first commits.
+    - [ ] Create a repository with `git init -b main`
+- [ ] Create a bare remote and push an initial commit to it
+- [ ] Clone that remote and verify `origin`
+- [ ] Inspect `.git` layout at a high level
+- [ ] Leave clone evidence under `~/rebash-git/module-03`
 
-`git init` starts history locally; `git clone` copies a remote including objects and remotes. IaC and app work both start here.
+    ## Architecture
 
-This is a core tutorial in **Module 3 · Git Basics** of the REBASH Academy **Git for Cloud & DevOps Engineers** series — written for Cloud, DevOps, Platform, and SRE engineers.
+    A developer working copy pushes to a bare remote; clones fetch objects from that remote as `origin`.
 
-## Prerequisites
+    ![Creating and Cloning Repositories](../assets/excalidraw/git-repository-architecture.svg)
 
+    ## Theory
 
+    ### What it is
 
+    `git init` creates a `.git` directory (object database + refs) in a project folder. A **bare** repository (`git init --bare`) has no working tree — it is the shape servers and `origin` remotes use. `git clone` copies objects and checks out a branch, adding `origin` for you.
 
+    ### Why it matters
 
+    DevOps automation clones cleanly in CI. Confusing a working repo with a bare remote causes 'refusing to update checked out branch' errors and broken hooks layouts.
 
-- [Git Installation and Configuration](git-installation-and-configuration.md)
+    ### How it works
 
-## Learning Objectives
+    1. `git init -b main` in a project directory.
+2. Add files and commit.
+3. `git init --bare ../remotes/app.git` as a simulated origin.
+4. `git remote add origin …` and `git push -u origin main`.
+5. `git clone` into a second directory and inspect `git remote -v`.
 
+    ### Key concepts and comparisons
 
+    | Kind | Working tree? | Typical use |
+|------|---------------|-------------|
+| Non-bare | Yes | Daily development |
+| Bare | No | `origin` / server mirror |
 
+| Command | Result |
+|---------|--------|
+| `git init -b main` | New repo on `main` |
+| `git clone URL` | Copy + `origin` + checkout |
 
+    ### Common pitfalls
 
+    - Pushing to a non-bare repo's checked-out branch
+- Cloning with wrong URL scheme (SSH vs HTTPS)
+- Initialising inside an existing `.git` parent by accident
 
-By the end of this tutorial, you will be able to:
+    ## Hands-on Lab
 
-- [ ] `git init -b main` a project  
-- [ ] Clone via SSH/HTTPS  
-- [ ] List remotes after clone  
-- [ ] Describe what `.git/` holds
+    ### Objective
 
-## Architecture
+    Create an app repo, a bare remote, push, and clone — proving remotes work without GitHub.
 
+    ### Prerequisites
 
+    - Git 2.x
 
+    ### Lab environment
 
+    Workspace: `~/rebash-git/module-03`
 
+    ```bash
+    mkdir -p ~/rebash-git/module-03 && cd ~/rebash-git/module-03
+    set -euo pipefail
+    ```
 
-This topic’s control points and relationships are shown below.
+    ### Real-world scenario
 
-![Git workflow](../assets/excalidraw/git-workflow.svg)
+    CI will clone from an internal bare mirror before GitHub is available. You must prove init → bare → clone locally.
 
-## Theory
+    ### Step-by-step tasks
 
+    #### Task 1 – Init app repo and first commit
 
-
-
-
-
-### What
-
-A **repository** is a project’s working tree plus the `.git` database. You create one with `git init` (new local project) or obtain one with `git clone` (copy of an existing remote, including history and a default remote named `origin`). **Bare** repositories have no working tree and usually act as remotes on servers.
-
-### Why
-
-Choosing `init` versus `clone` sets collaboration shape. Most DevOps work starts from `clone` of an organisation repo or fork. Shallow clones (`--depth 1`) speed CI when full history is unnecessary. Understanding bare remotes clarifies how GitHub and self-hosted Git servers store canonical history.
-
-### How it works
-
-`git init -b main` creates `.git/` with empty object storage, refs, and config, and points HEAD at `main`. You then add files and commit. `git clone <url>` copies objects from the remote, checks out the default branch, and configures `origin`. Optional flags adjust depth, single-branch behaviour, or target directory. Bare repos (`repo.git`) accept pushes and serve fetches without a checked-out tree — developers almost always use non-bare clones on laptops.
-
-```bash
-mkdir app && cd app
-git init -b main
-
-git clone git@github.com:org/repo.git
-git clone --depth 1 <url>   # shallow — common in CI
-```
-
-### Key concepts
-
-| Action | Result |
-|--------|--------|
-| `init` | New empty history on this machine |
-| `clone` | Full (or shallow) copy + `origin` remote |
-| Bare repo | Remote-style store, no working tree |
-| Non-bare | Working tree + `.git` for daily work |
-
-Forks on GitHub are separate remotes you usually name `origin` (your fork) and `upstream` (canonical).
-
-### Common pitfalls
-
-- Running `git init` inside an existing clone and creating a nested repo by accident  
-- Cloning with HTTPS then struggling with credentials when SSH was intended  
-- Assuming a shallow clone can always rebase or bisect across old history  
-- Pushing to a non-bare repo that has a checked-out branch (server rejection)
-
-## Hands-on Lab
-
-
-
-### Objective
-
-Complete a real Git workflow for **Creating and Cloning Repositories** with commits you can inspect and recover.
-
-### Prerequisites
-
-- Git 2.x installed
-
-### Lab environment
-
-Workspace: `~/rebash-git/module-03`
-
-Local Git repository only (no required remote).
+Bootstrap a real project history.
 
 ```bash
-mkdir -p ~/rebash-git/module-03 && cd ~/rebash-git/module-03
-```
-
-### Real-world scenario
-
-A delivery team is standardising **Creating and Cloning Repositories**. You prototype the workflow in a throwaway repo and capture log evidence for the playbook.
-
-### Step-by-step tasks
-
-#### Task 1 – Initialise a repository and first commit
-
-Every production change starts as a commit with clear identity config.
-
-```bash
+cd ~/rebash-git/module-03
+set -euo pipefail
+rm -rf app remotes clone
+mkdir -p app remotes
+cd app
 git init -b main
 git config user.email 'lab@rebash.local'
 git config user.name 'REBASH Lab'
-echo '# lab' > README.md
+printf '# demo app\n' > README.md
 git add README.md
-git commit -m 'Initial commit'
-git log --oneline | tee log.txt
+git commit -m 'chore: initial commit'
+git log --oneline | tee ../init-log.txt
+cd ..
 ```
 
-**Expected output:** log.txt shows the initial commit on `main`.
+**Expected output:** `init-log.txt` shows the initial commit.
 
-#### Task 2 – Inspect status and diff discipline
+#### Task 2 – Create bare remote and push
 
-Clean working trees prevent accidental commits of secrets.
+Bare remotes accept pushes like GitHub.
 
 ```bash
-echo 'work' > work.txt
-git status
-git add work.txt
-git commit -m 'Add work.txt'
-git show --stat HEAD | tee show.txt
+cd ~/rebash-git/module-03
+set -euo pipefail
+git init --bare remotes/app.git
+cd app
+git remote add origin ../remotes/app.git
+git push -u origin main
+git remote -v | tee ../remote-v.txt
+cd ..
+git --git-dir=remotes/app.git log --oneline | tee bare-log.txt
+grep -q 'initial commit' bare-log.txt
 ```
 
-**Expected output:** show.txt lists work.txt in the commit.
+**Expected output:** Bare remote contains the commit; `origin` points at it.
 
-### Validation steps
+#### Task 3 – Clone and verify
 
-- [ ] Repository has at least two commits or a merge as designed
-- [ ] log/graph evidence files exist
-
-### Common errors and fixes
-
-| Error | Cause | Fix |
-|-------|-------|-----|
-| Author identity unknown | Missing user.name/email | Set local `git config user.*` as in Task 1 |
-| merge conflict | Overlapping edits | Edit file, `git add`, complete merge |
-| detached HEAD | Checked out a raw SHA | `git switch -c` a branch before committing |
-
-### Challenge exercise
-
-Use `git reflog` to recover a commit after a hard reset on a private branch.
-
-### Learning outcomes
-
-- Performed real Git operations
-- Left auditable history
-- Understood recovery basics
-
-### Cleanup
+CI-style fresh checkout.
 
 ```bash
-# Safe local repo — delete the lab directory when finished:
-# rm -rf "$(pwd)"
+cd ~/rebash-git/module-03
+set -euo pipefail
+git clone remotes/app.git clone
+cd clone
+git remote -v | tee ../clone-remote.txt
+git log --oneline | tee ../clone-log.txt
+test -f README.md
+tar -czf ../module-03-evidence.tgz -C .. init-log.txt remote-v.txt bare-log.txt clone-remote.txt clone-log.txt
+ls -l ../module-03-evidence.tgz | tee ../evidence.txt
 ```
 
-## Validation
+**Expected output:** Clone has `origin` and matching history; evidence archived.
 
+    ### Validation steps
 
+    - [ ] Bare log matches app history
+- [ ] `clone-remote.txt` lists origin
+- [ ] README exists in clone
 
+    ### Common errors and fixes
 
+    | Error | Cause | Fix |
+    |-------|-------|-----|
+    | remote origin already exists | Re-run after rm -rf | Remove app/remotes/clone and restart |
+| denied update | Pushed to non-bare checkout | Use `--bare` remote |
+| destination path exists | clone/ left over | rm -rf clone |
 
+    ### Challenge exercise
 
-- [ ] Lab commands run under `~/rebash-git/module-03/`
-- [ ] You can explain each Theory section in your own words
-- [ ] You used modern tooling where it applies to this topic
-- [ ] You can describe one production failure mode for this topic
+    Run `find remotes/app.git -maxdepth 2 -type d | tee bare-layout.txt` and note `hooks/` and `refs/` in your evidence notes.
 
-## Code Walkthrough
+    ### Learning outcomes
 
+    - Created bare remote
+- Pushed and cloned successfully
+- Verified origin URLs
 
+    ### Cleanup
 
+    ```bash
+    ls ~/rebash-git/module-03
+    ```
 
+    ## Validation
 
+    - [ ] Lab under `~/rebash-git/module-03/`
+- [ ] Explain bare vs non-bare
+- [ ] Explain what clone configures
+- [ ] Name one CI failure from bad clone URLs
 
-Production practice for **Creating and Cloning Repositories** always combines:
+    ## Code Walkthrough
 
-1. Inspect before you change (status, plan, logs, dry-run)
-2. Prefer reversible, documented changes (Git, IaC, drop-ins, version pins)
-3. Capture evidence (command output, pipeline logs) for handovers
-4. Prefer current tools and APIs over legacy shortcuts
-5. Least privilege — escalate credentials only when required
+    1. **Inspect remotes** — `git remote -v` after clone
+2. **Prefer bare for shared remotes** — avoids checkout conflicts
+3. **Pin default branch** — `init -b main`
+4. **Treat clone URL as config** — scripts should not hard-code one laptop path
+5. **Evidence in CI** — log the SHA after clone
 
-Keep runbooks short enough to follow under pressure. Automate checks; keep humans for judgement.
+    ## Security Considerations
 
-## Security Considerations
+    - Do not clone untrusted URLs that run smudge filters without review
+- Bare remotes still need access control on the server
+- Disable risky `uploadpack` options on public hosts
+- Keep credentials out of remote URLs
+- Verify first clone of internal hosts (SSH known_hosts)
 
+    ## Common Mistakes
 
+    !!! warning "Using a working tree as the team origin"
+    Pushes fail or overwrite someone else's checkout. **Fix:** Host a bare repo or use GitHub/GitLab.
 
+!!! warning "Nested git init inside another repo"
+    Submodule confusion and wrong roots. **Fix:** Check for parent `.git` with `git rev-parse --show-toplevel`.
 
+    ## Best Practices
 
+    - Standardise `main` as default
+- Document clone URLs in README
+- Use SSH or HTTPS consistently per org
+- Keep monorepo vs polyrepo decision explicit
+- Automate bare mirrors for air-gapped CI if needed
 
-- Treat credentials and tokens for git as privileged — never commit them
-- Prefer short-lived auth (OIDC, roles, SSO) over long-lived keys
-- Validate blast radius before apply/deploy/delete operations
-- Restrict who can approve production changes
-- Collect audit logs; limit who can read sensitive traces
+    ## Troubleshooting
 
-## Common Mistakes
+    | Symptom | Likely cause | Fix |
+    |---------|--------------|-----|
+    | fatal: not a git repository | Wrong directory | cd into project root |
+| refusing to merge unrelated histories | Separate inits | Do not force without understanding |
+| Permission denied | Filesystem ACLs on bare repo | Fix ownership on remotes/ |
 
+    ## Summary
 
+    You can initialise, publish to a bare remote, and clone — the same loop GitHub automates as a service. Next: [Basic Git Workflow — Add, Commit, Push](basic-git-workflow-add-commit-push.md).
 
+    ## Interview Questions
 
+**1. What is a bare repository?**
 
+??? success "Reveal answer"
+    A Git repo without a working tree, used as a remote/server endpoint that accepts pushes.
 
-!!! warning "Running `git init` inside an existing clone and creating a nested repo by accident  "
-    Validate assumptions against the Theory section and official docs before changing production.
+**2. What does git clone set up for you?**
 
-!!! warning "Cloning with HTTPS then struggling with credentials when SSH was intended  "
-    Lab shortcuts (open security groups, admin roles, skip approvals) must not ship unchanged.
+??? success "Reveal answer"
+    A local copy of objects, a checkout of the default branch, and a remote named origin pointing at the source URL.
 
-!!! warning "Changing production without a rollback path"
-    Always know how to revert (previous artefact, prior release, state rollback, DNS failback).
+**3. Why prefer git init -b main?**
 
-## Best Practices
+??? success "Reveal answer"
+    It creates the repository on main to match modern forge defaults and team scripts.
 
+**4. Can two developers share a non-bare repo over a network folder?**
 
+??? success "Reveal answer"
+    It is fragile; the checked-out branch cannot safely receive pushes. Use a bare remote or a forge.
 
+**5. Where do remotes live after clone?**
 
+??? success "Reveal answer"
+    In .git/config as remote.origin.url and fetch refspecs; list with git remote -v.
 
+**6. What is copied by clone?**
 
-- Encode Creating and Cloning Repositories changes as code and review them in pull requests
-- Pin versions (images, modules, actions, provider plugins)
-- Separate environments with clear promotion gates
-- Alert on symptoms with runbooks attached
-- Destroy lab resources; tag everything with owner and expiry where possible
+??? success "Reveal answer"
+    Reachable objects and refs from the source; you get full history of fetched branches (by default the default branch checkout).
 
-## Troubleshooting
+**7. How do you change origin URL?**
 
+??? success "Reveal answer"
+    git remote set-url origin NEWURL
 
+**8. Why might CI clone be shallow?**
 
+??? success "Reveal answer"
+    To save time/bandwidth with --depth; beware needing full history for blame/tags.
 
+    ## Related Tutorials
 
-
-| Symptom | Likely cause | Fix |
-|---------|--------------|-----|
-| Auth / permission denied | Wrong identity, policy, or scope | Check caller identity, roles, and least-privilege policies |
-| Timeout / no route | Network, DNS, security group, or endpoint | Trace path, DNS, and allow-lists before retrying |
-| Drift / unexpected plan | Manual change or wrong state/workspace | Reconcile desired vs actual; avoid click-ops on managed resources |
-| Pipeline/job red | Flaky step, cache, or missing secret | Read failing step logs; bisect recent workflow/config changes |
-| Cost spike | Idle load balancer, NAT, oversized compute | Inventory billable resources; stop/delete labs promptly |
-
-## Summary
-
-
-
-
-
-
-**Creating and Cloning Repositories** is essential for Cloud and DevOps engineers working with git. Practise the lab until the inspection and change path is muscle memory, then continue the track.
-
-## Interview Questions
-
-
-
-
-1. Difference between git init and git clone?
-2. Clone succeeds but push is denied — what do you verify?
-3. What is a bare repository used for?
-4. How do you clone only a single branch for a large repo?
-5. Why verify remote URL before first push?
-
-!!! tip "Sample answer — question 2"
-    Confirm remote permissions, SSH keys/auth, and that you are pushing to the intended URL (git remote -v).
-
-!!! tip "Sample answer — question 4"
-    Use least-privilege deploy keys. Never embed tokens in remote URLs that might be logged.
-
-## Related Tutorials
-
-
-
-
-
-
-- [Course overview](index.md)
+    - [Git Installation and Configuration](git-installation-and-configuration.md)
 - [Basic Git Workflow — Add, Commit, Push](basic-git-workflow-add-commit-push.md)
+- [Working with Remotes](working-with-remotes.md)
 
-## References
+    ## References
 
-
-
-
-
-
-- [git-init](https://git-scm.com/docs/git-init) · [git-clone](https://git-scm.com/docs/git-clone)
+    - [git-init](https://git-scm.com/docs/git-init)
+- [git-clone](https://git-scm.com/docs/git-clone)

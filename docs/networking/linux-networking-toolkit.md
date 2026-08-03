@@ -183,8 +183,11 @@ curl -sSI --max-time 10 https://example.com/ 2>&1 | tee 07-curl-headers.txt || t
 ```bash
 cd ~/rebash-networking/lab15
 set -euo pipefail
+```
 
-cat > netdiag.sh << 'EOF'
+Create `netdiag.sh`:
+
+```bash
 #!/usr/bin/env bash
 set -euo pipefail
 TARGET_HOST="${1:-example.com}"
@@ -225,8 +228,9 @@ curl -sS -o /dev/null -w 'http_code=%{http_code} time=%{time_total}\n' \
 
 tar -czf "$OUT/../evidence.tgz" -C "$OUT" .
 ls -l "$OUT/../evidence.tgz"
-EOF
+```
 
+```bash
 chmod +x netdiag.sh
 ./netdiag.sh example.com https://example.com/ ./diag-out
 test -s evidence.tgz

@@ -4,7 +4,7 @@ description: "Docker for Cloud & DevOps Engineers — 17 modules covering contai
 difficulty: beginner
 estimated_time: "6–8 weeks"
 author: Shaik Basha
-last_updated: "2026-07-31"
+last_updated: "2026-08-03"
 category: docker
 tags:
   - docker

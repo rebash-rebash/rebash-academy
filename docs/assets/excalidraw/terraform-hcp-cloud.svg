@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="840" height="180"
+     viewBox="0 0 840 180" role="img" aria-label="terraform-cloud">
+  <rect width="100%" height="100%" fill="#fffef8"/>
+  <text x="400.0" y="28.0" text-anchor="middle" font-family="Virgil, Segoe Print, Comic Sans MS, cursive" font-size="18" font-weight="700" fill="#1e1e1e">HCP Terraform / Cloud</text>
+
+  <path d="M 52.7,73.4 L 193.4,73.3 Q 203.4,73.3 203.4,83.3 L 202.7,132.9 Q 202.7,142.9 192.7,142.9 L 52.7,142.1 Q 42.7,142.1 42.7,132.1 L 42.7,83.4 Q 42.7,73.4 52.7,73.4 Z" fill="#00000022" stroke="none"/>
+  <path d="M 49.1,70.6 L 190.5,70.6 Q 200.5,70.6 200.5,80.6 L 199.4,129.7 Q 199.4,139.7 189.4,139.7 L 49.1,140.3 Q 39.1,140.3 39.1,130.3 L 39.1,80.6 Q 39.1,70.6 49.1,70.6 Z" fill="#a5d8ff" stroke="#1971c2" stroke-width="2"/>
+  
+  <text x="120.0" y="99.0" text-anchor="middle"
+        font-family="Virgil, Segoe Print, Comic Sans MS, cursive"
+        font-size="14" font-weight="700" fill="#1e1e1e">VCS</text>
+  <text x="120.0" y="119.0" text-anchor="middle" font-family="Virgil, Segoe Print, Comic Sans MS, cursive" font-size="12" fill="#1e1e1e">Git PR</text>
+
+
+  <path d="M 252.7,72.6 L 433.5,74.0 Q 443.5,74.0 443.5,84.0 L 443.0,133.9 Q 443.0,143.9 433.0,143.9 L 252.6,143.3 Q 242.6,143.3 242.6,133.3 L 242.7,82.6 Q 242.7,72.6 252.7,72.6 Z" fill="#00000022" stroke="none"/>
+  <path d="M 250.1,70.8 L 430.1,69.5 Q 440.1,69.5 440.1,79.5 L 440.9,129.6 Q 440.9,139.6 430.9,139.6 L 250.2,139.5 Q 240.2,139.5 240.2,129.5 L 240.1,80.8 Q 240.1,70.8 250.1,70.8 Z" fill="#b2f2bb" stroke="#2f9e44" stroke-width="2"/>
+  
+  <text x="340.0" y="99.0" text-anchor="middle"
+        font-family="Virgil, Segoe Print, Comic Sans MS, cursive"
+        font-size="14" font-weight="700" fill="#1e1e1e">HCP Terraform</text>
+  <text x="340.0" y="119.0" text-anchor="middle" font-family="Virgil, Segoe Print, Comic Sans MS, cursive" font-size="12" fill="#1e1e1e">runs · policy</text>
+
+
+  <path d="M 493.7,73.0 L 633.4,72.0 Q 643.4,72.0 643.4,82.0 L 642.6,133.6 Q 642.6,143.6 632.6,143.6 L 493.8,143.6 Q 483.8,143.6 483.8,133.6 L 483.7,83.0 Q 483.7,73.0 493.7,73.0 Z" fill="#00000022" stroke="none"/>
+  <path d="M 489.2,70.9 L 629.6,70.6 Q 639.6,70.6 639.6,80.6 L 640.5,129.6 Q 640.5,139.6 630.5,139.6 L 489.1,140.1 Q 479.1,140.1 479.1,130.1 L 479.2,80.9 Q 479.2,70.9 489.2,70.9 Z" fill="#ffd8a8" stroke="#e8590c" stroke-width="2"/>
+  
+  <text x="560.0" y="99.0" text-anchor="middle"
+        font-family="Virgil, Segoe Print, Comic Sans MS, cursive"
+        font-size="14" font-weight="700" fill="#1e1e1e">State</text>
+  <text x="560.0" y="119.0" text-anchor="middle" font-family="Virgil, Segoe Print, Comic Sans MS, cursive" font-size="12" fill="#1e1e1e">remote</text>
+
+
+  <path d="M 692.9,72.6 L 793.2,73.9 Q 803.2,73.9 803.2,83.9 L 803.2,132.4 Q 803.2,142.4 793.2,142.4 L 692.7,142.1 Q 682.7,142.1 682.7,132.1 L 682.9,82.6 Q 682.9,72.6 692.9,72.6 Z" fill="#00000022" stroke="none"/>
+  <path d="M 690.2,70.5 L 790.2,70.9 Q 800.2,70.9 800.2,80.9 L 799.7,130.0 Q 799.7,140.0 789.7,140.0 L 690.9,139.4 Q 680.9,139.4 680.9,129.4 L 680.2,80.5 Q 680.2,70.5 690.2,70.5 Z" fill="#d0bfff" stroke="#7048e8" stroke-width="2"/>
+  
+  <text x="740.0" y="99.0" text-anchor="middle"
+        font-family="Virgil, Segoe Print, Comic Sans MS, cursive"
+        font-size="14" font-weight="700" fill="#1e1e1e">Cloud</text>
+  <text x="740.0" y="119.0" text-anchor="middle" font-family="Virgil, Segoe Print, Comic Sans MS, cursive" font-size="12" fill="#1e1e1e">apply</text>
+
+
+  <path d="M 200.0,105.0 L 214.3,104.6 L 227.3,105.9 L 240.0,105.0" stroke="#1e1e1e" stroke-width="2" fill="none"/>
+  <path d="M 240.0,105.0 L 233.1,109.0 M 240.0,105.0 L 233.1,101.0"
+        stroke="#1e1e1e" stroke-width="2" fill="none"/>
+
+
+  <path d="M 440.0,105.0 L 453.7,105.0 L 467.3,103.9 L 480.0,105.0" stroke="#1e1e1e" stroke-width="2" fill="none"/>
+  <path d="M 480.0,105.0 L 473.1,109.0 M 480.0,105.0 L 473.1,101.0"
+        stroke="#1e1e1e" stroke-width="2" fill="none"/>
+
+
+  <path d="M 640.0,105.0 L 653.9,104.7 L 667.0,106.1 L 680.0,105.0" stroke="#1e1e1e" stroke-width="2" fill="none"/>
+  <path d="M 680.0,105.0 L 673.1,109.0 M 680.0,105.0 L 673.1,101.0"
+        stroke="#1e1e1e" stroke-width="2" fill="none"/>
+
+</svg>

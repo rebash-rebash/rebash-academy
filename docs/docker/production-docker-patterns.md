@@ -32,7 +32,7 @@ tags:
   - docker
   - production
 author: Shaik Basha
-last_updated: "2026-07-31"
+last_updated: "2026-08-03"
 comments: false
 ---
 
@@ -135,22 +135,18 @@ Codify these patterns in a platform template repository so every new service inh
 
 ## Hands-on Lab
 
-
-
 ### Objective
 
-Build or run a real Docker solution for **Production Docker Patterns** and prove it with inspect/logs/HTTP.
+Stand up a production-minded Compose stack with pinned tags, non-root user, healthcheck, restart policy, and labels — then prove each control via `docker inspect`.
 
 ### Prerequisites
 
-- Docker Engine or Docker Desktop
-- Permission to run containers
+- Docker Engine with Compose v2
+- Port `18170` available on the host
 
 ### Lab environment
 
 Workspace: `~/rebash-docker/module-17`
-
-Local Docker daemon. Clean up containers/images after the lab.
 
 ```bash
 mkdir -p ~/rebash-docker/module-17 && cd ~/rebash-docker/module-17
@@ -158,64 +154,146 @@ mkdir -p ~/rebash-docker/module-17 && cd ~/rebash-docker/module-17
 
 ### Real-world scenario
 
-You are validating **Production Docker Patterns** before it lands in CI. The change must be reproducible with copy-paste commands and leave no orphan containers.
+You are hardening a small edge API before production. Requirements: pinned image tag, `unless-stopped` restart, health gate, observability labels, and non-root UID — all verifiable from inspect output.
 
 ### Step-by-step tasks
 
-#### Task 1 – Run and inspect a container
+#### Task 1 – Create hardened service files
 
-Start from a known image, publish a port, and verify HTTP.
+Create `Dockerfile`:
 
-```bash
-docker run -d --name rebash-lab -p 18080:80 nginx:alpine
-docker ps --filter name=rebash-lab
-curl -sI http://127.0.0.1:18080 | head -n 5 | tee headers.txt
-docker logs rebash-lab 2>&1 | head -n 10 | tee logs.txt
+```dockerfile
+FROM python:3.12-alpine
+RUN addgroup -S app && adduser -S app -G app
+WORKDIR /app
+COPY app.py .
+USER app
+EXPOSE 8080
+CMD ["python", "app.py"]
 ```
 
-**Expected output:** Container Up; HTTP 200 in headers.txt.
+Create `app.py`:
 
-#### Task 2 – Inspect runtime config
+```python
+from http.server import BaseHTTPRequestHandler, HTTPServer
 
-Use inspect for status — production debugging rarely starts with guesswork.
+class H(BaseHTTPRequestHandler):
+    def do_GET(self):
+        if self.path == "/healthz":
+            self.send_response(200)
+            self.end_headers()
+            self.wfile.write(b"ok\n")
+            return
+        if self.path == "/":
+            self.send_response(200)
+            self.end_headers()
+            self.wfile.write(b"rebash-prod-lab\n")
+            return
+        self.send_error(404)
+    def log_message(self, *args):
+        return
 
-```bash
-docker inspect rebash-lab --format '{{ "{{" }}.State.Status{{ "}}" }} {{ "{{" }}.Config.Image{{ "}}" }}' | tee inspect.txt
-test -s inspect.txt
+HTTPServer(("0.0.0.0", 8080), H).serve_forever()
 ```
 
-**Expected output:** inspect.txt shows `running` and the nginx image.
+Create `compose.yaml`:
+
+```yaml
+services:
+  edge:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: rebash-prod-lab:1.0.0
+    user: "app"
+    ports:
+      - "18170:8080"
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "python -c \"import urllib.request; urllib.request.urlopen('http://127.0.0.1:8080/healthz')\""]
+      interval: 10s
+      timeout: 3s
+      retries: 3
+    labels:
+      app: rebash-prod-lab
+      env: lab
+      owner: platform
+```
+
+Start the stack:
+
+```bash
+cd ~/rebash-docker/module-17
+docker compose up -d --build
+docker compose ps | tee prod-ps.txt
+grep -q rebash-prod-lab prod-ps.txt
+```
+
+**Expected output:** Service shows running in `prod-ps.txt`.
+
+#### Task 2 – HTTP and health verification
+
+```bash
+cd ~/rebash-docker/module-17
+sleep 15
+curl -sS http://127.0.0.1:18170/healthz | tee prod-health.txt
+curl -sS http://127.0.0.1:18170/ | tee prod-root.txt
+grep -q ok prod-health.txt
+grep -q rebash-prod-lab prod-root.txt
+```
+
+**Expected output:** Health returns `ok`; root path returns `rebash-prod-lab`.
+
+#### Task 3 – Prove production controls via inspect
+
+{% raw %}
+```bash
+cd ~/rebash-docker/module-17
+CID="$(docker compose ps -q edge)"
+docker inspect "$CID" --format 'User={{ "{{" }}.Config.User{{ "}}" }} Restart={{ "{{" }}.HostConfig.RestartPolicy.Name{{ "}}" }} Health={{ "{{" }}.State.Health.Status{{ "}}" }}' | tee prod-inspect.txt
+docker inspect "$CID" --format '{{ "{{" }}.Config.Labels{{ "}}" }}' | tee prod-labels.txt
+grep -q 'User=app' prod-inspect.txt
+grep -q 'unless-stopped' prod-inspect.txt
+grep -q 'rebash-prod-lab' prod-labels.txt
+```
+{% endraw %}
+
+**Expected output:** Inspect shows non-root user, restart policy, labels, and health status.
 
 ### Validation steps
 
-- [ ] Container or image behaves as Expected output describes
-- [ ] Ports respond or command output matches
-- [ ] Cleanup removes lab resources
+- [ ] Compose file pins image tag and sets restart policy
+- [ ] Healthcheck and HTTP endpoints respond
+- [ ] Inspect confirms User, RestartPolicy, and Labels
+- [ ] Cleanup tears down stack and volumes
 
 ### Common errors and fixes
 
 | Error | Cause | Fix |
 |-------|-------|-----|
-| port is already allocated | Previous lab left a container | `docker rm -f` the old name or change port |
-| permission denied | User not in docker group | Use rootless Docker or fix group membership |
-| manifest unknown | Bad tag | Pin a real tag such as `nginx:alpine` |
+| nginx fails as non-root | Default nginx wants root | Use the Python edge service in this lab |
+| Healthcheck fail | Probe before app listens | Wait 15s after `compose up` |
+| Port 18170 in use | Another lab | Change host port in compose |
+| Permission denied on config mount | Wrong file ownership | Keep config world-readable on host |
 
 ### Challenge exercise
 
-Add a non-root USER (or Compose healthcheck) and prove it with inspect.
+Add a `deploy.resources.limits` block (Compose v3+) for memory and prove limits in inspect on supported engines.
 
 ### Learning outcomes
 
-- Executed a real Docker workflow
-- Captured evidence files
-- Removed disposable resources
+- Applied pinned tags, restart policy, and labels in Compose
+- Ran nginx as non-root with a custom config
+- Validated healthchecks end-to-end
+- Proved controls with inspect instead of documentation alone
 
 ### Cleanup
 
 ```bash
-docker rm -f rebash-lab 2>/dev/null || true
-docker rmi rebash-lab:local 2>/dev/null || true
-docker compose down -v 2>/dev/null || true
+cd ~/rebash-docker/module-17
+docker compose down -v --remove-orphans
+docker rmi rebash-prod-lab:1.0.0 2>/dev/null || true
+rm -f *.txt
 ```
 
 ## Validation

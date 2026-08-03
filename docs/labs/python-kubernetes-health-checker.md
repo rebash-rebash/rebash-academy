@@ -68,9 +68,9 @@ pip install 'kubernetes>=29.0,<32'
 ```
 
 ## Initial State — fixture
+Create `fixtures/pods.json`:
 
-```bash
-cat > fixtures/pods.json << 'EOF'
+```json
 {
   "namespace": "payments",
   "pods": [
@@ -79,7 +79,6 @@ cat > fixtures/pods.json << 'EOF'
     {"name": "worker-1", "phase": "CrashLoopBackOff", "ready": false, "restarts": 12}
   ]
 }
-EOF
 ```
 
 ## Task

@@ -180,13 +180,10 @@ You are writing a small uptime helper for an internal admin API. Security wants 
 
 #### Task 1 – GET with timeout and status assert
 
-```bash
-cd ~/rebash-python/lab14
-set -euo pipefail
-# shellcheck disable=SC1091
-source .venv/bin/activate
 
-cat > fetch_status.py << 'EOF'
+Create `fetch_status.py`:
+
+```python
 #!/usr/bin/env python3
 """GET with explicit timeout and status handling."""
 from __future__ import annotations
@@ -233,8 +230,15 @@ def main() -> int:
 
 if __name__ == "__main__":
     raise SystemExit(main())
-EOF
+```
 
+Run:
+
+```bash
+cd ~/rebash-python/lab14
+set -euo pipefail
+# shellcheck disable=SC1091
+source .venv/bin/activate
 python fetch_status.py | tee live-get-run.txt
 test -s live-get.json
 ```
@@ -243,13 +247,10 @@ test -s live-get.json
 
 #### Task 2 – Simple retry loop for transient failures
 
-```bash
-cd ~/rebash-python/lab14
-set -euo pipefail
-# shellcheck disable=SC1091
-source .venv/bin/activate
 
-cat > fetch_with_retry.py << 'EOF'
+Create `fetch_with_retry.py`:
+
+```python
 #!/usr/bin/env python3
 """Retry GET on 429/5xx with bounded attempts (safe for idempotent GET)."""
 from __future__ import annotations
@@ -296,8 +297,15 @@ def main() -> int:
 
 if __name__ == "__main__":
     raise SystemExit(main())
-EOF
+```
 
+Run:
+
+```bash
+cd ~/rebash-python/lab14
+set -euo pipefail
+# shellcheck disable=SC1091
+source .venv/bin/activate
 python fetch_with_retry.py | tee retry-run.txt
 test -s retry-get.json
 ```
@@ -306,21 +314,20 @@ test -s retry-get.json
 
 #### Task 3 – Offline mock fallback and evidence pack
 
-```bash
-cd ~/rebash-python/lab14
-set -euo pipefail
-# shellcheck disable=SC1091
-source .venv/bin/activate
 
-cat > mock-response.json << 'EOF'
+Create `mock-response.json`:
+
+```json
 {
   "args": {},
   "headers": {"User-Agent": "rebash-lab14"},
   "url": "https://httpbin.org/get"
 }
-EOF
+```
 
-cat > api_client.py << 'EOF'
+Create `api_client.py`:
+
+```python
 #!/usr/bin/env python3
 """Live GET or offline mock — never log secrets."""
 from __future__ import annotations
@@ -387,12 +394,11 @@ def main() -> int:
 
 if __name__ == "__main__":
     raise SystemExit(main())
-EOF
+```
 
-python api_client.py --mock | tee mock-run.txt
-LAB14_FORCE_MOCK=0 python api_client.py | tee api-run.txt || python api_client.py --mock | tee api-run.txt
+Create `pack_evidence.py`:
 
-python - << 'EOF'
+```python
 import json
 from pathlib import Path
 
@@ -401,7 +407,18 @@ pack = {name: json.loads(Path(name).read_text(encoding="utf-8")) for name in fil
 Path("lab14-evidence.json").write_text(json.dumps(pack, indent=2) + "\n", encoding="utf-8")
 assert Path("api-evidence.json").stat().st_size > 0
 print("evidence pack ok")
-EOF
+```
+
+Run:
+
+```bash
+cd ~/rebash-python/lab14
+set -euo pipefail
+# shellcheck disable=SC1091
+source .venv/bin/activate
+python api_client.py --mock | tee mock-run.txt
+LAB14_FORCE_MOCK=0 python api_client.py | tee api-run.txt || python api_client.py --mock | tee api-run.txt
+python pack_evidence.py
 ```
 
 **Expected output:** `api-evidence.json` shows `mode` of `mock`, `live`, or `mock-fallback`; `lab14-evidence.json` packs the artefacts.

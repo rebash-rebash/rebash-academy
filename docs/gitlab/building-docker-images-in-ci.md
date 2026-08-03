@@ -34,7 +34,7 @@ tags:
   - buildkit
   - registry
 author: Shaik Basha
-last_updated: "2026-07-31"
+last_updated: "2026-08-03"
 comments: false
 ---
 
@@ -151,96 +151,158 @@ Cache mounts and registry pull-through caches accelerate rebuilds; they do not r
 
 ## Hands-on Lab
 
-
-
 ### Objective
 
-Author a valid `.gitlab-ci.yml` that models **Building Docker Images in CI** and validate it locally before pushing.
+Create a `Dockerfile`, author a `.gitlab-ci.yml` with a Docker-in-Docker build stub using pinned images, and validate YAML offline — optionally building the image locally if Docker Engine is available.
 
 ### Prerequisites
 
 - Python 3 with PyYAML (`pip install pyyaml`)
-- Optional: GitLab project to run the pipeline
+- Optional: Docker Engine locally to run `docker build`
+- Optional: GitLab runner with `docker:dind` service for live builds
 
 ### Lab environment
 
 Workspace: `~/rebash-gitlab/module-08`
 
-File-first lab. Push to GitLab only when you want a runner to execute jobs.
+File-first lab. YAML validates without Docker; build steps are optional locally.
 
 ```bash
-mkdir -p ~/rebash-gitlab/module-08 && cd ~/rebash-gitlab/module-08
+mkdir -p ~/rebash-gitlab/module-08/src && cd ~/rebash-gitlab/module-08
 ```
 
 ### Real-world scenario
 
-Your squad is encoding **Building Docker Images in CI** as CI. Reviewers reject YAML that does not parse or that skips artefacts/needs incorrectly.
+Your team ships containerised services. Security requires pinned base images and CI builds that push to the GitLab Container Registry. You create a minimal Dockerfile and a `docker:dind` job stub that builds and tags an image — validated offline before consuming runner capacity.
 
 ### Step-by-step tasks
 
-#### Task 1 – Write pipeline YAML
+#### Task 1 – Create the application and Dockerfile
 
-Stages and jobs must be explicit so MR pipelines are predictable.
+Create `src/app.py`:
 
-```bash
-mkdir -p src && echo 'print("ok")' > src/app.py
-cat > .gitlab-ci.yml << 'EOF'
-stages: [lint, test]
-lint:
-  stage: lint
-  image: python:3.12-alpine
-  script:
-    - python -m py_compile src/app.py
-test:
-  stage: test
-  image: python:3.12-alpine
-  needs: [lint]
-  script:
-    - python src/app.py
-EOF
-python3 -c "import yaml; d=yaml.safe_load(open('.gitlab-ci.yml')); assert d['stages']==['lint','test']; print('OK', list(d))"
+```python
+print("docker-ci ok")
 ```
 
-**Expected output:** Prints `OK` and job names; no YAML exception.
+Create `Dockerfile`:
 
-#### Task 2 – Simulate the scripts locally
-
-Prove the job script works before burning runner minutes.
-
-```bash
-python3 -m py_compile src/app.py
-python3 src/app.py | tee out.txt
-test "$(cat out.txt)" = 'ok'
+```dockerfile
+FROM python:3.12-alpine
+WORKDIR /app
+COPY src/app.py .
+CMD ["python", "app.py"]
 ```
 
-**Expected output:** Compile succeeds; out.txt is `ok`.
+Verify Dockerfile syntax offline:
+
+```bash
+cd ~/rebash-gitlab/module-08
+grep -q 'FROM python:3.12-alpine' Dockerfile
+grep -q 'COPY src/app.py' Dockerfile
+```
+
+**Expected output:** Both greps succeed silently.
+
+#### Task 2 – Author the Docker build pipeline stub
+
+Create `.gitlab-ci.yml`:
+
+```yaml
+variables:
+  DOCKER_DRIVER: overlay2
+  IMAGE_TAG: $CI_REGISTRY_IMAGE:$CI_COMMIT_SHORT_SHA
+
+stages:
+  - build
+
+docker_build:
+  stage: build
+  image: docker:27-cli
+  services:
+    - name: docker:27-dind
+      alias: docker
+  variables:
+    DOCKER_TLS_CERTDIR: "/certs"
+  before_script:
+    - docker info
+  script:
+    - docker build -t "$IMAGE_TAG" .
+    - echo "Built image $IMAGE_TAG"
+  rules:
+    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
+```
+
+Validate offline:
+
+```bash
+cd ~/rebash-gitlab/module-08
+python3 -c "
+import yaml
+d = yaml.safe_load(open('.gitlab-ci.yml'))
+assert d['docker_build']['image'] == 'docker:27-cli'
+assert d['docker_build']['services'][0]['name'] == 'docker:27-dind'
+print('OK docker build stub')
+"
+```
+
+**Expected output:** Prints `OK docker build stub`.
+
+#### Task 3 – Optional local build; required offline simulation
+
+If Docker Engine is installed:
+
+```bash
+cd ~/rebash-gitlab/module-08
+docker build -t rebash-module-08:lab .
+docker run --rm rebash-module-08:lab | tee docker-out.txt
+grep -q 'docker-ci ok' docker-out.txt
+```
+
+If Docker is not available, simulate the run path:
+
+```bash
+cd ~/rebash-gitlab/module-08
+python3 src/app.py | tee docker-out.txt
+grep -q 'docker-ci ok' docker-out.txt
+```
+
+**Expected output:** `docker-out.txt` contains `docker-ci ok`.
 
 ### Validation steps
 
-- [ ] `.gitlab-ci.yml` parses
-- [ ] Local script path matches job intent
+- [ ] `Dockerfile` pins `python:3.12-alpine`
+- [ ] CI job uses pinned `docker:27-cli` and `docker:27-dind`
+- [ ] `.gitlab-ci.yml` parses with PyYAML
+- [ ] Build output contains `docker-ci ok` (local Docker or Python simulation)
+- [ ] No registry credentials hard-coded in YAML
 
 ### Common errors and fixes
 
 | Error | Cause | Fix |
 |-------|-------|-----|
-| yaml.scanner.ScannerError | Indentation | Use 2-space indent; re-validate with PyYAML |
-| job stuck pending | No runner / tags | Check runner tags match job tags |
-| needs not found | Typo in job name | Align `needs` with actual job keys |
+| `Cannot connect to Docker daemon` | DinD service missing or TLS misconfigured | Add `docker:27-dind` service and `DOCKER_TLS_CERTDIR` |
+| Wrong architecture image | Unpinned `docker:latest` | Pin `docker:27-cli` and matching dind tag |
+| Push fails with 403 | `CI_REGISTRY` login not run | Add `docker login` with `CI_JOB_TOKEN` before push (next module pattern) |
+| Build context too large | No `.dockerignore` | Add `.dockerignore` excluding `.git` and caches |
 
 ### Challenge exercise
 
-Add an `artifacts:` path from lint to test and document expire_in.
+Add a `kaniko_build` job using `gcr.io/kaniko-project/executor:v1.23.2-debug` as an alternative that does not require DinD. Keep both jobs behind different `rules` so only one runs per pipeline.
 
 ### Learning outcomes
 
-- Produced reviewable GitLab CI YAML
-- Validated structure and scripts locally
+- Wrote a minimal production-style Dockerfile with pinned base image
+- Modelled Docker-in-Docker build jobs with pinned CI images
+- Validated pipeline YAML offline before runner execution
+- Understood when local `docker build` substitutes for CI
 
 ### Cleanup
 
 ```bash
-# File-only lab — keep YAML for the next tutorial
+docker rmi rebash-module-08:lab 2>/dev/null || true
+rm -f ~/rebash-gitlab/module-08/docker-out.txt
+# Keep Dockerfile and .gitlab-ci.yml for module 09
 ```
 
 ## Validation

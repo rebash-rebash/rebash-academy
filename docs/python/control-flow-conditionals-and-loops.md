@@ -164,8 +164,11 @@ cd ~/rebash-python/lab03
 set -euo pipefail
 # shellcheck disable=SC1091
 source .venv/bin/activate
+```
 
-cat > inventory.txt << 'EOF'
+Create `inventory.txt`:
+
+```text
 # name,env,status
 web-01,prod,active
 web-02,prod,draining
@@ -174,9 +177,11 @@ api-01,staging,active
 db-01,prod,active
 batch-01,dev,active
 db-02,prod,active
-EOF
+```
 
-cat > filter_inventory.py << 'PY'
+Create `filter_inventory.py`:
+
+```python
 """Filter inventory rows with conditionals and loops."""
 from __future__ import annotations
 
@@ -240,7 +245,13 @@ def main() -> int:
 
 if __name__ == "__main__":
     raise SystemExit(main())
-PY
+```
+
+Run:
+
+```bash
+test -f inventory.txt
+test -f filter_inventory.py
 ```
 
 **Expected output:** `inventory.txt` and `filter_inventory.py` exist.
@@ -268,8 +279,11 @@ cd ~/rebash-python/lab03
 set -euo pipefail
 # shellcheck disable=SC1091
 source .venv/bin/activate
+```
 
-cat > route_status.py << 'PY'
+Create `route_status.py`:
+
+```python
 """match-based status router (Python 3.10+)."""
 from __future__ import annotations
 
@@ -302,8 +316,11 @@ if __name__ == "__main__":
     out = demo_loop()
     print("|".join(out))
     assert out == ["active:run-checks", "draining:no-new-traffic"], out
-PY
+```
 
+Run:
+
+```bash
 python route_status.py | tee route-output.txt
 grep -F 'active:run-checks|draining:no-new-traffic' route-output.txt
 

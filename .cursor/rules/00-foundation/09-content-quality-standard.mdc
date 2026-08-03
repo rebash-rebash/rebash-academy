@@ -25,6 +25,8 @@ Prefer **Codex** for content generation until the user explicitly changes the ag
 8. **Production judgement** — when to use, when to avoid, what breaks when misconfigured.
 9. **Audience progression in prose** — deepen from beginner to professional inside normal paragraphs. Do **not** use labelled blocks such as “For beginners:” / “For practitioners:” / “For professionals:”.
 10. **Clear English for Indian learners** — short sentences, plain vocabulary, jargon explained simply. Prefer wording Indian students and IT professionals already use in college and industry. Avoid unexplained idioms and dense native-speaker slang.
+11. **Production-grade interview labs (mandatory)** — every Hands-on Lab must prepare learners for **real Cloud / DevOps / Platform / SRE interviews and day-1 job work**. Tasks must **build, break, inspect, fix, and prove** real systems. Simple toy labs, validate-only exercises, and “optional if you have a cluster” as the whole outcome are **fail**.
+12. **No principle-capture lab tasks** — never “Capture principles / workflow stages / glossary” as YAML/JSON/markdown. That belongs in Theory and Interview Questions. Lab Task 1 must start real work (create config, apply, harden, deploy).
 
 ---
 
@@ -47,26 +49,41 @@ Write like a great reference article:
 
 ## Hands-on Lab (in-tutorial and standalone)
 
+**Bar:** production-grade **interview preparation** — not simple demos. A hiring panel should recognise the lab as something a mid-level engineer would do on a real team.
+
 Canonical subsections (order fixed):
 
 1. Objective  
 2. Prerequisites  
-3. Lab environment (path + runtime; prefer disposable Ubuntu VM / Docker / kind as appropriate)  
-4. Real-world scenario (2–4 sentences)  
+3. Lab environment (path + runtime; prefer disposable Ubuntu VM / Docker / kind / cloud sandbox as appropriate)  
+4. Real-world scenario (2–4 sentences — production ticket style)  
 5. Step-by-step tasks (`#### Task N – …`)  
-6. Validation steps  
+6. Validation steps (prove the **system**, not only that a CLI syntax-checked)  
 7. Common errors and fixes (Error \| Cause \| Fix)  
 8. Challenge exercise (working stretch artefact)  
 9. Learning outcomes  
 10. Cleanup  
 
+### Production / interview lab rules (mandatory)
+
+| Required | Forbidden (fail review) |
+|----------|-------------------------|
+| Create or change **real** resources (packages, units, containers, K8s objects, cloud infra, pipelines, state backends) | Entire lab is `null_resource` / `local_file` / echo toys |
+| Operational proof with real CLIs (`systemctl`, `kubectl`, `aws`/`gcloud`/`az`, `terraform apply`, `ansible-playbook`, CI runner) | Pass criterion is only `validate` / `fmt` / “file exists” |
+| At least one **failure or drift** the learner must diagnose and fix | Happy-path only with no troubleshooting |
+| Cleanup that removes billable or durable resources | Leave cloud/K8s leftovers; skip destroy |
+| Scenario matches interview / on-call work for this topic | Toy “hello world” with no production stakes |
+
+State sandbox accounts, kind, LocalStack, or disposable VMs clearly in Prerequisites. Prefer **live apply** in a free/sandbox tier over simulate-forever. Validation may *include* asserts — it must not *replace* real work.
+
 ### Command rules
 
-- Copy-paste safe in `bash` (use heredocs; quote paths; `set -euo pipefail` in scripts).
+- **Create file → show code → run → expected output.** Introduce files as “Create `name.ext`:” with a language fence. Do **not** use `cat <<EOF`, `echo … > file`, or `printf` to write multi-line files in labs.
+- Short `bash` fences for run / verify / cleanup only (quote paths; `set -euo pipefail` inside scripts the learner creates).
 - Escape MkDocs macros: `${{`, `{%`, Go `{{` templates (`{% raw %}` or `{{ "{{" }}…{{ "}}" }}`).
 - Prefer modern tools (`ip`/`ss`, `systemctl`/`journalctl`) with honest fallbacks only when needed.
-- Safe defaults: local/null/kind; cloud read-only or sandbox warnings; no secrets in repo.
-- **2–4 tasks** minimum, each tied to Theory.
+- Safe defaults: disposable sandbox, kind, LocalStack; cloud warnings and mandatory cleanup; no secrets in repo. Do **not** use “safe” as an excuse for toy-only labs.
+- **2–4 tasks** minimum, each tied to Theory and interview-relevant.
 
 ### Topic fidelity (examples)
 
@@ -135,6 +152,10 @@ Diagrams: **Excalidraw only** under `docs/assets/excalidraw/` (never D2/Mermaid 
 - Interview Qs unrelated to the page Theory  
 - D2 diagrams or stale `## Goal` / `{ .ra-facts }` tutorial skeletons  
 - Marketing / buzzword padding  
+- **Simple / toy labs** sold as production practice  
+- **Validate-only** or “optional apply skipped” as the sole success path  
+- Provider stubs (`null` / fake sim) when a sandbox/kind/LocalStack apply is feasible for the topic  
+- **Capture principles / stages / glossary** tasks (notes files as the exercise)  
 
 ---
 

@@ -1,16 +1,16 @@
 ---
 title: "Pull Requests and Code Review"
-description: "Open pull requests, run code reviews, use branch protection and CODEOWNERS, and follow a DevOps-ready review process."
+description: "Run the pull request lifecycle, configure CODEOWNERS, and apply branch protection YAML for IaC and pipeline changes."
 difficulty: intermediate
-estimated_time: "40–55 min"
+estimated_time: "50–65 min"
 technology: git
 category: git
 module: "Module 10 · Collaboration"
 career_paths:
-  - beginner
   - devops-engineer
+  - cloud-engineer
   - platform-engineer
-  - site-reliability-engineer
+  - devsecops-engineer
 skills:
   - github
   - pull-requests
@@ -22,354 +22,373 @@ next:
 related:
   - git/production-git-practices
   - git/signed-commits-and-git-security
-labs: []
-projects: []
-interview: interview/git
-certifications:
-  - GitHub Foundations
 tags:
   - github
   - pull-request
+  - code-review
   - codeowners
 author: Shaik Basha
-last_updated: "2026-07-31"
+last_updated: "2026-08-03"
 comments: false
 ---
-
 
 # Pull Requests and Code Review
 
 ## Overview
 
+**Pull requests (PRs)** propose integrating a branch into a protected target (usually `main`). They bundle diff, discussion, CI status, and approval records — the audit trail regulators expect. **CODEOWNERS** routes reviews to platform or security teams for sensitive paths. **Branch protection** enforces reviews and green checks before merge.
 
-
-
-
-
-Open a PR with a clear description, understand required reviews and CODEOWNERS, and review changes with an ops risk lens (secrets, blast radius, rollback).
-
-PRs are the change-control gate for `main`. Branch protection + required checks beat informal “just push.”
-
-This is a core tutorial in **Module 10 · Collaboration** of the REBASH Academy **Git for Cloud & DevOps Engineers** series — written for Cloud, DevOps, Platform, and SRE engineers.
+This is **Tutorial 1** in **Module 10: Collaboration** of the REBASH Academy **Git & GitHub for Cloud & DevOps Engineers** series — written for Cloud, DevOps, Platform, and SRE engineers.
 
 ## Prerequisites
 
-
-
-
-
-
 - [GitHub Fundamentals](github-fundamentals.md)
-- [Branching](branching-fundamentals.md)
+- [Branching Fundamentals](branching-fundamentals.md)
+- Git 2.x
 
 ## Learning Objectives
 
-
-
-
-
-
 By the end of this tutorial, you will be able to:
 
-- [ ] Open a PR from a feature branch  
-- [ ] Write review-friendly descriptions  
-- [ ] Explain branch protection rules  
-- [ ] Add a CODEOWNERS file  
-- [ ] Review for security and operability
+- [ ] Describe the PR lifecycle from branch push to merge
+- [ ] Author CODEOWNERS for Terraform and pipeline paths
+- [ ] Build branch protection YAML for `main`
+- [ ] Simulate PR review with local merge --no-ff and review notes file
+- [ ] Store artefacts under `~/rebash-git/module-10`
 
 ## Architecture
 
+Feature branch pushes to origin; PR opens against main; reviewers comment; CI runs; merge updates main; branch deleted.
 
-
-
-
-
-This topic’s control points and relationships are shown below.
-
-![PR lifecycle](../assets/excalidraw/git-pr-lifecycle.svg)
+![Pull request lifecycle](../assets/excalidraw/git-pr-lifecycle.svg)
 
 ## Theory
 
+### What it is
 
+A **pull request** is a forge object linking source branch, target branch, diff, and metadata. **Code review** is human (or bot) validation of correctness, security, and operability before merge. **CODEOWNERS** (`.github/CODEOWNERS`) assigns required reviewers by file pattern. **Branch protection rules** block direct pushes and require status checks, review count, and signed commits if configured.
 
+### Why it matters
 
-
-
-### What
-
-A **pull request (PR)** proposes merging one branch into another (often `feature/…` into `main`) with discussion, commits, and CI status attached. **Code review** is the human (and bot) evaluation of that change for correctness, safety, and operability. **Branch protection** and **CODEOWNERS** encode merge policy in the hosting platform.
-
-### Why
-
-Direct pushes to `main` skip peer review and often skip CI. For Terraform, Kubernetes, and pipeline changes, review catches destructive applies, missing alarms, and leaked secrets before they reach production. PRs also leave an audit trail linking discussion to the exact commits deployed.
+IaC mistakes merged to `main` deploy automatically in GitOps repos. PRs force `terraform plan` visibility, peer review of IAM changes, and documented approval. SOC2-style controls map to "who approved what on main."
 
 ### How it works
 
-You push a branch, open a PR, and reviewers comment on the diff. Required status checks (tests, lint, security scans) must pass when protection rules say so. CODEOWNERS maps paths such as `/terraform/` to teams that must approve. Reviewers focus on behaviour, tests, secrets, rollback, and monitoring — not only style. Merge strategies (merge commit, squash, rebase) reshape history on the target branch; pick one org standard.
+1. Push `feature/add-s3-bucket` to origin.
+2. Open PR: base `main`, compare feature branch.
+3. CODEOWNERS requests `@platform-team` for `*.tf`.
+4. CI runs plan/lint; reviewers approve.
+5. Squash merge (or merge commit per policy); delete branch.
+6. CD/GitOps picks up new main SHA.
 
-**Branch protection (typical):** require PR, require status checks, dismiss stale reviews, restrict force-push.  
-**CODEOWNERS:** auto-request reviewers by path.  
-**Review lens:** correctness, tests, secrets, rollback, observability.
+### Key concepts and comparisons
 
-### Key concepts
-
-| Control | Purpose |
+| Element | Purpose |
 |---------|---------|
-| Required reviews | Human gate |
-| Status checks | Automated gate |
-| CODEOWNERS | Path-based expertise |
-| Draft PRs | Work in progress without review pressure |
+| Draft PR | WIP signal; skip review noise |
+| Required reviewers | CODEOWNERS + count |
+| Status checks | CI must pass |
+| Review comments | Line-level feedback |
+| Merge queue | Serial merges at scale |
 
-
-Write PR descriptions that state risk, test evidence, and rollback steps — especially for Terraform and Kubernetes changes. Small, focused pull requests merge faster and bisect more cleanly later. Bots can lint and scan, but humans still own blast-radius judgement for production infrastructure.
+| Review focus (DevOps) | Question |
+|-----------------------|----------|
+| IaC | Blast radius? Rollback? |
+| Pipelines | Secrets scoped? |
+| Manifests | Prod values isolated? |
 
 ### Common pitfalls
 
-- Rubber-stamp approvals without reading IaC blast radius  
-- Enormous PRs that nobody can review carefully  
-- Merging with failing optional checks that were actually important  
-- Rewriting PR history mid-review without warning reviewers
+- Giant PRs — reviewers skim; defects slip through.
+- Approving without reading plan output attached to CI.
+- CODEOWNERS typo — wrong team never notified.
+- Merging with failing optional checks that were actually required.
 
 ## Hands-on Lab
 
-
-
 ### Objective
 
-Complete a real Git workflow for **Pull Requests and Code Review** with commits you can inspect and recover.
+Create repo with CODEOWNERS and `branch-protection.yaml`; simulate feature PR via branch, generate `review-findings.txt` from git commands, and local merge representing approved integration.
 
 ### Prerequisites
 
-- Git 2.x installed
+- Git 2.x
 
 ### Lab environment
 
 Workspace: `~/rebash-git/module-10`
 
-Local Git repository only (no required remote).
-
 ```bash
 mkdir -p ~/rebash-git/module-10 && cd ~/rebash-git/module-10
+set -euo pipefail
 ```
 
 ### Real-world scenario
 
-A delivery team is standardising **Pull Requests and Code Review**. You prototype the workflow in a throwaway repo and capture log evidence for the playbook.
+Terraform change adds S3 bucket module. Platform team must review all `*.tf` via CODEOWNERS; branch protection requires one approval and CI green (simulated locally).
 
 ### Step-by-step tasks
 
-#### Task 1 – Initialise a repository and first commit
+#### Task 1 – Main, CODEOWNERS, branch protection YAML
 
-Every production change starts as a commit with clear identity config.
+Create `.github/CODEOWNERS`:
+
+```text
+# Platform owns all Terraform
+*.tf @platform-team
+/.github/workflows/ @devops-team
+```
+
+Create `branch-protection.yaml`:
+
+```yaml
+protected_branches:
+  main:
+    require_pull_request: true
+    required_reviews: 1
+    require_codeowners: true
+    required_checks:
+      - terraform-validate
+    block_force_push: true
+    block_deletions: true
+```
+
+Create `validate-branch-protection.sh`:
 
 ```bash
+#!/usr/bin/env bash
+set -euo pipefail
+grep -q 'require_codeowners: true' branch-protection.yaml
+grep -q 'terraform-validate' branch-protection.yaml
+grep -q 'block_force_push: true' branch-protection.yaml
+echo 'protection_ok'
+```
+
+Create `README.md`:
+
+```markdown
+# app
+```
+
+Bootstrap the PR lab repo:
+
+```bash
+cd ~/rebash-git/module-10
+set -euo pipefail
+rm -rf pr-lab
+mkdir -p pr-lab/.github
+cd pr-lab
 git init -b main
 git config user.email 'lab@rebash.local'
 git config user.name 'REBASH Lab'
-echo '# lab' > README.md
-git add README.md
-git commit -m 'Initial commit'
-git log --oneline | tee log.txt
+chmod +x validate-branch-protection.sh
+./validate-branch-protection.sh | tee ../protection-validate.txt
+grep -q 'protection_ok' ../protection-validate.txt
+git add .
+git commit -m 'chore: add CODEOWNERS and branch protection YAML'
+grep -q 'platform-team' .github/CODEOWNERS
+cd ..
 ```
 
-**Expected output:** log.txt shows the initial commit on `main`.
+**Expected output:** CODEOWNERS and branch protection YAML validated on main.
 
-#### Task 2 – Inspect status and diff discipline
+#### Task 2 – Feature branch and review findings from git commands
 
-Clean working trees prevent accidental commits of secrets.
+Create `s3.tf`:
+
+```hcl
+resource "aws_s3_bucket" "logs" {
+  bucket = "rebash-logs-lab"
+}
+```
+
+Commit the feature and capture review findings:
 
 ```bash
-echo 'work' > work.txt
-git status
-git add work.txt
-git commit -m 'Add work.txt'
-git show --stat HEAD | tee show.txt
+cd ~/rebash-git/module-10/pr-lab
+set -euo pipefail
+git switch -c feature/add-s3-module
+git add s3.tf
+git commit -m 'feat: add S3 logs bucket module'
+{
+  echo 'branch=feature/add-s3-module'
+  echo 'commits_ahead_of_main:'
+  git log --oneline main..HEAD
+  echo 'files_changed:'
+  git diff --name-only main..HEAD
+  echo 'diff_stat:'
+  git diff --stat main..HEAD
+  echo 'codeowners_match:'
+  grep -E '\.tf|platform-team' .github/CODEOWNERS || true
+  echo 'simulated_ci=terraform-validate:PASS'
+} > review-findings.txt
+grep -q 'feat: add S3 logs bucket module' review-findings.txt
+grep -q 's3.tf' review-findings.txt
+git add review-findings.txt
+git commit -m 'chore: capture PR review findings'
+git log --oneline main..HEAD | tee ../pr-commits.txt
+test "$(git rev-list --count main..HEAD)" -eq 2
+cd ..
 ```
 
-**Expected output:** show.txt lists work.txt in the commit.
+**Expected output:** Two commits ahead of main; `review-findings.txt` generated from git log/diff.
+
+#### Task 3 – Simulated approved merge
+
+```bash
+cd ~/rebash-git/module-10/pr-lab
+set -euo pipefail
+git switch main
+git merge --no-ff feature/add-s3-module -m 'merge: PR #42 add S3 module (approved)'
+test -f s3.tf
+grep -q 'platform-team' .github/CODEOWNERS
+git log --oneline --graph | tee ../pr-merge-graph.txt
+grep -q 'merge: PR' ../pr-merge-graph.txt
+tar -czf ../module-10-pr-evidence.tgz -C .. pr-commits.txt pr-merge-graph.txt review-findings.txt protection-validate.txt
+ls -l ../module-10-pr-evidence.tgz | tee ../pr-evidence.txt
+cd ..
+```
+
+**Expected output:** Merge commit on main; S3 tf present; graph shows merge node.
 
 ### Validation steps
 
-- [ ] Repository has at least two commits or a merge as designed
-- [ ] log/graph evidence files exist
+- [ ] CODEOWNERS assigns *.tf to platform-team
+- [ ] `branch-protection.yaml` passes validation script
+- [ ] Feature branch merged with --no-ff
+- [ ] `review-findings.txt` present on branch history
 
 ### Common errors and fixes
 
 | Error | Cause | Fix |
 |-------|-------|-----|
-| Author identity unknown | Missing user.name/email | Set local `git config user.*` as in Task 1 |
-| merge conflict | Overlapping edits | Edit file, `git add`, complete merge |
-| detached HEAD | Checked out a raw SHA | `git switch -c` a branch before committing |
+| CODEOWNERS ignored on GitHub | Wrong path | Must be .github/CODEOWNERS or root |
+| Merge without review | Local lab only | On GitHub enable protection |
+| Conflict on merge | main moved | Rebase feature; re-run CI |
+| Wrong base branch | PR target | Retarget to main |
 
 ### Challenge exercise
 
-Use `git reflog` to recover a commit after a hard reset on a private branch.
+Add CODEOWNERS line for `**/production/** @sre-oncall` and extend `review-findings.txt` generation to include rollback command `terraform destroy -target=aws_s3_bucket.logs` — commit on new branch `docs/codeowners-sre`.
 
 ### Learning outcomes
 
-- Performed real Git operations
-- Left auditable history
-- Understood recovery basics
+- Authored CODEOWNERS for IaC paths
+- Defined branch protection rules in validated YAML
+- Simulated approved merge workflow locally with git-generated review findings
 
 ### Cleanup
 
 ```bash
-# Safe local repo — delete the lab directory when finished:
-# rm -rf "$(pwd)"
-```
-
-## PR checklist
-
-
-- [ ] Title summarises intent
-- [ ] Commits are reviewable units
-- [ ] No secrets
-- [ ] Rollback noted
-EOF
-git add REVIEW.md && git commit -m "docs: add PR checklist"
-git log --oneline main..HEAD
-```
-
-### Step 2 – Show PR diff range
-
-```bash
-git diff main...HEAD
-git status
-```
-
-### Final step – Cleanup note
-
-```bash
-# Keep ~/rebash-git/ for later tutorials
+ls ~/rebash-git/module-10/pr-lab
 ```
 
 ## Validation
 
-
-
-
-
-
-- [ ] Lab commands run under `~/rebash-git/module-10/`
-- [ ] You can explain each Theory section in your own words
-- [ ] You used modern tooling where it applies to this topic
-- [ ] You can describe one production failure mode for this topic
+- [ ] Lab under module-10
+- [ ] Can narrate PR lifecycle stages
+- [ ] Can explain CODEOWNERS syntax
+- [ ] Can list three branch protection rules
 
 ## Code Walkthrough
 
-
-
-
-
-
-Production practice for **Pull Requests and Code Review** always combines:
-
-1. Inspect before you change (status, plan, logs, dry-run)
-2. Prefer reversible, documented changes (Git, IaC, drop-ins, version pins)
-3. Capture evidence (command output, pipeline logs) for handovers
-4. Prefer current tools and APIs over legacy shortcuts
-5. Least privilege — escalate credentials only when required
-
-Keep runbooks short enough to follow under pressure. Automate checks; keep humans for judgement.
+1. **Small PRs** — one concern; easier plan review.
+2. **Attach plan output** — CI artefact or comment bot.
+3. **Draft until ready** — reduce premature review load.
+4. **Fix CI before re-request review** — respect reviewer time.
+5. **Link Issue** — `Fixes #123` closes loop.
 
 ## Security Considerations
 
-
-
-
-
-
-- Treat credentials and tokens for git as privileged — never commit them
-- Prefer short-lived auth (OIDC, roles, SSO) over long-lived keys
-- Validate blast radius before apply/deploy/delete operations
-- Restrict who can approve production changes
-- Collect audit logs; limit who can read sensitive traces
+- Require review for workflow file changes (supply chain).
+- Restrict who can dismiss reviews.
+- Enforce signed commits if policy demands.
+- Scan PR diffs for secrets in CI (gitleaks).
+- Limit auto-merge to trusted bots with checks.
 
 ## Common Mistakes
 
+!!! warning "Rubber-stamp approval"
+    Approving without reading IaC plan. **Fix:** Mandatory plan in CI; checklist in PR template.
 
+!!! warning "Direct push to main"
+    Bypasses all controls. **Fix:** Branch protection; admin bypass only break-glass.
 
-
-
-
-!!! warning "Rubber-stamp approvals without reading IaC blast radius  "
-    Validate assumptions against the Theory section and official docs before changing production.
-
-!!! warning "Enormous PRs that nobody can review carefully  "
-    Lab shortcuts (open security groups, admin roles, skip approvals) must not ship unchanged.
-
-!!! warning "Changing production without a rollback path"
-    Always know how to revert (previous artefact, prior release, state rollback, DNS failback).
+!!! warning "Stale PR after long idle"
+    Base branch drift breaks CI. **Fix:** Update branch; re-run checks before merge.
 
 ## Best Practices
 
-
-
-
-
-
-- Encode Pull Requests and Code Review changes as code and review them in pull requests
-- Pin versions (images, modules, actions, provider plugins)
-- Separate environments with clear promotion gates
-- Alert on symptoms with runbooks attached
-- Destroy lab resources; tag everything with owner and expiry where possible
+- PR template with rollback and test sections
+- Size labels (S/M/L) for queue management
+- Required `terraform plan` comment on IaC repos
+- Auto-assign CODEOWNERS reviewers
+- Delete head branch after merge
 
 ## Troubleshooting
 
-
-
-
-
-
 | Symptom | Likely cause | Fix |
 |---------|--------------|-----|
-| Auth / permission denied | Wrong identity, policy, or scope | Check caller identity, roles, and least-privilege policies |
-| Timeout / no route | Network, DNS, security group, or endpoint | Trace path, DNS, and allow-lists before retrying |
-| Drift / unexpected plan | Manual change or wrong state/workspace | Reconcile desired vs actual; avoid click-ops on managed resources |
-| Pipeline/job red | Flaky step, cache, or missing secret | Read failing step logs; bisect recent workflow/config changes |
-| Cost spike | Idle load balancer, NAT, oversized compute | Inventory billable resources; stop/delete labs promptly |
+| Cannot merge — reviews pending | Missing approval | Request CODEOWNERS |
+| Required check missing | CI not reported | Fix workflow; re-run |
+| CODEOWNERS not requested | Pattern mismatch | Fix glob; file path |
+| Merge button grey | Draft or conflict | Ready for review; resolve |
 
 ## Summary
 
-
-
-
-
-
-- Demo doc change
+Pull requests encode review, CI, and approval before changes hit `main`. Next: [GitHub Actions for DevOps](github-actions-for-devops.md).
 
 ## Interview Questions
 
+**1. Purpose of pull request vs direct merge locally?**
 
+??? success "Reveal answer"
+    PR adds review gate, discussion, CI status, and audit record on the forge — direct local merge skips collaboration and compliance controls expected in production repos.
 
+**2. How CODEOWNERS works?**
 
-1. What makes a high-quality PR for infrastructure?
-2. How do you review Terraform/Kubernetes changes safely?
-3. Draft PRs — when useful?
-4. How should CODEOWNERS be used without bottlenecks?
-5. What is rubber-stamp review risk?
+??? success "Reveal answer"
+    File pattern lines map paths to teams/users; when those files change in a PR, GitHub requests reviews from listed owners — often required before merge.
 
-!!! tip "Sample answer — question 2"
-    Read the diff and risk areas first (IAM, network, data loss), then ask for tests/rollback notes. Block on secrets immediately.
+**3. Branch protection vs rulesets?**
 
-!!! tip "Sample answer — question 4"
-    Require reviews for sensitive paths and never approve changes you do not understand.
+??? success "Reveal answer"
+    Both enforce policies on branches; rulesets are newer org-level flexible policy engine — branch protection is classic per-branch rules (reviews, checks, push restrictions).
+
+**4. Squash merge trade-off?**
+
+??? success "Reveal answer"
+    Cleaner main history with one commit per PR — loses granular commit messages from feature branch unless preserved in PR body or squash message edited.
+
+**5. What should IaC PR reviewer verify?**
+
+??? success "Reveal answer"
+    Plan output, blast radius, IAM changes, secrets not in diff, rollback path, environment targeting, and alignment with module versioning policy.
+
+**6. Draft PR when?**
+
+??? success "Reveal answer"
+    Work in progress — signals reviewers to wait; CI may still run for early feedback without merge eligibility.
+
+**7. Required status check fails — merge?**
+
+??? success "Reveal answer"
+    No — protection blocks merge until checks pass or admin bypass (discouraged); fix root cause or flaky test first.
+
+**8. PR lifecycle after merge for GitOps?**
+
+??? success "Reveal answer"
+    Main SHA updates; GitOps controller or CD pipeline detects change and syncs cluster desired state — PR merge is the approval gate before deploy automation runs.
 
 ## Related Tutorials
 
-
-
-
-
-
-- [Course overview](index.md)
+- [GitHub Fundamentals](github-fundamentals.md)
 - [GitHub Actions for DevOps](github-actions-for-devops.md)
+- [Production Git Practices](production-git-practices.md)
+- [Course index](index.md)
 
 ## References
 
-
-
-
-
-
-- [About pull requests](https://docs.github.com/en/pull-requests) · [CODEOWNERS](https://docs.github.com/en/repositories/managing-your-repositorys-settings-and-features/customizing-your-repository/about-code-owners)
+- [About pull requests](https://docs.github.com/en/pull-requests/collaborating-with-pull-requests)
+- [About CODEOWNERS](https://docs.github.com/en/repositories/managing-your-repositorys-settings-and-features/customizing-your-repository/about-code-owners)
+- [Managing branch protection](https://docs.github.com/en/repositories/configuring-branches-and-merges-in-your-repository/managing-protected-branches)

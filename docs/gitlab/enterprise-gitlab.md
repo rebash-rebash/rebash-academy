@@ -36,7 +36,7 @@ tags:
   - governance
   - compliance
 author: Shaik Basha
-last_updated: "2026-07-31"
+last_updated: "2026-08-03"
 comments: false
 ---
 
@@ -163,92 +163,228 @@ Document RPO/RTO for GitLab itself — application DR is useless if you cannot r
 
 ### Objective
 
-Author a valid `.gitlab-ci.yml` that models **Enterprise GitLab** and validate it locally before pushing.
+Author group and project policy YAML, a compliance pipeline include pattern, and a project `.gitlab-ci.yml` that inherits mandatory jobs — validated offline.
 
 ### Prerequisites
 
 - Python 3 with PyYAML (`pip install pyyaml`)
-- Optional: GitLab project to run the pipeline
+- Optional: GitLab Premium/Ultimate instance for live compliance pipelines
 
 ### Lab environment
 
 Workspace: `~/rebash-gitlab/module-18`
 
-File-first lab. Push to GitLab only when you want a runner to execute jobs.
+File-first lab. Compliance pipelines apply at the GitLab instance or group level when configured by administrators.
 
 ```bash
-mkdir -p ~/rebash-gitlab/module-18 && cd ~/rebash-gitlab/module-18
+mkdir -p ~/rebash-gitlab/module-18/ci/compliance && cd ~/rebash-gitlab/module-18
+set -euo pipefail
 ```
 
 ### Real-world scenario
 
-Your squad is encoding **Enterprise GitLab** as CI. Reviewers reject YAML that does not parse or that skips artefacts/needs incorrectly.
+Enterprise platform teams require every project pipeline to include audit and policy jobs that developers cannot skip. You deliver policy YAML and an include pattern for review before group owners enforce it.
 
 ### Step-by-step tasks
 
-#### Task 1 – Write pipeline YAML
+#### Task 1 – Group policy definition
 
-Stages and jobs must be explicit so MR pipelines are predictable.
+Create `group-policy.yaml`:
+
+```yaml
+# Module 18 — group-level CI policy (offline reference)
+group: rebash-platform
+minimum_gitlab_version: "16.0"
+rules:
+  protected_default_branch: true
+  merge_request_pipelines_required: true
+  no_secrets_in_repository: true
+  runner_tags:
+    production: [prod-runner]
+    default: [shared-runner]
+compliance:
+  required_includes:
+    - local: ci/compliance/compliance-pipeline.yml
+  blocked_patterns:
+    - "curl.* | bash"
+    - "eval \\("
+audit:
+  retain_pipeline_logs_days: 90
+  require_signed_commits: false
+```
+
+Validate offline:
 
 ```bash
-mkdir -p src && echo 'print("ok")' > src/app.py
-cat > .gitlab-ci.yml << 'EOF'
-stages: [lint, test]
-lint:
-  stage: lint
-  image: python:3.12-alpine
+cd ~/rebash-gitlab/module-18
+set -euo pipefail
+python3 -c "
+import yaml
+p = yaml.safe_load(open('group-policy.yaml'))
+assert p['compliance']['required_includes'][0].endswith('compliance-pipeline.yml')
+assert p['rules']['merge_request_pipelines_required'] is True
+print('group-policy.yaml OK')
+"
+```
+
+**Expected output:** `group-policy.yaml OK`
+
+#### Task 2 – Compliance pipeline include
+
+Create `ci/compliance/compliance-pipeline.yml`:
+
+{% raw %}
+```yaml
+# Mandatory compliance jobs — included by every project
+stages:
+  - compliance
+  - test
+
+compliance-audit:
+  stage: compliance
+  image: alpine:3.20
   script:
-    - python -m py_compile src/app.py
-test:
+    - echo "Audit stub — verify MR pipeline ran on ${CI_MERGE_REQUEST_IID:-branch}"
+    - test -n "${CI_PROJECT_PATH:-local}"
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
+
+secret-pattern-scan:
+  stage: compliance
+  image: alpine:3.20
+  script:
+    - echo "Pattern scan stub — no glpat- or AKIA strings in diff"
+    - test 0 -eq 0
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+```
+{% endraw %}
+
+Validate offline:
+
+```bash
+cd ~/rebash-gitlab/module-18
+set -euo pipefail
+python3 -c "
+import yaml
+c = yaml.safe_load(open('ci/compliance/compliance-pipeline.yml'))
+assert 'compliance-audit' in c
+assert c['compliance-audit']['stage'] == 'compliance'
+print('compliance-pipeline.yml OK')
+"
+grep -q 'alpine:3.20' ci/compliance/compliance-pipeline.yml
+```
+
+**Expected output:** `compliance-pipeline.yml OK`
+
+#### Task 3 – Project pipeline with include
+
+Create `.gitlab-ci.yml`:
+
+{% raw %}
+```yaml
+include:
+  - local: ci/compliance/compliance-pipeline.yml
+
+stages:
+  - compliance
+  - test
+
+unit-tests:
   stage: test
   image: python:3.12-alpine
-  needs: [lint]
+  needs: [compliance-audit, secret-pattern-scan]
   script:
-    - python src/app.py
-EOF
-python3 -c "import yaml; d=yaml.safe_load(open('.gitlab-ci.yml')); assert d['stages']==['lint','test']; print('OK', list(d))"
+    - python -m py_compile src/app.py
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
+```
+{% endraw %}
+
+Create `src/app.py`:
+
+```python
+print("enterprise-lab-ok")
 ```
 
-**Expected output:** Prints `OK` and job names; no YAML exception.
-
-#### Task 2 – Simulate the scripts locally
-
-Prove the job script works before burning runner minutes.
+Validate offline:
 
 ```bash
+cd ~/rebash-gitlab/module-18
+set -euo pipefail
+python3 -c "
+import yaml
+d = yaml.safe_load(open('.gitlab-ci.yml'))
+assert any('compliance-pipeline.yml' in str(i) for i in d.get('include', []))
+assert d['unit-tests']['needs'] == ['compliance-audit', 'secret-pattern-scan']
+print('gitlab-ci OK')
+"
 python3 -m py_compile src/app.py
-python3 src/app.py | tee out.txt
-test "$(cat out.txt)" = 'ok'
+python3 src/app.py | tee app-out.txt
 ```
 
-**Expected output:** Compile succeeds; out.txt is `ok`.
+**Expected output:** `gitlab-ci OK`; script prints `enterprise-lab-ok`
+
+#### Task 4 – Enterprise validation bundle
+
+Create `validate-enterprise.sh`:
+
+```bash
+#!/usr/bin/env bash
+set -euo pipefail
+python3 -c "import yaml; yaml.safe_load(open('group-policy.yaml')); yaml.safe_load(open('ci/compliance/compliance-pipeline.yml')); yaml.safe_load(open('.gitlab-ci.yml'))"
+grep -q 'required_includes' group-policy.yaml
+grep -q 'compliance-audit' ci/compliance/compliance-pipeline.yml
+echo 'module-18 enterprise lab passed'
+```
+
+Run it:
+
+```bash
+cd ~/rebash-gitlab/module-18
+set -euo pipefail
+chmod +x validate-enterprise.sh
+./validate-enterprise.sh | tee validation.txt
+```
+
+**Expected output:** `module-18 enterprise lab passed`
 
 ### Validation steps
 
-- [ ] `.gitlab-ci.yml` parses
-- [ ] Local script path matches job intent
+- [ ] Group policy defines required compliance includes
+- [ ] Compliance pipeline defines audit and pattern-scan jobs
+- [ ] Project pipeline includes compliance file via `include: local`
+- [ ] Unit tests `needs` both compliance jobs
+- [ ] Pinned images: `alpine:3.20`, `python:3.12-alpine`
 
 ### Common errors and fixes
 
 | Error | Cause | Fix |
 |-------|-------|-----|
-| yaml.scanner.ScannerError | Indentation | Use 2-space indent; re-validate with PyYAML |
-| job stuck pending | No runner / tags | Check runner tags match job tags |
-| needs not found | Typo in job name | Align `needs` with actual job keys |
+| Include file not found | Wrong path | Match path from repo root in `include: local` |
+| Compliance jobs skipped | `rules` too narrow | Run on MR and default branch |
+| Policy theatre | `allow_failure: true` on audit | Fail pipeline on compliance violations |
+| Shared privileged runner | One runner for all groups | Isolate runners per trust zone |
+| Developers override include | Missing group-level enforcement | Use compliance pipeline at group/instance |
 
 ### Challenge exercise
 
-Add an `artifacts:` path from lint to test and document expire_in.
+Document how GitLab **Compliance pipelines** at the group level differ from project-level `include:` — add a comment block in `group-policy.yaml` describing when administrators must use instance templates.
 
 ### Learning outcomes
 
-- Produced reviewable GitLab CI YAML
-- Validated structure and scripts locally
+- Defined enterprise group policy in reviewable YAML
+- Authored a reusable compliance pipeline include
+- Wired project CI to mandatory compliance jobs with `needs`
+- Validated include paths and job dependencies offline
 
 ### Cleanup
 
 ```bash
-# File-only lab — keep YAML for the next tutorial
+rm -f ~/rebash-gitlab/module-18/app-out.txt 2>/dev/null || true
+ls ~/rebash-gitlab/module-18
 ```
 
 ## Validation

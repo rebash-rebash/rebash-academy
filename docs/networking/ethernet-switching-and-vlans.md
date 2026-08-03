@@ -226,8 +226,11 @@ Do **not** create `eth0.100` on your uplink. Record VLAN ideas as a checklist sc
 ```bash
 cd ~/rebash-networking/lab07
 set -euo pipefail
+```
 
-cat > vlan-concepts.sh << 'EOF'
+Create `vlan-concepts.sh`:
+
+```bash
 #!/usr/bin/env bash
 set -euo pipefail
 echo "=== VLAN concept checklist (lab07) ==="
@@ -238,7 +241,9 @@ echo "One VLAN ~= one broadcast domain ~= usually one IP subnet"
 echo "Between VLANs you need a router (L3), not only a switch"
 echo "Cloud note: providers often hide tags; isolation appears as separate subnets"
 echo "Lab bridge rebash-br0 used private 10.255.77.0/24 — not your uplink"
-EOF
+```
+
+```bash
 chmod +x vlan-concepts.sh
 ./vlan-concepts.sh | tee vlan-concepts.txt
 

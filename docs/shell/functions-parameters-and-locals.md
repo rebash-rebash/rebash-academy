@@ -156,11 +156,9 @@ Your platform team wants every ops script on the jump server to share one loggin
 
 #### Task 1 – Build `lib.sh` with `local` and return codes
 
-```bash
-cd ~/rebash-shell/lab07
-set -euo pipefail
+Create `lib.sh`:
 
-cat > lib.sh << 'EOF'
+```bash
 #!/usr/bin/env bash
 # Shared helpers for REBASH lab07 — source this file; do not execute alone.
 
@@ -204,7 +202,13 @@ set_local_name() {
   local NAME="inside-function"
   printf '%s\n' "$NAME"
 }
-EOF
+```
+
+Run:
+
+```bash
+cd ~/rebash-shell/lab07
+set -euo pipefail
 
 # sanity: library is sourceable
 # shellcheck disable=SC1091
@@ -212,17 +216,14 @@ source ./lib.sh
 log "lib sourced"
 ```
 
+
 **Expected output:** No error; a log line appears on stderr with a timestamp.
 
 #### Task 2 – `main.sh` proves `"$@"`, `"$*"`, and locals
 
+Create `main.sh`:
+
 ```bash
-cd ~/rebash-shell/lab07
-set -euo pipefail
-
-printf 'payload\n' > ./sample.txt
-
-cat > main.sh << 'EOF'
 #!/usr/bin/env bash
 set -euo pipefail
 # shellcheck disable=SC1091
@@ -244,10 +245,20 @@ grep -qx 'STAR:one two three' "$outdir/args-star.txt"
 
 require_file ./sample.txt
 printf 'require_ok=1\n' | tee "$outdir/require-ok.txt"
-EOF
+```
+
+Run:
+
+```bash
+cd ~/rebash-shell/lab07
+set -euo pipefail
+
+printf 'payload\n' > ./sample.txt
+
 chmod +x main.sh
 ./main.sh
 ```
+
 
 **Expected output:** `out/local-name.txt` is `inside-function`; `out/global-name.txt` stays `global-name`; `args-at.txt` has two `AT:` lines; `args-star.txt` is one joined `STAR:` line.
 

@@ -1,354 +1,336 @@
 ---
 title: "Working with Remotes"
-description: "Manage remote origin, fetch, pull, push, upstream branches, and multiple remotes for Cloud and DevOps Git workflows."
-difficulty: beginner
-estimated_time: "40–55 min"
+description: "Configure multiple remotes, fetch and prune stale refs, set upstream tracking, and synchronise bare remotes for DevOps workflows."
+difficulty: intermediate
+estimated_time: "50–65 min"
 technology: git
 category: git
 module: "Module 8 · Remote Repositories"
 career_paths:
-  - beginner
   - devops-engineer
+  - cloud-engineer
   - platform-engineer
+  - site-reliability-engineer
 skills:
-  - git
-  - remotes
-  - push
-  - pull
-prerequisites:
-  - git/basic-git-workflow-add-commit-push
-next:
-  - git/github-fundamentals
-related:
-  - git/pull-requests-and-code-review
-  - git/git-installation-and-configuration
-labs: []
-projects: []
-interview: interview/git
-certifications:
-  - GitHub Foundations
-tags:
   - git
   - remote
   - fetch
   - push
+prerequisites:
+  - git/cherry-pick-and-reflog
+next:
+  - git/github-fundamentals
+related:
+  - git/creating-and-cloning-repositories
+  - git/basic-git-workflow-add-commit-push
+tags:
+  - git
+  - remote
+  - upstream
+  - fetch
 author: Shaik Basha
-last_updated: "2026-07-31"
+last_updated: "2026-08-03"
 comments: false
 ---
-
 
 # Working with Remotes
 
 ## Overview
 
+Remotes are named URLs of other repositories — typically `origin` on GitHub plus internal mirrors. DevOps workflows use **multiple remotes** (upstream open source + fork), **`git fetch --prune`** to drop stale branch refs, and **upstream tracking** so `git pull` and `git push` know their counterparts.
 
-
-
-
-
-Add and inspect remotes, fetch/pull/push safely, set upstreams, and understand when multiple remotes appear in fork workflows.
-
-**origin** is a convention, not magic. `fetch` updates remote-tracking refs; `pull` = fetch + integrate; `push` publishes local commits.
-
-This is a core tutorial in **Module 8 · Remote Repositories** of the REBASH Academy **Git for Cloud & DevOps Engineers** series — written for Cloud, DevOps, Platform, and SRE engineers.
+This is **Tutorial 1** in **Module 8: Remote Repositories** of the REBASH Academy **Git & GitHub for Cloud & DevOps Engineers** series — written for Cloud, DevOps, Platform, and SRE engineers.
 
 ## Prerequisites
 
-
-
-
-
-
-- [Basic Git Workflow](basic-git-workflow-add-commit-push.md)
-- Auth from [Install/Configure](git-installation-and-configuration.md)
+- [Cherry-pick and Reflog](cherry-pick-and-reflog.md)
+- [Creating and Cloning Repositories](creating-and-cloning-repositories.md)
+- Git 2.x
 
 ## Learning Objectives
 
-
-
-
-
-
 By the end of this tutorial, you will be able to:
 
-- [ ] `remote -v`, `add`, `rename`  
-- [ ] Distinguish fetch vs pull  
-- [ ] Push with `-u` upstream  
-- [ ] Read `branch -vv` tracking  
-- [ ] Sketch fork remotes (`origin` + `upstream`)
+- [ ] Add and inspect multiple remotes
+- [ ] Fetch from all remotes and prune deleted upstream branches
+- [ ] Push to specific remote branches with upstream
+- [ ] Pull with explicit merge or rebase strategy
+- [ ] Prove multi-remote sync under `~/rebash-git/module-08`
 
 ## Architecture
 
+Local repo holds remote-tracking branches (`origin/main`); fetch updates refs without merging; push publishes commits and updates remote refs.
 
-
-
-
-
-This topic’s control points and relationships are shown below.
-
-![Git workflow](../assets/excalidraw/git-workflow.svg)
+![Repository architecture — remotes and clones](../assets/excalidraw/git-repository-architecture.svg)
 
 ## Theory
 
+### What it is
 
+A **remote** is a shorthand for a URL stored in `.git/config`. **`origin`** is the default name created by clone. **Remote-tracking branches** (`refs/remotes/origin/*`) mirror last-fetched state on the server. **Upstream** links a local branch to a remote branch for push/pull defaults.
 
+### Why it matters
 
-
-
-### What
-
-A **remote** is a named URL for another repository. `origin` is the conventional default from `clone`. You **fetch** to update remote-tracking branches, **pull** to fetch plus integrate into the current branch, and **push** to publish local commits. **Upstream** tracking links a local branch to `origin/feature/…` so bare `git pull`/`git push` know the target.
-
-### Why
-
-Distributed Git only becomes team Git when remotes sync objects. Misconfigured remotes cause pushes to forks instead of canonical repos, or pulls that create surprise merge commits. In fork workflows, `upstream` is the organisation repo and `origin` is your fork.
+Platform teams mirror GitHub to internal Gitea for air-gapped CI — same repo, two remotes. Fork workflows add `upstream` for open-source Terraform modules. Stale remote refs after branch deletion confuse scripts listing `origin/*`. Prune keeps automation accurate.
 
 ### How it works
 
-`git remote -v` lists fetch/push URLs. `git fetch origin` downloads new objects and updates `origin/*` without changing your working tree. `git pull --ff-only` is a safe default when you want to refuse divergent merges. `git push -u origin HEAD` publishes the current branch and sets upstream. Multiple remotes coexist; fetch both before comparing.
+1. `git remote add mirror ../remotes/mirror.git`
+2. `git fetch --all --prune` updates all remotes; deletes gone remote-tracking branches
+3. `git push -u origin feature` sets upstream
+4. `git pull --rebase origin main` integrates remote main
+5. `git remote prune origin` removes stale refs without full fetch
 
-```bash
-git remote -v
-git fetch origin
-git pull --ff-only origin main
-git push -u origin HEAD
-```
+### Key concepts and comparisons
 
-### Key concepts
+| Command | Effect |
+|---------|--------|
+| git fetch origin | Update origin/* refs |
+| git fetch --prune | Remove deleted remote branches |
+| git push origin :old | Delete remote branch |
+| git branch -u origin/main | Set upstream |
+| git remote -v | List URLs |
 
-| Idea | Detail |
-|------|--------|
-| Remote-tracking branch | Local cache of remote tips (`origin/main`) |
-| Upstream | Branch.*.merge / remote configuration |
-| `--ff-only` | Refuse non-fast-forward pulls |
-| Fork remotes | `origin` + `upstream` pattern |
-
-
-Treat remote URLs as configuration that should match organisation standards — SSH for humans, HTTPS with short-lived tokens for some CI systems. When a fork workflow stalls, verify whether you are fetching from `upstream` and pushing to `origin`. Periodic `git remote prune origin` (or `fetch.prune`) keeps stale branch names from confusing reviews.
+| Remote name | Typical role |
+|-------------|--------------|
+| origin | Your primary forge |
+| upstream | Source fork parent |
+| mirror | Internal read/write copy |
 
 ### Common pitfalls
 
-- `git pull` with undefined rebase/merge strategy causing inconsistent history  
-- Pushing to `upstream` by accident without permission  
-- Forgetting `fetch` before assuming `origin/main` is current  
-- Force-push without `--force-with-lease` overwriting others’ commits
+- Pull without fetch understanding — pull = fetch + merge/rebase.
+- Pushing to wrong remote URL — deploy keys scoped per repo.
+- Forgetting prune — `origin/feature-deleted` still listed locally.
+- HTTPS credential helpers caching wrong account for push.
 
 ## Hands-on Lab
 
-
-
 ### Objective
 
-Complete a real Git workflow for **Working with Remotes** with commits you can inspect and recover.
+Simulate origin + mirror remotes with bare repos, push feature branch, fetch/prune after remote branch deletion, verify tracking.
 
 ### Prerequisites
 
-- Git 2.x installed
+- Git 2.x
 
 ### Lab environment
 
 Workspace: `~/rebash-git/module-08`
 
-Local Git repository only (no required remote).
-
 ```bash
 mkdir -p ~/rebash-git/module-08 && cd ~/rebash-git/module-08
+set -euo pipefail
 ```
 
 ### Real-world scenario
 
-A delivery team is standardising **Working with Remotes**. You prototype the workflow in a throwaway repo and capture log evidence for the playbook.
+Your app repo pushes to GitHub (`origin`) and an internal mirror (`mirror`) for DR. When feature branches delete on origin, laptops must prune stale refs.
 
 ### Step-by-step tasks
 
-#### Task 1 – Initialise a repository and first commit
-
-Every production change starts as a commit with clear identity config.
+#### Task 1 – Setup app, origin bare, mirror bare
 
 ```bash
+cd ~/rebash-git/module-08
+set -euo pipefail
+rm -rf app remotes origin.git mirror.git
+mkdir -p app remotes
+git init --bare remotes/origin.git
+git init --bare remotes/mirror.git
+cd app
 git init -b main
 git config user.email 'lab@rebash.local'
 git config user.name 'REBASH Lab'
-echo '# lab' > README.md
-git add README.md
-git commit -m 'Initial commit'
-git log --oneline | tee log.txt
+git remote add origin ../remotes/origin.git
+git remote add mirror ../remotes/mirror.git
+printf 'app: v1\n' > app.yaml
+git add app.yaml && git commit -m 'chore: initial'
+git push -u origin main
+git push mirror main
+git remote -v | tee ../remotes-v.txt
+grep -c 'origin\|mirror' ../remotes-v.txt | grep -q '4'
+cd ..
 ```
 
-**Expected output:** log.txt shows the initial commit on `main`.
+**Expected output:** Both remotes have main; two push URLs configured.
 
-#### Task 2 – Inspect status and diff discipline
-
-Clean working trees prevent accidental commits of secrets.
+#### Task 2 – Feature branch push and multi-fetch
 
 ```bash
-echo 'work' > work.txt
-git status
-git add work.txt
-git commit -m 'Add work.txt'
-git show --stat HEAD | tee show.txt
+cd ~/rebash-git/module-08/app
+set -euo pipefail
+git switch -c feature/remote-demo
+echo 'feature: on' >> app.yaml
+git commit -am 'feat: remote demo flag'
+git push -u origin feature/remote-demo
+git push mirror feature/remote-demo
+git fetch --all --prune
+git branch -r | tee ../remote-branches.txt
+grep -q 'origin/feature/remote-demo' ../remote-branches.txt
+grep -q 'mirror/feature/remote-demo' ../remote-branches.txt
+cd ..
 ```
 
-**Expected output:** show.txt lists work.txt in the commit.
+**Expected output:** Remote-tracking branches visible for both remotes.
+
+#### Task 3 – Delete remote branch and prune
+
+```bash
+cd ~/rebash-git/module-08/app
+set -euo pipefail
+git push origin --delete feature/remote-demo
+git fetch origin --prune
+git branch -r | tee ../after-prune.txt
+! grep -q 'origin/feature/remote-demo' ../after-prune.txt
+grep -q 'mirror/feature/remote-demo' ../after-prune.txt
+git branch -vv | tee ../upstream-main.txt
+grep -q '\[origin/main\]' ../upstream-main.txt
+tar -czf ../module-08-remote-evidence.tgz -C .. remotes-v.txt after-prune.txt upstream-main.txt
+ls -l ../module-08-remote-evidence.tgz | tee ../remote-evidence.txt
+cd ..
+```
+
+**Expected output:** origin feature ref pruned locally; mirror still has feature ref until deleted separately.
 
 ### Validation steps
 
-- [ ] Repository has at least two commits or a merge as designed
-- [ ] log/graph evidence files exist
+- [ ] Two remotes configured
+- [ ] Push to both succeeded
+- [ ] Prune removed deleted origin feature ref
+- [ ] main tracks origin/main
 
 ### Common errors and fixes
 
 | Error | Cause | Fix |
 |-------|-------|-----|
-| Author identity unknown | Missing user.name/email | Set local `git config user.*` as in Task 1 |
-| merge conflict | Overlapping edits | Edit file, `git add`, complete merge |
-| detached HEAD | Checked out a raw SHA | `git switch -c` a branch before committing |
+| remote already exists | Re-run lab | rm -rf and restart |
+| rejected non-fast-forward | Diverged remote | fetch; merge/rebase |
+| prune did nothing | Branch still on remote | delete on server first |
+| wrong upstream | push without -u | git branch -u |
 
 ### Challenge exercise
 
-Use `git reflog` to recover a commit after a hard reset on a private branch.
+Add read-only remote `upstream` pointing at a third bare clone of initial commit only; fetch upstream; document in `REMOTES.md` when you would pull from upstream vs push to origin (fork workflow).
 
 ### Learning outcomes
 
-- Performed real Git operations
-- Left auditable history
-- Understood recovery basics
+- Configured multi-remote push
+- Pruned stale remote-tracking branch
+- Verified upstream on main
 
 ### Cleanup
 
 ```bash
-# Safe local repo — delete the lab directory when finished:
-# rm -rf "$(pwd)"
+ls ~/rebash-git/module-08/
 ```
 
 ## Validation
 
-
-
-
-
-
-- [ ] Lab commands run under `~/rebash-git/module-08/`
-- [ ] You can explain each Theory section in your own words
-- [ ] You used modern tooling where it applies to this topic
-- [ ] You can describe one production failure mode for this topic
+- [ ] Lab under module-08
+- [ ] Can explain fetch vs pull
+- [ ] Can explain prune
+- [ ] Can name fork upstream pattern
 
 ## Code Walkthrough
 
-
-
-
-
-
-Production practice for **Working with Remotes** always combines:
-
-1. Inspect before you change (status, plan, logs, dry-run)
-2. Prefer reversible, documented changes (Git, IaC, drop-ins, version pins)
-3. Capture evidence (command output, pipeline logs) for handovers
-4. Prefer current tools and APIs over legacy shortcuts
-5. Least privilege — escalate credentials only when required
-
-Keep runbooks short enough to follow under pressure. Automate checks; keep humans for judgement.
+1. **remote -v in runbooks** — verify URL before first push.
+2. **fetch --prune weekly** — clean stale refs.
+3. **push --all only when intended** — avoid accidental mirror overwrites.
+4. **Set upstream on first push** — `-u` saves typing.
+5. **Separate credentials per host** — SSH config Host aliases.
 
 ## Security Considerations
 
-
-
-
-
-
-- Treat credentials and tokens for git as privileged — never commit them
-- Prefer short-lived auth (OIDC, roles, SSO) over long-lived keys
-- Validate blast radius before apply/deploy/delete operations
-- Restrict who can approve production changes
-- Collect audit logs; limit who can read sensitive traces
+- Use deploy keys with least privilege per remote/repo.
+- Do not store PATs in remote URLs — use credential helper or SSH.
+- Verify mirror integrity — signed tags, commit signing policies.
+- Restrict push remotes on production mirror repos.
+- Audit force-push events on shared remotes.
 
 ## Common Mistakes
 
+!!! warning "Pull on dirty tree"
+    Unexpected merges or conflicts. **Fix:** stash or commit before pull.
 
+!!! warning "Pushing to upstream on fork workflow"
+    Usually push to origin (your fork), pull from upstream. **Fix:** Document remote purposes.
 
-
-
-
-!!! warning "`git pull` with undefined rebase/merge strategy causing inconsistent history  "
-    Validate assumptions against the Theory section and official docs before changing production.
-
-!!! warning "Pushing to `upstream` by accident without permission  "
-    Lab shortcuts (open security groups, admin roles, skip approvals) must not ship unchanged.
-
-!!! warning "Changing production without a rollback path"
-    Always know how to revert (previous artefact, prior release, state rollback, DNS failback).
+!!! warning "Never pruning"
+    Scripts target deleted branches that still appear locally. **Fix:** `fetch --prune` in git config or habits.
 
 ## Best Practices
 
-
-
-
-
-
-- Encode Working with Remotes changes as code and review them in pull requests
-- Pin versions (images, modules, actions, provider plugins)
-- Separate environments with clear promotion gates
-- Alert on symptoms with runbooks attached
-- Destroy lab resources; tag everything with owner and expiry where possible
+- `git config fetch.prune true` for origin
+- Name remotes by purpose not only host
+- Use `--force-with-lease` on shared feature branches
+- Mirror tags when releasing: `git push --tags mirror`
+- Document remotes in README for monorepo splits
 
 ## Troubleshooting
 
-
-
-
-
-
 | Symptom | Likely cause | Fix |
 |---------|--------------|-----|
-| Auth / permission denied | Wrong identity, policy, or scope | Check caller identity, roles, and least-privilege policies |
-| Timeout / no route | Network, DNS, security group, or endpoint | Trace path, DNS, and allow-lists before retrying |
-| Drift / unexpected plan | Manual change or wrong state/workspace | Reconcile desired vs actual; avoid click-ops on managed resources |
-| Pipeline/job red | Flaky step, cache, or missing secret | Read failing step logs; bisect recent workflow/config changes |
-| Cost spike | Idle load balancer, NAT, oversized compute | Inventory billable resources; stop/delete labs promptly |
+| Could not read from remote | Network/auth | SSH test; PAT scope |
+| Diverged branches | Parallel pushes | fetch; integrate |
+| Missing remote branch | Not fetched | fetch origin |
+| Push to wrong repo | URL typo | remote set-url |
 
 ## Summary
 
-
-
-
-
-
-**Working with Remotes** is essential for Cloud and DevOps engineers working with git. Practise the lab until the inspection and change path is muscle memory, then continue the track.
+Remotes connect your clone to the world — multiple remotes, fetch, prune, and upstream tracking are daily platform skills. Next: [GitHub Fundamentals](github-fundamentals.md).
 
 ## Interview Questions
 
+**1. fetch vs pull?**
 
+??? success "Reveal answer"
+    Fetch downloads objects and updates remote-tracking refs without merging into current branch. Pull is fetch plus merge (or rebase) into the checked-out branch.
 
+**2. What does git fetch --prune do?**
 
-1. What do fetch, pull, and push each do?
-2. Upstream tracking branch — why set it?
-3. How does fetch --prune help?
-4. Multiple remotes — typical fork workflow?
-5. Force-with-lease versus force push?
+??? success "Reveal answer"
+    Removes remote-tracking branches that no longer exist on the remote — keeps local `origin/*` refs aligned with server state after branch deletions.
 
-!!! tip "Sample answer — question 2"
-    Inspect git remote -v and git status -sb. Auth failures and non-fast-forward rejects are common push blockers.
+**3. Purpose of upstream tracking?**
 
-!!! tip "Sample answer — question 4"
-    Prefer --force-with-lease over --force and avoid force-pushing protected branches.
+??? success "Reveal answer"
+    Links local branch to remote branch so plain `git push` and `git pull` know default target without specifying refs each time.
+
+**4. Fork workflow remotes?**
+
+??? success "Reveal answer"
+    `origin` is your fork (push); `upstream` is source project (fetch/merge updates); you open PR from fork to upstream.
+
+**5. Delete remote branch command?**
+
+??? success "Reveal answer"
+    `git push origin --delete branch-name` or `git push origin :branch-name` — requires permission on remote.
+
+**6. Why mirror to second remote?**
+
+??? success "Reveal answer"
+    Disaster recovery, air-gapped CI, geo redundancy — internal mirror continues if public forge unavailable.
+
+**7. git remote prune vs fetch --prune?**
+
+??? success "Reveal answer"
+    Both remove stale remote-tracking refs; fetch --prune also fetches new objects; prune alone only cleans without full fetch depending on usage.
+
+**8. HTTPS vs SSH for CI remotes?**
+
+??? success "Reveal answer"
+    CI often uses scoped PAT or deploy keys via SSH; SSH avoids token expiry in long jobs; HTTPS fine with OIDC on modern platforms.
 
 ## Related Tutorials
 
-
-
-
-
-
-- [Course overview](index.md)
+- [Creating and Cloning Repositories](creating-and-cloning-repositories.md)
 - [GitHub Fundamentals](github-fundamentals.md)
+- [Basic Git Workflow — Add, Commit, Push](basic-git-workflow-add-commit-push.md)
+- [Course index](index.md)
 
 ## References
 
-
-
-
-
-
-- [Pro Git — Working with Remotes](https://git-scm.com/book/en/v2/Git-Basics-Working-with-Remotes)
+- [git-remote](https://git-scm.com/docs/git-remote)
+- [git-fetch](https://git-scm.com/docs/git-fetch)
+- [git-push](https://git-scm.com/docs/git-push)

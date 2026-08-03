@@ -30,7 +30,7 @@ tags:
   - kubernetes
   - kubectl
 author: Shaik Basha
-last_updated: "2026-07-31"
+last_updated: "2026-08-03"
 comments: false
 ---
 
@@ -153,23 +153,19 @@ Server-side apply and field managers matter in advanced teams; for this course, 
 
 ## Hands-on Lab
 
-
-
 ### Objective
 
-Build and verify a working Kubernetes solution for **kubectl Essentials and Workflows** that you can inspect, prove, and tear down safely.
+Practise declarative and imperative kubectl workflows: apply a Deployment from YAML, inspect it, stream logs, exec into a container, explain a field, then delete cleanly.
 
 ### Prerequisites
 
-- kubectl configured against a lab cluster (kind/minikube preferred)
-- Cluster-admin or namespace-create rights in the lab cluster
+- A working Kubernetes cluster (**kind**, **minikube**, or any lab cluster)
+- **kubectl** configured with namespace-create rights
 - Writable workspace at `~/rebash-k8s/module-02-kubectl`
 
 ### Lab environment
 
 Workspace: `~/rebash-k8s/module-02-kubectl`
-
-Local kind/minikube or a dedicated sandbox cluster. Never target a shared production API server.
 
 ```bash
 mkdir -p ~/rebash-k8s/module-02-kubectl && cd ~/rebash-k8s/module-02-kubectl
@@ -177,63 +173,126 @@ mkdir -p ~/rebash-k8s/module-02-kubectl && cd ~/rebash-k8s/module-02-kubectl
 
 ### Real-world scenario
 
-Your platform team is rolling out **kubectl Essentials and Workflows** for a new microservice. You must apply the change in an isolated namespace, prove it works with kubectl, and leave evidence for the on-call handover.
+A developer asks you to deploy a small web tier for a demo, confirm it is healthy, grab logs for the ticket, and remove the workload after review. You use Git-tracked YAML plus the inspection commands you would run during an incident.
 
 ### Step-by-step tasks
 
-#### Task 1 – Apply a topic workload
+#### Task 1 – Declarative apply
 
-Create a namespace and a small Deployment to practise **What it is** against a live API.
+Create `namespace.yaml`:
 
-```bash
-kubectl create namespace rebash-lab --dry-run=client -o yaml | kubectl apply -f -
-kubectl create deployment topic --image=nginx:1.27-alpine -n rebash-lab
-kubectl rollout status deployment/topic -n rebash-lab
-kubectl get all -n rebash-lab
+```yaml
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: rebash-m02-kubectl
 ```
 
-**Expected output:** Deployment Ready; Pods listed under the namespace.
+Create `web-deploy.yaml`:
 
-#### Task 2 – Inspect and gather evidence
-
-Production changes always leave an audit trail of describe/Events.
-
-```bash
-kubectl describe deploy topic -n rebash-lab | tee describe.txt
-kubectl get events -n rebash-lab --sort-by=.lastTimestamp | tail -n 15 | tee events.txt
+```yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: web
+  namespace: rebash-m02-kubectl
+  labels:
+    app: web
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: web
+  template:
+    metadata:
+      labels:
+        app: web
+    spec:
+      containers:
+        - name: nginx
+          image: nginx:1.27-alpine
+          ports:
+            - containerPort: 80
+          resources:
+            requests:
+              cpu: 50m
+              memory: 64Mi
+            limits:
+              cpu: 200m
+              memory: 128Mi
 ```
 
-**Expected output:** describe.txt and events.txt capture healthy Objects/Events.
+Apply and wait:
+
+```bash
+cd ~/rebash-k8s/module-02-kubectl
+kubectl apply -f namespace.yaml
+kubectl apply -f web-deploy.yaml
+kubectl rollout status deployment/web -n rebash-m02-kubectl --timeout=120s
+kubectl get deploy,pod -n rebash-m02-kubectl -o wide | tee apply-evidence.txt
+```
+
+**Expected output:** Deployment `web` Available; Pod `1/1 Ready` in `apply-evidence.txt`.
+
+#### Task 2 – Describe, logs, and exec
+
+Inspect the running Pod the way you would during triage.
+
+```bash
+cd ~/rebash-k8s/module-02-kubectl
+kubectl describe deployment web -n rebash-m02-kubectl | tee describe-deploy.txt
+kubectl logs -n rebash-m02-kubectl -l app=web --tail=20 | tee logs-web.txt
+kubectl exec -n rebash-m02-kubectl deploy/web -- wget -qO- http://127.0.0.1/ | head -n 3 | tee exec-curl.txt
+grep -qi nginx exec-curl.txt || test -s exec-curl.txt
+```
+
+**Expected output:** HTML snippet or non-empty response in `exec-curl.txt`; logs file captured.
+
+#### Task 3 – Explain, compare imperative delete
+
+Learn schema with `explain`, then remove the workload declaratively.
+
+```bash
+cd ~/rebash-k8s/module-02-kubectl
+kubectl explain deployment.spec.template.spec.containers.resources | head -n 15 | tee explain-resources.txt
+grep -q resources explain-resources.txt
+kubectl delete -f web-deploy.yaml
+kubectl get deploy web -n rebash-m02-kubectl 2>&1 | tee delete-check.txt || true
+grep -q 'NotFound' delete-check.txt || ! kubectl get deploy web -n rebash-m02-kubectl >/dev/null 2>&1
+```
+
+**Expected output:** `explain` documents resource fields; Deployment no longer exists after delete.
 
 ### Validation steps
 
-- [ ] Namespace `rebash-lab` contains the expected Ready objects
-- [ ] You can explain each Task command from the Theory section
-- [ ] Cleanup deletes the namespace without leftover workloads
+- [ ] Deployment applied from YAML and reached Ready
+- [ ] `describe`, `logs`, and `exec` produced evidence files
+- [ ] `kubectl explain` ran against Deployment container resources
+- [ ] Workload deleted without leaving Pods in `rebash-m02-kubectl`
 
 ### Common errors and fixes
 
 | Error | Cause | Fix |
 |-------|-------|-----|
-| ImagePullBackOff | Wrong tag or registry auth | Fix image reference; check pull secrets |
-| Pending Pod | Scheduling / quota / PVC | `kubectl describe pod` and read Events |
-| Empty Endpoints | Selector or readiness mismatch | Compare Service selector to Pod labels and Ready |
+| Forgot `-n rebash-m02-kubectl` | Wrong namespace | Always pass `-n` or set context namespace |
+| `error: unable to find container` | Pod not Ready yet | Wait for rollout status |
+| exec wget missing | Minimal image | Use `curl` if available or wait for Ready |
+| explain empty | Wrong resource path | Use `kubectl explain pod.spec.containers` |
 
 ### Challenge exercise
 
-Add a readinessProbe and a ResourceQuota to the namespace, then show that over-quota creates are rejected.
+Re-apply `web-deploy.yaml`, run `kubectl get deploy web -n rebash-m02-kubectl -o yaml > exported-web.yaml`, change `replicas` to `2` in the file, apply again, and prove two Ready Pods with `kubectl get pods -l app=web -n rebash-m02-kubectl`.
 
 ### Learning outcomes
 
-- Applied a real cluster change for kubectl Essentials and Workflows
-- Used describe/Events for verification
-- Destroyed lab resources cleanly
+- Applied and deleted a Deployment declaratively
+- Used describe, logs, and exec for operational inspection
+- Queried API schema with `kubectl explain`
 
 ### Cleanup
 
 ```bash
-kubectl delete namespace rebash-lab --ignore-not-found
-# Keep ~/rebash-kubernetes/ for later tutorials
+kubectl delete namespace rebash-m02-kubectl --ignore-not-found --wait=true
 ```
 
 ## Validation

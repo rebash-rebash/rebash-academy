@@ -145,7 +145,7 @@ Before approving a VPC peering change, you document how a lab VM currently route
 
 ### Step-by-step tasks
 
-#### Task 1 – Capture the main routing table and route lookup
+#### Task 1 – Document the main routing table and route lookup
 
 ```bash
 cd ~/rebash-networking/lab06

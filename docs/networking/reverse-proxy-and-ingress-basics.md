@@ -145,8 +145,11 @@ You must show a junior engineer why `curl` to an IP fails for a name-based vhost
 ```bash
 cd ~/rebash-networking/lab17
 set -euo pipefail
+```
 
-cat > backend.py << 'EOF'
+Create `backend.py`:
+
+```python
 #!/usr/bin/env python3
 from http.server import BaseHTTPRequestHandler, HTTPServer
 
@@ -165,8 +168,9 @@ class H(BaseHTTPRequestHandler):
 
 HTTPServer.allow_reuse_address = True
 HTTPServer(("127.0.0.1", 18081), H).serve_forever()
-EOF
+```
 
+```bash
 python3 backend.py >backend.log 2>&1 &
 echo $! > backend.pid
 sleep 0.3
@@ -178,12 +182,9 @@ grep -q 'backend-ok' direct-backend.txt
 
 #### Task 2 – Reverse proxy with Host proof
 
-```bash
-cd ~/rebash-networking/lab17
-set -euo pipefail
+Create `nginx-proxy.conf`:
 
-start_nginx() {
-  cat > nginx-proxy.conf << 'EOF'
+```nginx
 worker_processes 1;
 error_log /tmp/rebash-lab17-nginx.err;
 pid /tmp/rebash-lab17-nginx.pid;
@@ -206,27 +207,20 @@ http {
     return 404 "no-vhost\n";
   }
 }
-EOF
-  nginx -t -c "$PWD/nginx-proxy.conf"
-  nginx -c "$PWD/nginx-proxy.conf"
-  echo mode=nginx | tee mode.txt
-}
+```
 
-start_caddy() {
-  cat > Caddyfile << 'EOF'
+Create `Caddyfile`:
+
+```text
 http://app.lab.local:18080 {
   bind 127.0.0.1
   reverse_proxy 127.0.0.1:18081
 }
-EOF
-  caddy run --config "$PWD/Caddyfile" --adapter caddyfile >caddy.log 2>&1 &
-  echo $! > caddy.pid
-  sleep 0.5
-  echo mode=caddy | tee mode.txt
-}
+```
 
-start_python_proxy() {
-  cat > proxy.py << 'EOF'
+Create `proxy.py`:
+
+```python
 #!/usr/bin/env python3
 from http.server import BaseHTTPRequestHandler, HTTPServer
 import urllib.request
@@ -256,7 +250,26 @@ class P(BaseHTTPRequestHandler):
 
 HTTPServer.allow_reuse_address = True
 HTTPServer(("127.0.0.1", 18080), P).serve_forever()
-EOF
+```
+
+```bash
+cd ~/rebash-networking/lab17
+set -euo pipefail
+
+start_nginx() {
+  nginx -t -c "$PWD/nginx-proxy.conf"
+  nginx -c "$PWD/nginx-proxy.conf"
+  echo mode=nginx | tee mode.txt
+}
+
+start_caddy() {
+  caddy run --config "$PWD/Caddyfile" --adapter caddyfile >caddy.log 2>&1 &
+  echo $! > caddy.pid
+  sleep 0.5
+  echo mode=caddy | tee mode.txt
+}
+
+start_python_proxy() {
   python3 proxy.py >proxy.log 2>&1 &
   echo $! > proxy.pid
   echo mode=python-proxy | tee mode.txt
@@ -285,15 +298,19 @@ grep -E 'no-vhost|404' via-proxy-miss.txt || grep -qv 'backend-ok' via-proxy-mis
 ```bash
 cd ~/rebash-networking/lab17
 set -euo pipefail
+```
 
-cat > ingress-analogy.txt << 'EOF'
+Create `ingress-analogy.txt`:
+
+```text
 Kubernetes Ingress (simplified):
   host: app.lab.local
   path: /
   backend service: app-svc:80
 Controller (nginx/traefik/etc.) renders reverse-proxy config — same Host proof as this lab.
-EOF
+```
 
+```bash
 tar -czf proxy-evidence.tgz \
   admin-user.txt tools.txt mode.txt \
   direct-backend.txt via-proxy-ok.txt via-proxy-miss.txt \

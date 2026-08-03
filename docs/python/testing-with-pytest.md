@@ -166,14 +166,20 @@ set -euo pipefail
 source .venv/bin/activate
 
 mkdir -p inventory tests
-cat > inventory/__init__.py << 'EOF'
+```
+
+Create `inventory/__init__.py`:
+
+```python
 """Small host inventory helpers for the pytest lab."""
 from .hosts import classify, load_hosts, summarise
 
 __all__ = ["classify", "load_hosts", "summarise"]
-EOF
+```
 
-cat > inventory/hosts.py << 'EOF'
+Create `inventory/hosts.py`:
+
+```python
 from __future__ import annotations
 
 import json
@@ -208,16 +214,21 @@ def summarise(hosts: list[dict[str, Any]]) -> dict[str, int]:
 def fetch_remote_status(url: str, timeout: float = 5.0) -> dict[str, Any]:
     with urllib.request.urlopen(url, timeout=timeout) as resp:
         return json.loads(resp.read().decode("utf-8"))
-EOF
+```
 
-cat > sample-hosts.json << 'EOF'
+Create `sample-hosts.json`:
+
+```json
 [
   {"name": "web1", "status": "up"},
   {"name": "web2", "status": "down"},
   {"name": "db1", "status": "degraded"}
 ]
-EOF
+```
 
+Run:
+
+```bash
 python - << 'PY'
 from pathlib import Path
 from inventory import load_hosts, summarise
@@ -234,8 +245,11 @@ cd ~/rebash-python/lab22
 set -euo pipefail
 # shellcheck disable=SC1091
 source .venv/bin/activate
+```
 
-cat > tests/test_hosts.py << 'EOF'
+Create `tests/test_hosts.py`:
+
+```python
 from __future__ import annotations
 
 import json
@@ -300,8 +314,11 @@ def test_fetch_remote_status_mocked() -> None:
     assert data == payload
     mocked.assert_called_once()
     assert classify(data) == "healthy"
-EOF
+```
 
+Run:
+
+```bash
 python -m pytest -q | tee pytest-q.txt
 grep -E 'passed|failed' pytest-q.txt
 ```

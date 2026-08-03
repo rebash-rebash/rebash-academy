@@ -26,25 +26,47 @@ A lab is where the learner **applies** concepts by building, configuring, breaki
 
 ---
 
+# Mandatory bar — production-grade interview preparation
+
+**All labs** (in-tutorial and standalone) must be **production-grade interview preparation tasks**, not simple demos.
+
+A stranger preparing for a Cloud / DevOps / Platform / SRE interview should finish the lab able to **explain what they built, how they proved it, and what they would do when it breaks** — the same class of work as a mid-level ticket on a real team.
+
+| Must | Must not |
+|------|----------|
+| Build or change **real** systems (VMs, packages, units, containers, Kubernetes, cloud APIs, CI pipelines, remote state) | Toy `null_resource` / `local_file` / echo-only labs as the whole exercise |
+| **Apply** and prove with operational CLIs | Pass only because `validate` / `fmt` / syntax-check succeeded |
+| Include diagnose-and-fix (drift, failed unit, bad plan, auth, crashloop) | Happy-path click-through with no failure |
+| Mandatory **cleanup** of durable/billable resources | Leave sandboxes dirty; skip destroy |
+| Scenario reads like a production ticket / interview whiteboard | “Hello world” with no stakes |
+
+Use cloud **sandbox** / free tier, **kind**, **LocalStack**, or a disposable Ubuntu VM as needed. Document accounts in Prerequisites. Prefer live apply over forever-simulate. Asserts support proof — they do not replace real work.
+
+---
+
 # Objective
 
 Ship a complete lab that is:
 
-1. **Real-world** — mirrors production work (onboarding a VM, hardening SSH, shipping a pipeline, fixing a failed unit)  
+1. **Interview / production real** — mirrors day-1 job work (onboarding a VM, hardening SSH, shipping a pipeline, remote state, fixing a failed unit)  
 2. **Executable** — every command block pastes cleanly and runs on the stated environment  
-3. **Validated** — learner can prove success without guessing  
-4. **Safe** — disposable resources, cleanup, no secrets  
+3. **Validated on the system** — prove pods Ready, infra exists, service healthy — not only that config parsed  
+4. **Safe** — disposable sandbox resources, cleanup, no secrets  
 
 ---
 
 # Lab philosophy
 
-- Solve a real engineering problem  
+- Solve a real engineering problem a hiring manager would recognise  
 - Prefer investigation + evidence over “click Next”  
-- Include failures learners actually hit  
+- Include failures learners actually hit in production and interviews  
 - Teach operational thinking (inspect → change → verify → cleanup)  
 
-**Avoid:** toy `echo hello` labs, markdown note-taking, identical templates with only the title changed.
+**Avoid:** toy labs, simple validate-only paths, markdown note-taking (checklists / runbook diaries), **“Capture principles / stages / glossary” YAML or JSON as a task**, identical templates with only the title changed, and **ugly file creation via `echo` / `printf` / `cat <<EOF` heredocs**.
+
+Principles, workflows, and glossaries belong in **Theory** and **Interview Questions** — never as Lab Task 1.
+
+**Evidence instead of notes:** `tee *.txt` from real commands, asserts (`test`, `grep -q`), and real project files (`Jenkinsfile`, workflow YAML, compose, Terraform). Keep `.md` only for legitimate repo artefacts (short app `README.md`, `CONTRIBUTING.md`, `.github/ISSUE_TEMPLATE/`).
 
 ---
 
@@ -109,21 +131,77 @@ State runtime: local Ubuntu VM, Docker Engine, kind cluster, cloud sandbox, etc.
 
 ### Step-by-step tasks
 
-For each task:
+Keep each task **straight and readable** — Microsoft Learn style:
 
 1. `#### Task N – <verb phrase>`  
 2. One-line why (production relevance)  
-3. Fenced `bash` (or language) block — **complete, paste-safe**  
-4. `**Expected output:**` concrete success signal  
+3. Tell the learner to **create the file** (path + name)  
+4. Show the **file contents** in the correct language fence (`python`, `yaml`, `groovy`, `bash` for scripts, etc.) — not inside a shell heredoc  
+5. Show the **run / verify** commands in a short `bash` fence  
+6. `**Expected output:**` concrete success signal  
 
-Use heredocs for files. Prefer:
+#### Canonical pattern (preferred)
+
+````markdown
+#### Task 1 – Create and run a hello script
+
+Create `hello.py` in the lab directory:
+
+```python
+print("hello from rebash")
+```
+
+Run it:
 
 ```bash
-set -euo pipefail
-# …
-test -f evidence.txt
-grep -q 'expected' evidence.txt
+cd ~/rebash-<tech>/labNN
+python3 hello.py | tee hello-out.txt
+grep -q 'hello from rebash' hello-out.txt
 ```
+
+**Expected output:** `hello-out.txt` contains `hello from rebash`.
+````
+
+#### Multi-file example
+
+````markdown
+#### Task 2 – Add Compose for Jenkins LTS
+
+Create `compose.yaml`:
+
+```yaml
+services:
+  jenkins:
+    image: jenkins/jenkins:lts-jdk17
+    ports:
+      - "8080:8080"
+    volumes:
+      - jenkins_home:/var/jenkins_home
+volumes:
+  jenkins_home:
+```
+
+Start and check:
+
+```bash
+cd ~/rebash-jenkins/module-02
+docker compose up -d
+docker compose ps | tee compose-ps.txt
+```
+
+**Expected output:** `compose-ps.txt` shows the `jenkins` service running.
+````
+
+#### File-creation rules
+
+| Do | Don't |
+|----|-------|
+| “Create `app.py`:” then a `python` fence | `cat > app.py << 'EOF'` … |
+| “Create `ci.yml`:” then a `yaml` fence | `echo '…' > ci.yml` |
+| Short `bash` blocks for **run / verify / cleanup** only | Giant bash blocks that both write files and run them |
+| Learner copies content into the editor (or IDE) | Teaching file creation via shell redirection |
+
+**Exception (rare):** tiny one-liners generated by a tool (`ssh-keygen`, `openssl`) — those stay as commands. Config/source/pipeline files always use the create-file + language-fence pattern.
 
 ### Validation steps
 
@@ -151,11 +229,13 @@ Commands to remove users, units, containers, namespaces, state. Never “re-run 
 
 # Copy-paste safety rules
 
+- File bodies in language fences; run/verify in short `bash` fences  
 - Quote paths; avoid interactive prompts (`-y` for apt when appropriate)  
 - Idempotent where practical (`|| true` only when documented)  
 - Escape MkDocs macros: `${{`, `{%`, Go `{{`  
 - Pin image tags when pulling containers  
 - Warn before destructive disk/firewall/sshd changes; keep a second SSH session for hardening labs  
+- In scripts the learner creates, `set -euo pipefail` is fine — show the script as a `bash` file fence, then `chmod +x` + run  
 
 ---
 
@@ -180,7 +260,8 @@ Commands to remove users, units, containers, namespaces, state. Never “re-run 
 # Quality checklist
 
 - [ ] Scenario is production-flavoured  
-- [ ] Commands run copy-paste on stated OS  
+- [ ] Files introduced as “Create `name.ext`:” + language fence (no `cat`/`echo` file writes)  
+- [ ] Run/verify commands are short and separate  
 - [ ] Each task has Expected output  
 - [ ] Validation proves the outcome  
 - [ ] Errors table is realistic  

@@ -1,8 +1,8 @@
 ---
 title: "Securing Jenkins"
-description: "Harden Jenkins authentication, authorisation, credentials, CSRF protection, and controller isolation."
+description: "Harden Jenkins authentication, authorisation, credentials, CSRF protection, controller isolation, and Multibranch credential hygiene."
 difficulty: advanced
-estimated_time: "50–65 min"
+estimated_time: "55–75 min"
 technology: jenkins
 category: jenkins
 module: "Module 11 · Securing Jenkins"
@@ -20,291 +20,453 @@ prerequisites:
   - jenkins/managing-jenkins-plugins-tools-and-cli
 next:
   - jenkins/testing-reports-and-quality-gates
+related:
+  - jenkins/agents-nodes-and-executors
+  - jenkins/multibranch-pipelines-and-prs
 tags:
   - jenkins
   - security
   - csrf
   - rbac
 author: Shaik Basha
-last_updated: "2026-07-31"
+last_updated: "2026-08-03"
 comments: false
 ---
-
 
 # Securing Jenkins
 
 ## Overview
 
+A Jenkins controller is a privileged orchestration plane: it holds **credentials**, can deploy to clusters, and executes Pipeline code. Securing it means getting **authentication** and **authorisation** right, using the **credentials store**, keeping **Cross-Site Request Forgery (CSRF)** protection on, isolating builds from the controller, and practising Multibranch credential hygiene so untrusted pull requests never see production secrets.
 
-
-Harden a Jenkins controller: authentication, authorisation (matrix / role strategies), credentials store, Cross-Site Request Forgery (CSRF) protection, markup formatting, and isolating builds from the controller.
-
-Credential hygiene in Multibranch and pull request builds is part of security, not an afterthought.
-
-This is a core tutorial in **Module 11 · Securing Jenkins** of the REBASH Academy **Jenkins for Cloud & DevOps Engineers** series — written for Cloud, DevOps, Platform, and SRE engineers.
+This is **Tutorial 11** in **Module 11: Securing Jenkins** of the REBASH Academy **Jenkins for Cloud & DevOps Engineers** series — written for Cloud, DevOps, Platform, DevSecOps, and Site Reliability Engineering (SRE) engineers. Handbook: [Securing Jenkins](https://www.jenkins.io/doc/book/security/).
 
 ## Prerequisites
 
-
-
-- Completed prior modules in this track where linked in frontmatter
-- [Git](../git/index.md) and [Docker](../docker/index.md) for lab workflows
-- Running Jenkins LTS from [Installing Jenkins LTS](installing-jenkins-lts.md) when a live controller is required
+- [Managing Jenkins — Plugins, Tools, and CLI](managing-jenkins-plugins-tools-and-cli.md)
+- Lab controller you administer (do not harden a shared production host without change control)
+- Modules 6–7 concepts: built-in executors and PR trust tiers
 
 ## Learning Objectives
 
-
-
 By the end of this tutorial, you will be able to:
 
-- [ ] Distinguish authentication vs authorisation in Jenkins
-- [ ] Describe matrix/role-based access patterns at a high level
-- [ ] Use the credentials store correctly from Pipeline
-- [ ] List CSRF and controller isolation controls
+- [ ] Distinguish authentication from authorisation in Jenkins
+- [ ] Outline matrix / role-based strategies at a practical level
+- [ ] Store and reference credentials without embedding secrets in jobs
+- [ ] Verify CSRF protection and markup formatter basics
+- [ ] Apply a controller-isolation and Multibranch hygiene checklist
 
 ## Architecture
 
+Users authenticate; authorisation gates actions; credentials inject at runtime on isolated agents.
 
-
-This topic’s control points and relationships are shown below.
-
-![Securing Jenkins](../assets/excalidraw/jenkins-security.svg)
+![Jenkins security — authn, authz, credentials, CSRF](../assets/excalidraw/jenkins-security.svg)
 
 ## Theory
 
-
-
 ### What it is
 
-**Authentication** establishes identity (Jenkins’ own user database, LDAP, SAML, OpenID Connect). **Authorisation** decides permissions (Anyone can do anything — never for prod — logged-in users, matrix, role-based strategies via plugins). **Credentials** plugin stores secrets with IDs for Pipeline binding. **CSRF** protection issues crumbs for state-changing requests. Script security / sandbox limits Groovy. Builds must stay off the built-in node.
+**Authentication** answers who you are (Jenkins’ own user database, Lightweight Directory Access Protocol (LDAP), Security Assertion Markup Language (SAML), OpenID Connect (OIDC), GitHub App, …).
+
+**Authorisation** answers what you may do. Common models:
+
+| Strategy | Idea |
+|----------|------|
+| Logged-in users can do anything | Lab-only anti-pattern for shared controllers |
+| Matrix Authorization | Permissions grid per user/group |
+| Role-based (Role Strategy plugin) | Roles mapped to users/groups; folder-aware setups common |
+| Folder-scoped permissions | Teams administer inside their folder only |
+
+**Credentials store** holds secrets (secret text, username/password, SSH keys, certificates) encrypted under `JENKINS_HOME`, referenced by **ID** from Pipeline (`withCredentials`, credential bindings, `credentials()` in `environment` where supported).
+
+**CSRF** crumbs prevent forged browser requests from other sites while you are logged into Jenkins. Keep protection enabled.
+
+**Markup formatter** controls whether job descriptions allow HTML — unsafe HTML enables stored XSS if untrusted users can edit descriptions.
+
+**Controller isolation** means zero (or near-zero) executors on the built-in node and privileged work only on labelled agents.
 
 ### Why it matters
 
-Jenkins often holds cloud keys, registry tokens, and production kubeconfigs. A public signup controller or disabled CSRF is an incident waiting to happen. DevSecOps reviews treat controller hardening like any other internet-facing app — plus supply-chain risk from plugins.
+Compromised Jenkins equals compromised delivery: cloud keys, Kubernetes configs, and production SSH. Most “Jenkins breaches” are exposed UIs, over-powered accounts, secrets in Freestyle builders, or PR builds on privileged agents — not exotic zero-days.
 
 ### How it works
 
-1. Disable signup; require login for reads in shared controllers as policy dictates.
-2. Configure an authorisation strategy least-privilege for folders/jobs.
-3. Migrate secrets out of jobs into Credentials; audit usages.
-4. Keep CSRF enabled; beware “disable crumbs for CLI” folklore.
-5. Enforce agent-only builds; review Markup Formatter (XSS).
-
-Handbook: [Securing Jenkins](https://www.jenkins.io/doc/book/security/).
+1. Enable security realm (who logs in).
+2. Choose authorisation strategy; remove anonymous Overall/Administer.
+3. Create personal users or sync groups; avoid shared `admin` for daily work.
+4. Put secrets in Credentials (folder scope when multi-tenant).
+5. Pipelines reference credential IDs; agents receive ephemeral env/files.
+6. Multibranch: production deploy credentials live in folders that untrusted PR jobs cannot access — or use separate controllers/folders entirely.
+7. Keep CSRF on; restrict who can run Groovy script console.
 
 ### Key concepts and comparisons
 
-| Control | Purpose |
-|---------|---------|
-| Authn realm | Who users are |
-| Authz strategy | What they can do |
-| Credentials store | Secret material |
-| CSRF crumbs | Browser attack mitigation |
-| Agent isolation | Protect controller |
-| Script security | Groovy safety |
+| Bad practice | Better |
+|--------------|--------|
+| Secrets in Jenkinsfile | Credentials ID |
+| Anonymous read + job configure | Authenticated least privilege |
+| Everyone Administer | Matrix/roles + folder admins |
+| PR jobs in prod-creds folder | Separate CI folder/agent pool |
+| Built-in executors > 0 | Executors = 0 |
 
-Multibranch: separate credential sets for untrusted PR builds.
+| Credential type | Typical use |
+|-----------------|-------------|
+| Secret text | API tokens |
+| Username/password | Registries, basic Git |
+| SSH private key | Git over SSH, some hosts |
+| Secret file | kubeconfig (prefer short-lived OIDC patterns when possible) |
 
 ### Common pitfalls
 
-- “Anyone can do anything” left enabled after a lab.
-- Disabling CSRF to “fix CLI”.
-- Folder credentials exposed to every child PR job unintentionally.
-- Admin accounts shared among the whole department.
+- “Security disabled” left on from a hurried lab.
+- Anonymous Overall/Read on internet-facing controllers.
+- Script Console open to non-admins.
+- Folder credentials inherited into Multibranch PR jobs unintentionally.
+- Disabling CSRF “because the CLI was annoying” without fixing auth properly.
 
 ## Hands-on Lab
 
-
-
 ### Objective
 
-Configure a real Jenkins-facing artefact for **Securing Jenkins** (Compose controller and/or Jenkinsfile) you can run or import.
+Produce a hardening checklist against your lab controller, create a folder-scoped credential (dummy value), reference it from a Pipeline without printing the secret, and verify CSRF and built-in executor posture with validated YAML and shell checks.
 
 ### Prerequisites
 
-- Docker Engine for controller labs
-- Text editor / shell
+- Admin on lab Jenkins
+- Ability to create folders and credentials
 
 ### Lab environment
 
 Workspace: `~/rebash-jenkins/module-11`
 
-Local Docker Compose Jenkins LTS where a live UI is needed; file-only Jenkinsfile labs otherwise.
-
 ```bash
 mkdir -p ~/rebash-jenkins/module-11 && cd ~/rebash-jenkins/module-11
+set -euo pipefail
+curl -sS -o /dev/null -w "%{http_code}\n" http://127.0.0.1:8080/login | tee controller.txt
 ```
 
 ### Real-world scenario
 
-Your organisation is standardising **Securing Jenkins**. You prototype on a lab controller, keep everything as files, and avoid building on the built-in node in production designs.
+Security review requires evidence that anonymous users cannot configure jobs, CSRF is enabled, production-like secrets are not in Git, and built-in builds are disabled.
 
 ### Step-by-step tasks
 
-#### Task 1 – Capture controller/agent mental model files
+#### Task 1 – Security posture as YAML
 
-Document how this topic shows up on a real controller.
+In UI: Manage Jenkins → Security. Record realm and authorisation strategy in the YAML keys below.
+
+Run:
 
 ```bash
-tee scenario.md << 'EOF'
-Topic: Securing Jenkins
-- Controller owns config and orchestration
-- Agents execute untrusted build steps
-- Prefer Jenkinsfile in SCM over click-ops jobs
-EOF
-cat scenario.md
-mkdir -p jobs && echo 'pipelineJob stub' > jobs/README.txt
+cd ~/rebash-jenkins/module-11
+set -euo pipefail
 ```
 
-**Expected output:** scenario.md and jobs/README.txt exist.
+Create `security-policy.yaml`:
 
-#### Task 2 – Write a minimal Declarative stub
+```yaml
+authentication:
+  realm: fill_from_ui
+  admin_account_count: fill_from_ui
+authorisation:
+  strategy: fill_from_ui
+  anonymous_administer: false
+  anonymous_job_build: fill_from_ui
+csrf:
+  prevent_csrf: true
+markup:
+  formatter: fill_from_ui
+controller_isolation:
+  builtin_executors_target: 0
+  privileged_agent_labels: fill_from_ui
+script_console:
+  access: administer_only
+```
 
-Even management topics should leave a Pipeline artefact.
+Validate and archive:
 
 ```bash
-cat > Jenkinsfile << 'EOF'
+python3 -c "
+import yaml
+with open('security-policy.yaml') as f:
+    d = yaml.safe_load(f)
+assert d['csrf']['prevent_csrf'] is True
+assert d['authorisation']['anonymous_administer'] is False
+print('security-policy.yaml OK')
+" | tee security-policy-validate.txt
+```
+
+**Expected output:** YAML validates required keys; fill UI values after inspection.
+
+#### Task 2 – Folder-scoped dummy credential
+
+1. Open folder `rebash-demo` (create if needed) → Credentials → Add.
+2. Kind: Secret text. ID: `rebash-demo-dummy`. Secret: `not-a-real-secret`.
+3. Scope: folder (not global) if offered.
+
+Run:
+
+```bash
+cd ~/rebash-jenkins/module-11
+set -euo pipefail
+```
+
+Create `credential-config.yaml`:
+
+```yaml
+id: rebash-demo-dummy
+kind: secret_text
+scope: folder_rebash-demo
+rotation_owner: platform-lab
+value_storage: jenkins_credentials_store_only
+```
+
+Create `creds-pipeline.Jenkinsfile`:
+
+```groovy
 pipeline {
   agent any
-  stages { stage('OK') { steps { echo 'lab' } } }
+  stages {
+    stage('Use credential safely') {
+      steps {
+        withCredentials([string(credentialsId: 'rebash-demo-dummy', variable: 'DEMO_SECRET')]) {
+          sh '''
+            test -n "$DEMO_SECRET"
+            # Prove length only — never echo the secret
+            python3 - <<'PY' || awk 'BEGIN{exit 0}'
+import os
+s=os.environ.get("DEMO_SECRET","")
+print("secret_length=", len(s))
+if s == "":
+    raise SystemExit(1)
+PY
+          '''
+        }
+      }
+    }
+  }
 }
-EOF
-grep -n agent Jenkinsfile
 ```
 
-**Expected output:** Jenkinsfile present with an agent directive.
+Create job `rebash-demo/creds-safe-demo` with this script and build it. Console must **not** print `not-a-real-secret`.
+
+**Expected output:** Build success; length line only.
+
+#### Task 3 – Multibranch hygiene policy
+
+Run:
+
+```bash
+cd ~/rebash-jenkins/module-11
+set -euo pipefail
+```
+
+Create `multibranch-hygiene.yaml`:
+
+```yaml
+prod_deploy_credentials_separate_from_pr_jobs: true
+fork_pr_discovery: disabled_or_sandboxed_agents
+jenkinsfile_prod_credential_ids: forbidden_for_pr_jobs
+credential_ids_documented: true
+builtin_executors: 0
+lab_decision: fill_after_controller_review
+```
+
+Validate and archive:
+
+```bash
+python3 -c "
+import yaml
+with open('multibranch-hygiene.yaml') as f:
+    d = yaml.safe_load(f)
+assert d['prod_deploy_credentials_separate_from_pr_jobs']
+print('multibranch-hygiene.yaml OK')
+" | tee mb-hygiene-validate.txt
+```
+
+**Expected output:** Hygiene YAML validates.
+
+#### Task 4 – Evidence pack
+
+Run:
+
+```bash
+cd ~/rebash-jenkins/module-11
+set -euo pipefail
+```
+
+Create `hardening-checks.sh`:
+
+```bash
+#!/usr/bin/env bash
+set -euo pipefail
+python3 -c "
+import yaml
+for f in ('security-policy.yaml','multibranch-hygiene.yaml','credential-config.yaml'):
+    yaml.safe_load(open(f))
+print('yaml_bundle_ok')
+"
+grep -q 'withCredentials' creds-pipeline.Jenkinsfile
+grep -q 'secret_length' creds-pipeline.Jenkinsfile
+echo hardening_checks_ok
+```
+
+Validate and archive:
+
+```bash
+chmod +x hardening-checks.sh
+./hardening-checks.sh | tee hardening-checks.txt
+
+tar -czf module-11-evidence.tgz security-policy.yaml multibranch-hygiene.yaml credential-config.yaml creds-pipeline.Jenkinsfile hardening-checks.sh *.txt
+ls -l module-11-evidence.tgz | tee evidence.txt
+```
+
+**Expected output:** Archive without real secrets.
 
 ### Validation steps
 
-- [ ] Artefacts from tasks exist
-- [ ] No secrets committed
-- [ ] Compose stack stopped if started
+- [ ] CSRF confirmed enabled
+- [ ] Dummy credential used via `withCredentials` without echoing value
+- [ ] Multibranch hygiene YAML validates
+- [ ] `hardening-checks.sh` passes locally
+- [ ] Built-in executor policy recorded
 
 ### Common errors and fixes
 
 | Error | Cause | Fix |
 |-------|-------|-----|
-| port 8080 in use | Another Jenkins/lab | Change host port or stop the other container |
-| permission denied on volume | Podman/rootless path | Fix volume ownership or use named volumes |
-| agent any hangs | No executors | Attach an agent or enable a lab executor carefully |
+| Credentials unavailable | Wrong folder scope | Add creds where the job runs |
+| `withCredentials` missing | Plugin/step not installed | Install Credentials Binding |
+| Secret appears in logs | `echo $SECRET` | Print length/hash only |
+| Locked yourself out | Authz misconfig | Use disable-security recovery patterns offline on lab only |
 
 ### Challenge exercise
 
-Disable builds on the built-in node in your notes and document the agent label you would require instead.
+Create two users (or simulate with RBAC): `dev-user` with Job/Build in `rebash-demo` only, and ensure they cannot access Manage Jenkins. Capture the matrix or role strategy as `rbac-matrix.yaml` with required permission keys validated by Python.
 
 ### Learning outcomes
 
-- Produced runnable Jenkins artefacts
-- Practised safe lab controller hygiene
+- Mapped authn vs authz on a real controller
+- Practised safe credential binding
+- Documented Multibranch secret boundaries
+- Reinforced controller isolation
 
 ### Cleanup
 
 ```bash
-# Keep lab notes under ~/rebash-jenkins/
+# Delete dummy credential after lab if desired
+ls ~/rebash-jenkins/module-11
 ```
 
 ## Validation
 
-
-
-- [ ] Lab commands run under `~/rebash-jenkins/module-11/`
-- [ ] You can explain each Theory section in your own words
-- [ ] You used current Jenkins LTS / Pipeline practices where they apply
-- [ ] You can describe one production failure mode for this topic
+- [ ] Lab completed under `~/rebash-jenkins/module-11/`
+- [ ] You can explain CSRF’s purpose
+- [ ] You can place secrets in the store, not Git
+- [ ] You can describe one PR credential failure mode
 
 ## Code Walkthrough
 
-
-
-Production practice for **Securing Jenkins** always combines:
-
-1. Inspect before you change (status, plan, logs, dry-run)
-2. Prefer reversible, documented changes (Git, Jenkinsfile, JCasC)
-3. Capture evidence (console logs, plan artefacts) for handovers
-4. Prefer current LTS and supported plugins over legacy shortcuts
-5. Least privilege — escalate credentials only when required
-
-Keep runbooks short enough to follow under pressure. Automate checks; keep humans for judgement.
+1. **Authenticate people, authorise actions** — separately.
+2. **Credentials by ID** — never literals in Jenkinsfiles.
+3. **Folder scope for multi-team** — reduce blast radius.
+4. **CSRF stays on** — fix clients properly.
+5. **PR trust tiers** — separate folders/agents/creds.
 
 ## Security Considerations
 
-
-
-- Treat Jenkins credentials and cloud tokens as privileged — never commit them
-- Keep builds off the built-in node; isolate untrusted pull requests
-- Prefer short-lived auth (OIDC-style patterns, scoped RBAC) over long-lived keys
-- Validate blast radius before apply/deploy/delete operations
-- Collect audit logs; limit who can administer the controller
+- Internet-facing Jenkins needs TLS, SSO, and aggressive authz — not just “installed.”
+- Script Console is root-equivalent — Administer only.
+- Backup encryption and access control matter; `JENKINS_HOME` contains credential ciphertext.
+- Agent compromise leaks whatever credentials a job injects — minimise scopes.
+- Audit plugin versions with known CVEs as part of operations.
 
 ## Common Mistakes
 
+!!! warning "Anonymous users can Administer"
+    Trivial takeover. **Fix:** review Authorization matrix immediately.
 
+!!! warning "Secrets in Multibranch folder shared with fork PRs"
+    Untrusted code reads prod IDs. **Fix:** split folders/controllers; sandbox PR CI.
 
-!!! warning "Anyone can do anything"
-    Never leave this authorisation mode on a reachable controller.
+!!! warning "Disabling CSRF for convenience"
+    Session-riding attacks. **Fix:** keep CSRF; use API tokens for automation.
 
-!!! warning "Disabling CSRF"
-    Fix CLI/auth properly; do not disable CSRF crumbs as a shortcut.
-
-!!! warning "Deploy credentials on untrusted PRs"
-    Split trusted release Pipelines from PR CI.
+!!! warning "Shared admin password on sticky notes"
+    No accountability. **Fix:** SSO + personal accounts + break-glass admin.
 
 ## Best Practices
 
-
-
-- Encode **Securing Jenkins** changes as code and review them in pull requests
-- Prefer Jenkins LTS and pinned agent/tool versions
-- Keep builds off the controller; use labelled agents
-- Least privilege for credentials and cluster/cloud access
-- Destroy or stop lab resources; keep `~/rebash-jenkins/` notes for the track
+- SSO for humans; API tokens for automation with rotation.
+- Role Strategy or equivalent for folder tenancy.
+- Regular credential rotation and ownership tags.
+- Zero built-in executors in production.
+- Threat-model Multibranch before enabling fork PRs.
 
 ## Troubleshooting
 
-
-
 | Symptom | Likely cause | Fix |
 |---------|--------------|-----|
-| Job stuck in queue | No matching agent/label or executors busy | Check nodes, labels, and executor counts |
-| Checkout / SCM failure | Credentials, URL, or permissions | Verify credential ID and repository access |
-| Pipeline CPS / script error | Syntax, sandbox, or library mismatch | Read error line; validate Jenkinsfile; pin library version |
-| Plugin / UI broken after update | Incompatible plugin set | Restore backup; disable suspect plugin on test controller |
-| Disk full on agent/controller | Workspaces or old builds | Clean workspaces; trim build retention |
+| 403 on every POST | CSRF/token issues | Re-login; update CLI auth |
+| Creds not found | Scope/ID typo | Match folder + ID |
+| Users can see all jobs | Authz too open | Tighten matrix/roles |
+| Builds on controller | Executors > 0 | Set 0; force labels |
 
 ## Summary
 
-
-
-**Securing Jenkins** is essential for Cloud and DevOps engineers operating Jenkins. Practise the lab until the inspection and change path is muscle memory, then continue the track.
+Secure Jenkins by authenticating strongly, authorising narrowly, storing secrets in the credentials system, keeping CSRF on, and isolating untrusted Pipelines from the controller and production credentials. Next: [Testing, Reports, and Quality Gates](testing-reports-and-quality-gates.md).
 
 ## Interview Questions
 
+**1. What is the difference between authentication and authorisation in Jenkins?**
 
+??? success "Reveal answer"
+    Authentication establishes identity (login). Authorisation decides which Jenkins permissions that identity has (read, build, configure, administer).
 
-1. Authentication versus authorisation in Jenkins?
-2. Where should secrets live?
-3. Why keep CSRF enabled?
-4. How do you limit Multibranch PR access to credentials?
-5. Which controller hardening steps would you verify first on an unknown instance?
+**2. Why use the credentials store instead of environment literals?**
 
-!!! tip "Sample answer — question 2"
-    In the Credentials store (global or folder), referenced by ID from Pipeline — never in Jenkinsfile plaintext.
+??? success "Reveal answer"
+    Secrets stay encrypted in `JENKINS_HOME`, are access-controlled, rotatable, and injected at runtime without appearing in Git. Literals leak via repos, config history, and logs.
 
-!!! tip "Sample answer — question 5"
-    Signup disabled, authz strategy, CSRF on, built-in executors, plugin currency, and whether the UI is exposed without TLS.
+**3. What does CSRF protection prevent?**
+
+??? success "Reveal answer"
+    It prevents other websites from tricking a browser that is already logged into Jenkins into performing state-changing requests (forged builds, config changes) without a valid crumb/token.
+
+**4. How do matrix and role strategies differ at a high level?**
+
+??? success "Reveal answer"
+    Matrix assigns permissions directly to users/groups in a grid. Role strategies define named roles with permission sets, then assign users/groups to roles — often easier at scale and with folders.
+
+**5. Why is Script Console dangerous?**
+
+??? success "Reveal answer"
+    It can execute arbitrary Groovy with high privilege on the controller — effectively full compromise. Restrict to Administer and monitor usage.
+
+**6. How should production credentials be handled for Multibranch PR builds?**
+
+??? success "Reveal answer"
+    Keep them out of folders/stores that untrusted PR jobs can access. Use separate CI credentials and agents for PRs; reserve deploy credentials for protected branches with gates.
+
+**7. What is a practical controller isolation control?**
+
+??? success "Reveal answer"
+    Set built-in node executors to zero so Pipelines cannot run on the controller host; require labelled agents for all builds.
+
+**8. What goes wrong if job descriptions allow raw HTML from untrusted users?**
+
+??? success "Reveal answer"
+    Stored cross-site scripting can run in admins’ browsers when they view the job, leading to session theft or unintended actions. Use safe markup formatters and limit who can edit descriptions.
 
 ## Related Tutorials
 
-
-
-- [Course overview](index.md)
-- [Managing Jenkins — Plugins, Tools, and CLI](managing-jenkins-plugins-tools-and-cli.md)
+- [Agents, Nodes, and Executors](agents-nodes-and-executors.md)
+- [Multibranch Pipelines and Pull Requests](multibranch-pipelines-and-prs.md)
 - [Testing, Reports, and Quality Gates](testing-reports-and-quality-gates.md)
 
 ## References
 
-
-
 - [Securing Jenkins](https://www.jenkins.io/doc/book/security/)
-- [Credentials](https://www.jenkins.io/doc/book/using/using-credentials/)
-- [Managing Users](https://www.jenkins.io/doc/book/security/managing-security/)
+- [Credentials plugin](https://plugins.jenkins.io/credentials/)
+- [Credentials Binding](https://plugins.jenkins.io/credentials-binding/)

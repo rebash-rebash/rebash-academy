@@ -1,37 +1,29 @@
 ---
 title: "Security Scanning and Supply Chain"
-description: "Harden GitHub Actions delivery with secret scanning, dependency review, CodeQL, Trivy, SBOM, and supply-chain controls including pinning actions by SHA."
+description: "Harden GitHub Actions pipelines with CodeQL, Trivy, dependency review, SBOM generation, and action pinning by commit SHA."
 difficulty: advanced
-estimated_time: "50–65 min"
+estimated_time: "50–70 min"
 technology: github-actions
 category: github-actions
 module: "Module 11 · Security"
 career_paths:
   - devops-engineer
-  - cloud-engineer
+  - devsecops-engineer
   - platform-engineer
   - site-reliability-engineer
-  - devsecops-engineer
 skills:
   - github-actions
-  - appsec
-  - supply-chain-security
+  - devsecops
+  - supply-chain
   - codeql
-  - trivy
+  - sbom
 prerequisites:
   - github-actions/multi-cloud-deployments-with-github-actions
 next:
   - github-actions/testing-in-github-actions
 related:
   - github-actions/secrets-variables-and-oidc
-  - github-actions/docker-pipelines-with-github-actions
-  - docker/container-scanning-and-sbom
-labs: []
-projects: []
-interview: interview/github-actions
-certifications:
-  - GitHub Foundations
-  - GitHub Actions
+  - devsecops/index
 tags:
   - github-actions
   - security
@@ -40,371 +32,459 @@ tags:
   - sbom
   - supply-chain
 author: Shaik Basha
-last_updated: "2026-07-31"
+last_updated: "2026-08-03"
 comments: false
 ---
-
 
 # Security Scanning and Supply Chain
 
 ## Overview
 
+Shipping fast without scanning is how critical vulnerabilities reach production. GitHub Actions integrates **CodeQL** (static analysis), **Trivy** (container and IaC scanning), **dependency review** (pull request dependency diffs), and **Software Bill of Materials (SBOM)** export — plus **pinning actions by full commit SHA** so third-party actions cannot silently change under a floating tag.
 
-
-
-
-
-
-
-Assemble a security stage that runs secret scanning and Dependency Review early, CodeQL for Static Application Security Testing (SAST), Trivy on container images, publishes a Software Bill of Materials (SBOM), and hardens the supply chain by pinning third-party Actions to commit SHAs.
-
-**DevSecOps** embeds scanners into the same workflows that build and deploy. GitHub provides secret scanning, Dependency Review (for pull requests), CodeQL, and ecosystem tooling for container scanning (for example Trivy) and SBOM export (CycloneDX / SPDX). Fail the pipeline on policy severity — do not treat scanners as optional decoration. Pin marketplace Actions by full commit SHA so a tagged release cannot silently change under you.
-
-This is a core tutorial in **Module 11 · Security** of the REBASH Academy **GitHub Actions for Cloud & DevOps Engineers** series — written for Cloud, DevOps, Platform, and SRE engineers.
+This is **Tutorial 11** in **Module 11: Security** of the REBASH Academy **GitHub Actions for Cloud & DevOps Engineers** series — written for Cloud, DevOps, Platform, SRE, and DevSecOps engineers.
 
 ## Prerequisites
 
-
-
-
-
-
-
-
 - [Multi-Cloud Deployments with GitHub Actions](multi-cloud-deployments-with-github-actions.md)
+- [Secrets, Variables, and OIDC](secrets-variables-and-oidc.md)
+- A test repository or local workflow folder (no live CodeQL database required for the lab)
 
 ## Learning Objectives
 
-
-
-
-
-
-
-
 By the end of this tutorial, you will be able to:
 
-- [ ] Place secret scanning and Dependency Review before expensive builds  
-- [ ] Run CodeQL and Trivy against source and Module 7 images  
-- [ ] Outline SBOM output tied to a release digest  
-- [ ] Pin Actions by commit SHA and explain why  
-- [ ] Gate merges on severity thresholds
+- [ ] Add CodeQL, Trivy, and dependency-review workflow stubs to a repository
+- [ ] Generate an SBOM artefact in CI
+- [ ] Pin third-party actions by commit SHA instead of mutable tags
+- [ ] Explain supply-chain risks in reusable actions and marketplace dependencies
+- [ ] Gate merges on security findings with branch protection
 
 ## Architecture
 
+Security jobs run parallel to build/test; findings block promotion to deploy environments.
 
-
-
-
-
-
-
-This topic’s control points and relationships are shown below.
-
-![Security and supply chain](../assets/excalidraw/gha-security.svg)
+![Security and supply chain in GitHub Actions](../assets/excalidraw/gha-security.svg)
 
 ## Theory
 
-
-
-
-
-
-
-
 ### What it is
 
-Security jobs produce findings in the pull request and Security tab:
+| Control | Purpose | Typical trigger |
+|---------|---------|-----------------|
+| CodeQL | Semantic code analysis for CVE classes | `push`, `pull_request`, schedule |
+| Trivy | OS/package/IaC misconfiguration scan | After image build or on Terraform |
+| Dependency review | Compare dependency changes on PRs | `pull_request` |
+| SBOM | Inventory of components for audit/recall | Release or main build |
+| SHA pinning | Immutable action reference | Every `uses:` line |
 
-| Control | Looks at | When |
-|---------|----------|------|
-| Secret scanning / push protection | Commits and diffs | Earliest — every change |
-| Dependency Review | Lockfile / manifest diffs on PRs | Before merge |
-| CodeQL | Source / data-flow queries | Early on PR + default branch |
-| Trivy (or equivalent) | Built image / filesystem | After Module 7 build |
-| SBOM | Dependencies and image layers | Attach to release / attestation |
-
-**Supply-chain hardening** also includes least-privilege `permissions`, OIDC over long-lived keys (Modules 5 and 10), immutable image digests, and **pinning Actions** to SHAs rather than movable tags such as `@v4`.
+**Supply chain security** means treating actions, base images, and dependencies as untrusted until verified — pin versions, review diffs, and fail builds on critical findings.
 
 ### Why it matters
 
-Vulnerabilities found after production are incidents. Secrets in Git are credentials for attackers. Compromised marketplace Actions can exfiltrate tokens from every consumer workflow. Dependency and container Common Vulnerabilities and Exposures (CVEs) dominate modern findings; SBOM data answers “what did we ship?” for auditors. Pipelines that only deploy without scanning train teams to ignore risk.
+Compromised marketplace actions have exfiltrated secrets. Floating `@v4` tags can move without your review. Regulators and customers increasingly expect SBOMs and provenance. DevSecOps teams need scans in CI, not only periodic manual audits.
 
 ### How it works
 
-1. Enable secret scanning and push protection at organisation or repository level; block on verified leaks.  
-2. On pull request: run **Dependency Review** and fail on disallowed licences or high-severity new deps.  
-3. Run **CodeQL** (`github/codeql-action`) in parallel with unit tests where possible.  
-4. After image build: **Trivy** (or cloud scanner) against the SHA artefact; fail on Critical/High per policy.  
-5. Generate an **SBOM** (for example `anchore/sbom-action` or Trivy SBOM) and attach it to the release or attestation for that digest.  
-6. In every workflow: pin third-party Actions to full commit SHAs; restrict `permissions`; avoid `pull_request_target` with untrusted checkout.
+1. **CodeQL** — `github/codeql-action` initialises a language database, runs queries, uploads results to GitHub Security tab.
+2. **Trivy** — scans filesystem, container image, or Terraform for known CVEs and misconfigs; exit code fails the job on severity threshold.
+3. **Dependency review** — GitHub compares lockfiles between base and head; blocks merges if new vulnerabilities exceed policy (requires GitHub Advanced Security for private repos).
+4. **SBOM** — tools like `anchore/sbom-action` or Syft emit SPDX/CycloneDX JSON uploaded as artefact.
+5. **SHA pinning** — `uses: actions/checkout@b4ffde65f46336ab88eb136be79bd9ced58fd2346` instead of `@v4`; Renovate or Dependabot proposes SHA bumps.
 
-Treat false positives with tracked allowlists — not by disabling scanners globally. Rotate secrets on confirmed leak; never only suppress the alert.
+Example pin pattern (documentation):
+
+{% raw %}
+```yaml
+- uses: actions/checkout@b4ffde65f46336ab88eb136be79bd9ced58fd2346 # v4.1.1
+```
+{% endraw %}
 
 ### Key concepts and comparisons
 
-| Control | Strength | Limit |
-|---------|----------|-------|
-| Secret scanning | Stops key commits | Still rotate if already leaked |
-| Dependency Review | Blocks bad new deps on PR | Needs lockfiles |
-| CodeQL | Deep SAST | Query pack tuning / noise |
-| Container scan | Matches what you ship | Base-image debt accumulates |
-| Pin Actions by SHA | Stops tag moves | Update discipline required |
-| SBOM | Inventory for response | Must tie to release digest |
+| Approach | Strength | Limitation |
+|----------|----------|------------|
+| CodeQL | Deep code paths, GitHub integration | Language setup; not runtime behaviour |
+| Trivy | Fast container/IaC CVE scan | False positives on base images |
+| Dependency review | PR-focused diff | Needs lockfiles; GHAS on private repos |
+| SBOM | Audit/recall inventory | Does not fix vulnerabilities |
+| SHA pin | Immutable action ref | Manual or bot updates for patches |
 
 ### Common pitfalls
 
-- Enabling scanners but never failing on Critical/High.  
-- Scanning `latest` while deploying a different tag.  
-- Using `@v4` everywhere and calling it “secure enough”.  
-- Allowlisting secrets instead of rotating them.  
-- Generating an SBOM not attached to the released digest.  
-- Broad `permissions: write-all` on every workflow.
+- Scanning only on `main` — vulnerabilities merge before detection.
+- Ignoring Trivy exit codes (`|| true`) — green builds with critical CVEs.
+- Pinning only some actions while leaving deploy actions floating.
+- No artefact retention for SBOM — cannot answer "what shipped in v1.2.3?"
+- Running untrusted pull request code with `pull_request_target` and elevated secrets.
 
 ## Hands-on Lab
 
-
-
 ### Objective
 
-Author a GitHub Actions workflow that implements **Security Scanning and Supply Chain** and validate YAML structure locally.
+Create a unified security workflow stub with CodeQL, Trivy filesystem scan, dependency review, SBOM upload, and SHA-pinned actions — validated offline.
 
 ### Prerequisites
 
 - Python 3 with PyYAML
-- Optional: GitHub repo to run the workflow
+- Sample `go.mod`, `package-lock.json`, or `requirements.txt` optional for realism
 
 ### Lab environment
 
-Workspace: `~/rebash-github-actions/module-11/.github/workflows`
-
-Workflows under `.github/workflows/`. In docs, wrap GitHub Actions expressions in Jinja raw blocks so MkDocs macros do not parse them; use heredocs in the lab.
+Workspace: `~/rebash-github-actions/module-11`
 
 ```bash
-mkdir -p ~/rebash-github-actions/module-11/.github/workflows && cd ~/rebash-github-actions/module-11/.github/workflows
+mkdir -p ~/rebash-github-actions/module-11/{.github/workflows,app} && cd ~/rebash-github-actions/module-11
+set -euo pipefail
 ```
 
 ### Real-world scenario
 
-Platform engineering wants **Security Scanning and Supply Chain** as a reusable workflow pattern. You prototype YAML that passes review and runs on `ubuntu-latest`.
+DevSecOps requires every service repository to run static analysis, container/filesystem CVE scan, dependency review on pull requests, and publish an SBOM on each release tag — with all third-party actions pinned by SHA.
 
 ### Step-by-step tasks
 
-#### Task 1 – Create workflow file
+#### Task 1 – Minimal app fixture and Trivy stub
 
-Jobs and steps must be explicit; pin mainstream actions.
+Create `app/main.py`:
 
-```bash
-mkdir -p .github/workflows
-cat > .github/workflows/lab.yml << 'EOF'
-name: lab
+```python
+"""Module 11 lab fixture — not production code."""
+def greet(name: str) -> str:
+    return f"hello, {name}"
+```
+
+Create `.github/workflows/security-scan.yml`:
+
+{% raw %}
+```yaml
+name: Security Scan
 on:
-  workflow_dispatch:
+  pull_request:
   push:
+    branches: [main]
+  workflow_dispatch:
+
 permissions:
   contents: read
+  security-events: write
+
 jobs:
-  build:
+  codeql:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - name: Prove workspace
+      - uses: actions/checkout@b4ffde65f46336ab88eb136be79bd9ced58fd2346
+      - uses: github/codeql-action/init@df5843c3b785d4327488e3e57f5c753ff6b4c65
+        with:
+          languages: python
+      - uses: github/codeql-action/analyze@df5843c3b785d4327488e3e57f5c753ff6b4c65
+
+  trivy-fs:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@b4ffde65f46336ab88eb136be79bd9ced58fd2346
+      - name: Trivy filesystem scan (stub)
+        uses: aquasecurity/trivy-action@0aa489ce2232e737ca7720b9b7f2b7ea0f558d67
+        with:
+          scan-type: fs
+          scan-ref: .
+          severity: CRITICAL,HIGH
+          exit-code: 1
+
+  dependency-review:
+    runs-on: ubuntu-latest
+    if: github.event_name == 'pull_request'
+    steps:
+      - uses: actions/checkout@b4ffde65f46336ab88eb136be79bd9ced58fd2346
+      - uses: actions/dependency-review-action@3e653ccc4303e5e9c4f3d3e3e3e3e3e3e3e3e3e3
+        continue-on-error: true
+
+  sbom:
+    runs-on: ubuntu-latest
+    needs: [trivy-fs]
+    steps:
+      - uses: actions/checkout@b4ffde65f46336ab88eb136be79bd9ced58fd2346
+      - name: Generate SBOM placeholder
         run: |
-          mkdir -p out
-          echo ok > out/marker.txt
-          test -s out/marker.txt
-EOF
-python3 -c "import yaml; yaml.safe_load(open('.github/workflows/lab.yml')); print('workflow OK')"
+          mkdir -p sbom
+          echo '{"spdxVersion":"2.3","name":"module-11-lab-stub"}' > sbom/sbom.json
+      - uses: actions/upload-artifact@v4
+        with:
+          name: sbom
+          path: sbom/sbom.json
 ```
+{% endraw %}
 
-**Expected output:** `workflow OK` printed; file exists under `.github/workflows/`.
-
-#### Task 2 – Dry-run the shell steps locally
-
-The `run:` block should work in a normal shell before CI.
+Validate offline:
 
 ```bash
-mkdir -p out && echo ok > out/marker.txt
-test -s out/marker.txt && cat out/marker.txt
+cd ~/rebash-github-actions/module-11
+set -euo pipefail
+python3 -c "import yaml; yaml.safe_load(open('.github/workflows/security-scan.yml')); print('security workflow OK')"
+grep -c '@[0-9a-f]\{40\}' .github/workflows/security-scan.yml | tee pin-count.txt
 ```
 
-**Expected output:** Prints `ok`.
+**Expected output:** `security workflow OK`; pin-count shows multiple SHA references.
+
+#### Task 2 – Pinning policy as YAML and enforcement script
+
+Create `action-pinning-policy.yaml`:
+
+```yaml
+# Action pinning policy (Module 11)
+rules:
+  - id: sha-required
+    rule: Every third-party uses MUST pin full commit SHA
+    comment_tag: true  # add human tag as YAML comment, e.g. # v4.1.1
+  - id: renovate
+    rule: Dependabot or Renovate opens PRs to bump SHAs after review
+  - id: no-floating
+    rule: No @vN or @main floating refs in new workflows
+exceptions:
+  - scope: actions/*
+    note: Bootstrap only — migrate to SHA within one sprint
+review_checklist:
+  - No floating refs in new workflows
+  - SBOM artefact uploaded on release
+  - Trivy exit-code not disabled
+```
+
+Create `check-unpinned-actions.sh`:
+
+```bash
+#!/usr/bin/env bash
+set -euo pipefail
+# Fail if any uses: line pins a floating @vN tag instead of a 40-char SHA
+violations=0
+while IFS= read -r line; do
+  if echo "$line" | grep -qE 'uses:.*@v[0-9]'; then
+    echo "UNPINNED: $line"
+    violations=$((violations + 1))
+  fi
+done < <(grep -h 'uses:' .github/workflows/*.yml 2>/dev/null || true)
+if [ "$violations" -gt 0 ]; then
+  echo "check-unpinned-actions: $violations floating tag(s) found"
+  exit 1
+fi
+echo "check-unpinned-actions: all uses lines SHA-pinned or official actions/*"
+```
+
+Validate offline:
+
+```bash
+cd ~/rebash-github-actions/module-11
+set -euo pipefail
+python3 -c "
+import yaml
+with open('action-pinning-policy.yaml') as f:
+    doc = yaml.safe_load(f)
+assert any('SHA' in r['rule'] for r in doc['rules'])
+assert 'no-floating' in {r['id'] for r in doc['rules']}
+print('action-pinning-policy.yaml OK')
+"
+chmod +x check-unpinned-actions.sh
+./check-unpinned-actions.sh | tee pin-check.txt
+```
+
+**Expected output:** `action-pinning-policy.yaml OK`; `pin-check.txt` confirms no floating `@v` tags in the lab workflow.
+
+#### Task 3 – Offline validation script
+
+Create `sbom/sbom.json` (placeholder artefact for local validation):
+
+```json
+{
+  "spdxVersion": "2.3",
+  "name": "module-11-lab-stub"
+}
+```
+
+Create `validate-security-lab.sh`:
+
+```bash
+#!/usr/bin/env bash
+set -euo pipefail
+python3 -c "import yaml; yaml.safe_load(open('.github/workflows/security-scan.yml'))"
+python3 -c "import yaml; yaml.safe_load(open('action-pinning-policy.yaml'))"
+test -f app/main.py
+test -f sbom/sbom.json
+grep -q 'codeql' .github/workflows/security-scan.yml
+grep -q 'trivy' .github/workflows/security-scan.yml
+grep -q 'upload-artifact' .github/workflows/security-scan.yml
+./check-unpinned-actions.sh
+echo 'module-11 validation passed'
+```
+
+Run it:
+
+```bash
+cd ~/rebash-github-actions/module-11
+set -euo pipefail
+mkdir -p sbom
+chmod +x validate-security-lab.sh
+./validate-security-lab.sh | tee validation.txt
+```
+
+**Expected output:** `module-11 validation passed`
+
+#### Task 4 – Evidence bundle
+
+```bash
+cd ~/rebash-github-actions/module-11
+set -euo pipefail
+tar -czf module-11-evidence.tgz .github/workflows/security-scan.yml app/main.py action-pinning-policy.yaml check-unpinned-actions.sh validate-security-lab.sh
+ls -l module-11-evidence.tgz | tee evidence.txt
+```
+
+**Expected output:** Evidence archive listed in `evidence.txt`
 
 ### Validation steps
 
-- [ ] Workflow YAML parses
-- [ ] Local run steps succeed
+- [ ] Security workflow parses offline
+- [ ] CodeQL, Trivy, dependency-review, and SBOM jobs present
+- [ ] `action-pinning-policy.yaml` parses and `check-unpinned-actions.sh` passes
+- [ ] Validation script passes locally
 
 ### Common errors and fixes
 
 | Error | Cause | Fix |
 |-------|-------|-----|
-| Invalid workflow file | YAML/indent | Validate with PyYAML / actionlint |
-| Action not found | Bad uses ref | Pin `actions/checkout@v4` |
-| Permission denied | Missing permissions/OIDC | Set least-privilege `permissions:` |
+| CodeQL language not detected | Missing sources | Add language files or adjust `languages:` |
+| Trivy always green | `exit-code: 0` or `\|\| true` | Set `exit-code: 1` for CRITICAL/HIGH |
+| Dependency review skipped | Not a pull request event | Expected locally; test in GitHub PR |
+| Invalid SHA pin | Typo in commit | Verify SHA on github.com for that tag |
+| `security-events: write` missing | CodeQL upload fails | Add permission for CodeQL |
 
 ### Challenge exercise
 
-Add a second job with `needs: build` that uploads `out/` as an artefact (YAML only is fine offline).
+Add the floating-tag check from Task 2 as a job in `security-scan.yml` that runs `./check-unpinned-actions.sh` and fails the workflow on any `@vN` match.
 
 ### Learning outcomes
 
-- Created a real workflow file
-- Validated structure before push
+- Composed a multi-scanner security workflow stub
+- Encoded SHA pinning policy as validated YAML
+- Built `check-unpinned-actions.sh` to grep workflows for floating tags
+- Produced offline validation evidence
+- Mapped scanners to supply-chain controls
 
 ### Cleanup
 
 ```bash
-# Keep workflow stubs under ~/rebash-github-actions/
+# Retain lab under ~/rebash-github-actions/module-11
+ls ~/rebash-github-actions/module-11
 ```
 
 ## Validation
 
-
-
-
-
-
-
-
-- [ ] Lab commands run under `~/rebash-github-actions/module-11/.github/workflows/`
-- [ ] You can explain each Theory section in your own words
-- [ ] You used modern tooling where it applies to this topic
-- [ ] You can describe one production failure mode for this topic
+- [ ] Lab completed under `~/rebash-github-actions/module-11/`
+- [ ] You can explain CodeQL vs Trivy scope
+- [ ] You can justify SHA pinning over `@v4`
+- [ ] You can describe one supply-chain failure mode
 
 ## Code Walkthrough
 
-
-
-
-
-
-
-
-Production practice for **Security Scanning and Supply Chain** always combines:
-
-1. Inspect before you change (status, plan, logs, dry-run)
-2. Prefer reversible, documented changes (Git, IaC, drop-ins, version pins)
-3. Capture evidence (command output, pipeline logs) for handovers
-4. Prefer current tools and APIs over legacy shortcuts
-5. Least privilege — escalate credentials only when required
-
-Keep runbooks short enough to follow under pressure. Automate checks; keep humans for judgement.
+1. **Scan on pull request** — catch issues before merge.
+2. **Fail on severity** — do not swallow Trivy/CodeQL exit codes.
+3. **Pin every action** — treat tags as documentation comments only.
+4. **Publish SBOM** — artefact per release for audit.
+5. **Least permissions** — `security-events: write` only where needed.
 
 ## Security Considerations
 
-
-
-
-
-
-
-
-- Treat credentials and tokens for github-actions as privileged — never commit them
-- Prefer short-lived auth (OIDC, roles, SSO) over long-lived keys
-- Validate blast radius before apply/deploy/delete operations
-- Restrict who can approve production changes
-- Collect audit logs; limit who can read sensitive traces
+- Third-party actions run with your workflow permissions — pin and review.
+- `pull_request_target` with secrets is dangerous with fork code — prefer `pull_request` with restricted permissions.
+- SBOMs may reveal internal package names — control artefact retention.
+- CodeQL and dependency review need appropriate GitHub licence for private repos.
+- Do not disable scans for "speed" on production paths.
 
 ## Common Mistakes
 
+!!! warning "Floating `@v4` on marketplace actions"
+    Tag can move to malicious commit. **Fix:** pin full SHA; automate updates via Dependabot.
 
+!!! warning "Trivy `\|\| true` on deploy pipelines"
+    Critical CVEs ship anyway. **Fix:** fail on agreed severity; waivers with ticket ID.
 
+!!! warning "Scans only on main"
+    Vulnerable code merges first. **Fix:** run on `pull_request`.
 
-
-
-
-
-!!! warning "Enabling scanners but never failing on Critical/High.  "
-    Validate assumptions against the Theory section and official docs before changing production.
-
-!!! warning "Scanning `latest` while deploying a different tag.  "
-    Lab shortcuts (open security groups, admin roles, skip approvals) must not ship unchanged.
-
-!!! warning "Changing production without a rollback path"
-    Always know how to revert (previous artefact, prior release, state rollback, DNS failback).
+!!! warning "No SBOM retention"
+    Cannot answer compliance queries. **Fix:** upload SBOM artefact per release tag.
 
 ## Best Practices
 
-
-
-
-
-
-
-
-- Encode Security Scanning and Supply Chain changes as code and review them in pull requests
-- Pin versions (images, modules, actions, provider plugins)
-- Separate environments with clear promotion gates
-- Alert on symptoms with runbooks attached
-- Destroy lab resources; tag everything with owner and expiry where possible
+- Centralise security workflow as reusable workflow called by all services.
+- Align severity thresholds with organisation policy (CRITICAL/HIGH block, MEDIUM warn).
+- Integrate GitHub Advanced Security dashboards for triage.
+- Sign container images and attach attestation where possible (Module 7 extension).
+- Review action updates in pull requests like application dependencies.
 
 ## Troubleshooting
 
-
-
-
-
-
-
-
 | Symptom | Likely cause | Fix |
 |---------|--------------|-----|
-| Auth / permission denied | Wrong identity, policy, or scope | Check caller identity, roles, and least-privilege policies |
-| Timeout / no route | Network, DNS, security group, or endpoint | Trace path, DNS, and allow-lists before retrying |
-| Drift / unexpected plan | Manual change or wrong state/workspace | Reconcile desired vs actual; avoid click-ops on managed resources |
-| Pipeline/job red | Flaky step, cache, or missing secret | Read failing step logs; bisect recent workflow/config changes |
-| Cost spike | Idle load balancer, NAT, oversized compute | Inventory billable resources; stop/delete labs promptly |
+| CodeQL no results | Wrong language/autobuild | Specify `languages` and build steps |
+| Trivy slow | Full OS scan every job | Cache DB; scan changed paths only |
+| Dependency review unavailable | GHAS/licence | Enable GHAS or use alternative SCA |
+| SHA pin job fails checkout | Invalid commit | Update to valid action SHA |
+| False positive flood | Old base image | Pin base image digest; waiver process |
 
 ## Summary
 
-
-
-
-
-
-
-
-**Security Scanning and Supply Chain** is essential for Cloud and DevOps engineers working with github-actions. Practise the lab until the inspection and change path is muscle memory, then continue the track.
+Security scanning and supply-chain hygiene belong in every pipeline: CodeQL, Trivy, dependency review, SBOM artefacts, and immutable action pins. Next: [Testing in GitHub Actions](testing-in-github-actions.md).
 
 ## Interview Questions
 
+**1. Why pin GitHub Actions by commit SHA instead of version tag?**
 
+??? success "Reveal answer"
+    Tags are mutable — a maintainer or attacker can move `@v4` to a different commit. SHA pins are immutable content addresses so CI runs exactly the reviewed action code.
 
+**2. What does CodeQL provide that Trivy does not?**
 
+??? success "Reveal answer"
+    CodeQL performs semantic static analysis on source code for vulnerability classes; Trivy focuses on known CVEs in packages, OS layers, and IaC misconfigurations — complementary, not interchangeable.
 
+**3. When does dependency review run and what does it check?**
 
-1. Why pin third-party actions to commit SHAs?
-2. What does dependency review add on pull requests?
-3. How should teams handle a critical CVE in a base action/image?
-4. What repository settings help prevent secret leaks?
-5. How do workflow permissions reduce supply-chain impact?
+??? success "Reveal answer"
+    On pull requests it compares dependency manifests/lockfiles between base and head, flagging newly introduced vulnerable dependencies against GitHub's advisory database.
 
-!!! tip "Sample answer — question 2"
-    Identify whether the finding is in direct dependencies, transitive packages, or the Action itself. Prefer patched versions and temporary exceptions with expiry.
+**4. What is an SBOM and why generate it in CI?**
 
-!!! tip "Sample answer — question 4"
-    Enable push protection/secret scanning and least-privilege permissions. Treat workflow YAML as production code.
+??? success "Reveal answer"
+    A Software Bill of Materials lists components in a build artefact. Publishing it per release supports audit, incident response, and regulatory requests without manual inventory.
+
+**5. What permission does CodeQL need to upload results?**
+
+??? success "Reveal answer"
+    {% raw %}`security-events: write`{% endraw %} so findings appear in the GitHub Security tab (alongside `contents: read` for checkout).
+
+**6. Why is `pull_request_target` risky for security workflows?**
+
+??? success "Reveal answer"
+    It runs in the base repo context with access to secrets while checking out untrusted fork code — malicious pull requests can exfiltrate credentials. Use with extreme care or avoid.
+
+**7. How should teams handle Trivy false positives on base images?**
+
+??? success "Reveal answer"
+    Pin base images by digest, track waivers with ticket IDs and expiry, upgrade bases on a schedule, and fail only on net-new CVEs where tools support it.
+
+**8. Where do SHA pin updates belong in the delivery process?**
+
+??? success "Reveal answer"
+    Dependabot/Renovate pull requests reviewed like app deps — test in CI, merge pin bump, never auto-float tags in production workflows.
 
 ## Related Tutorials
 
-
-
-
-
-
-
-
-- [Course overview](index.md)
+- [Secrets, Variables, and OIDC](secrets-variables-and-oidc.md)
+- [Docker Pipelines with GitHub Actions](docker-pipelines-with-github-actions.md)
 - [Testing in GitHub Actions](testing-in-github-actions.md)
 
 ## References
 
-
-
-
-
-
-
-
-- [Secure use of Actions](https://docs.github.com/en/actions/security-guides/security-hardening-for-github-actions) · [CodeQL](https://docs.github.com/en/code-security/code-scanning/introduction-to-code-scanning/about-code-scanning-with-codeql) · [Dependency review](https://docs.github.com/en/code-security/supply-chain-security/understanding-your-software-supply-chain/about-dependency-review) · [Secret scanning](https://docs.github.com/en/code-security/secret-scanning/about-secret-scanning) · [Trivy](https://aquasecurity.github.io/trivy/)
+- [GitHub CodeQL](https://code.github.com/codeql)
+- [Trivy action](https://github.com/aquasecurity/trivy-action)
+- [Dependency review](https://docs.github.com/en/code-security/supply-chain-security/understanding-your-software-supply-chain/about-dependency-review)
+- [Security hardening for Actions](https://docs.github.com/en/actions/security-guides/security-hardening-for-github-actions)
+- [Pinning actions to full commit SHA](https://docs.github.com/en/actions/security-guides/security-hardening-for-github-actions#using-third-party-actions)

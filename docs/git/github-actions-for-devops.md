@@ -1,348 +1,393 @@
 ---
 title: "GitHub Actions for DevOps"
-description: "Build CI workflows with GitHub Actions — checkout, runners, secrets, and a DevOps pipeline skeleton for Git repositories."
+description: "Build workflow YAML for CI validate, matrix jobs, secrets hygiene, and reusable patterns for Cloud and DevOps pipelines."
 difficulty: intermediate
-estimated_time: "50–70 min"
+estimated_time: "55–70 min"
 technology: git
 category: git
 module: "Module 11 · GitHub Actions"
 career_paths:
   - devops-engineer
+  - cloud-engineer
   - platform-engineer
-  - site-reliability-engineer
+  - devsecops-engineer
 skills:
   - github-actions
   - ci-cd
-  - git
+  - yaml
 prerequisites:
   - git/pull-requests-and-code-review
 next:
   - git/gitops-fundamentals
 related:
-  - git/git-in-ci-cd
-  - github-actions/index
-labs: []
-projects: []
-interview: interview/git
-certifications:
-  - GitHub Actions
+  - git/git-in-ci-cd-and-devops
+  - git/git-hooks-and-automation
 tags:
   - github-actions
   - ci
-  - git
+  - workflow
+  - devops
 author: Shaik Basha
-last_updated: "2026-07-31"
+last_updated: "2026-08-03"
 comments: false
 ---
-
 
 # GitHub Actions for DevOps
 
 ## Overview
 
+**GitHub Actions** runs event-driven workflows in YAML — on push, pull request, schedule, or release. Jobs execute on **runners** (GitHub-hosted or self-hosted) with **steps** that checkout code, run tests, build images, and call cloud APIs using **secrets** and **variables**.
 
-
-
-
-
-Author a minimal GitHub Actions workflow that runs on pull requests: checkout, validate, and report status — the CI gate for Git-based delivery.
-
-**GitHub Actions** runs workflows on events (`push`, `pull_request`). Jobs use runners; secrets never belong in Git history.
-
-This is a core tutorial in **Module 11 · GitHub Actions** of the REBASH Academy **Git for Cloud & DevOps Engineers** series — written for Cloud, DevOps, Platform, and SRE engineers.
+This is **Tutorial 1** in **Module 11: GitHub Actions** of the REBASH Academy **Git & GitHub for Cloud & DevOps Engineers** series — written for Cloud, DevOps, Platform, and SRE engineers.
 
 ## Prerequisites
 
-
-
-
-
-
 - [Pull Requests and Code Review](pull-requests-and-code-review.md)
-- GitHub repository with Actions enabled
+- Basic YAML
+- Understanding of CI concepts
 
 ## Learning Objectives
 
-
-
-
-
-
 By the end of this tutorial, you will be able to:
 
-- [ ] Structure `.github/workflows/*.yml`  
-- [ ] Use `actions/checkout`  
-- [ ] Gate PRs with required checks  
-- [ ] Store secrets in repository settings (not in Git)  
-- [ ] Distinguish workflow vs job vs step
+- [ ] Structure workflow files under `.github/workflows/`
+- [ ] Trigger on push and pull_request with path filters
+- [ ] Write a validate job with bash steps and artefact output
+- [ ] Escape GitHub Actions syntax for MkDocs (raw Jinja blocks)
+- [ ] Validate workflow YAML locally under `~/rebash-git/module-11`
 
 ## Architecture
 
+Events trigger workflows; jobs run on runners; steps execute actions or shell commands; secrets inject at runtime — never commit secrets to Git.
 
-
-
-
-
-This topic’s control points and relationships are shown below.
-
-![GitHub Actions flow](../assets/excalidraw/git-github-actions.svg)
+![GitHub Actions workflow](../assets/excalidraw/git-github-actions.svg)
 
 ## Theory
 
+### What it is
 
+A **workflow** is a YAML file defining `on` triggers, `jobs`, and `steps`. **Jobs** run in parallel by default (unless `needs`); **steps** are sequential. **Actions** are reusable units from marketplace or local `./.github/actions`. **Runners** provide the VM/container environment. **Secrets** (`secrets.AWS_ROLE`) come from repo/org settings; **variables** hold non-sensitive config.
 
+### Why it matters
 
-
-
-### What
-
-**GitHub Actions** is CI/CD built into GitHub. A **workflow** is a YAML file under `.github/workflows/` triggered by events (push, pull_request, schedule, workflow_dispatch). Workflows contain **jobs** that run on **runners**; jobs contain **steps** that execute shell commands or reusable **actions**. **Secrets** inject sensitive values at runtime.
-
-### Why
-
-DevOps pipelines should live next to the code they validate. Actions can lint Terraform, build container images, run tests, and deploy — with permissions tied to the repository. Understanding workflow structure prevents insecure `pull_request_target` mistakes and overly privileged tokens.
+GitOps and IaC repos gate merges on `terraform validate`, `tflint`, container scans, and unit tests. Actions replace Jenkins for many teams — same repo houses code and pipeline. Misconfigured `pull_request_target` or leaked secrets in logs are common incident sources.
 
 ### How it works
 
-On a matching event, GitHub schedules jobs. Jobs run in parallel unless `needs:` creates a dependency graph. Steps share a workspace on the runner. The expression syntax uses double curly braces — in MkDocs/Jinja documentation you must escape them. Example pattern for docs: {% raw %}`${{ secrets.NAME }}`{% endraw %} or `{{ "{{" }} secrets.NAME {{ "}}" }}`. Third-party actions should be pinned by commit SHA when policy requires supply-chain caution. Environments and OIDC cloud login replace long-lived cloud keys.
+1. Developer pushes branch; `pull_request` event fires workflow.
+2. Job `validate` checks out repo, sets up tools, runs commands.
+3. Step outputs logs; optional artefact upload.
+4. Required check name must match branch protection.
+5. Reusable workflows (`workflow_call`) share org standards.
 
-| Concept | Meaning |
-|---------|---------|
-| Workflow | YAML triggered by events |
-| Job | Unit of work on a runner |
-| Step | Shell or action |
-| Secret | Encrypted value injected at runtime |
+### Key concepts and comparisons
 
-### Key concepts
+| Key | Role |
+|-----|------|
+| on | Triggers |
+| jobs | Parallel units |
+| needs | Job dependency DAG |
+| strategy.matrix | Multi-version/OS tests |
+| permissions | GITHUB_TOKEN scope |
+| concurrency | Cancel duplicate runs |
 
-- **Least privilege** — `permissions:` at workflow/job level  
-- **Fork PRs** — secrets usually unavailable; never blindly trust PR code with privileged workflows  
-- **Caching and artefacts** — speed builds without hiding non-determinism  
-- **Reusable workflows** — share org standards  
+| DevOps pattern | Workflow shape |
+|----------------|----------------|
+| IaC validate | PR → fmt + validate |
+| Image build | push tag → build push ECR |
+| Deploy | workflow_dispatch + env |
 
 ### Common pitfalls
 
-- Logging secrets with `echo`  
-- Using latest floating action tags in production  
-- Over-broad `write` repository tokens on every job  
-- Skipping status checks that the branch protection was meant to enforce
+- Using `pull_request_target` with untrusted code checkout — RCE risk.
+- Echoing secrets in logs — GitHub masks but custom encoding may leak.
+- Missing `permissions:` least privilege on GITHUB_TOKEN.
+- Hard-coding Actions expressions in docs without raw Jinja wrapping, which breaks MkDocs.
 
 ## Hands-on Lab
 
-
-
 ### Objective
 
-Complete a real Git workflow for **GitHub Actions for DevOps** with commits you can inspect and recover.
+Create a repository with a sample `validate.yml` workflow that runs shell validation on Terraform stub files and passes local YAML syntax checks.
 
 ### Prerequisites
 
-- Git 2.x installed
+- Git 2.x
+- Python 3 with `pip install pyyaml` optional for yamllint
 
 ### Lab environment
 
-Workspace: `~/rebash-git/module-11/.github/workflows`
-
-Local Git repository only (no required remote).
+Workspace: `~/rebash-git/module-11`
 
 ```bash
-mkdir -p ~/rebash-git/module-11/.github/workflows && cd ~/rebash-git/module-11/.github/workflows
+mkdir -p ~/rebash-git/module-11 && cd ~/rebash-git/module-11
+set -euo pipefail
 ```
 
 ### Real-world scenario
 
-A delivery team is standardising **GitHub Actions for DevOps**. You prototype the workflow in a throwaway repo and capture log evidence for the playbook.
+Platform team requires every PR touching `*.tf` to run a lightweight validate workflow before reviewers approve.
 
 ### Step-by-step tasks
 
-#### Task 1 – Initialise a repository and first commit
+#### Task 1 – Repo and Terraform stub
 
-Every production change starts as a commit with clear identity config.
+Create `main.tf`:
+
+```hcl
+terraform {
+  required_version = ">= 1.5.0"
+}
+```
+
+Initialise the repo:
 
 ```bash
+cd ~/rebash-git/module-11
+set -euo pipefail
+rm -rf actions-lab
+mkdir -p actions-lab/.github/workflows
+cd actions-lab
 git init -b main
 git config user.email 'lab@rebash.local'
 git config user.name 'REBASH Lab'
-echo '# lab' > README.md
-git add README.md
-git commit -m 'Initial commit'
-git log --oneline | tee log.txt
+git add main.tf
+git commit -m 'chore: terraform stub'
+cd ..
 ```
 
-**Expected output:** log.txt shows the initial commit on `main`.
+**Expected output:** Minimal Terraform file on main.
 
-#### Task 2 – Inspect status and diff discipline
+#### Task 2 – Write validate workflow (MkDocs-safe pattern documented)
 
-Clean working trees prevent accidental commits of secrets.
+Create `.github/workflows/validate.yml`. In repository docs we escape Actions expressions for MkDocs; in the actual file use real GitHub Actions syntax.
+
+{% raw %}
+
+```yaml
+name: Validate Terraform
+
+on:
+  push:
+    branches: [main]
+    paths: ['**.tf']
+  pull_request:
+    paths: ['**.tf']
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: "1.5.7"
+      - name: Terraform fmt check
+        run: terraform fmt -check -recursive
+      - name: Terraform init and validate
+        run: |
+          terraform init -backend=false
+          terraform validate
+      - name: Write evidence
+        run: echo "validate=pass" > validate-evidence.txt
+      - uses: actions/upload-artifact@v4
+        with:
+          name: validate-evidence
+          path: validate-evidence.txt
+```
+
+{% endraw %}
+
+Commit the workflow:
 
 ```bash
-echo 'work' > work.txt
-git status
-git add work.txt
-git commit -m 'Add work.txt'
-git show --stat HEAD | tee show.txt
+cd ~/rebash-git/module-11/actions-lab
+set -euo pipefail
+git add .github/workflows/validate.yml
+git commit -m 'ci: add terraform validate workflow'
+grep -q 'validate:' .github/workflows/validate.yml
+cd ..
 ```
 
-**Expected output:** show.txt lists work.txt in the commit.
+**Expected output:** Workflow committed with path filters and least-privilege permissions.
+
+#### Task 3 – Local validation of workflow structure
+
+Simulate CI checks without GitHub using shell and optional Python.
+
+```bash
+cd ~/rebash-git/module-11/actions-lab
+set -euo pipefail
+terraform fmt -check -recursive 2>/dev/null || terraform fmt -recursive && terraform fmt -check -recursive
+terraform init -backend=false
+terraform validate | tee ../terraform-validate-out.txt
+grep -qi 'success\|Success' ../terraform-validate-out.txt || terraform validate
+python3 - <<'PY' 2>/dev/null || true
+import yaml, sys
+with open('.github/workflows/validate.yml') as f:
+    yaml.safe_load(f)
+print('yaml_ok')
+PY
+grep -q 'Validate Terraform' .github/workflows/validate.yml
+tar -czf ../module-11-actions-evidence.tgz -C .. terraform-validate-out.txt
+ls -l ../module-11-actions-evidence.tgz | tee ../actions-evidence.txt
+cd ..
+```
+
+**Expected output:** Terraform validate succeeds; workflow name grep matches.
 
 ### Validation steps
 
-- [ ] Repository has at least two commits or a merge as designed
-- [ ] log/graph evidence files exist
+- [ ] Workflow under `.github/workflows/validate.yml`
+- [ ] Path filter includes `**.tf`
+- [ ] permissions contents read only
+- [ ] Local terraform validate passed
 
 ### Common errors and fixes
 
 | Error | Cause | Fix |
 |-------|-------|-----|
-| Author identity unknown | Missing user.name/email | Set local `git config user.*` as in Task 1 |
-| merge conflict | Overlapping edits | Edit file, `git add`, complete merge |
-| detached HEAD | Checked out a raw SHA | `git switch -c` a branch before committing |
+| YAML parse error | Indentation | yamllint; 2-space indent |
+| terraform not found | Local PATH | Install tf or use setup action only on GH |
+| workflow not triggered | Path filter | Touch .tf file in PR |
+| secret not found | Not configured | Add in repo settings |
 
 ### Challenge exercise
 
-Use `git reflog` to recover a commit after a hard reset on a private branch.
+Add a `workflow_dispatch` trigger and a `concurrency` group keyed on `${ github.ref }` — in your committed YAML use proper GitHub expression syntax (see GitHub docs). Add matrix `terraform_version: ['1.5.7', '1.6.0']` for validate job.
 
 ### Learning outcomes
 
-- Performed real Git operations
-- Left auditable history
-- Understood recovery basics
+- Authored event-driven workflow YAML
+- Applied path filters and permissions
+- Ran validate steps locally before push
 
 ### Cleanup
 
 ```bash
-# Safe local repo — delete the lab directory when finished:
-# rm -rf "$(pwd)"
+ls ~/rebash-git/module-11/actions-lab
 ```
 
 ## Validation
 
-
-
-
-
-
-- [ ] Lab commands run under `~/rebash-git/module-11/.github/workflows/`
-- [ ] You can explain each Theory section in your own words
-- [ ] You used modern tooling where it applies to this topic
-- [ ] You can describe one production failure mode for this topic
+- [ ] Lab under module-11
+- [ ] Can explain jobs vs steps
+- [ ] Can explain secrets vs variables
+- [ ] Know why permissions block matters
 
 ## Code Walkthrough
 
-
-
-
-
-
-Production practice for **GitHub Actions for DevOps** always combines:
-
-1. Inspect before you change (status, plan, logs, dry-run)
-2. Prefer reversible, documented changes (Git, IaC, drop-ins, version pins)
-3. Capture evidence (command output, pipeline logs) for handovers
-4. Prefer current tools and APIs over legacy shortcuts
-5. Least privilege — escalate credentials only when required
-
-Keep runbooks short enough to follow under pressure. Automate checks; keep humans for judgement.
+1. **Pin action versions** — `@v4` not `@main` for supply chain.
+2. **Path filters** — save runner minutes on monorepos.
+3. **Minimal permissions** — default read-only GITHUB_TOKEN.
+4. **Artefacts for plan** — upload terraform plan in guarded workflows.
+5. **Reusable workflows** — org standard for validate/deploy.
 
 ## Security Considerations
 
-
-
-
-
-
-- Treat credentials and tokens for git as privileged — never commit them
-- Prefer short-lived auth (OIDC, roles, SSO) over long-lived keys
-- Validate blast radius before apply/deploy/delete operations
-- Restrict who can approve production changes
-- Collect audit logs; limit who can read sensitive traces
+- Never commit secrets; use GitHub Secrets and OIDC to cloud.
+- Avoid `pull_request_target` running PR code with secrets.
+- Mask outputs; do not print secrets in terraform plan in public forks.
+- Use environments with required reviewers for production deploy jobs.
+- Enable Dependabot for action version bumps.
 
 ## Common Mistakes
 
+!!! warning "Overprivileged GITHUB_TOKEN"
+    write-all enables supply chain attacks if workflow compromised. **Fix:** Explicit `permissions:` per job.
 
+!!! warning "Running untrusted PR workflows with secrets"
+    Fork PRs can exfiltrate secrets. **Fix:** Approval for first-time contributors; no secrets on fork workflows.
 
-
-
-
-!!! warning "Logging secrets with `echo`  "
-    Validate assumptions against the Theory section and official docs before changing production.
-
-!!! warning "Using latest floating action tags in production  "
-    Lab shortcuts (open security groups, admin roles, skip approvals) must not ship unchanged.
-
-!!! warning "Changing production without a rollback path"
-    Always know how to revert (previous artefact, prior release, state rollback, DNS failback).
+!!! warning "Unpinned third-party actions"
+    Tag movement can inject malicious code. **Fix:** Pin SHA or semver tag.
 
 ## Best Practices
 
-
-
-
-
-
-- Encode GitHub Actions for DevOps changes as code and review them in pull requests
-- Pin versions (images, modules, actions, provider plugins)
-- Separate environments with clear promotion gates
-- Alert on symptoms with runbooks attached
-- Destroy lab resources; tag everything with owner and expiry where possible
+- Required checks match branch protection names exactly
+- Cache Terraform providers in CI for speed
+- Self-hosted runners for private network deploy targets
+- Separate workflows for CI vs CD with different triggers
+- Document workflow in README with badge
 
 ## Troubleshooting
 
-
-
-
-
-
 | Symptom | Likely cause | Fix |
 |---------|--------------|-----|
-| Auth / permission denied | Wrong identity, policy, or scope | Check caller identity, roles, and least-privilege policies |
-| Timeout / no route | Network, DNS, security group, or endpoint | Trace path, DNS, and allow-lists before retrying |
-| Drift / unexpected plan | Manual change or wrong state/workspace | Reconcile desired vs actual; avoid click-ops on managed resources |
-| Pipeline/job red | Flaky step, cache, or missing secret | Read failing step logs; bisect recent workflow/config changes |
-| Cost spike | Idle load balancer, NAT, oversized compute | Inventory billable resources; stop/delete labs promptly |
+| Workflow skipped | paths filter | Adjust paths or event |
+| Job stuck queued | Runner capacity | Wait or self-hosted |
+| 403 GITHUB_TOKEN | permissions | Add contents/write if needed |
+| Action not found | Typo or private | Check name and access |
 
 ## Summary
 
-
-
-
-
-
-**GitHub Actions for DevOps** is essential for Cloud and DevOps engineers working with git. Practise the lab until the inspection and change path is muscle memory, then continue the track.
+GitHub Actions embed CI/CD in the repository — start with validate workflows, least privilege, and pinned actions. Next: [GitOps Fundamentals](gitops-fundamentals.md).
 
 ## Interview Questions
 
+**1. Jobs vs steps in Actions?**
 
+??? success "Reveal answer"
+    Jobs are independent runner allocations (parallel unless `needs`); steps are sequential commands or action calls within one job sharing the same runner filesystem.
 
+**2. secrets vs variables?**
 
-1. How does a git push start CI on GitHub?
-2. Why keep workflow YAML in the same repo as code?
-3. What permissions should a basic CI workflow use?
-4. How do required status checks relate to branch protection?
-5. Where do you look when CI is green but deploy failed?
+??? success "Reveal answer"
+    Secrets are encrypted sensitive values (API keys); variables are plain config (region name, feature flags) — both inject at runtime but secrets are masked in logs.
 
-!!! tip "Sample answer — question 2"
-    Open the Actions run for the commit SHA and confirm the workflow file path. Required checks must match actual job names.
+**3. Why path filters on on.push.paths?**
 
-!!! tip "Sample answer — question 4"
-    Least-privilege permissions, pinned actions, and no secrets in forks.
+??? success "Reveal answer"
+    Monorepos trigger only relevant workflows — saves minutes and reduces noise when unrelated directories change.
+
+**4. Self-hosted vs GitHub-hosted runners?**
+
+??? success "Reveal answer"
+    GitHub-hosted are managed VMs; self-hosted run inside your network for private resource access — you patch and secure them.
+
+**5. workflow_call purpose?**
+
+??? success "Reveal answer"
+    Reusable workflow invoked by other repos/workflows — standardises org-wide validate or deploy patterns.
+
+**6. pull_request vs pull_request_target?**
+
+??? success "Reveal answer"
+    Normal pull_request runs in merge context with limited fork secrets; pull_request_target runs base repo context — dangerous with untrusted code checkout — use only with extreme care.
+
+**7. How tie CI to branch protection?**
+
+??? success "Reveal answer"
+    Workflow job name becomes status check; enable "Require status checks" and select that job name before merge allowed.
+
+**8. OIDC vs long-lived cloud keys in Actions?**
+
+??? success "Reveal answer"
+    OIDC federates short-lived tokens from GitHub to AWS/Azure/GCP — preferred over static keys in secrets for rotation and blast radius.
 
 ## Related Tutorials
 
-
-
-
-
-
-- [Course overview](index.md)
+- [Pull Requests and Code Review](pull-requests-and-code-review.md)
 - [GitOps Fundamentals](gitops-fundamentals.md)
-- Deeper track: [GitHub Actions](../github-actions/index.md)
+- [Git in CI/CD and DevOps](git-in-ci-cd-and-devops.md)
+- [Course index](index.md)
 
 ## References
 
-
-
-
-
-
 - [GitHub Actions documentation](https://docs.github.com/en/actions)
+- [Workflow syntax](https://docs.github.com/en/actions/using-workflows/workflow-syntax-for-github-actions)
+- [Security hardening](https://docs.github.com/en/actions/security-guides/security-hardening-for-github-actions)
+
+## MkDocs note — escaping Actions expressions in tutorial docs
+
+When documenting Actions expressions inside MkDocs Markdown, wrap examples in raw Jinja blocks (`raw` / `endraw`) so mkdocs-macros does not interpret them. Committed workflow files in your repository use normal Actions expression syntax with no MkDocs wrapping.
+
+{% raw %}
+```yaml
+run: echo "${{ github.ref }}"
+```
+{% endraw %}

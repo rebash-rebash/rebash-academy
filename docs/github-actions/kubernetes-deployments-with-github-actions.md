@@ -1,8 +1,8 @@
 ---
 title: "Kubernetes Deployments with GitHub Actions"
-description: "Deploy to Kubernetes from GitHub Actions with kubectl and Helm, validate rollouts, roll back safely, and know where GitOps takes over."
+description: "Deploy to Kubernetes with kubectl and Helm workflow stubs, validate manifests offline, and document rollback checklists — kind optional."
 difficulty: advanced
-estimated_time: "50–65 min"
+estimated_time: "60–70 min"
 technology: github-actions
 category: github-actions
 module: "Module 8 · Kubernetes Deployments"
@@ -11,392 +11,587 @@ career_paths:
   - cloud-engineer
   - platform-engineer
   - site-reliability-engineer
-  - devsecops-engineer
 skills:
   - github-actions
   - kubernetes
   - helm
   - kubectl
-  - gitops
 prerequisites:
   - github-actions/docker-pipelines-with-github-actions
+  - kubernetes/introduction-to-kubernetes-and-orchestration
 next:
   - github-actions/terraform-pipelines-with-github-actions
 related:
-  - kubernetes/introduction-to-kubernetes-and-orchestration
-  - helm/introduction-to-helm
+  - kubernetes/deployments-and-rollouts
   - github-actions/production-pipelines-and-environments
-labs: []
-projects: []
-interview: interview/github-actions
-certifications:
-  - GitHub Actions
 tags:
   - github-actions
   - kubernetes
   - helm
-  - kubectl
-  - gitops
+  - deploy
 author: Shaik Basha
-last_updated: "2026-07-31"
+last_updated: "2026-08-03"
 comments: false
 ---
-
 
 # Kubernetes Deployments with GitHub Actions
 
 ## Overview
 
+Container images from Module 7 mean nothing until something applies them to a cluster. **Kubernetes deployments** via GitHub Actions typically use **kubectl** (manifest apply) or **Helm** (chart upgrade) from a runner with cluster credentials — often a self-hosted runner in the Virtual Private Cloud (VPC) or OIDC-authenticated cloud role.
 
+This module covers workflow structure, kubeconfig handling without committing secrets, deployment validation, and **rollback checklists** SRE teams use when a release degrades service.
 
-
-
-
-
-
-Sketch a GitHub Actions deploy job that applies a SHA-tagged image with `kubectl` or Helm, waits for rollout success, documents rollback, and draws a clear boundary between push Continuous Delivery (CD) and GitOps pull controllers.
-
-Pipelines that **push** manifests need a secure path into the cluster. Prefer short-lived credentials — OpenID Connect (OIDC) to a cloud Identity and Access Management (IAM) role that can call the Kubernetes API, or a narrowly scoped kubeconfig stored as an environment secret — never a cluster-admin key in unprotected repository secrets. Progressive delivery and rollbacks sit on Deployments or Helm releases. **GitOps** (Flux / Argo CD) inverts the model: the cluster pulls desired state from Git; CI updates Git rather than talking to the API directly.
-
-This is a core tutorial in **Module 8 · Kubernetes Deployments** of the REBASH Academy **GitHub Actions for Cloud & DevOps Engineers** series — written for Cloud, DevOps, Platform, and SRE engineers.
+This is **Tutorial 8** in **Module 8: Kubernetes Deployments** of the REBASH Academy **GitHub Actions for Cloud & DevOps Engineers** series.
 
 ## Prerequisites
 
-
-
-
-
-
-
-
 - [Docker Pipelines with GitHub Actions](docker-pipelines-with-github-actions.md)
+- [Kubernetes introduction](../kubernetes/introduction-to-kubernetes-and-orchestration.md)
+- Python 3 with PyYAML
+- Optional: [kind](https://kind.sigs.k8s.io/) for local cluster validation
 
 ## Learning Objectives
 
-
-
-
-
-
-
-
 By the end of this tutorial, you will be able to:
 
-- [ ] Sketch a `kubectl` or Helm deploy job with environment protection  
-- [ ] Wait on `rollout status` / Helm hooks as validation  
-- [ ] Outline rollback (Helm revision or prior image digest)  
-- [ ] Compare push CD with GitOps pull  
-- [ ] State when CI should stop applying to the cluster
+- [ ] Structure kubectl and Helm deploy workflow stubs with environment gates
+- [ ] Store kubeconfig or use OIDC without long-lived keys in YAML
+- [ ] Validate Kubernetes manifests offline with dry-run or Python
+- [ ] Document a rollback checklist for failed deployments
+- [ ] Explain when GitHub-hosted versus self-hosted runners suit cluster access
 
 ## Architecture
 
+CI builds and pushes an image; deploy workflow applies manifests or Helm releases; validation checks Ready replicas; rollback reverses to previous revision.
 
-
-
-
-
-
-
-This topic’s control points and relationships are shown below.
-
-![Kubernetes deployment pipeline](../assets/excalidraw/gha-kubernetes-pipeline.svg)
+![GitHub Actions Kubernetes deployment pipeline](../assets/excalidraw/gha-kubernetes-pipeline.svg)
 
 ## Theory
 
-
-
-
-
-
-
-
 ### What it is
 
-**Kubernetes deployment from GitHub Actions** means a job updates cluster state after Module 7 builds and (ideally) scans an image. Typical tools:
+**kubectl deploy pattern:**
 
-| Mode | Who applies changes | Fit |
-|------|---------------------|-----|
-| Push CD (`kubectl` / Helm) | Workflow job | Simple apps, controlled envs, demos |
-| GitOps pull | Controller (Argo CD / Flux) | Multi-cluster, strong drift control |
-| Hybrid | CI updates Git; controller syncs | Common enterprise pattern |
+{% raw %}
+```yaml
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment: staging
+    steps:
+      - uses: actions/checkout@v4
+      - name: Configure kubeconfig
+        env:
+          KUBE_CONFIG: ${{ secrets.KUBE_CONFIG_STAGING }}
+        run: |
+          mkdir -p ~/.kube
+          echo "$KUBE_CONFIG" > ~/.kube/config
+          chmod 600 ~/.kube/config
+      - name: Apply manifests
+        run: kubectl apply -f k8s/ --namespace=staging
+      - name: Wait for rollout
+        run: kubectl rollout status deployment/myapp -n staging --timeout=120s
+```
+{% endraw %}
 
-Authenticate with OIDC to Amazon Elastic Kubernetes Service (EKS), Azure Kubernetes Service (AKS), or Google Kubernetes Engine (GKE) (Module 10), or mount a short-lived kubeconfig. Deploy the **same digest** produced in the Docker pipeline — never `latest`.
+Prefer **OIDC + cloud IAM** over base64 kubeconfig secrets where the cloud provider supports it (Amazon Elastic Kubernetes Service (EKS), Google Kubernetes Engine (GKE), Azure Kubernetes Service (AKS)).
+
+**Helm pattern:**
+
+{% raw %}
+```yaml
+- name: Helm upgrade
+  run: |
+    helm upgrade --install myapp ./charts/myapp \
+      --namespace staging \
+      --set image.tag=${{ github.sha }} \
+      --wait --timeout 5m
+```
+{% endraw %}
+
+**Deployment validation:**
+
+- `kubectl rollout status` — Deployment reached minimum Ready replicas
+- `kubectl get pods` — no CrashLoopBackOff
+- HTTP smoke test against Ingress or port-forward (Module 12)
 
 ### Why it matters
 
-Static kubeconfigs in CI are high-value secrets and hard to rotate. Environment protection and required reviewers shrink blast radius for production. Rollouts without validation leave pods CrashLooping while the job reports success. Confusing push CI with GitOps causes double-writes: Actions and Argo CD fight over the same Deployment and drift becomes chronic.
+Manual `kubectl apply` from engineer laptops bypasses audit trails and drift detection. Pipeline deploys tie every cluster change to a Git SHA, use environment approvals for production, and leave logs for incident review.
+
+Rollback speed separates good SRE practice from chaos — knowing `kubectl rollout undo` versus `helm rollback` versus redeploying previous image tag must be documented before an outage, not invented during one.
 
 ### How it works
 
-1. Gate the workflow on `main` (or a release tag) and a GitHub **Environment** (`staging` / `production`) with protection rules.  
-2. Authenticate to the cluster (OIDC + `aws eks update-kubeconfig`, `az aks get-credentials`, or a secret kubeconfig).  
-3. Run `kubectl set image` / `kubectl apply -k` or `helm upgrade --install` with the Module 7 image tag (`:<sha>` or `@sha256:…`).  
-4. **Validate**: `kubectl rollout status --timeout=…` or Helm wait; fail the job on timeout. Optional smoke checks against the Service or Ingress.  
-5. **Rollback**: `helm rollback <release> <revision>`, or redeploy the last known-good digest; under GitOps, revert the Git commit and let the controller sync.
+1. **Build job** (Module 7) pushes `ghcr.io/org/app:SHA`.
+2. **Deploy workflow** triggers on `workflow_dispatch` or push to `main` with `environment: production` gate.
+3. Runner with cluster access updates image tag in manifest or Helm values.
+4. **Rollout** waits for Ready condition; smoke test optional.
+5. On failure, **rollback** restores previous Deployment revision or Helm release.
 
-Keep production behind manual approval on the environment. Prefer GitOps when many clusters or strict drift detection matter more than push latency.
+**Self-hosted runners** often required when the Kubernetes API server is private. GitHub-hosted runners can deploy to public endpoints or cloud APIs via OIDC without static kubeconfig.
+
+**GitOps alternative:** Argo CD or Flux sync from Git — Actions updates manifest repo rather than calling kubectl directly (see [GitOps](../git/gitops-fundamentals.md)).
 
 ### Key concepts and comparisons
 
-| Pattern | Idea | Rollback |
-|---------|------|----------|
-| Rolling update | Default Deployment surge | Prior ReplicaSet / Helm revision |
-| Canary | Partial traffic to new version | Shift weight back |
-| Blue-green | Two stacks; cut over Service/Ingress | Point traffic at previous stack |
-| GitOps | Desired state in Git | Revert commit |
+| Tool | Best for | Rollback |
+|------|----------|----------|
+| kubectl apply | Flat manifests, learning | `kubectl rollout undo deployment/NAME` |
+| Helm | Parameterised releases, charts | `helm rollback RELEASE REVISION` |
+| Kustomize | Overlay per environment | Revert Git commit; re-apply |
+
+| Runner choice | Cluster access |
+|---------------|----------------|
+| GitHub-hosted + public API | Possible with care |
+| Self-hosted in VPC | Private API endpoints |
+| OIDC to cloud | Temporary creds; no kubeconfig file |
 
 ### Common pitfalls
 
-- Cluster-admin credentials in unprotected repository secrets.  
-- Deploying `latest` instead of the SHA built in the same pipeline.  
-- Declaring success without `rollout status` or health probes.  
-- Both CI and Argo CD applying the same Deployment (duelling controllers).  
-- Skipping `helm history` so rollback targets are unclear.
+- Committing kubeconfig or service account keys to the repository.
+- Applying `:latest` image tag — rollbacks ambiguous; pin SHA.
+- No `rollout status` wait — pipeline green while pods crash.
+- Production deploy from feature branch workflow.
+- Missing namespace `--namespace` — deploys to `default` accidentally.
 
 ## Hands-on Lab
 
-
-
 ### Objective
 
-Author a GitHub Actions workflow that implements **Kubernetes Deployments with GitHub Actions** and validate YAML structure locally.
+Create Kubernetes manifests, kubectl and Helm deploy workflow stubs, a rollback check script, and offline validation under `~/rebash-github-actions/module-08`.
 
 ### Prerequisites
 
+- Modules 1–7
 - Python 3 with PyYAML
-- Optional: GitHub repo to run the workflow
+- Optional: kind cluster for live apply
 
 ### Lab environment
 
-Workspace: `~/rebash-github-actions/module-08/{.github/workflows,manifests}`
-
-Workflows under `.github/workflows/`. In docs, wrap GitHub Actions expressions in Jinja raw blocks so MkDocs macros do not parse them; use heredocs in the lab.
-
 ```bash
-mkdir -p ~/rebash-github-actions/module-08/{.github/workflows,manifests} && cd ~/rebash-github-actions/module-08/{.github/workflows,manifests}
+mkdir -p ~/rebash-github-actions/module-08/{k8s,charts/demo-app/templates,.github/workflows} && cd ~/rebash-github-actions/module-08
+set -euo pipefail
 ```
 
 ### Real-world scenario
 
-Platform engineering wants **Kubernetes Deployments with GitHub Actions** as a reusable workflow pattern. You prototype YAML that passes review and runs on `ubuntu-latest`.
+Platform SRE requires every service deploy through GitHub Actions with staging environment approval, manifest validation in CI, and a rollback shell script operators can run when error rates spike after release.
 
 ### Step-by-step tasks
 
-#### Task 1 – Create workflow file
+#### Task 1 – Write Deployment and Service manifests
 
-Jobs and steps must be explicit; pin mainstream actions.
+Create `k8s/deployment.yaml`:
+
+```yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: rebash-demo
+  labels:
+    app: rebash-demo
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: rebash-demo
+  template:
+    metadata:
+      labels:
+        app: rebash-demo
+    spec:
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 101
+      containers:
+        - name: web
+          image: ghcr.io/example/rebash-demo:PLACEHOLDER_SHA
+          ports:
+            - containerPort: 8080
+          readinessProbe:
+            httpGet:
+              path: /
+              port: 8080
+            initialDelaySeconds: 3
+            periodSeconds: 5
+          resources:
+            requests:
+              cpu: 50m
+              memory: 64Mi
+            limits:
+              cpu: 200m
+              memory: 128Mi
+```
+
+Create `k8s/service.yaml`:
+
+```yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: rebash-demo
+spec:
+  selector:
+    app: rebash-demo
+  ports:
+    - port: 80
+      targetPort: 8080
+  type: ClusterIP
+```
+
+Validate offline:
 
 ```bash
-mkdir -p .github/workflows
-cat > .github/workflows/lab.yml << 'EOF'
-name: lab
+cd ~/rebash-github-actions/module-08
+set -euo pipefail
+grep -q 'kind: Deployment' k8s/deployment.yaml
+grep -q 'runAsNonRoot: true' k8s/deployment.yaml
+grep -q 'kind: Service' k8s/service.yaml
+python3 -c "import yaml; yaml.safe_load(open('k8s/deployment.yaml')); yaml.safe_load(open('k8s/service.yaml')); print('manifests OK')"
+```
+
+**Expected output:** `manifests OK`
+
+#### Task 2 – kubectl deploy workflow stub
+
+Create `.github/workflows/k8s-deploy-kubectl.yml`:
+
+{% raw %}
+```yaml
+name: Deploy to Kubernetes (kubectl stub)
 on:
   workflow_dispatch:
-  push:
+    inputs:
+      image_tag:
+        description: Image tag (Git SHA)
+        required: true
+        default: PLACEHOLDER_SHA
 permissions:
   contents: read
 jobs:
-  build:
+  deploy:
     runs-on: ubuntu-latest
+    environment: staging
     steps:
       - uses: actions/checkout@v4
-      - name: Prove workspace
+      - name: Patch image tag in manifest
         run: |
-          mkdir -p out
-          echo ok > out/marker.txt
-          test -s out/marker.txt
-EOF
-python3 -c "import yaml; yaml.safe_load(open('.github/workflows/lab.yml')); print('workflow OK')"
+          set -euo pipefail
+          sed "s/PLACEHOLDER_SHA/${{ github.event.inputs.image_tag }}/g" k8s/deployment.yaml > k8s/deployment.rendered.yaml
+          grep -q "ghcr.io/example/rebash-demo:${{ github.event.inputs.image_tag }}" k8s/deployment.rendered.yaml
+      - name: Validate manifest structure (offline)
+        run: |
+          set -euo pipefail
+          python3 -c "import yaml; yaml.safe_load(open('k8s/deployment.rendered.yaml'))"
+          echo "kubectl dry-run stub OK"
+      - name: Apply (live cluster — optional)
+        if: false
+        run: kubectl apply -f k8s/deployment.rendered.yaml -f k8s/service.yaml --namespace=staging
 ```
+{% endraw %}
 
-**Expected output:** `workflow OK` printed; file exists under `.github/workflows/`.
-
-#### Task 2 – Dry-run the shell steps locally
-
-The `run:` block should work in a normal shell before CI.
+Validate offline:
 
 ```bash
-mkdir -p out && echo ok > out/marker.txt
-test -s out/marker.txt && cat out/marker.txt
+cd ~/rebash-github-actions/module-08
+set -euo pipefail
+grep -q 'environment: staging' .github/workflows/k8s-deploy-kubectl.yml
+grep -q 'deployment.rendered.yaml' .github/workflows/k8s-deploy-kubectl.yml
+python3 -c "import yaml; yaml.safe_load(open('.github/workflows/k8s-deploy-kubectl.yml')); print('kubectl workflow OK')"
 ```
 
-**Expected output:** Prints `ok`.
+**Expected output:** `kubectl workflow OK`
+
+#### Task 3 – Helm chart stub and workflow
+
+Create `charts/demo-app/Chart.yaml`:
+
+```yaml
+apiVersion: v2
+name: demo-app
+description: REBASH Module 8 stub chart
+type: application
+version: 0.1.0
+appVersion: "1.0.0"
+```
+
+Create `charts/demo-app/values.yaml`:
+
+```yaml
+replicaCount: 2
+image:
+  repository: ghcr.io/example/rebash-demo
+  tag: PLACEHOLDER_SHA
+service:
+  port: 80
+```
+
+Create `charts/demo-app/templates/deployment.yaml`:
+
+{% raw %}
+```yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Release.Name }}
+spec:
+  replicas: {{ .Values.replicaCount }}
+  selector:
+    matchLabels:
+      app: {{ .Release.Name }}
+  template:
+    metadata:
+      labels:
+        app: {{ .Release.Name }}
+    spec:
+      containers:
+        - name: web
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+          ports:
+            - containerPort: 8080
+```
+{% endraw %}
+
+Create `.github/workflows/k8s-deploy-helm.yml`:
+
+```yaml
+name: Deploy with Helm (stub)
+on:
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment: staging
+    steps:
+      - uses: actions/checkout@v4
+      - name: Validate chart files exist
+        run: |
+          set -euo pipefail
+          test -f charts/demo-app/Chart.yaml
+          test -f charts/demo-app/values.yaml
+          grep -q 'PLACEHOLDER_SHA' charts/demo-app/values.yaml
+      - name: Helm upgrade (offline stub)
+        run: |
+          set -euo pipefail
+          echo "helm upgrade --install demo-app ./charts/demo-app --set image.tag=abc123 --wait"
+          echo "helm-stub-ok" > helm-stub.txt
+          test -s helm-stub.txt
+```
+
+Validate offline:
+
+```bash
+cd ~/rebash-github-actions/module-08
+set -euo pipefail
+grep -q 'demo-app' charts/demo-app/Chart.yaml
+python3 -c "import yaml; yaml.safe_load(open('.github/workflows/k8s-deploy-helm.yml')); print('helm workflow OK')"
+```
+
+**Expected output:** `helm workflow OK`
+
+#### Task 4 – Rollback check script and offline render test
+
+Create `rollback-check.sh`:
+
+```bash
+#!/usr/bin/env bash
+set -euo pipefail
+NAMESPACE="${NAMESPACE:-staging}"
+DEPLOY="${DEPLOY:-rebash-demo}"
+{
+  echo "# Rollback check evidence — Module 8"
+  echo "namespace=${NAMESPACE}"
+  echo "deployment=${DEPLOY}"
+  echo ""
+  echo "## kubectl rollback commands"
+  echo "kubectl rollout history deployment/${DEPLOY} -n ${NAMESPACE}"
+  echo "kubectl rollout undo deployment/${DEPLOY} -n ${NAMESPACE}"
+  echo "kubectl rollout status deployment/${DEPLOY} -n ${NAMESPACE} --timeout=120s"
+  echo ""
+  echo "## Helm rollback commands"
+  echo "helm history demo-app -n ${NAMESPACE}"
+  echo "helm rollback demo-app <PREVIOUS_REVISION> -n ${NAMESPACE}"
+  echo ""
+  echo "## Redeploy known-good image"
+  echo "kubectl set image deployment/${DEPLOY} web=ghcr.io/example/rebash-demo:<GOOD_SHA> -n ${NAMESPACE}"
+  echo ""
+  echo "## Post-rollback"
+  echo "incident_ticket=required with bad SHA and good SHA"
+  echo "freeze_deploy_workflow=until root cause found"
+} | tee rollback-evidence.txt
+grep -q 'rollout undo' rollback-evidence.txt
+grep -q 'helm rollback' rollback-evidence.txt
+echo 'rollback-check.sh OK'
+```
+
+Run and archive:
+
+```bash
+cd ~/rebash-github-actions/module-08
+set -euo pipefail
+chmod +x rollback-check.sh
+./rollback-check.sh
+
+sed 's/PLACEHOLDER_SHA/testsha123/g' k8s/deployment.yaml > k8s/deployment.rendered.yaml
+grep -q 'testsha123' k8s/deployment.rendered.yaml
+python3 -c "import yaml; d=yaml.safe_load(open('k8s/deployment.rendered.yaml')); assert d['kind']=='Deployment'; print('render OK')"
+
+tar -czf module-08-evidence.tgz k8s/ charts/ .github/workflows/ rollback-check.sh rollback-evidence.txt
+ls -l module-08-evidence.tgz | tee evidence.txt
+```
+
+**Expected output:** `rollback-check.sh OK`; `render OK`; tarball created.
+
+**Optional — kind validation:**
+
+```bash
+# kind create cluster --name rebash-gha
+# kubectl apply -f k8s/deployment.rendered.yaml -f k8s/service.yaml
+# kubectl rollout status deployment/rebash-demo --timeout=60s
+# kind delete cluster --name rebash-gha
+```
 
 ### Validation steps
 
-- [ ] Workflow YAML parses
-- [ ] Local run steps succeed
+- [ ] Deployment manifest includes non-root securityContext and readinessProbe
+- [ ] kubectl workflow renders manifest with input image tag
+- [ ] Helm chart contains Chart.yaml, values.yaml, and template
+- [ ] `rollback-check.sh` emits `rollback-evidence.txt` with kubectl and Helm rollback commands
+- [ ] Offline render replaces PLACEHOLDER_SHA successfully
 
 ### Common errors and fixes
 
 | Error | Cause | Fix |
 |-------|-------|-----|
-| Invalid workflow file | YAML/indent | Validate with PyYAML / actionlint |
-| Action not found | Bad uses ref | Pin `actions/checkout@v4` |
-| Permission denied | Missing permissions/OIDC | Set least-privilege `permissions:` |
+| YAML parse error in manifest | Tabs or wrong indent | Use 2-space indent; validate with Python |
+| sed placeholder not replaced | Wrong delimiter in image line | Match `PLACEHOLDER_SHA` exactly in manifest |
+| Rollout hangs | Probe failing | Check readiness path and port match container |
+| Forbidden from cluster | RBAC or wrong namespace | Verify RoleBinding and `--namespace` |
 
 ### Challenge exercise
 
-Add a second job with `needs: build` that uploads `out/` as an artefact (YAML only is fine offline).
+Add a `validate` job that runs on every pull request — Python-load all files in `k8s/` and fail if `PLACEHOLDER_SHA` remains (ensuring only deploy job patches tag). Create `.github/workflows/k8s-validate.yml`.
 
 ### Learning outcomes
 
-- Created a real workflow file
-- Validated structure before push
+- Authored production-style Deployment and Service manifests
+- Built kubectl and Helm deploy workflow stubs with environment gate
+- Built rollback check script with kubectl and Helm command evidence
+- Validated manifests offline without live cluster
 
 ### Cleanup
 
 ```bash
-# Keep workflow stubs under ~/rebash-github-actions/
+# kind delete cluster --name rebash-gha 2>/dev/null || true
+# Retain module-08 artefacts for the course
 ```
 
 ## Validation
 
-
-
-
-
-
-
-
-- [ ] Lab commands run under `~/rebash-github-actions/module-08/{.github/workflows,manifests}/`
-- [ ] You can explain each Theory section in your own words
-- [ ] You used modern tooling where it applies to this topic
-- [ ] You can describe one production failure mode for this topic
+- [ ] Lab completed under `~/rebash-github-actions/module-08/`
+- [ ] You can explain when self-hosted runners are required for deploy
+- [ ] You can describe kubectl versus Helm rollback commands
+- [ ] You can name three post-deploy validation checks
 
 ## Code Walkthrough
 
-
-
-
-
-
-
-
-Production practice for **Kubernetes Deployments with GitHub Actions** always combines:
-
-1. Inspect before you change (status, plan, logs, dry-run)
-2. Prefer reversible, documented changes (Git, IaC, drop-ins, version pins)
-3. Capture evidence (command output, pipeline logs) for handovers
-4. Prefer current tools and APIs over legacy shortcuts
-5. Least privilege — escalate credentials only when required
-
-Keep runbooks short enough to follow under pressure. Automate checks; keep humans for judgement.
+1. **Pin image SHA** — never deploy floating tags to production.
+2. **Environment gate** — `environment: production` with required reviewers.
+3. **Render then apply** — patch manifests in CI; keep templates in Git.
+4. **Wait for rollout** — `kubectl rollout status` or Helm `--wait`.
+5. **Document rollback before deploy** — checklist in repo next to workflows.
 
 ## Security Considerations
 
-
-
-
-
-
-
-
-- Treat credentials and tokens for github-actions as privileged — never commit them
-- Prefer short-lived auth (OIDC, roles, SSO) over long-lived keys
-- Validate blast radius before apply/deploy/delete operations
-- Restrict who can approve production changes
-- Collect audit logs; limit who can read sensitive traces
+- Store kubeconfig as environment secret — never commit; prefer OIDC to cloud.
+- Limit deploy workflow to `main` and protected branches.
+- Use dedicated Kubernetes service account with Role scoped to target namespace.
+- Audit deploy job logs — who triggered `workflow_dispatch` and which SHA.
+- Disable automatic deploy from fork pull requests.
 
 ## Common Mistakes
 
+!!! warning "Applying manifests without namespace"
+    Resources land in `default`. **Fix:** Always pass `-n staging` or set `metadata.namespace` in manifests.
 
+!!! warning "Skipping rollout status"
+    Pipeline succeeds while pods crash loop. **Fix:** Add `kubectl rollout status --timeout=...` or Helm `--wait`.
 
-
-
-
-
-
-!!! warning "Cluster-admin credentials in unprotected repository secrets.  "
-    Validate assumptions against the Theory section and official docs before changing production.
-
-!!! warning "Deploying `latest` instead of the SHA built in the same pipeline.  "
-    Lab shortcuts (open security groups, admin roles, skip approvals) must not ship unchanged.
-
-!!! warning "Changing production without a rollback path"
-    Always know how to revert (previous artefact, prior release, state rollback, DNS failback).
+!!! warning "Kubeconfig secret in workflow logs"
+    Echo or debug prints expose cluster credentials. **Fix:** Write file silently; chmod 600; never cat kubeconfig in logs.
 
 ## Best Practices
 
-
-
-
-
-
-
-
-- Encode Kubernetes Deployments with GitHub Actions changes as code and review them in pull requests
-- Pin versions (images, modules, actions, provider plugins)
-- Separate environments with clear promotion gates
-- Alert on symptoms with runbooks attached
-- Destroy lab resources; tag everything with owner and expiry where possible
+- Separate validate (PR) and deploy (main/dispatch) workflows.
+- Use Helm or Kustomize for environment overlays — avoid three copies of YAML.
+- Record deployed SHA in GitHub Deployment API for traceability.
+- Run smoke tests after rollout before closing the change ticket.
+- Practice rollback in staging quarterly — validate checklist still works.
 
 ## Troubleshooting
 
-
-
-
-
-
-
-
 | Symptom | Likely cause | Fix |
 |---------|--------------|-----|
-| Auth / permission denied | Wrong identity, policy, or scope | Check caller identity, roles, and least-privilege policies |
-| Timeout / no route | Network, DNS, security group, or endpoint | Trace path, DNS, and allow-lists before retrying |
-| Drift / unexpected plan | Manual change or wrong state/workspace | Reconcile desired vs actual; avoid click-ops on managed resources |
-| Pipeline/job red | Flaky step, cache, or missing secret | Read failing step logs; bisect recent workflow/config changes |
-| Cost spike | Idle load balancer, NAT, oversized compute | Inventory billable resources; stop/delete labs promptly |
+| ImagePullBackOff | Wrong tag or registry auth | Verify GHCR pull secret; confirm tag exists |
+| CrashLoopBackOff | App error or wrong port | `kubectl logs`; align probe port |
+| Forbidden on apply | RBAC insufficient | Grant deploy Role in namespace |
+| Helm release pending | Previous op stuck | `helm rollback` or delete pending secret |
+| Private API timeout | Hosted runner cannot reach API | Use self-hosted runner in VPC |
 
 ## Summary
 
-
-
-
-
-
-
-
-**Kubernetes Deployments with GitHub Actions** is essential for Cloud and DevOps engineers working with github-actions. Practise the lab until the inspection and change path is muscle memory, then continue the track.
+**Kubernetes deployments** from GitHub Actions combine manifest or Helm discipline, environment gates, rollout validation, and documented rollback. Module 8’s lab keeps cluster apply optional while proving YAML and workflow structure offline. Continue to [Terraform Pipelines with GitHub Actions](terraform-pipelines-with-github-actions.md) for Infrastructure as Code automation.
 
 ## Interview Questions
 
+**1. How do you deploy to a private Kubernetes API from GitHub Actions?**
 
+??? success "Reveal answer"
+    Use a **self-hosted runner** inside the VPC or network that can reach the API server, or cloud-provider OIDC to obtain temporary credentials without a static kubeconfig. GitHub-hosted runners cannot reach private endpoints unless exposed via public load balancer (usually avoided). Store kubeconfig as an environment secret only when OIDC is unavailable.
 
+**2. kubectl apply versus helm upgrade — when to choose each?**
 
+??? success "Reveal answer"
+    **kubectl** suits flat manifests, GitOps repos, and simple services. **Helm** suits parameterised releases, rollbacks via revision history, and chart dependencies. Platform teams often standardise on Helm or Kustomize overlays; Actions validates and triggers; cluster sync may be GitOps-driven.
 
+**3. What validation should run before production deploy?**
 
-1. How do you authenticate kubectl from GitHub Actions safely?
-2. Why dry-run before apply in CI?
-3. What role should a deploy job have in-cluster?
-4. How do GitHub environments help Kubernetes promotions?
-5. How do you roll back a bad deploy triggered by Actions?
+??? success "Reveal answer"
+    YAML schema validation, policy checks (OPA/Kyverno if available), image vulnerability scan, staging deploy success, and smoke tests. In workflow: render manifests, `kubectl apply --dry-run=server` when cluster available, then apply with `rollout status` wait.
 
-!!! tip "Sample answer — question 2"
-    Validate kubeconfig/OIDC exchange, namespace context, and client dry-run results before blaming the cluster.
+**4. How do you rollback a Deployment quickly?**
 
-!!! tip "Sample answer — question 4"
-    Prefer short-lived credentials via OIDC, namespace-scoped Roles, and environment reviewers for production.
+??? success "Reveal answer"
+    `kubectl rollout undo deployment/NAME -n NAMESPACE` reverts to previous ReplicaSet. For Helm: `helm rollback RELEASE REVISION`. Fastest recovery often redeploying last known-good image SHA via `kubectl set image`. Document commands in rollback checklist before incidents.
+
+**5. Why use environment: production in the deploy job?**
+
+??? success "Reveal answer"
+    GitHub **environments** add protection rules — required reviewers, wait timers, environment-scoped secrets — and deployment history. Production credentials and approvals attach to the environment, not every workflow run.
+
+**6. What is the risk of using pull_request_target for deploy jobs?**
+
+??? success "Reveal answer"
+    It runs in base repository context with access to secrets while checking out untrusted fork code — RCE can steal production kubeconfig. **Fix:** Never deploy from `pull_request_target` with secrets; use internal PRs or manual dispatch from trusted refs only.
+
+**7. How do you prove a deploy succeeded beyond a green workflow job?**
+
+??? success "Reveal answer"
+    Check Kubernetes Ready replicas (`rollout status`), run HTTP smoke tests against the service, verify metrics (error rate, latency) return to baseline, and confirm the running image tag matches intended SHA via `kubectl get pod -o jsonpath='{.spec.containers[*].image}'`.
 
 ## Related Tutorials
 
-
-
-
-
-
-
-
-- [Course overview](index.md)
+- [Docker Pipelines with GitHub Actions](docker-pipelines-with-github-actions.md)
 - [Terraform Pipelines with GitHub Actions](terraform-pipelines-with-github-actions.md)
+- [Production Pipelines and Environments](production-pipelines-and-environments.md)
 
 ## References
 
-
-
-
-
-
-
-
-- [Deploying to Kubernetes](https://docs.github.com/en/actions/deployment/deploying-to-your-cloud-provider/deploying-to-kubernetes) · [Environments](https://docs.github.com/en/actions/deployment/targeting-different-environments/using-environments-for-deployment) · [Helm upgrade](https://helm.sh/docs/helm/helm_upgrade/) · [kubectl rollout](https://kubernetes.io/docs/reference/kubectl/generated/kubectl_rollout/)
+- [Deploying to Kubernetes](https://docs.github.com/en/actions/deployment/deploying-to-your-cloud-provider/deploying-to-amazon-elastic-container-service)
+- [kubectl Cheat Sheet](https://kubernetes.io/docs/reference/kubectl/quick-reference/)
+- [Helm docs](https://helm.sh/docs/)
+- [kind — local clusters](https://kind.sigs.k8s.io/)

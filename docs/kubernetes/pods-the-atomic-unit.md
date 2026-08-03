@@ -28,7 +28,7 @@ tags:
   - kubernetes
   - pods
 author: Shaik Basha
-last_updated: "2026-07-31"
+last_updated: "2026-08-03"
 comments: false
 ---
 
@@ -137,23 +137,19 @@ Resource **requests** influence scheduling; **limits** cap usage. Probes (livene
 
 ## Hands-on Lab
 
-
-
 ### Objective
 
-Build and verify a working Kubernetes solution for **Pods — The Atomic Unit** that you can inspect, prove, and tear down safely.
+Create a Pod from YAML with labels and resource requests, prove it reaches Ready, exec into it, delete it, and observe `restartPolicy: Never` behaviour on failure.
 
 ### Prerequisites
 
-- kubectl configured against a lab cluster (kind/minikube preferred)
-- Cluster-admin or namespace-create rights in the lab cluster
+- A working Kubernetes cluster (**kind**, **minikube**, or any lab cluster)
+- **kubectl** with namespace-create rights
 - Writable workspace at `~/rebash-k8s/module-03`
 
 ### Lab environment
 
 Workspace: `~/rebash-k8s/module-03`
-
-Local kind/minikube or a dedicated sandbox cluster. Never target a shared production API server.
 
 ```bash
 mkdir -p ~/rebash-k8s/module-03 && cd ~/rebash-k8s/module-03
@@ -161,90 +157,138 @@ mkdir -p ~/rebash-k8s/module-03 && cd ~/rebash-k8s/module-03
 
 ### Real-world scenario
 
-Your platform team is rolling out **Pods — The Atomic Unit** for a new microservice. You must apply the change in an isolated namespace, prove it works with kubectl, and leave evidence for the on-call handover.
+You debug a one-off batch container before the team wraps it in a Deployment. You run a single Pod manifest, confirm nginx responds, capture evidence, then test what happens when a Pod is deleted versus when it exits with `restartPolicy: Never`.
 
 ### Step-by-step tasks
 
-#### Task 1 – Declare and apply a Pod
+#### Task 1 – Create and apply a labelled Pod
 
-Create an isolated namespace and apply a Pod manifest so the scheduler places a container.
+Create `namespace.yaml`:
 
-```bash
-kubectl create namespace rebash-lab --dry-run=client -o yaml | kubectl apply -f -
-cat > pod.yaml << 'EOF'
+```yaml
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: rebash-m03
+```
+
+Create `pod.yaml`:
+
+```yaml
 apiVersion: v1
 kind: Pod
 metadata:
   name: web
-  namespace: rebash-lab
+  namespace: rebash-m03
   labels:
     app: web
+    tier: frontend
+    lab: module-03
 spec:
+  restartPolicy: Always
   containers:
     - name: nginx
       image: nginx:1.27-alpine
       ports:
         - containerPort: 80
-EOF
+      resources:
+        requests:
+          cpu: 50m
+          memory: 64Mi
+        limits:
+          cpu: 200m
+          memory: 128Mi
+```
+
+Apply and verify:
+
+```bash
+cd ~/rebash-k8s/module-03
+kubectl apply -f namespace.yaml
 kubectl apply -f pod.yaml
-kubectl wait --for=condition=Ready pod/web -n rebash-lab --timeout=120s
-kubectl get pod web -n rebash-lab -o wide
+kubectl wait --for=condition=Ready pod/web -n rebash-m03 --timeout=120s
+kubectl get pod web -n rebash-m03 -o wide | tee pod-ready.txt
+grep -q '1/1' pod-ready.txt
 ```
 
-**Expected output:** Pod `web` shows Ready 1/1 and a node name.
+**Expected output:** Pod `web` shows `1/1 Running` with a node assignment.
 
-#### Task 2 – Inspect Events and prove the app answers
-
-Use describe/Events/logs — the same triage path used in production incidents.
+#### Task 2 – Exec and capture evidence
 
 ```bash
-kubectl describe pod web -n rebash-lab | tee describe.txt
-kubectl get events -n rebash-lab --sort-by=.lastTimestamp | tail -n 20
-kubectl exec -n rebash-lab web -- wget -qO- http://127.0.0.1/ | head -n 5
+cd ~/rebash-k8s/module-03
+kubectl exec -n rebash-m03 web -- wget -qO- http://127.0.0.1/ | head -n 5 | tee exec-html.txt
+kubectl describe pod web -n rebash-m03 | sed -n '/Labels:/,/Conditions:/p' | tee pod-labels.txt
+grep tier pod-labels.txt
 ```
 
-**Expected output:** HTML from nginx appears; describe.txt contains Events without ImagePullBackOff.
+**Expected output:** HTML from nginx in `exec-html.txt`; labels include `tier=frontend`.
 
-#### Task 3 – Capture evidence for handover
+#### Task 3 – Delete Pod and test restartPolicy Never
 
-Save a short status snapshot you would attach to a ticket.
+Create `fail-pod.yaml`:
+
+```yaml
+apiVersion: v1
+kind: Pod
+metadata:
+  name: fail-once
+  namespace: rebash-m03
+  labels:
+    app: fail-once
+spec:
+  restartPolicy: Never
+  containers:
+    - name: busybox
+      image: busybox:1.36
+      command: ["sh", "-c", "echo failing; exit 1"]
+```
+
+Apply, wait for terminal phase, and record:
 
 ```bash
-kubectl get pod,events -n rebash-lab -o wide | tee evidence.txt
-test -s evidence.txt
+cd ~/rebash-k8s/module-03
+kubectl delete pod web -n rebash-m03 --wait=true
+kubectl apply -f fail-pod.yaml
+sleep 5
+kubectl get pod fail-once -n rebash-m03 -o wide | tee fail-pod-status.txt
+grep -E 'Failed|Error|Completed' fail-pod-status.txt
+kubectl delete pod fail-once -n rebash-m03 --ignore-not-found
 ```
 
-**Expected output:** evidence.txt is non-empty and lists the Pod.
+**Expected output:** `web` removed; `fail-once` reaches `Failed`/`Error` and does not restart because `restartPolicy` is `Never`.
 
 ### Validation steps
 
-- [ ] Namespace `rebash-lab` contains the expected Ready objects
-- [ ] You can explain each Task command from the Theory section
-- [ ] Cleanup deletes the namespace without leftover workloads
+- [ ] Pod `web` reached Ready with resource requests set
+- [ ] Exec returned nginx HTML
+- [ ] Deleted Pod `web` does not respawn (no controller)
+- [ ] `fail-once` exited and stayed terminal with `restartPolicy: Never`
 
 ### Common errors and fixes
 
 | Error | Cause | Fix |
 |-------|-------|-----|
-| ImagePullBackOff | Wrong tag or registry auth | Fix image reference; check pull secrets |
-| Pending Pod | Scheduling / quota / PVC | `kubectl describe pod` and read Events |
-| Empty Endpoints | Selector or readiness mismatch | Compare Service selector to Pod labels and Ready |
+| ImagePullBackOff | Wrong tag or registry auth | Confirm `nginx:1.27-alpine` pulls on your cluster |
+| Pending Pod | Insufficient CPU/memory on node | Lower requests or add cluster capacity |
+| Pod recreates after delete | Deployment owns it | This lab uses bare Pods only |
+| fail-once keeps Running | Still starting | Wait; `kubectl describe pod fail-once -n rebash-m03` |
 
 ### Challenge exercise
 
-Add a readinessProbe and a ResourceQuota to the namespace, then show that over-quota creates are rejected.
+Create `sidecar-pod.yaml` with two containers sharing the Pod network (nginx + busybox sleep sidecar). Prove localhost reachability from the sidecar with `kubectl exec -c <name>`.
 
 ### Learning outcomes
 
-- Applied a real cluster change for Pods — The Atomic Unit
-- Used describe/Events for verification
-- Destroyed lab resources cleanly
+- Declared a Pod with labels and resource requests
+- Inspected and exec'd into a running container
+- Observed delete behaviour without a controller
+- Contrasted `restartPolicy: Always` vs `Never`
 
 ### Cleanup
 
 ```bash
-kubectl delete namespace rebash-lab --ignore-not-found
-# Keep ~/rebash-kubernetes/ for later tutorials
+kubectl delete namespace rebash-m03 --ignore-not-found --wait=true
 ```
 
 ## Validation

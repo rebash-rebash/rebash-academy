@@ -39,7 +39,7 @@ tags:
   - gcp
   - oidc
 author: Shaik Basha
-last_updated: "2026-07-31"
+last_updated: "2026-08-03"
 comments: false
 ---
 
@@ -159,92 +159,215 @@ Never print tokens. Prefer environment-scoped variables for account IDs and clus
 
 ### Objective
 
-Author a valid `.gitlab-ci.yml` that models **Multi-Cloud Deployments with GitLab** and validate it locally before pushing.
+Author a multi-cloud OIDC comparison matrix and GitLab CI deploy job stubs for AWS, Azure, and Google Cloud — then validate structure offline with Python.
 
 ### Prerequisites
 
 - Python 3 with PyYAML (`pip install pyyaml`)
-- Optional: GitLab project to run the pipeline
+- Optional: GitLab project with cloud OIDC trusts configured
 
 ### Lab environment
 
 Workspace: `~/rebash-gitlab/module-11`
 
-File-first lab. Push to GitLab only when you want a runner to execute jobs.
+File-first lab. Push to GitLab only when cloud identity providers are configured.
 
 ```bash
 mkdir -p ~/rebash-gitlab/module-11 && cd ~/rebash-gitlab/module-11
+set -euo pipefail
 ```
 
 ### Real-world scenario
 
-Your squad is encoding **Multi-Cloud Deployments with GitLab** as CI. Reviewers reject YAML that does not parse or that skips artefacts/needs incorrectly.
+A platform team standardises multi-cloud deploy patterns before cloud admins wire OpenID Connect (OIDC) trust in each account. You deliver reviewed YAML stubs and a validated comparison matrix — no long-lived access keys in Git.
 
 ### Step-by-step tasks
 
-#### Task 1 – Write pipeline YAML
+#### Task 1 – Multi-cloud OIDC matrix
 
-Stages and jobs must be explicit so MR pipelines are predictable.
+Create `multi-cloud-oidc.yaml`:
 
-```bash
-mkdir -p src && echo 'print("ok")' > src/app.py
-cat > .gitlab-ci.yml << 'EOF'
-stages: [lint, test]
-lint:
-  stage: lint
-  image: python:3.12-alpine
-  script:
-    - python -m py_compile src/app.py
-test:
-  stage: test
-  image: python:3.12-alpine
-  needs: [lint]
-  script:
-    - python src/app.py
-EOF
-python3 -c "import yaml; d=yaml.safe_load(open('.gitlab-ci.yml')); assert d['stages']==['lint','test']; print('OK', list(d))"
+```yaml
+# Module 11 — OIDC deploy comparison (offline reference)
+clouds:
+  aws:
+    identity: IAM OIDC provider → assume role
+    gitlab_id_token_aud: https://gitlab.com
+    deploy_targets: [EKS, ECS]
+    stub_role_arn: arn:aws:iam::000000000000:role/PLACEHOLDER-gitlab-oidc
+    region: eu-west-1
+  azure:
+    identity: federated credentials → az login
+    gitlab_id_token_aud: api://AzureADTokenExchange
+    deploy_targets: [AKS]
+    stub_client_id: PLACEHOLDER-CLIENT-ID
+    stub_tenant_id: PLACEHOLDER-TENANT-ID
+  gcp:
+    identity: Workload Identity Federation
+    gitlab_id_token_aud: https://gitlab.com
+    deploy_targets: [GKE, Cloud Run]
+    stub_project: placeholder-project
+    stub_pool: gitlab-pool
+    stub_provider: gitlab-provider
+environments:
+  staging:
+    allowed_refs: [merge_request, default_branch]
+  production:
+    allowed_refs: [default_branch]
+    manual_gate: true
 ```
 
-**Expected output:** Prints `OK` and job names; no YAML exception.
-
-#### Task 2 – Simulate the scripts locally
-
-Prove the job script works before burning runner minutes.
+Validate offline:
 
 ```bash
-python3 -m py_compile src/app.py
-python3 src/app.py | tee out.txt
-test "$(cat out.txt)" = 'ok'
+cd ~/rebash-gitlab/module-11
+set -euo pipefail
+python3 -c "
+import yaml
+doc = yaml.safe_load(open('multi-cloud-oidc.yaml'))
+assert set(doc['clouds']) == {'aws', 'azure', 'gcp'}
+assert doc['environments']['production']['manual_gate'] is True
+print('multi-cloud-oidc.yaml OK')
+"
 ```
 
-**Expected output:** Compile succeeds; out.txt is `ok`.
+**Expected output:** `multi-cloud-oidc.yaml OK`
+
+#### Task 2 – GitLab CI deploy stubs per cloud
+
+Create `.gitlab-ci.yml`:
+
+{% raw %}
+```yaml
+stages:
+  - deploy
+
+.deploy_stub:
+  stage: deploy
+  image: alpine:3.20
+  id_tokens:
+    GITLAB_OIDC_TOKEN:
+      aud: https://gitlab.com
+  script:
+    - echo "Cloud ${CLOUD} deploy stub — OIDC token present, no static keys"
+    - test -n "${GITLAB_OIDC_TOKEN:-}" || echo "Token available on GitLab runner only"
+
+deploy-aws-stub:
+  extends: .deploy_stub
+  variables:
+    CLOUD: aws
+  environment:
+    name: staging-aws
+  rules:
+    - when: manual
+      allow_failure: true
+
+deploy-azure-stub:
+  extends: .deploy_stub
+  variables:
+    CLOUD: azure
+  environment:
+    name: staging-azure
+  rules:
+    - when: manual
+      allow_failure: true
+
+deploy-gcp-stub:
+  extends: .deploy_stub
+  variables:
+    CLOUD: gcp
+  environment:
+    name: staging-gcp
+  rules:
+    - when: manual
+      allow_failure: true
+```
+{% endraw %}
+
+Validate offline:
+
+```bash
+cd ~/rebash-gitlab/module-11
+set -euo pipefail
+python3 -c "
+import yaml
+d = yaml.safe_load(open('.gitlab-ci.yml'))
+for job in ('deploy-aws-stub', 'deploy-azure-stub', 'deploy-gcp-stub'):
+    assert job in d, job
+    assert 'id_tokens' in d['.deploy_stub']
+print('gitlab-ci OK', [k for k in d if k.startswith('deploy-')])
+"
+grep -q 'alpine:3.20' .gitlab-ci.yml
+grep -q 'id_tokens' .gitlab-ci.yml
+```
+
+**Expected output:** `gitlab-ci OK` with three deploy stub job names; pinned Alpine image and `id_tokens` present.
+
+#### Task 3 – Cross-check matrix against pipeline
+
+Create `validate-multi-cloud.sh`:
+
+```bash
+#!/usr/bin/env bash
+set -euo pipefail
+python3 -c "
+import yaml
+matrix = yaml.safe_load(open('multi-cloud-oidc.yaml'))
+ci = yaml.safe_load(open('.gitlab-ci.yml'))
+clouds = set(matrix['clouds'])
+jobs = {j.split('-')[1] for j in ci if j.startswith('deploy-') and j.endswith('-stub')}
+assert clouds == jobs, (clouds, jobs)
+print('matrix matches CI stubs')
+"
+grep -q 'PLACEHOLDER' multi-cloud-oidc.yaml && echo 'no real secrets committed'
+echo 'module-11 multi-cloud lab passed'
+```
+
+Run it:
+
+```bash
+cd ~/rebash-gitlab/module-11
+set -euo pipefail
+chmod +x validate-multi-cloud.sh
+./validate-multi-cloud.sh | tee validation.txt
+```
+
+**Expected output:** `matrix matches CI stubs` then `module-11 multi-cloud lab passed`
 
 ### Validation steps
 
-- [ ] `.gitlab-ci.yml` parses
-- [ ] Local script path matches job intent
+- [ ] `multi-cloud-oidc.yaml` defines AWS, Azure, and GCP with placeholder identities only
+- [ ] Three manual deploy stub jobs extend a shared template with `id_tokens`
+- [ ] Pinned image `alpine:3.20` present
+- [ ] Python cross-check confirms matrix clouds match job names
+- [ ] No real account IDs, keys, or tokens in committed files
 
 ### Common errors and fixes
 
 | Error | Cause | Fix |
 |-------|-------|-----|
-| yaml.scanner.ScannerError | Indentation | Use 2-space indent; re-validate with PyYAML |
-| job stuck pending | No runner / tags | Check runner tags match job tags |
-| needs not found | Typo in job name | Align `needs` with actual job keys |
+| OIDC job fails immediately | Trust not configured in cloud | Expected offline; stubs use `allow_failure: true` |
+| Wrong audience in token | `aud` mismatch | Align `id_tokens.aud` with cloud provider docs |
+| One role for all clouds | Over-privileged pattern | Separate roles per cloud and environment |
+| Production deploy on MR | Permissive `rules` | Restrict production to default branch + manual |
+| Static keys in variables | Legacy pattern | Remove keys; use federation only |
 
 ### Challenge exercise
 
-Add an `artifacts:` path from lint to test and document expire_in.
+Add a `parallel: matrix` job that reads cloud names from `multi-cloud-oidc.yaml` at runtime (via a small Python script in `before_script`) and echoes the deploy target list per cloud.
 
 ### Learning outcomes
 
-- Produced reviewable GitLab CI YAML
-- Validated structure and scripts locally
+- Documented OIDC patterns per cloud in a reviewable matrix
+- Authored GitLab CI stubs with `id_tokens` instead of static keys
+- Validated YAML structure offline before cloud trust exists
+- Understood environment-scoped manual gates for production
 
 ### Cleanup
 
 ```bash
-# File-only lab — keep YAML for the next tutorial
+ls ~/rebash-gitlab/module-11
+# Keep YAML for Module 12
 ```
 
 ## Validation

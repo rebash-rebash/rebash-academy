@@ -133,8 +133,11 @@ Before changing a cloud target group, you rehearse health-check behaviour locall
 ```bash
 cd ~/rebash-networking/lab25
 set -euo pipefail
+```
 
-cat > backend_server.py << 'EOF'
+Create `backend_server.py`:
+
+```python
 #!/usr/bin/env python3
 """Tiny backend with /health for LB health-check labs."""
 from http.server import BaseHTTPRequestHandler, HTTPServer
@@ -171,8 +174,9 @@ class Handler(BaseHTTPRequestHandler):
 
 if __name__ == "__main__":
     HTTPServer(("127.0.0.1", PORT), Handler).serve_forever()
-EOF
+```
 
+```bash
 # Healthy flags
 touch backend-a.healthy backend-b.healthy
 
@@ -197,14 +201,18 @@ grep -q '^ok B' health-b-initial.txt
 ```bash
 cd ~/rebash-networking/lab25
 set -euo pipefail
+```
 
-cat > healthcheck.sh << 'EOF'
+Create `healthcheck.sh`:
+
+{% raw %}
+```bash
 #!/usr/bin/env bash
 set -euo pipefail
 OUT="${1:-pool-health.tsv}"
 shift || true
 TARGETS=("$@")
-if [[ {{ '${#TARGETS[@]}' }} -eq 0 ]]; then
+if [[ ${#TARGETS[@]} -eq 0 ]]; then
   TARGETS=(http://127.0.0.1:18081/health http://127.0.0.1:18082/health)
 fi
 
@@ -234,7 +242,10 @@ if [[ "$unhealthy" -gt 0 ]]; then
   exit 2
 fi
 exit 0
-EOF
+```
+{% endraw %}
+
+```bash
 chmod +x healthcheck.sh
 
 ./healthcheck.sh pool-health.tsv \

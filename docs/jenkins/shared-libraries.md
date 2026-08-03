@@ -1,8 +1,8 @@
 ---
 title: "Shared Libraries"
-description: "Build global and folder shared libraries with vars/ and src/, versioning, and trust boundaries."
+description: "Build global and folder shared libraries with vars/ and src/, versioning with @, and trust boundaries for reusable Pipeline steps."
 difficulty: intermediate
-estimated_time: "45–60 min"
+estimated_time: "50–70 min"
 technology: jenkins
 category: jenkins
 module: "Module 9 · Shared Libraries"
@@ -20,292 +20,504 @@ prerequisites:
   - jenkins/docker-with-jenkins-pipeline
 next:
   - jenkins/managing-jenkins-plugins-tools-and-cli
+related:
+  - jenkins/jenkinsfile-in-scm
+  - jenkins/securing-jenkins
 tags:
   - jenkins
   - shared-library
   - vars
   - governance
 author: Shaik Basha
-last_updated: "2026-07-31"
+last_updated: "2026-08-03"
 comments: false
 ---
-
 
 # Shared Libraries
 
 ## Overview
 
+Copy-pasting the same `stage('Checkout')` into fifty Jenkinsfiles guarantees drift. A **Shared Library** centralises reusable Pipeline code in Git: **`vars/`** for global steps teams call like `buildService()`, **`src/`** for Groovy classes, optional **`resources/`**. You will configure a library, pin a version with `@`, and respect **trust** boundaries — libraries can run outside the Groovy sandbox.
 
-
-Create reusable Pipeline logic with **shared libraries**: global or folder-scoped, `vars/` for global variables/steps, `src/` for class-based helpers, and explicit versioning with `@Library('name@version')`.
-
-Trust and sandbox settings matter — a library can become a supply-chain path into every job.
-
-This is a core tutorial in **Module 9 · Shared Libraries** of the REBASH Academy **Jenkins for Cloud & DevOps Engineers** series — written for Cloud, DevOps, Platform, and SRE engineers.
+This is **Tutorial 9** in **Module 9: Shared Libraries** of the REBASH Academy **Jenkins for Cloud & DevOps Engineers** series — written for Cloud, DevOps, Platform, and Site Reliability Engineering (SRE) engineers. Guide: [Extending with Shared Libraries](https://www.jenkins.io/doc/book/pipeline/shared-libraries/).
 
 ## Prerequisites
 
-
-
-- Completed prior modules in this track where linked in frontmatter
-- [Git](../git/index.md) and [Docker](../docker/index.md) for lab workflows
-- Running Jenkins LTS from [Installing Jenkins LTS](installing-jenkins-lts.md) when a live controller is required
+- [Docker with Jenkins Pipeline](docker-with-jenkins-pipeline.md) or solid Declarative skills from Modules 4–5
+- Git repository hosting for the library (or local Git Jenkins can clone)
+- Admin (or folder admin) rights to configure libraries
 
 ## Learning Objectives
 
-
-
 By the end of this tutorial, you will be able to:
 
-- [ ] Sketch a shared library repo layout (`vars/`, `src/`, `resources/`)
-- [ ] Load a library at a pinned version from a Jenkinsfile
-- [ ] Contrast global vs folder libraries
-- [ ] Explain trust/sandbox implications
+- [ ] Explain global versus folder shared libraries
+- [ ] Structure `vars/` and `src/` correctly
+- [ ] Call a library step from a Declarative Jenkinsfile with `@Library`
+- [ ] Pin library versions and describe trust/sandbox implications
+- [ ] Design a small reusable step for your teams
 
 ## Architecture
 
+Application Jenkinsfiles load versioned library code from a separate Git repo configured on the controller or folder.
 
-
-This topic’s control points and relationships are shown below.
-
-![Jenkins shared libraries](../assets/excalidraw/jenkins-shared-library.svg)
+![Jenkins Shared Library — vars, src, and versioning](../assets/excalidraw/jenkins-shared-library.svg)
 
 ## Theory
 
-
-
 ### What it is
 
-A **shared library** is a Git repository retrieved by Jenkins and made available to Pipelines. **`vars/foo.groovy`** defines a global step `foo()` for Declarative/Scripted callers. **`src/org/…`** holds Groovy classes. **`resources/`** stores non-Groovy files. Libraries are configured under Manage Jenkins → System (global) or at folder level. Versions use tags/branches; pin tags in production.
+A Shared Library is a Git repository (usually) with:
+
+```text
+(root)
+├── vars/
+│   └── sayHello.groovy      # call as sayHello()
+├── src/
+│   └── org/rebash/Util.groovy
+└── resources/
+    └── ...
+```
+
+**Global libraries** are configured under *Manage Jenkins → System* (Pipeline Shared Groovy Libraries). **Folder libraries** live on a folder and apply to jobs beneath it — better for multi-tenant controllers.
+
+Retrieve with:
+
+```groovy
+@Library('rebash-ci@1.2.0') _
+```
+
+or implicit load when “Load implicitly” is enabled (use sparingly — makes dependencies invisible).
 
 ### Why it matters
 
-Without libraries, every Jenkinsfile reinvents checkout, deploy, and notify steps. Libraries encode platform standards. Version pins prevent a broken main branch from failing every product Pipeline overnight.
+Platform teams ship golden paths: lint, build, container publish, notify. Application teams call one step instead of reinventing SCM checkout flags. Version pins (`@1.2.0` or `@main`) let you roll forward safely. Because trusted libraries may bypass sandbox restrictions, **who can merge to the library repo** is a security control.
 
 ### How it works
 
-1. Create a library repo with `vars/sayHello.groovy`.
-2. Register it in Jenkins (global or folder) with a default version.
-3. In a Jenkinsfile: `@Library('my-lib@1.0.0') _` then call `sayHello('rebash')`.
-4. Prefer tags over floating `main` for production callers.
-5. Restrict who can change trusted libraries.
+1. Create library Git repo with `vars/sayHello.groovy`:
 
-Tutorial: [Extending with Shared Libraries](https://www.jenkins.io/doc/book/pipeline/shared-libraries/).
+```groovy
+def call(String name = 'world') {
+  echo "Hello, ${name}."
+}
+```
+
+2. Register library name `rebash-ci` → Modern SCM → Git → default version `main`.
+3. In an app `Jenkinsfile`:
+
+```groovy
+@Library('rebash-ci@main') _
+pipeline {
+  agent any
+  stages {
+    stage('Greet') {
+      steps {
+        script {
+          sayHello('rebash')
+        }
+      }
+    }
+  }
+}
+```
+
+Declarative often needs `script { }` to call custom steps cleanly.
+
+**`src/`** holds classes under package paths for more structured code. Prefer thin `vars/` wrappers over huge Scripted blobs.
+
+**Trust:** marking a library *trusted* allows more Jenkins API access. Only trust repos your platform team controls with reviewed merges.
 
 ### Key concepts and comparisons
 
-| Path | Purpose |
-|------|---------|
-| `vars/` | Global steps for Jenkinsfiles |
-| `src/` | Classes / complex logic |
-| `resources/` | Templates, scripts loaded by library |
+| Scope | Best for |
+|-------|----------|
+| Global library | Company-wide steps |
+| Folder library | Business unit isolation |
 
-| Scope | Use |
-|-------|-----|
-| Global | Company-wide platform steps |
-| Folder | Product-line customisations |
-| Untrusted | Dynamic library load — careful |
+| Pin | Trade-off |
+|-----|-----------|
+| `@1.4.0` tag | Reproducible |
+| `@main` | Floating; faster iteration; breakage risk |
+| Commit SHA | Strongest pin |
 
 ### Common pitfalls
 
-- Floating `@Library('lib')` on `main` without pins.
-- Putting secrets inside library resources.
-- Over-centralising so product teams cannot ship.
-- Granting untrusted Multibranch jobs ability to load arbitrary libraries.
+- Putting Jenkinsfiles inside the library repo as the only “docs” without `vars/`.
+- Implicit global libraries nobody knows about.
+- Untrusted contributors merging to a trusted library.
+- Giant Scripted libraries unreadable to app teams.
+- No SemVer tags — every app floats on `main`.
 
 ## Hands-on Lab
 
-
-
 ### Objective
 
-Configure a real Jenkins-facing artefact for **Shared Libraries** (Compose controller and/or Jenkinsfile) you can run or import.
+Create a Shared Library Git repository with a `vars/` step, document controller configuration, and call it from a demo Pipeline job.
 
 ### Prerequisites
 
-- Docker Engine for controller labs
-- Text editor / shell
+- Jenkins admin for global library **or** folder configure permission
+- Git remote or `file://` visible to Jenkins (same caveats as Module 5)
 
 ### Lab environment
 
 Workspace: `~/rebash-jenkins/module-09`
 
-Local Docker Compose Jenkins LTS where a live UI is needed; file-only Jenkinsfile labs otherwise.
-
 ```bash
 mkdir -p ~/rebash-jenkins/module-09 && cd ~/rebash-jenkins/module-09
+set -euo pipefail
 ```
 
 ### Real-world scenario
 
-Your organisation is standardising **Shared Libraries**. You prototype on a lab controller, keep everything as files, and avoid building on the built-in node in production designs.
+Three squads duplicate Slack notify and git metadata stages. Platform will publish `rebash-ci` Shared Library v0.1.0 with `sayHello` and `ciMeta` steps as the pattern for later real steps.
 
 ### Step-by-step tasks
 
-#### Task 1 – Capture controller/agent mental model files
+#### Task 1 – Create the library repository layout
 
-Document how this topic shows up on a real controller.
+Commit and record:
 
 ```bash
-tee scenario.md << 'EOF'
-Topic: Shared Libraries
-- Controller owns config and orchestration
-- Agents execute untrusted build steps
-- Prefer Jenkinsfile in SCM over click-ops jobs
-EOF
-cat scenario.md
-mkdir -p jobs && echo 'pipelineJob stub' > jobs/README.txt
+cd ~/rebash-jenkins/module-09
+set -euo pipefail
+
+rm -rf rebash-ci-lib
+mkdir -p rebash-ci-lib/vars rebash-ci-lib/src/org/rebash
+cd rebash-ci-lib
+git init -b main
 ```
 
-**Expected output:** scenario.md and jobs/README.txt exist.
+Create `vars/sayHello.groovy`:
 
-#### Task 2 – Write a minimal Declarative stub
+```groovy
+def call(String name = 'world') {
+  echo "Hello, ${name} — from rebash-ci Shared Library"
+}
+```
 
-Even management topics should leave a Pipeline artefact.
+Create `vars/ciMeta.groovy`:
+
+```groovy
+def call() {
+  echo "JOB_NAME=${env.JOB_NAME}"
+  echo "BUILD_NUMBER=${env.BUILD_NUMBER}"
+  echo "BRANCH_NAME=${env.BRANCH_NAME}"
+}
+```
+
+Create `src/org/rebash/Strings.groovy`:
+
+```groovy
+package org.rebash
+
+class Strings implements Serializable {
+  static String shout(String s) {
+    return s?.toUpperCase()
+  }
+}
+```
+
+Create `README.md`:
+
+```markdown
+# rebash-ci Shared Library
+
+## Usage
+
+@Library('rebash-ci@main') _
+
+steps:
+- sayHello('name')
+- ciMeta()
+```
+
+Commit and record:
 
 ```bash
-cat > Jenkinsfile << 'EOF'
+git add vars src README.md
+git -c user.email='rebash-lab@example.com' -c user.name='REBASH Lab' commit -m 'Initial rebash-ci library with sayHello and ciMeta'
+git tag -a v0.1.0 -m 'v0.1.0'
+git log -1 --oneline | tee ../lib-commit.txt
+pwd | tee ../lib-path.txt
+```
+
+**Expected output:** Tag `v0.1.0` created; path recorded.
+
+#### Task 2 – Configure the library in Jenkins
+
+1. Prefer **folder library** on `rebash-demo`: Folder → Configure → Pipeline Shared Libraries  
+   (or Manage Jenkins → System → Global Pipeline Libraries).
+2. Name: `rebash-ci`
+3. Default version: `v0.1.0` (or `main`)
+4. Modern SCM → Git → repository URL (remote or `file://…`)
+5. Uncheck “Allow default version to be overridden” only if you want hard pins — for labs, allow override.
+6. **Do not** mark Trusted unless you understand sandbox implications; for `echo`-only steps, untrusted is enough.
+
+Run:
+
+```bash
+cd ~/rebash-jenkins/module-09
+set -euo pipefail
+```
+
+Create `library-config.yaml`:
+
+```yaml
+name: rebash-ci
+scope: folder_rebash_demo_or_global
+default_version: v0.1.0
+repo: fill_from_lib-path.txt
+trusted: false
+implicit_load: false
+```
+
+Validate and archive:
+
+```bash
+python3 -c "
+import yaml
+from pathlib import Path
+p = Path('lib-path.txt').read_text().strip()
+d = yaml.safe_load(open('library-config.yaml'))
+d['repo'] = p
+yaml.safe_dump(d, open('library-config.yaml', 'w'), sort_keys=False)
+assert d['name'] == 'rebash-ci'
+assert d['default_version'] == 'v0.1.0'
+print('library-config.yaml OK')
+" | tee library-config-validate.txt
+```
+
+**Expected output:** Config YAML validates; library saved in UI.
+
+#### Task 3 – Consumer Jenkinsfile
+
+Run:
+
+```bash
+cd ~/rebash-jenkins/module-09
+set -euo pipefail
+
+mkdir -p consumer-app
+```
+
+Create `consumer-app/Jenkinsfile`:
+
+```groovy
+@Library('rebash-ci@v0.1.0') _
 pipeline {
   agent any
-  stages { stage('OK') { steps { echo 'lab' } } }
+  options { timestamps() }
+  stages {
+    stage('Library steps') {
+      steps {
+        script {
+          sayHello('module-09')
+          ciMeta()
+        }
+      }
+    }
+  }
 }
-EOF
-grep -n agent Jenkinsfile
 ```
 
-**Expected output:** Jenkinsfile present with an agent directive.
+Create `consumer-job.yaml`:
+
+```yaml
+job: rebash-demo/lib-consumer
+definition: pipeline_script_or_scm_consumer_app
+library_pin: rebash-ci@v0.1.0
+expected_console: Hello from rebash-ci Shared Library
+```
+
+Verify:
+
+```bash
+grep -q lib-consumer consumer-job.yaml
+```
+
+Create/run `lib-consumer` and confirm console output.
+
+**Expected output:** Build success; library echo lines visible.
+
+#### Task 4 – Versioning and trust memo
+
+Run:
+
+```bash
+cd ~/rebash-jenkins/module-09
+set -euo pipefail
+```
+
+Create `trust-policy.yaml`:
+
+```yaml
+pin: tag_v0.1.0_for_reproducibility
+platform: cut_tags_after_review
+trusted_library: merge_rights_equal_script_approval_power
+folder_libraries: reduce_blast_radius_vs_global_implicit
+rollback: retag_or_point_jobs_at_previous_tag
+```
+
+Validate and archive:
+
+```bash
+python3 -c "
+import yaml
+with open('trust-policy.yaml') as f:
+    d = yaml.safe_load(f)
+assert 'v0.1.0' in d['pin']
+print('trust-policy.yaml OK')
+" | tee trust-policy-validate.txt
+
+tar -czf module-09-evidence.tgz rebash-ci-lib/vars rebash-ci-lib/README.md consumer-app/Jenkinsfile library-config.yaml consumer-job.yaml trust-policy.yaml *.txt
+ls -l module-09-evidence.tgz | tee evidence.txt
+```
+
+**Expected output:** Archive present.
 
 ### Validation steps
 
-- [ ] Artefacts from tasks exist
-- [ ] No secrets committed
-- [ ] Compose stack stopped if started
+- [ ] Library repo has `vars/sayHello.groovy` and tag `v0.1.0`
+- [ ] Jenkins library named `rebash-ci` configured
+- [ ] Consumer Pipeline calls library steps successfully
+- [ ] Trust policy YAML validates
 
 ### Common errors and fixes
 
 | Error | Cause | Fix |
 |-------|-------|-----|
-| port 8080 in use | Another Jenkins/lab | Change host port or stop the other container |
-| permission denied on volume | Podman/rootless path | Fix volume ownership or use named volumes |
-| agent any hangs | No executors | Attach an agent or enable a lab executor carefully |
+| Library not found | Name/URL mismatch | Match library name exactly |
+| `sayHello` undefined | Missing `_` / wrong version | Check `@Library('rebash-ci@v0.1.0') _` |
+| Sandbox RejectedAccess | Untrusted + restricted API | Avoid privileged APIs; or review trust carefully |
+| file:// clone fail | Docker Jenkins isolation | Use hosted Git |
 
 ### Challenge exercise
 
-Disable builds on the built-in node in your notes and document the agent label you would require instead.
+Add `vars/requireLabel.groovy` that errors if `env.NODE_LABELS` / label checks fail your policy string (simple `echo` + `error` if a parameter `REQUIRED_LABEL` is set and not contained in `env.NODE_NAME`). Pin `@v0.1.1` after tagging.
 
 ### Learning outcomes
 
-- Produced runnable Jenkins artefacts
-- Practised safe lab controller hygiene
+- Built a minimal Shared Library layout
+- Registered and consumed a version-pinned library
+- Documented trust boundaries for library merges
 
 ### Cleanup
 
+Keep `rebash-ci` library config for later modules. Remove experimental consumer jobs if cluttered.
+
 ```bash
-# Keep lab notes under ~/rebash-jenkins/
+ls ~/rebash-jenkins/module-09
 ```
 
 ## Validation
 
-
-
-- [ ] Lab commands run under `~/rebash-jenkins/module-09/`
-- [ ] You can explain each Theory section in your own words
-- [ ] You used current Jenkins LTS / Pipeline practices where they apply
-- [ ] You can describe one production failure mode for this topic
+- [ ] Lab completed under `~/rebash-jenkins/module-09/`
+- [ ] You can explain `vars/` versus `src/`
+- [ ] You can justify version pins over floating `main`
+- [ ] You can describe why library merge rights are sensitive
 
 ## Code Walkthrough
 
-
-
-Production practice for **Shared Libraries** always combines:
-
-1. Inspect before you change (status, plan, logs, dry-run)
-2. Prefer reversible, documented changes (Git, Jenkinsfile, JCasC)
-3. Capture evidence (console logs, plan artefacts) for handovers
-4. Prefer current LTS and supported plugins over legacy shortcuts
-5. Least privilege — escalate credentials only when required
-
-Keep runbooks short enough to follow under pressure. Automate checks; keep humans for judgement.
+1. **Thin vars steps** — app Jenkinsfiles stay Declarative.
+2. **Pin versions** — tags/SHAs in production.
+3. **Folder scope when multi-tenant** — limit blast radius.
+4. **No implicit globals by default** — make `@Library` visible.
+5. **Review library PRs like production code** — they run everywhere.
 
 ## Security Considerations
 
-
-
-- Treat Jenkins credentials and cloud tokens as privileged — never commit them
-- Keep builds off the built-in node; isolate untrusted pull requests
-- Prefer short-lived auth (OIDC-style patterns, scoped RBAC) over long-lived keys
-- Validate blast radius before apply/deploy/delete operations
-- Collect audit logs; limit who can administer the controller
+- Trusted libraries can weaken Groovy sandbox protections.
+- Library credentials for clone should be read-only.
+- Do not put secrets inside library `resources/` committed to Git.
+- Separate privileged deploy helpers from PR-safe helpers.
+- Audit who can configure global libraries on the controller.
 
 ## Common Mistakes
 
+!!! warning "Implicit trusted global library on main"
+    Every job loads changing code silently. **Fix:** explicit `@Library` + tags; avoid implicit in production.
 
+!!! warning "Application teams with merge rights to trusted libs"
+    Equivalent to broad script approval. **Fix:** platform-owned repo, CODEOWNERS, reviews.
 
-!!! warning "Unpinned library versions"
-    Pin tags/SHAs for production Pipelines so library main cannot break everyone.
+!!! warning "Copy-paste Scripted novels in vars/"
+    Unmaintainable. **Fix:** small steps; shared conventions; document parameters.
 
-!!! warning "Secrets in library resources"
-    Libraries are cloned widely — keep secrets in Credentials.
-
-!!! warning "Untrusted dynamic libraries"
-    Limit who can resolve arbitrary library sources from Multibranch PRs.
+!!! warning "No tags — everyone on @main"
+    One bad commit breaks the company. **Fix:** SemVer tags and staged rollout.
 
 ## Best Practices
 
-
-
-- Encode **Shared Libraries** changes as code and review them in pull requests
-- Prefer Jenkins LTS and pinned agent/tool versions
-- Keep builds off the controller; use labelled agents
-- Least privilege for credentials and cluster/cloud access
-- Destroy or stop lab resources; keep `~/rebash-jenkins/` notes for the track
+- SemVer tags and changelog for the library.
+- Examples in library README.
+- Folder libraries per business unit when needed.
+- Deprecate steps with clear echo warnings before removal.
+- Test library changes on a canary folder/job first.
 
 ## Troubleshooting
 
-
-
 | Symptom | Likely cause | Fix |
 |---------|--------------|-----|
-| Job stuck in queue | No matching agent/label or executors busy | Check nodes, labels, and executor counts |
-| Checkout / SCM failure | Credentials, URL, or permissions | Verify credential ID and repository access |
-| Pipeline CPS / script error | Syntax, sandbox, or library mismatch | Read error line; validate Jenkinsfile; pin library version |
-| Plugin / UI broken after update | Incompatible plugin set | Restore backup; disable suspect plugin on test controller |
-| Disk full on agent/controller | Workspaces or old builds | Clean workspaces; trim build retention |
+| Old step behaviour | Cached version / wrong pin | Check replay resolves expected ref |
+| `error fetching library` | Git auth | Fix credentials |
+| Step works in script{} only | Declarative limits | Wrap custom calls in `script` |
+| ClassNotFound in src/ | Package path mismatch | Match `src/org/...` to package |
 
 ## Summary
 
-
-
-**Shared Libraries** is essential for Cloud and DevOps engineers operating Jenkins. Practise the lab until the inspection and change path is muscle memory, then continue the track.
+Shared Libraries turn repeated Pipeline glue into versioned platform products. Use `vars/` for callable steps, pin releases, and treat library trust as a security boundary. Next: [Managing Jenkins — Plugins, Tools, and CLI](managing-jenkins-plugins-tools-and-cli.md).
 
 ## Interview Questions
 
+**1. What belongs in `vars/` versus `src/`?**
 
+??? success "Reveal answer"
+    `vars/` defines global call steps (filename = step name). `src/` holds Groovy classes under Java-like package paths for structured code. Most app-facing APIs should be thin `vars/` wrappers.
 
-1. What belongs in `vars/` versus `src/`?
-2. How do you pin a shared library version?
-3. Global versus folder library — when each?
-4. Why is a shared library a trust boundary?
-5. How do you test a library change safely?
+**2. What does `@Library('name@version') _` do?**
 
-!!! tip "Sample answer — question 2"
-    Use `@Library('name@1.4.0') _` (tag) or a commit hash; avoid relying on mutable defaults for prod.
+??? success "Reveal answer"
+    It loads the named Shared Library at a Git ref (branch, tag, or commit) into the Pipeline. The underscore imports the global vars for use as steps.
 
-!!! tip "Sample answer — question 4"
-    Library code runs inside Pipelines that may have credentials — treat library Git write access like prod code ownership.
+**3. Why pin library versions in production?**
+
+??? success "Reveal answer"
+    Floating `@main` means a library merge can break every consumer simultaneously. Tags/SHAs make rollbacks and gradual rollouts possible.
+
+**4. What is the risk of a Trusted shared library?**
+
+??? success "Reveal answer"
+    Trusted libraries can run with elevated Groovy permissions (less sandbox). A malicious or sloppy merge can become remote code execution across jobs. Merge rights must be tightly controlled.
+
+**5. Global versus folder library — when choose folder?**
+
+??? success "Reveal answer"
+    When different teams need different libraries or you want to limit who can use/admin a library to a folder subtree on a multi-tenant controller.
+
+**6. Why avoid “Load implicitly” for global libraries?**
+
+??? success "Reveal answer"
+    Implicit load hides dependencies — Jenkinsfiles no longer show `@Library`, making reviews and debugging harder, and surprise upgrades more likely.
+
+**7. How do you roll back a bad library release?**
+
+??? success "Reveal answer"
+    Point consumers at the previous tag/SHA (or fix-forward with a new tag). Avoid rewriting published tags that many pipelines already pinned.
+
+**8. Should deploy credentials live inside the Shared Library repository?**
+
+??? success "Reveal answer"
+    No. Libraries should reference Jenkins credentials by ID at runtime. Secrets in Git are a leak and rotation nightmare.
 
 ## Related Tutorials
 
-
-
-- [Course overview](index.md)
-- [Docker with Jenkins Pipeline](docker-with-jenkins-pipeline.md)
+- [Jenkinsfile in SCM](jenkinsfile-in-scm.md)
 - [Managing Jenkins — Plugins, Tools, and CLI](managing-jenkins-plugins-tools-and-cli.md)
+- [Securing Jenkins](securing-jenkins.md)
 
 ## References
 
-
-
 - [Extending with Shared Libraries](https://www.jenkins.io/doc/book/pipeline/shared-libraries/)
-- [Pipeline best practices](https://www.jenkins.io/doc/book/pipeline/pipeline-best-practices/)
 - [Pipeline Syntax](https://www.jenkins.io/doc/book/pipeline/syntax/)

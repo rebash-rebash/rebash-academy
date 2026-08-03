@@ -4,7 +4,7 @@ description: Map Docker concepts to Kubernetes — containers to pods, docker ru
 difficulty: intermediate
 estimated_time: "40 min"
 author: Shaik Basha
-last_updated: "2026-07-28"
+last_updated: "2026-08-03"
 category: docker
 tags:
   - docker
@@ -295,22 +295,19 @@ Misconfiguration here usually shows up as intermittent outages rather than clean
 
 ## Hands-on Lab
 
-
-
 ### Objective
 
-Build or run a real Docker solution for **From Docker to Kubernetes** and prove it with inspect/logs/HTTP.
+Translate a `docker run` equivalent into Kubernetes Deployment and Service YAML, validate manifests with Python, and optionally apply to a local kind cluster.
 
 ### Prerequisites
 
-- Docker Engine or Docker Desktop
-- Permission to run containers
+- Docker Engine (for the reference container mental model)
+- `python3` with PyYAML (`pip install pyyaml`)
+- Optional: [kind](https://kind.sigs.k8s.io/) for live apply
 
 ### Lab environment
 
 Workspace: `~/rebash-docker/from-docker-to-kubernetes`
-
-Local Docker daemon. Clean up containers/images after the lab.
 
 ```bash
 mkdir -p ~/rebash-docker/from-docker-to-kubernetes && cd ~/rebash-docker/from-docker-to-kubernetes
@@ -318,64 +315,187 @@ mkdir -p ~/rebash-docker/from-docker-to-kubernetes && cd ~/rebash-docker/from-do
 
 ### Real-world scenario
 
-You are validating **From Docker to Kubernetes** before it lands in CI. The change must be reproducible with copy-paste commands and leave no orphan containers.
+Platform is migrating an edge API from `docker run` on a VM to Kubernetes. You document the Docker invocation, write equivalent Deployment/Service manifests, validate YAML locally, and (if kind is available) prove pods reach Ready.
 
 ### Step-by-step tasks
 
-#### Task 1 – Run and inspect a container
+#### Task 1 – Document Docker run baseline
 
-Start from a known image, publish a port, and verify HTTP.
-
-```bash
-docker run -d --name rebash-lab -p 18080:80 nginx:alpine
-docker ps --filter name=rebash-lab
-curl -sI http://127.0.0.1:18080 | head -n 5 | tee headers.txt
-docker logs rebash-lab 2>&1 | head -n 10 | tee logs.txt
-```
-
-**Expected output:** Container Up; HTTP 200 in headers.txt.
-
-#### Task 2 – Inspect runtime config
-
-Use inspect for status — production debugging rarely starts with guesswork.
+Reference command this lab replaces:
 
 ```bash
-docker inspect rebash-lab --format '{{ "{{" }}.State.Status{{ "}}" }} {{ "{{" }}.Config.Image{{ "}}" }}' | tee inspect.txt
-test -s inspect.txt
+docker run -d --name rebash-k8s-18200 -p 18200:8080 \
+  -e APP_ENV=lab \
+  --restart unless-stopped \
+  rebash-k8s-lab:1.0.0
 ```
 
-**Expected output:** inspect.txt shows `running` and the nginx image.
+Create `Dockerfile` (build context for the image reference):
+
+```dockerfile
+FROM python:3.12-alpine
+WORKDIR /app
+COPY app.py .
+EXPOSE 8080
+CMD ["python", "app.py"]
+```
+
+Create `app.py`:
+
+```python
+import os
+from http.server import BaseHTTPRequestHandler, HTTPServer
+ENV = os.environ.get("APP_ENV", "unknown")
+
+class H(BaseHTTPRequestHandler):
+    def do_GET(self):
+        if self.path == "/healthz":
+            self.send_response(200)
+            self.end_headers()
+            self.wfile.write(b"ok\n")
+            return
+        self.send_error(404)
+    def log_message(self, *args):
+        return
+
+HTTPServer(("0.0.0.0", 8080), H).serve_forever()
+```
+
+Build locally for reference:
+
+```bash
+cd ~/rebash-docker/from-docker-to-kubernetes
+docker build -t rebash-k8s-lab:1.0.0 .
+docker images rebash-k8s-lab:1.0.0 | tee docker-ref.txt
+grep -q rebash-k8s-lab docker-ref.txt
+```
+
+**Expected output:** Image `rebash-k8s-lab:1.0.0` exists locally.
+
+#### Task 2 – Create Kubernetes manifests
+
+Create `deployment.yaml`:
+
+```yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: rebash-k8s-lab
+  labels:
+    app: rebash-k8s-lab
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: rebash-k8s-lab
+  template:
+    metadata:
+      labels:
+        app: rebash-k8s-lab
+    spec:
+      containers:
+        - name: api
+          image: rebash-k8s-lab:1.0.0
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 8080
+          env:
+            - name: APP_ENV
+              value: lab
+          readinessProbe:
+            httpGet:
+              path: /healthz
+              port: 8080
+            initialDelaySeconds: 3
+            periodSeconds: 5
+```
+
+Create `service.yaml`:
+
+```yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: rebash-k8s-lab
+spec:
+  type: NodePort
+  selector:
+    app: rebash-k8s-lab
+  ports:
+    - port: 8080
+      targetPort: 8080
+      nodePort: 30200
+```
+
+Validate YAML:
+
+```bash
+cd ~/rebash-docker/from-docker-to-kubernetes
+python3 -c "
+import yaml, pathlib
+for f in ('deployment.yaml','service.yaml'):
+    yaml.safe_load(pathlib.Path(f).read_text())
+print('k8s_yaml_ok')
+" | tee k8s-yaml-check.txt
+grep -q k8s_yaml_ok k8s-yaml-check.txt
+```
+
+**Expected output:** `k8s-yaml-check.txt` contains `k8s_yaml_ok`.
+
+#### Task 3 – Optional kind apply and Ready proof
+
+If kind is installed, load the image and apply:
+
+```bash
+cd ~/rebash-docker/from-docker-to-kubernetes
+if command -v kind >/dev/null 2>&1; then
+  kind create cluster --name rebash-k8s-lab 2>/dev/null || true
+  kind load docker-image rebash-k8s-lab:1.0.0 --name rebash-k8s-lab
+  kubectl apply -f deployment.yaml -f service.yaml
+  kubectl rollout status deployment/rebash-k8s-lab --timeout=120s | tee k8s-rollout.txt
+  kubectl get pods -l app=rebash-k8s-lab -o wide | tee k8s-pods.txt
+else
+  echo "kind not installed — YAML validation only" | tee k8s-rollout.txt
+fi
+test -s k8s-rollout.txt
+```
+
+**Expected output:** With kind, rollout succeeds and pods show Running/Ready; without kind, fallback message is recorded.
 
 ### Validation steps
 
-- [ ] Container or image behaves as Expected output describes
-- [ ] Ports respond or command output matches
-- [ ] Cleanup removes lab resources
+- [ ] Docker reference image builds locally
+- [ ] Deployment and Service YAML parse with Python
+- [ ] Readiness probe maps from Docker healthcheck concept
+- [ ] Optional kind apply reaches Ready (when kind available)
+- [ ] Cleanup removes kind cluster and local files
 
 ### Common errors and fixes
 
 | Error | Cause | Fix |
 |-------|-------|-----|
-| port is already allocated | Previous lab left a container | `docker rm -f` the old name or change port |
-| permission denied | User not in docker group | Use rootless Docker or fix group membership |
-| manifest unknown | Bad tag | Pin a real tag such as `nginx:alpine` |
+| `ImagePullBackOff` in kind | Image not loaded into cluster | Run `kind load docker-image` before apply |
+| NodePort conflict | Port 30200 taken | Change `nodePort` in Service |
+| YAML parse error | Tabs in YAML | Use spaces only |
+| Probe never Ready | Wrong port/path | Match `/healthz` on port 8080 |
 
 ### Challenge exercise
 
-Add a non-root USER (or Compose healthcheck) and prove it with inspect.
+Add a ConfigMap for `APP_ENV` instead of a literal env value and mount it as envFrom in the Deployment.
 
 ### Learning outcomes
 
-- Executed a real Docker workflow
-- Captured evidence files
-- Removed disposable resources
+- Mapped `docker run` flags to Deployment/Service fields
+- Authored readiness probes equivalent to Docker healthchecks
+- Validated manifests locally before cluster apply
+- Applied optionally to kind with rollout evidence
 
 ### Cleanup
 
 ```bash
-docker rm -f rebash-lab 2>/dev/null || true
-docker rmi rebash-lab:local 2>/dev/null || true
-docker compose down -v 2>/dev/null || true
+kind delete cluster --name rebash-k8s-lab 2>/dev/null || true
+docker rmi rebash-k8s-lab:1.0.0 2>/dev/null || true
+rm -f ~/rebash-docker/from-docker-to-kubernetes/*.txt
 ```
 
 ## Validation

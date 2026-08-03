@@ -1,8 +1,8 @@
 ---
 title: "Remote State and Backends"
-description: "Configure remote Terraform state with locking and encryption — S3, Azure, GCS patterns, and team collaboration for production IaC."
+description: "Configure remote Terraform backends, state locking, terraform_remote_state data sources, and production backend security — with a local-backend lab that needs no cloud account."
 difficulty: intermediate
-estimated_time: "45–60 min"
+estimated_time: "60–70 min"
 technology: terraform
 category: terraform
 module: "Module 8 · State Management"
@@ -20,8 +20,8 @@ prerequisites:
 next:
   - terraform/modules-creating-reusable-infrastructure
 related:
-  - terraform/workspaces-and-environment-strategies
   - terraform/terraform-cloud-and-hcp-terraform
+  - terraform/production-terraform-patterns
 labs: []
 projects: []
 interview: interview/terraform
@@ -29,367 +29,548 @@ certifications:
   - Terraform Associate
 tags:
   - terraform
-  - backend
   - remote-state
-  - locking
+  - backend
+  - s3
 author: Shaik Basha
-last_updated: "2026-07-31"
+last_updated: "2026-08-03"
 comments: false
 ---
-
 
 # Remote State and Backends
 
 ## Overview
 
+When more than one engineer touches the same stack, **local state files** collide. **Remote backends** store state in shared storage (Amazon S3, Azure Blob Storage, Google Cloud Storage, HashiCorp Terraform Cloud) with **locking** so two applies cannot corrupt the same state serial.
 
+This tutorial explains production remote backends conceptually and teaches **`terraform_remote_state`** with a **two-stack Docker lab** under `~/rebash-terraform/module-08-remote` — separate state paths, real networks and containers, no AWS account required. The pattern mirrors S3 + DynamoDB or AzureRM backends in production.
 
-
-
-
-
-Explain why remote state and locking matter, compare S3 / Azure / GCS and HCP Terraform patterns, and practise an explicit local backend path as a safe stepping stone.
-
-Local state cannot support teams. Concurrent applies corrupt files; laptops get wiped; pull requests lack a single source of truth. **Remote backends** provide shared durable storage, **locking**, encryption, and access control. Providers still talk to cloud APIs; the backend stores state.
-
-This is a core tutorial in **Module 8 · State Management** of the REBASH Academy **Terraform for Cloud & DevOps Engineers** series — written for Cloud, DevOps, Platform, and SRE engineers.
+This is **Tutorial 9** in **Module 8: State Management** of the REBASH Academy **Terraform for Cloud & DevOps Engineers** series.
 
 ## Prerequisites
 
-
-
-
-
-
-
 - [Terraform State Fundamentals](terraform-state-fundamentals.md)
-- Terraform CLI 1.9+ (no cloud account required for the lab)
+- Terraform CLI ≥ 1.5
+- Completed Module 8 state lab
 
 ## Learning Objectives
 
-
-
-
-
-
-
 By the end of this tutorial, you will be able to:
 
-- [ ] Explain shared storage, locking, and encryption for team state  
-- [ ] Compare local, S3, Azure, GCS, and HCP Terraform / `cloud` backends  
-- [ ] Describe `terraform init -migrate-state` and partial `-backend-config`  
-- [ ] Use `terraform_remote_state` cautiously
+- [ ] Configure a `backend` block and run `terraform init -migrate-state`
+- [ ] Explain state locking and why concurrent applies are dangerous
+- [ ] Read another stack's outputs with `terraform_remote_state`
+- [ ] Describe S3 and AzureRM backend components at a high level
+- [ ] Apply state security practices for shared backends
 
 ## Architecture
 
+The network stack publishes outputs to its state file; the application stack reads them through a remote state data source before creating dependent resources.
 
-
-
-
-
-
-This topic’s control points and relationships are shown below.
-
-![Remote backends](../assets/excalidraw/terraform-remote-backend.svg)
+![Terraform remote state backend](../assets/excalidraw/terraform-remote-backend.svg)
 
 ## Theory
 
-
-
-
-
-
-
 ### What it is
 
-A **backend** is the storage and locking engine for state. The default is `local` (a file on disk). Remote backends move that file into object storage or a managed service so every engineer and CI runner sees the same bindings. Team requirements: shared durable storage, mutual exclusion (locking), encryption at rest and in transit, access control and audit, and versioning / backups for recovery.
+A **backend** tells Terraform where to store state. The default is **local** (`terraform.tfstate`). **Remote backends** persist state outside the working directory:
+
+```hcl
+terraform {
+  backend "s3" {
+    bucket         = "company-terraform-state"
+    key            = "network/prod/terraform.tfstate"
+    region         = "eu-west-1"
+    dynamodb_table = "terraform-locks"
+    encrypt        = true
+  }
+}
+```
+
+Backend configuration cannot use variables — values are fixed at init time. Changing backends requires `terraform init -migrate-state` (with care and backups).
+
+**`terraform_remote_state`** reads another stack's outputs:
+
+```hcl
+data "terraform_remote_state" "network" {
+  backend = "s3"
+  config = {
+    bucket = "company-terraform-state"
+    key    = "network/prod/terraform.tfstate"
+    region = "eu-west-1"
+  }
+}
+
+resource "aws_instance" "app" {
+  subnet_id = data.terraform_remote_state.network.outputs.private_subnet_id
+}
+```
 
 ### Why it matters
 
-Two engineers applying without locks can corrupt state or apply conflicting plans. An open state bucket is a credential disclosure waiting to happen — state often holds passwords, keys, and connection strings. Platform teams standardise one backend pattern (bucket + lock table, or HCP Terraform) so product roots inherit security defaults instead of inventing them per project.
+Shared state enables team collaboration, CI pipelines, and **stack separation** (network vs application). Locking prevents two jobs from interleaving writes — without locks, state corruption can lose resource mappings. Remote storage with versioning supports **disaster recovery** when bad applies occur.
 
 ### How it works
 
-1. Declare a `backend` block inside `terraform { }` (or a `cloud` block for HCP Terraform — mutually exclusive with `backend`).
-2. `terraform init` configures the backend; changing type or key often needs `-migrate-state` or `-reconfigure`.
-3. Plans and applies read/write remote state under a lock for the duration of the operation.
-4. CI commonly uses **partial backend config**: commit a skeleton; pass region, role, or table via `-backend-config`.
-5. `data "terraform_remote_state"` reads **outputs** from another state’s key — convenient but coupling; prefer few stable outputs or a real data plane (Parameter Store, service discovery).
+1. **`terraform init`** — configures backend; downloads providers.
+2. **Plan/apply** — Core reads/writes state via backend API; acquires lock if configured.
+3. **Locking** — S3 uses DynamoDB; Azure uses blob leases; GCS uses native locking; Terraform Cloud manages locks internally.
+4. **Consumers** — `terraform_remote_state` reads outputs at plan time from the remote object.
 
-Cloud patterns (study shape — wire credentials only with a real account): **S3** (versioned bucket + lock table / native locks, `encrypt = true`), **AzureRM** (storage container + blob lease), **GCS** (bucket + prefix), **HCP Terraform** (managed state and locks).
+| Backend | Storage | Locking (typical) |
+|---------|---------|-------------------|
+| `local` | Disk file | None |
+| `s3` | S3 object | DynamoDB table |
+| `azurerm` | Storage blob | Blob lease |
+| `gcs` | GCS object | Native |
+| `remote` (HCP Terraform) | Managed | Managed |
 
 ### Key concepts and comparisons
 
-| Concern | Local | Remote |
-|---------|-------|--------|
-| Storage | Disk file | Object store / HCP |
-| Locking | None (file races) | Native / DynamoDB / platform |
-| Sharing | Copy files (bad) | IAM / team permissions |
-| Fit | Solo labs | Teams and CI |
-
-Migrate deliberately: add backend → `init -migrate-state` → verify `state list` → delete local copies only after remote is authoritative.
+| Pattern | Use when |
+|---------|----------|
+| Single remote state per stack | Network, shared services, app tiers |
+| Workspace prefix on backend key | Same code, multiple envs (see Module 12) |
+| `terraform_remote_state` | App needs VPC/subnet IDs from network stack |
+| State versioning on bucket | Roll back bad state writes |
+| Separate AWS account for state | Blast-radius isolation |
 
 ### Common pitfalls
 
-- Remote state without locking — concurrent apply corruption.
-- World-readable state buckets or loose ACLs.
-- One giant state for all environments — blast radius and lock contention.
-- Deep `terraform_remote_state` webs instead of stable contracts.
-- Embedding long-lived access keys in backend config — use roles / OIDC.
+- **Backend config with variables** — not allowed; use partial config or `-backend-config` files.
+- **Forgotten `-migrate-state`** — old local state ignored; plan proposes duplicate resources.
+- **No locking on team backends** — rare corruptions become week-long incidents.
+- **Over-broad IAM on state bucket** — any engineer can read prod secrets from state.
+- **Circular remote state** — stack A reads B and B reads A; split contracts or merge stacks.
 
 ## Hands-on Lab
 
-
-
 ### Objective
 
-Run a complete Terraform workflow (init → plan → apply → prove → destroy) for **Remote State and Backends** without paid cloud resources.
+Build a **network** stack and an **application** stack under `~/rebash-terraform/module-08-remote`, each with a separate local backend path, provision real **Docker networks and containers**, and consume network outputs from the app stack via `terraform_remote_state`.
 
 ### Prerequisites
 
-- Terraform CLI ≥ 1.5
-- Network access to download the null provider once
+- **Terraform ≥ 1.5**
+- **Docker Engine running** (`docker info` succeeds)
+- Completed Module 8 state fundamentals lab
 
 ### Lab environment
 
-Workspace: `~/rebash-terraform/module-08/remote-backends/{state,state-b,out}`
-
-Local Terraform only (`null`/`local` providers). No AWS/GCP/Azure credentials required.
-
 ```bash
-mkdir -p ~/rebash-terraform/module-08/remote-backends/{state,state-b,out} && cd ~/rebash-terraform/module-08/remote-backends/{state,state-b,out}
+mkdir -p ~/rebash-terraform/module-08-remote/{network,app} && cd ~/rebash-terraform/module-08-remote
 ```
+
+Both stacks use **`backend "local"`** with different `path` values — simulating separate S3 state keys without cloud credentials. All resources are real Docker objects.
 
 ### Real-world scenario
 
-You are automating **Remote State and Backends** for a platform repo. Reviewers expect a clean plan artefact, applied evidence, and a destroy path before merge.
+The platform team owns a **network** stack that exports a Docker network name and CIDR label. Application teams deploy containers that must attach to that network before serving traffic. Ticket **PLAT-409**: reproduce the read path locally with two state files and real containers before the organisation enables S3 backends in AWS.
 
 ### Step-by-step tasks
 
-#### Task 1 – Author and initialise configuration
+#### Task 1 – Network stack with dedicated backend path
 
-Use local/null providers so the lab never bills a cloud account.
+Create `~/rebash-terraform/module-08-remote/network/versions.tf`:
 
-```bash
-cat > versions.tf << 'EOF'
+```hcl
 terraform {
   required_version = ">= 1.5.0"
+
+  backend "local" {
+    path = "state/network.tfstate"
+  }
+
   required_providers {
-    null = { source = "hashicorp/null", version = "~> 3.2" }
+    docker = {
+      source  = "kreuzwerker/docker"
+      version = "~> 3.0"
+    }
   }
 }
-EOF
-cat > main.tf << 'EOF'
-resource "null_resource" "lab" {
-  triggers = { topic = "rebash-lab" }
-  provisioner "local-exec" {
-    command = "echo applied > applied.txt"
+
+provider "docker" {}
+```
+
+Create `~/rebash-terraform/module-08-remote/network/main.tf`:
+
+```hcl
+locals {
+  cidr_label = "10.0.0.0/16"
+}
+
+resource "docker_network" "platform" {
+  name = "rebash-module-08-remote-net"
+
+  labels {
+    label = "cidr_label"
+    value = local.cidr_label
   }
 }
-output "note" { value = null_resource.lab.triggers.topic }
-EOF
+```
+
+Create `~/rebash-terraform/module-08-remote/network/outputs.tf`:
+
+```hcl
+output "network_id" {
+  description = "Docker network identifier"
+  value       = docker_network.platform.id
+}
+
+output "network_name" {
+  description = "Network name for downstream stacks"
+  value       = docker_network.platform.name
+}
+
+output "cidr_label" {
+  description = "Human-readable CIDR label for downstream stacks"
+  value       = local.cidr_label
+}
+```
+
+Run:
+
+{% raw %}
+```bash
+cd ~/rebash-terraform/module-08-remote/network
+mkdir -p state
 terraform init
-terraform validate
+terraform apply -auto-approve
+terraform output -json | tee network-outputs.json
+grep -q '10.0.0.0/16' network-outputs.json
+docker network ls --filter name=rebash-module-08-remote-net --format '{{.Name}}' | grep -q rebash-module-08-remote-net
+test -f ~/rebash-terraform/module-08-remote/network/state/network.tfstate
+echo "network task OK" | tee network-task-ok.txt
+```
+{% endraw %}
+
+**Expected output:** State file at `network/state/network.tfstate`; network exists in Docker; outputs include `cidr_label`.
+
+#### Task 2 – Application stack consuming remote state
+
+Create `~/rebash-terraform/module-08-remote/app/versions.tf`:
+
+```hcl
+terraform {
+  required_version = ">= 1.5.0"
+
+  backend "local" {
+    path = "state/app.tfstate"
+  }
+
+  required_providers {
+    docker = {
+      source  = "kreuzwerker/docker"
+      version = "~> 3.0"
+    }
+  }
+}
+
+provider "docker" {}
 ```
 
-**Expected output:** `Terraform has been successfully initialized` and validate succeeds.
+Create `~/rebash-terraform/module-08-remote/app/main.tf`:
 
-#### Task 2 – Plan, apply, and prove outputs
+```hcl
+data "terraform_remote_state" "network" {
+  backend = "local"
 
-Treat the plan as the change ticket — review before apply.
+  config = {
+    path = abspath("${path.module}/../network/state/network.tfstate")
+  }
+}
+
+resource "docker_image" "alpine" {
+  name = "alpine:3.20"
+}
+
+resource "docker_container" "app" {
+  name  = "rebash-module-08-remote-app"
+  image = docker_image.alpine.image_id
+
+  command = ["sleep", "3600"]
+
+  networks_advanced {
+    name = data.terraform_remote_state.network.outputs.network_name
+  }
+
+  labels {
+    label = "network_id"
+    value = data.terraform_remote_state.network.outputs.network_id
+  }
+
+  labels {
+    label = "cidr_label"
+    value = data.terraform_remote_state.network.outputs.cidr_label
+  }
+}
+```
+
+Create `~/rebash-terraform/module-08-remote/app/outputs.tf`:
+
+```hcl
+output "attached_cidr" {
+  value = data.terraform_remote_state.network.outputs.cidr_label
+}
+
+output "attached_network" {
+  value = data.terraform_remote_state.network.outputs.network_name
+}
+```
+
+Run:
+
+{% raw %}
+```bash
+cd ~/rebash-terraform/module-08-remote/app
+mkdir -p state
+terraform init
+terraform plan | tee app-plan.txt
+grep -q '10.0.0.0/16' app-plan.txt
+terraform apply -auto-approve
+terraform output -raw attached_cidr | tee attached-cidr.txt
+test "$(cat attached-cidr.txt)" = "10.0.0.0/16"
+docker ps --filter name=rebash-module-08-remote-app --format '{{.Names}} {{.Networks}}' | tee docker-ps.txt
+grep -q 'rebash-module-08-remote-net' docker-ps.txt
+echo "app task OK" | tee app-task-ok.txt
+```
+{% endraw %}
+
+**Expected output:** App plan shows remote state read; container attached to `rebash-module-08-remote-net`; output `attached_cidr` equals `10.0.0.0/16`.
+
+#### Task 3 – Prove dependency when network output changes
+
+Update the CIDR label in `~/rebash-terraform/module-08-remote/network/main.tf`:
+
+```hcl
+locals {
+  cidr_label = "10.1.0.0/16"
+}
+```
+
+Apply network, then re-plan app:
+
+{% raw %}
+```bash
+cd ~/rebash-terraform/module-08-remote/network
+terraform apply -auto-approve
+cd ~/rebash-terraform/module-08-remote/app
+terraform plan -no-color | tee app-plan-after-network-change.txt
+grep -q '10.1.0.0/16' app-plan-after-network-change.txt
+terraform apply -auto-approve
+terraform output -raw attached_cidr | grep -q '10.1.0.0/16'
+docker inspect rebash-module-08-remote-app --format '{{index .Config.Labels "cidr_label"}}' | grep -q '10.1.0.0/16'
+echo "dependency task OK" | tee dependency-task-ok.txt
+```
+{% endraw %}
+
+**Expected output:** App stack plans an update when network CIDR output changes; container label updates after apply.
+
+#### Task 4 – Remote state evidence script
+
+Create `~/rebash-terraform/module-08-remote/remote-state-evidence.sh`:
+
+{% raw %}
+```bash
+#!/usr/bin/env bash
+set -euo pipefail
+NET=~/rebash-terraform/module-08-remote/network
+APP=~/rebash-terraform/module-08-remote/app
+test -f "$NET/state/network.tfstate"
+test -f "$APP/state/app.tfstate"
+cd "$APP"
+terraform output -raw attached_cidr | grep -q '10.1.0.0/16'
+docker ps --filter name=rebash-module-08-remote-app --format '{{.Names}}' | grep -q rebash-module-08-remote-app
+echo "remote-state-evidence PASS" | tee remote-state-evidence-pass.txt
+```
+{% endraw %}
+
+Run:
 
 ```bash
-terraform plan -out=tfplan
-terraform show -no-color tfplan | tee plan.txt
-terraform apply tfplan
-terraform output
-test -f applied.txt && cat applied.txt
+chmod +x ~/rebash-terraform/module-08-remote/remote-state-evidence.sh
+~/rebash-terraform/module-08-remote/remote-state-evidence.sh
 ```
 
-**Expected output:** plan.txt shows create; `applied` written; output prints the note.
-
-#### Task 3 – Inspect state safely
-
-State is the source of truth — list and show without hand-editing.
-
-```bash
-terraform state list | tee state-list.txt
-terraform state show null_resource.lab | tee state-show.txt
-```
-
-**Expected output:** state-list.txt contains `null_resource.lab`.
+**Expected output:** `remote-state-evidence-pass.txt` contains `remote-state-evidence PASS`.
 
 ### Validation steps
 
-- [ ] terraform validate passes
-- [ ] Plan was saved and reviewed before apply
-- [ ] Destroy completes with empty state (or resources removed)
+- [ ] Network stack uses dedicated backend path and real Docker network
+- [ ] App stack reads outputs via `terraform_remote_state`
+- [ ] App container attaches to network from remote state
+- [ ] Network output change triggers app plan update
+- [ ] Two separate state files exist
+- [ ] Evidence script passes with `docker ps` proof
 
 ### Common errors and fixes
 
 | Error | Cause | Fix |
 |-------|-------|-----|
-| Provider not found | Missing init / network | Run `terraform init` again |
-| State locked | Concurrent apply | Wait or coordinate; never force-unlock casually |
-| Unexpected destroy in plan | Drift or wrong workspace | Read plan line-by-line before apply |
+| Remote state file not found | Wrong relative path | Use `abspath()` or correct `../network/...` path |
+| Empty outputs in data source | Network not applied | Apply network stack first |
+| Init backend change prompt | Moved backend path | Run `terraform init -migrate-state` with backup |
+| Plan unchanged after network update | Stale remote read | Re-run plan; verify network apply succeeded |
+| Container not on expected network | Wrong remote output referenced | Check `network_name` output in network stack |
 
 ### Challenge exercise
 
-Add an input variable with a validation block and fail the plan with an illegal value, then fix it.
+Create `~/rebash-terraform/module-08-remote/app/backend-config.hcl` documenting the production S3 shape (comments only — not active):
+
+```hcl
+# Production example — do not apply in lab
+# bucket         = "company-terraform-state"
+# key            = "app/prod/terraform.tfstate"
+# region         = "eu-west-1"
+# dynamodb_table = "terraform-locks"
+# encrypt        = true
+```
+
+Validate app stack still passes:
+
+{% raw %}
+```bash
+cd ~/rebash-terraform/module-08-remote/app
+terraform validate
+docker network inspect rebash-module-08-remote-net --format '{{.Name}}' | grep -q rebash-module-08-remote-net
+echo "backend config challenge OK"
+```
+{% endraw %}
+
+**Expected output:** Validate succeeds; network still present in Docker.
 
 ### Learning outcomes
 
-- Completed a reviewable plan/apply cycle
-- Proved outputs/files exist
-- Destroyed lab state
+- Separate state files per stack with real infrastructure in each
+- Remote state data source wiring across stacks
+- Dependency propagation through outputs into container config
+- Production S3/Azure backend mental model
 
 ### Cleanup
 
 ```bash
-terraform destroy -auto-approve
-rm -rf .terraform tfplan 2>/dev/null || true
+cd ~/rebash-terraform/module-08-remote/app && terraform destroy -auto-approve
+cd ~/rebash-terraform/module-08-remote/network && terraform destroy -auto-approve
+rm -f ~/rebash-terraform/module-08-remote/network/network-outputs.json network-task-ok.txt
+rm -f ~/rebash-terraform/module-08-remote/app/app-plan.txt attached-cidr.txt app-task-ok.txt \
+  app-plan-after-network-change.txt dependency-task-ok.txt remote-state-evidence-pass.txt docker-ps.txt
+rm -rf ~/rebash-terraform/module-08-remote/network/{state,.terraform,.terraform.lock.hcl}
+rm -rf ~/rebash-terraform/module-08-remote/app/{state,.terraform,.terraform.lock.hcl}
 ```
 
 ## Validation
 
-
-
-
-
-
-
-- [ ] Lab commands run under `~/rebash-terraform/module-08/remote-backends/{state,state-b,out}/`
-- [ ] You can explain each Theory section in your own words
-- [ ] You used modern tooling where it applies to this topic
-- [ ] You can describe one production failure mode for this topic
+- [ ] Completed module-09 two-stack lab with Docker proof
+- [ ] Can sketch S3 + DynamoDB locking diagram from memory
+- [ ] Understands why backend blocks cannot use variables
+- [ ] Can explain one-direction remote state flow
 
 ## Code Walkthrough
 
-
-
-
-
-
-
-Production practice for **Remote State and Backends** always combines:
-
-1. Inspect before you change (status, plan, logs, dry-run)
-2. Prefer reversible, documented changes (Git, IaC, drop-ins, version pins)
-3. Capture evidence (command output, pipeline logs) for handovers
-4. Prefer current tools and APIs over legacy shortcuts
-5. Least privilege — escalate credentials only when required
-
-Keep runbooks short enough to follow under pressure. Automate checks; keep humans for judgement.
+1. **Network stack owns shared outputs** — publish only stable, documented keys.
+2. **Separate backend paths** — same pattern as S3 key prefixes per stack.
+3. **`abspath` for local paths** — avoids cwd surprises in CI.
+4. **Apply order** — network before app; document in pipeline stages.
+5. **Version state bucket** — enable S3 versioning before first prod apply.
 
 ## Security Considerations
 
-
-
-
-
-
-
-- Treat credentials and tokens for terraform as privileged — never commit them
-- Prefer short-lived auth (OIDC, roles, SSO) over long-lived keys
-- Validate blast radius before apply/deploy/delete operations
-- Restrict who can approve production changes
-- Collect audit logs; limit who can read sensitive traces
+- State buckets require encryption (SSE-KMS or SSE-S3) and block public access.
+- IAM policies: engineers plan on dev; only CI role may apply prod state paths.
+- DynamoDB lock table — deny delete except break-glass roles.
+- Never commit `-backend-config` files containing secrets; use CI variables.
+- Audit `terraform_remote_state` consumers — output changes break downstream plans.
 
 ## Common Mistakes
 
+!!! warning "Skipping migrate when changing backend"
+    Terraform starts with empty state while resources exist.  
+    **Fix:** `terraform init -migrate-state` after backup; verify resource count.
 
+!!! warning "Granting s3:* on state bucket to all developers"
+    State holds sensitive metadata — over-privilege is common.  
+    **Fix:** Separate read/plan vs apply roles; use OIDC in CI.
 
-
-
-
-
-!!! warning "Remote state without locking — concurrent apply corruption."
-    Validate assumptions against the Theory section and official docs before changing production.
-
-!!! warning "World-readable state buckets or loose ACLs."
-    Lab shortcuts (open security groups, admin roles, skip approvals) must not ship unchanged.
-
-!!! warning "Changing production without a rollback path"
-    Always know how to revert (previous artefact, prior release, state rollback, DNS failback).
+!!! warning "Bidirectional remote state between stacks"
+    Creates hard-to-debug dependency cycles.  
+    **Fix:** Layer stacks: network → platform → app; one-way reads only.
 
 ## Best Practices
 
-
-
-
-
-
-
-- Encode Remote State and Backends changes as code and review them in pull requests
-- Pin versions (images, modules, actions, provider plugins)
-- Separate environments with clear promotion gates
-- Alert on symptoms with runbooks attached
-- Destroy lab resources; tag everything with owner and expiry where possible
+- One state file per independently deployable stack.
+- Document published outputs as a versioned contract (README or OpenAPI-style table).
+- Enable bucket versioning and lifecycle rules for old state versions.
+- Use `-backend-config` HCL files per environment checked into Git (non-secret keys only).
+- Run network applies before app applies in pipeline stage order.
 
 ## Troubleshooting
 
-
-
-
-
-
-
 | Symptom | Likely cause | Fix |
 |---------|--------------|-----|
-| Auth / permission denied | Wrong identity, policy, or scope | Check caller identity, roles, and least-privilege policies |
-| Timeout / no route | Network, DNS, security group, or endpoint | Trace path, DNS, and allow-lists before retrying |
-| Drift / unexpected plan | Manual change or wrong state/workspace | Reconcile desired vs actual; avoid click-ops on managed resources |
-| Pipeline/job red | Flaky step, cache, or missing secret | Read failing step logs; bisect recent workflow/config changes |
-| Cost spike | Idle load balancer, NAT, oversized compute | Inventory billable resources; stop/delete labs promptly |
+| Error acquiring state lock | Concurrent apply | Wait; identify stuck job; break-glass `force-unlock` only when sure |
+| Remote state outputs null | Upstream output removed | Coordinate breaking change; pin output version |
+| Init wants reconfigure | Backend block changed | `terraform init -reconfigure` after team agreement |
+| Access denied on S3 backend | Wrong IAM role | Assume CI deploy role; check bucket policy |
+| Drift only in consumer | Stale read cached in plan | Re-run plan after upstream apply completes |
 
 ## Summary
 
-
-
-
-
-
-
-**Remote State and Backends** is essential for Cloud and DevOps engineers working with terraform. Practise the lab until the inspection and change path is muscle memory, then continue the track.
+Remote backends enable team-scale Terraform with locking and shared storage. You split network and app stacks, stored state in separate local backend paths, and wired **`terraform_remote_state`** — the same read pattern used with S3 and AzureRM in production. Next, [Creating Reusable Infrastructure Modules](modules-creating-reusable-infrastructure.md) packages these patterns into modules.
 
 ## Interview Questions
 
+**1. Why can't backend configuration use variables?**
 
+??? success "Reveal answer"
+    Backends initialise **before** Terraform can evaluate variables — the backend must be known to load state for the rest of the configuration. Use partial configuration, `-backend-config` files, or CI-injected init flags instead of `var.*` inside the backend block.
 
+**2. How does state locking work with the S3 backend?**
 
+??? success "Reveal answer"
+    Terraform writes a **lock record** to a **DynamoDB table** (or alternative lock mechanism) during plan/apply. Other operations block until the lock releases. Prevents concurrent writes that corrupt state JSON. Use **`terraform force-unlock`** only when a job crashed and the lock is stale.
 
+**3. What is terraform_remote_state used for?**
 
-1. What problems do remote backends solve?
-2. What is state locking and why does it matter?
-3. How does partial apply failure interact with remote state?
-4. What security controls belong on a remote state bucket?
-5. When might you split state across multiple backends/workspaces?
+??? success "Reveal answer"
+    It reads **outputs** from another Terraform stack's state at plan time — for example app stack reading `vpc_id` from network stack. Enables **stack separation** without duplicating data sources. Prefer stable output names; treat changes as API breaking changes.
 
-!!! tip "Sample answer — question 2"
-    Locking prevents two applies from corrupting state or racing changes. Without locks, concurrent runs can overwrite each other’s state snapshots.
+**4. Compare local vs S3 backend for a five-person team.**
 
-!!! tip "Sample answer — question 4"
-    Encrypt the bucket, block public access, limit IAM to CI roles, enable versioning, and audit access. State is as sensitive as production config.
+??? success "Reveal answer"
+    **Local** — no locking, state on individual laptops, poor CI story. **S3 + DynamoDB** — central state, versioning, IAM controls, CI-friendly. Teams almost always use remote backends; local is for learning and solo prototypes.
+
+**5. What should you do before migrating backends?**
+
+??? success "Reveal answer"
+    **Back up state** (`terraform state pull` or copy the file), test migrate in non-prod, run **`terraform init -migrate-state`**, verify **`terraform state list`** count matches, and run a no-change plan before allowing production applies on the new backend.
+
+**6. How do you secure a Terraform state bucket?**
+
+??? success "Reveal answer"
+    Encryption at rest, block public access, versioning enabled, least-privilege IAM (separate plan vs apply), logging to audit trail, optional cross-account isolation for prod state, and no secrets in outputs when avoidable.
+
+**7. An app plan fails: remote state output not found. What happened?**
+
+??? success "Reveal answer"
+    The **network stack** was not applied, the **output was renamed/removed**, or the **backend path/key** in the data source is wrong. Verify upstream outputs with `terraform output` in the network project and align consumer config.
+
+**8. When is force-unlock appropriate?**
+
+??? success "Reveal answer"
+    When a CI job **crashed** after acquiring a lock and no legitimate apply is running — confirmed via pipeline logs and team chat. **Not** appropriate to bypass a teammate's active apply. Document every force-unlock in the incident ticket.
 
 ## Related Tutorials
 
-
-
-
-
-
-
-- [Course overview](index.md)
-- [Modules — Creating Reusable Infrastructure](modules-creating-reusable-infrastructure.md)
+- [Terraform course index](index.md)
+- **Previous:** [Terraform State Fundamentals](terraform-state-fundamentals.md)
+- **Next:** [Modules — Creating Reusable Infrastructure](modules-creating-reusable-infrastructure.md)
+- [Terraform Cloud and HCP Terraform](terraform-cloud-and-hcp-terraform.md)
+- [Production Terraform Patterns](production-terraform-patterns.md)
 
 ## References
 
-
-
-
-
-
-
-- [Backends](https://developer.hashicorp.com/terraform/language/settings/backends/configuration)  
-- [Backend: s3](https://developer.hashicorp.com/terraform/language/settings/backends/s3)  
+- [Backends](https://developer.hashicorp.com/terraform/language/settings/backends)
+- [S3 backend](https://developer.hashicorp.com/terraform/language/settings/backends/s3)
+- [AzureRM backend](https://developer.hashicorp.com/terraform/language/settings/backends/azurerm)
+- [terraform_remote_state](https://developer.hashicorp.com/terraform/language/state/remote-state-data)
 - [State locking](https://developer.hashicorp.com/terraform/language/state/locking)

@@ -4,7 +4,7 @@ description: Capstone project — deploy VoteStack on Kubernetes with GitOps, HP
 difficulty: advanced
 estimated_time: "45 min"
 author: Shaik Basha
-last_updated: "2026-07-28"
+last_updated: "2026-08-03"
 category: kubernetes
 tags:
   - kubernetes
@@ -197,87 +197,262 @@ Misconfiguration here usually shows up as intermittent outages rather than clean
 
 ## Hands-on Lab
 
-
-
 ### Objective
 
-Build and verify a working Kubernetes solution for **Kubernetes Capstone and Next Steps** that you can inspect, prove, and tear down safely.
+Build and apply a multi-manifest mini platform in `~/rebash-k8s/capstone` — namespace, ConfigMap, Deployment, Service, and NetworkPolicy — prove end-to-end Ready, and archive an evidence tarball.
 
 ### Prerequisites
 
-- kubectl configured against a lab cluster (kind/minikube preferred)
-- Cluster-admin or namespace-create rights in the lab cluster
-- Writable workspace at `~/rebash-kubernetes/kubernetes-capstone-and-next-steps`
+- kubectl configured against **kind** or **minikube**
+- CNI with NetworkPolicy support (kind default)
+- Namespace-create rights on the lab cluster
+- Writable workspace at `~/rebash-k8s/capstone`
 
 ### Lab environment
 
-Workspace: `~/rebash-kubernetes/kubernetes-capstone-and-next-steps`
-
-Local kind/minikube or a dedicated sandbox cluster. Never target a shared production API server.
+Workspace: `~/rebash-k8s/capstone`
 
 ```bash
-mkdir -p ~/rebash-kubernetes/kubernetes-capstone-and-next-steps && cd ~/rebash-kubernetes/kubernetes-capstone-and-next-steps
+mkdir -p ~/rebash-k8s/capstone && cd ~/rebash-k8s/capstone
 ```
 
 ### Real-world scenario
 
-Your platform team is rolling out **Kubernetes Capstone and Next Steps** for a new microservice. You must apply the change in an isolated namespace, prove it works with kubectl, and leave evidence for the on-call handover.
+You deliver a capstone demo for stakeholders: a small API platform in namespace `rebash-capstone` with configuration from a ConfigMap, a secured Deployment behind a ClusterIP Service, and a default-deny NetworkPolicy. Success means all Pods Ready, Service Endpoints populated, and a tarball you can attach to a portfolio README.
 
 ### Step-by-step tasks
 
-#### Task 1 – Apply a topic workload
+#### Task 1 – Create namespace and ConfigMap
 
-Create a namespace and a small Deployment to practise **Capstone production checklist** against a live API.
+Create `namespace.yaml`:
 
-```bash
-kubectl create namespace rebash-lab --dry-run=client -o yaml | kubectl apply -f -
-kubectl create deployment topic --image=nginx:1.27-alpine -n rebash-lab
-kubectl rollout status deployment/topic -n rebash-lab
-kubectl get all -n rebash-lab
+```yaml
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: rebash-capstone
+  labels:
+    app.kubernetes.io/part-of: rebash-capstone
+    app.kubernetes.io/managed-by: rebash-lab
 ```
 
-**Expected output:** Deployment Ready; Pods listed under the namespace.
+Create `configmap.yaml`:
 
-#### Task 2 – Inspect and gather evidence
-
-Production changes always leave an audit trail of describe/Events.
-
-```bash
-kubectl describe deploy topic -n rebash-lab | tee describe.txt
-kubectl get events -n rebash-lab --sort-by=.lastTimestamp | tail -n 15 | tee events.txt
+```yaml
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: capstone-config
+  namespace: rebash-capstone
+data:
+  APP_NAME: rebash-capstone
+  LOG_LEVEL: info
+  index.html: |
+    <!DOCTYPE html>
+    <html><body><h1>REBASH Capstone API</h1></body></html>
 ```
 
-**Expected output:** describe.txt and events.txt capture healthy Objects/Events.
+Apply:
+
+```bash
+cd ~/rebash-k8s/capstone
+kubectl apply -f namespace.yaml
+kubectl apply -f configmap.yaml
+kubectl get configmap capstone-config -n rebash-capstone
+```
+
+**Expected output:** ConfigMap `capstone-config` with three data keys.
+
+#### Task 2 – Create Deployment and Service
+
+Create `deployment.yaml`:
+
+```yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: capstone-api
+  namespace: rebash-capstone
+  labels:
+    app: capstone-api
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: capstone-api
+  template:
+    metadata:
+      labels:
+        app: capstone-api
+    spec:
+      containers:
+        - name: api
+          image: nginx:1.27-alpine
+          ports:
+            - containerPort: 80
+          env:
+            - name: APP_NAME
+              valueFrom:
+                configMapKeyRef:
+                  name: capstone-config
+                  key: APP_NAME
+            - name: LOG_LEVEL
+              valueFrom:
+                configMapKeyRef:
+                  name: capstone-config
+                  key: LOG_LEVEL
+          volumeMounts:
+            - name: html
+              mountPath: /usr/share/nginx/html/index.html
+              subPath: index.html
+          readinessProbe:
+            httpGet:
+              path: /
+              port: 80
+            initialDelaySeconds: 2
+            periodSeconds: 5
+          livenessProbe:
+            httpGet:
+              path: /
+              port: 80
+            initialDelaySeconds: 5
+            periodSeconds: 10
+          resources:
+            requests:
+              cpu: 50m
+              memory: 64Mi
+            limits:
+              cpu: 200m
+              memory: 128Mi
+      volumes:
+        - name: html
+          configMap:
+            name: capstone-config
+            items:
+              - key: index.html
+                path: index.html
+```
+
+Create `service.yaml`:
+
+```yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: capstone-api
+  namespace: rebash-capstone
+spec:
+  selector:
+    app: capstone-api
+  ports:
+    - port: 80
+      targetPort: 80
+```
+
+Apply and wait for Ready:
+
+```bash
+cd ~/rebash-k8s/capstone
+kubectl apply -f deployment.yaml
+kubectl apply -f service.yaml
+kubectl rollout status deployment/capstone-api -n rebash-capstone --timeout=120s
+kubectl get deploy,po,svc -n rebash-capstone
+```
+
+**Expected output:** Deployment Available; 2/2 Pods Ready; Service exists.
+
+#### Task 3 – Add NetworkPolicy and verify traffic path
+
+Create `networkpolicy.yaml`:
+
+```yaml
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: capstone-default-deny
+  namespace: rebash-capstone
+spec:
+  podSelector: {}
+  policyTypes:
+    - Ingress
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: capstone-allow-internal
+  namespace: rebash-capstone
+spec:
+  podSelector:
+    matchLabels:
+      app: capstone-api
+  policyTypes:
+    - Ingress
+  ingress:
+    - from:
+        - podSelector: {}
+      ports:
+        - protocol: TCP
+          port: 80
+```
+
+Apply and test from an in-cluster curl Pod:
+
+```bash
+cd ~/rebash-k8s/capstone
+kubectl apply -f networkpolicy.yaml
+kubectl run curl-test --rm -it --restart=Never -n rebash-capstone --image=curlimages/curl:8.5.0 -- \
+  curl -sS http://capstone-api/ | grep -q 'REBASH Capstone API'
+kubectl get endpoints capstone-api -n rebash-capstone | tee endpoints.txt
+```
+
+**Expected output:** curl returns HTML containing `REBASH Capstone API`; Endpoints show Pod IPs.
+
+#### Task 4 – Package capstone evidence tarball
+
+```bash
+cd ~/rebash-k8s/capstone
+kubectl get all,configmap,networkpolicy -n rebash-capstone | tee capstone-status.txt
+kubectl describe deploy capstone-api -n rebash-capstone | tee capstone-describe.txt
+tar -czf capstone-evidence.tgz namespace.yaml configmap.yaml deployment.yaml service.yaml networkpolicy.yaml capstone-status.txt capstone-describe.txt endpoints.txt
+ls -l capstone-evidence.tgz
+```
+
+**Expected output:** `capstone-evidence.tgz` lists all manifests and status files.
 
 ### Validation steps
 
-- [ ] Namespace `rebash-lab` contains the expected Ready objects
-- [ ] You can explain each Task command from the Theory section
-- [ ] Cleanup deletes the namespace without leftover workloads
+- [ ] Namespace `rebash-capstone` contains ConfigMap-backed Deployment
+- [ ] Two replicas reach Ready with probes passing
+- [ ] Service Endpoints populated
+- [ ] In-cluster curl reaches custom index.html through NetworkPolicy
+- [ ] Evidence tarball created under `~/rebash-k8s/capstone`
 
 ### Common errors and fixes
 
 | Error | Cause | Fix |
 |-------|-------|-----|
-| ImagePullBackOff | Wrong tag or registry auth | Fix image reference; check pull secrets |
-| Pending Pod | Scheduling / quota / PVC | `kubectl describe pod` and read Events |
-| Empty Endpoints | Selector or readiness mismatch | Compare Service selector to Pod labels and Ready |
+| ConfigMap mount empty | Wrong subPath or key | Match `items.key` to ConfigMap data key |
+| curl timeout | NetworkPolicy too strict | Allow ingress from same namespace |
+| Pods NotReady | Probe before mount ready | Increase `initialDelaySeconds` slightly |
+| Endpoints empty | Label selector mismatch | Align Service selector with Pod labels |
+| Wrong workspace path | Old `rebash-kubernetes` path | Use `~/rebash-k8s/capstone` |
 
 ### Challenge exercise
 
-Add a readinessProbe and a ResourceQuota to the namespace, then show that over-quota creates are rejected.
+Add a `PodDisruptionBudget` with `minAvailable: 1` and verify `kubectl get pdb -n rebash-capstone` before adding it to the evidence tarball.
 
 ### Learning outcomes
 
-- Applied a real cluster change for Kubernetes Capstone and Next Steps
-- Used describe/Events for verification
-- Destroyed lab resources cleanly
+- Composed a multi-object platform from namespace through NetworkPolicy
+- Wired ConfigMap data into a running Deployment
+- Verified in-cluster connectivity with probes and curl
+- Produced a portfolio-ready evidence tarball
 
 ### Cleanup
 
 ```bash
-kubectl delete namespace rebash-lab --ignore-not-found
-# Keep ~/rebash-kubernetes/ for later tutorials
+kubectl delete namespace rebash-capstone --ignore-not-found --wait=true
+rm -f ~/rebash-k8s/capstone/*.txt ~/rebash-k8s/capstone/capstone-evidence.tgz
 ```
 
 ## Validation

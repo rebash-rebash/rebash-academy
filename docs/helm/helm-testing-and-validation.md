@@ -29,7 +29,7 @@ tags:
   - lint
   - testing
 author: Shaik Basha
-last_updated: "2026-07-31"
+last_updated: "2026-08-03"
 comments: false
 ---
 
@@ -146,89 +146,209 @@ Unit-testing frameworks (for example chart-testing/`ct`, or snapshot tests of `h
 
 ### Objective
 
-Create, lint, render, install, and uninstall a Helm chart demonstrating **Helm Testing and Validation**.
+Gate a chart with `helm lint`, `helm template --debug`, a dry-run install, a chart test hook, and (when a cluster is available) `helm test` evidence.
 
 ### Prerequisites
 
-- helm CLI
-- kubectl + lab cluster
-- Ability to create namespaces
+- Helm 3 CLI and kubectl configured for a lab cluster
+- Cluster with enough quota to run a small Deployment and test Pod
 
 ### Lab environment
 
 Workspace: `~/rebash-helm/module-08`
 
-Helm 3 against kind/minikube; release namespace `rebash-helm`.
+Helm 3 against kind/minikube; release namespace `rebash-helm-m08`.
 
 ```bash
-mkdir -p ~/rebash-helm/module-08 && cd ~/rebash-helm/module-08
+mkdir -p ~/rebash-helm/module-08/validate-chart/templates/tests && cd ~/rebash-helm/module-08
 ```
 
 ### Real-world scenario
 
-A team wants **Helm Testing and Validation** packaged as a chart so GitOps can promote the same artefact across environments.
+CI must reject broken charts before merge. Your pipeline runs lint and template locally, dry-runs the install against the API server, then smoke-tests the release with a Helm test hook after deploy.
 
 ### Step-by-step tasks
 
-#### Task 1 – Create and lint a chart
+#### Task 1 – Create a chart with a test hook
 
-Scaffold a chart and fail the build on lint errors before install.
+Create `validate-chart/Chart.yaml`:
 
-```bash
-helm version
-helm create labchart
-helm lint ./labchart | tee lint.txt
-helm template labchart ./labchart | egrep '^kind:' | sort | uniq -c | tee kinds.txt
+```yaml
+apiVersion: v2
+name: validate-chart
+description: Lab chart for Helm validation gates
+type: application
+version: 0.1.0
+appVersion: "1.27.4"
 ```
 
-**Expected output:** lint reports no failures; kinds.txt lists Deployment/Service/etc.
+Create `validate-chart/values.yaml`:
 
-#### Task 2 – Install with values override
-
-Prove values change rendered replicas, then install with wait.
-
-```bash
-kubectl create namespace rebash-helm --dry-run=client -o yaml | kubectl apply -f -
-cat > myvalues.yaml << 'EOF'
-replicaCount: 2
-EOF
-helm template labchart ./labchart -f myvalues.yaml | egrep 'replicas:' | head
-helm upgrade --install labchart ./labchart -n rebash-helm -f myvalues.yaml --wait --timeout 2m
-helm list -n rebash-helm
-kubectl get deploy -n rebash-helm
+```yaml
+replicaCount: 1
+image:
+  repository: nginx
+  tag: "1.27.4-alpine"
+service:
+  port: 80
+testImage:
+  repository: busybox
+  tag: "1.36.1"
 ```
 
-**Expected output:** Release deployed; Deployment shows 2 replicas (or Ready pods).
+Create `validate-chart/templates/deployment.yaml`:
+
+```yaml
+{% raw %}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Release.Name }}-web
+  labels:
+    app.kubernetes.io/name: {{ .Chart.Name }}
+    app.kubernetes.io/instance: {{ .Release.Name }}
+spec:
+  replicas: {{ .Values.replicaCount }}
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: {{ .Chart.Name }}
+      app.kubernetes.io/instance: {{ .Release.Name }}
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: {{ .Chart.Name }}
+        app.kubernetes.io/instance: {{ .Release.Name }}
+    spec:
+      containers:
+        - name: web
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+          ports:
+            - containerPort: 80
+{% endraw %}
+```
+
+Create `validate-chart/templates/service.yaml`:
+
+```yaml
+{% raw %}
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ .Release.Name }}-web
+spec:
+  selector:
+    app.kubernetes.io/name: {{ .Chart.Name }}
+    app.kubernetes.io/instance: {{ .Release.Name }}
+  ports:
+    - port: {{ .Values.service.port }}
+      targetPort: 80
+{% endraw %}
+```
+
+Create `validate-chart/templates/tests/test-connection.yaml`:
+
+```yaml
+{% raw %}
+apiVersion: v1
+kind: Pod
+metadata:
+  name: {{ .Release.Name }}-test-connection
+  annotations:
+    "helm.sh/hook": test
+spec:
+  restartPolicy: Never
+  containers:
+    - name: wget
+      image: "{{ .Values.testImage.repository }}:{{ .Values.testImage.tag }}"
+      command: ["wget"]
+      args: ["{{ .Release.Name }}-web:{{ .Values.service.port }}"]
+{% endraw %}
+```
+
+Run lint and template with debug:
+
+```bash
+cd ~/rebash-helm/module-08
+helm lint ./validate-chart | tee lint.txt
+helm template validate-demo ./validate-chart --debug 2>&1 | tee template-debug.txt
+grep -q '0 chart(s) failed' lint.txt
+grep -q 'kind: Deployment' template-debug.txt
+grep -q 'helm.sh/hook: test' template-debug.txt
+```
+
+**Expected output:** Lint passes; debug render includes Deployment, Service, and the test hook Pod.
+
+#### Task 2 – Dry-run install against the cluster
+
+Prove the chart passes a server-side dry-run before any real apply.
+
+```bash
+kubectl create namespace rebash-helm-m08 --dry-run=client -o yaml | kubectl apply -f -
+helm upgrade --install validate-demo ./validate-chart \
+  -n rebash-helm-m08 --dry-run --debug 2>&1 | tee dry-run.txt
+grep -q 'STATUS: pending-install' dry-run.txt || grep -q 'dry run' dry-run.txt
+```
+
+**Expected output:** Dry-run completes without template errors; manifests appear in `dry-run.txt`.
+
+#### Task 3 – Install and run helm test
+
+Install the release, wait for readiness, then execute chart tests.
+
+```bash
+cd ~/rebash-helm/module-08
+helm upgrade --install validate-demo ./validate-chart \
+  -n rebash-helm-m08 --wait --timeout 3m | tee install.txt
+kubectl rollout status deployment/validate-demo-web -n rebash-helm-m08 --timeout=120s | tee rollout.txt
+helm test validate-demo -n rebash-helm-m08 --timeout 3m | tee helm-test.txt
+kubectl get pods -n rebash-helm-m08 -l 'helm.sh/hook=test' | tee test-pods.txt
+grep -q 'Succeeded' helm-test.txt || grep -qi 'completed' helm-test.txt
+```
+
+**Expected output:** `helm-test.txt` reports tests succeeded; test Pod shows `Completed`.
 
 ### Validation steps
 
-- [ ] helm lint clean
-- [ ] Release listed in namespace
-- [ ] Uninstall removes the release
+- [ ] `helm lint` passes with zero failures
+- [ ] `helm template --debug` renders Deployment, Service, and test hook
+- [ ] Dry-run install completes without render errors
+- [ ] `helm test` succeeds after a real install (skip if no cluster)
 
 ### Common errors and fixes
 
 | Error | Cause | Fix |
 |-------|-------|-----|
-| PENDING_INSTALL | Image pull / probes | `helm status` + `kubectl describe` |
-| lint failed | Template YAML break | Fix templates; re-run helm lint |
-| context deadline | Slow cluster | Increase --timeout or fix readiness |
+| Lint `[ERROR]` on test hook | Hook Pod missing restartPolicy | Set `restartPolicy: Never` on test Pods |
+| Template nil pointer | Missing values key | Add defaults in `values.yaml`; re-run `helm template --debug` |
+| Dry-run talks to cluster | Expected behaviour for some lookups | Prefer `helm template` for pure offline render; use dry-run for API validation |
+| `helm test` timeout | Service not Ready or wrong hostname | Check `kubectl get svc`; ensure test args target `RELEASE-web:PORT` |
 
 ### Challenge exercise
 
-Add a ConfigMap template driven by values and prove it with `helm get manifest`.
+Introduce a deliberate typo in `validate-chart/templates/deployment.yaml` (remove a closing brace from a raw Jinja block), capture the lint or template failure, then restore the file and prove the gate passes again:
+
+```bash
+cd ~/rebash-helm/module-08
+helm lint ./validate-chart 2>&1 | tee lint-broken.txt || true
+helm template validate-demo ./validate-chart 2>&1 | tee template-broken.txt || true
+helm lint ./validate-chart | tee lint-fixed.txt
+grep -q '0 chart(s) failed' lint-fixed.txt
+```
+
+**Expected output:** Broken chart fails lint or template; fixed chart passes lint cleanly.
 
 ### Learning outcomes
 
-- Packaged Kubernetes YAML as a chart
-- Overrode values safely
-- Cleaned up the release
+- Ran lint and debug template render as CI gates
+- Used dry-run install to validate against the API server
+- Added and executed a Helm chart test hook
+- Distinguished offline render checks from cluster-side validation
 
 ### Cleanup
 
 ```bash
-helm uninstall labchart -n rebash-helm 2>/dev/null || true
-kubectl delete namespace rebash-helm --ignore-not-found
+helm uninstall validate-demo -n rebash-helm-m08 2>/dev/null || true
+kubectl delete namespace rebash-helm-m08 --ignore-not-found
 ```
 
 ## Validation
@@ -240,9 +360,9 @@ kubectl delete namespace rebash-helm --ignore-not-found
 
 
 - [ ] Lab commands run under `~/rebash-helm/module-08/`
-- [ ] You can explain each Theory section in your own words
-- [ ] You used modern tooling where it applies to this topic
-- [ ] You can describe one production failure mode for this topic
+- [ ] You ran lint, debug template, dry-run, and chart test gates
+- [ ] You can explain the difference between offline render and dry-run install
+- [ ] You can describe one production failure mode for chart validation
 
 ## Code Walkthrough
 

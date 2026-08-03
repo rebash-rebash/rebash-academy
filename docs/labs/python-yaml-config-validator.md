@@ -78,20 +78,24 @@ pip install 'PyYAML>=6.0,<7'
 
 ## Initial State
 
-```bash
-cat > configs/deploy-ok.yaml << 'EOF'
+Create `configs/deploy-ok.yaml`:
+
+```yaml
 name: payments-api
 replicas: 2
-EOF
+```
 
-cat > configs/deploy-bad.yaml << 'EOF'
+Create `configs/deploy-bad.yaml`:
+
+```yaml
 name: payments-api
 replicas: zero
-EOF
+```
 
-cat > configs/not-yaml.yaml << 'EOF'
+Create `configs/not-yaml.yaml`:
+
+```yaml
 ::: this is not yaml
-EOF
 ```
 
 ## Task

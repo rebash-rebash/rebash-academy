@@ -31,7 +31,7 @@ tags:
   - semver
   - best-practices
 author: Shaik Basha
-last_updated: "2026-07-31"
+last_updated: "2026-08-03"
 comments: false
 ---
 
@@ -149,89 +149,243 @@ Excellence means you can answer: What changed in 1.4.0? Which values are require
 
 ### Objective
 
-Create, lint, render, install, and uninstall a Helm chart demonstrating **Production Helm Practices**.
+Publish a production-ready chart with SemVer versioning, standard label helpers, PodDisruptionBudget and resource defaults, then package it into a `.tgz` artefact with evidence.
 
 ### Prerequisites
 
-- helm CLI
-- kubectl + lab cluster
-- Ability to create namespaces
+- Helm 3 CLI
+- kubectl optional (packaging is offline)
 
 ### Lab environment
 
 Workspace: `~/rebash-helm/module-11`
 
-Helm 3 against kind/minikube; release namespace `rebash-helm`.
+Offline packaging; optional install namespace `rebash-helm-m11`.
 
 ```bash
-mkdir -p ~/rebash-helm/module-11 && cd ~/rebash-helm/module-11
+mkdir -p ~/rebash-helm/module-11/prod-chart/templates && cd ~/rebash-helm/module-11
 ```
 
 ### Real-world scenario
 
-A team wants **Production Helm Practices** packaged as a chart so GitOps can promote the same artefact across environments.
+Release engineering requires every chart bump to follow SemVer, carry consistent Kubernetes labels, protect availability with a PDB, and ship as an immutable `.tgz` consumed by GitOps or OCI publish pipelines.
 
 ### Step-by-step tasks
 
-#### Task 1 – Create and lint a chart
+#### Task 1 – Create a SemVer chart with helpers and PDB
 
-Scaffold a chart and fail the build on lint errors before install.
+Create `prod-chart/Chart.yaml`:
 
-```bash
-helm version
-helm create labchart
-helm lint ./labchart | tee lint.txt
-helm template labchart ./labchart | egrep '^kind:' | sort | uniq -c | tee kinds.txt
+```yaml
+apiVersion: v2
+name: prod-chart
+description: Production baseline chart for REBASH lab
+type: application
+version: 1.0.0
+appVersion: "1.27.4"
 ```
 
-**Expected output:** lint reports no failures; kinds.txt lists Deployment/Service/etc.
+Create `prod-chart/values.yaml`:
 
-#### Task 2 – Install with values override
-
-Prove values change rendered replicas, then install with wait.
-
-```bash
-kubectl create namespace rebash-helm --dry-run=client -o yaml | kubectl apply -f -
-cat > myvalues.yaml << 'EOF'
+```yaml
 replicaCount: 2
-EOF
-helm template labchart ./labchart -f myvalues.yaml | egrep 'replicas:' | head
-helm upgrade --install labchart ./labchart -n rebash-helm -f myvalues.yaml --wait --timeout 2m
-helm list -n rebash-helm
-kubectl get deploy -n rebash-helm
+image:
+  repository: nginx
+  tag: "1.27.4-alpine"
+resources:
+  requests:
+    cpu: 50m
+    memory: 64Mi
+  limits:
+    cpu: 200m
+    memory: 128Mi
+podDisruptionBudget:
+  enabled: true
+  minAvailable: 1
 ```
 
-**Expected output:** Release deployed; Deployment shows 2 replicas (or Ready pods).
+Create `prod-chart/templates/_helpers.tpl`:
+
+```yaml
+{% raw %}
+{{- define "prod-chart.name" -}}
+{{- default .Chart.Name .Values.nameOverride | trunc 63 | trimSuffix "-" -}}
+{{- end -}}
+
+{{- define "prod-chart.labels" -}}
+helm.sh/chart: {{ .Chart.Name }}-{{ .Chart.Version }}
+app.kubernetes.io/name: {{ include "prod-chart.name" . }}
+app.kubernetes.io/instance: {{ .Release.Name }}
+app.kubernetes.io/version: {{ .Chart.AppVersion | quote }}
+app.kubernetes.io/managed-by: {{ .Release.Service }}
+{{- end -}}
+{% endraw %}
+```
+
+Create `prod-chart/templates/deployment.yaml`:
+
+```yaml
+{% raw %}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Release.Name }}-web
+  labels:
+    {{- include "prod-chart.labels" . | nindent 4 }}
+spec:
+  replicas: {{ .Values.replicaCount }}
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: {{ include "prod-chart.name" . }}
+      app.kubernetes.io/instance: {{ .Release.Name }}
+  template:
+    metadata:
+      labels:
+        {{- include "prod-chart.labels" . | nindent 8 }}
+    spec:
+      containers:
+        - name: web
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+          resources:
+            {{- toYaml .Values.resources | nindent 12 }}
+          ports:
+            - containerPort: 80
+{% endraw %}
+```
+
+Create `prod-chart/templates/pdb.yaml`:
+
+```yaml
+{% raw %}
+{{- if .Values.podDisruptionBudget.enabled }}
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: {{ .Release.Name }}-web
+  labels:
+    {{- include "prod-chart.labels" . | nindent 4 }}
+spec:
+  minAvailable: {{ .Values.podDisruptionBudget.minAvailable }}
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: {{ include "prod-chart.name" . }}
+      app.kubernetes.io/instance: {{ .Release.Name }}
+{{- end }}
+{% endraw %}
+```
+
+Lint and prove labels, resources, and PDB render:
+
+```bash
+cd ~/rebash-helm/module-11
+helm lint ./prod-chart | tee lint.txt
+helm template prod-demo ./prod-chart 2>&1 | tee render.txt
+grep -q 'app.kubernetes.io/managed-by: Helm' render.txt
+grep -q 'kind: PodDisruptionBudget' render.txt
+grep -q 'minAvailable: 1' render.txt
+grep -q 'cpu: 50m' render.txt
+grep -q '0 chart(s) failed' lint.txt
+```
+
+**Expected output:** Render includes standard labels, resource requests/limits, and a PDB with `minAvailable: 1`.
+
+#### Task 2 – Bump version and package the chart
+
+Create `prod-chart/Chart.yaml` version bump — update the `version` field to `1.1.0`:
+
+```yaml
+apiVersion: v2
+name: prod-chart
+description: Production baseline chart for REBASH lab
+type: application
+version: 1.1.0
+appVersion: "1.27.4"
+```
+
+Package and capture artefact evidence:
+
+```bash
+cd ~/rebash-helm/module-11
+helm package ./prod-chart | tee package.txt
+ls -1 prod-chart-*.tgz | tee package-list.txt
+tar -tzf prod-chart-1.1.0.tgz | tee package-contents.txt
+grep -q 'Chart.yaml' package-contents.txt
+grep -q 'prod-chart-1.1.0.tgz' package-list.txt
+```
+
+**Expected output:** `package.txt` reports packaged path; `prod-chart-1.1.0.tgz` exists and contains `Chart.yaml` and templates.
+
+#### Task 3 – Install from the packaged chart (optional)
+
+Install from the tarball to prove consumers can deploy the artefact:
+
+```bash
+kubectl create namespace rebash-helm-m11 --dry-run=client -o yaml | kubectl apply -f -
+helm upgrade --install prod-demo prod-chart-1.1.0.tgz \
+  -n rebash-helm-m11 --wait --timeout 3m | tee install.txt
+helm list -n rebash-helm-m11 | tee list.txt
+kubectl get pdb -n rebash-helm-m11 | tee pdb.txt
+grep -q 'prod-demo' list.txt
+grep -q 'prod-demo-web' pdb.txt
+```
+
+**Expected output:** Release installs from `.tgz`; PDB exists in the namespace.
 
 ### Validation steps
 
-- [ ] helm lint clean
-- [ ] Release listed in namespace
-- [ ] Uninstall removes the release
+- [ ] `Chart.yaml` uses SemVer (`1.0.0` then `1.1.0`)
+- [ ] Rendered manifests include standard `app.kubernetes.io/*` labels
+- [ ] PodDisruptionBudget and resource defaults appear in template output
+- [ ] `helm package` produces `prod-chart-1.1.0.tgz` with expected contents
 
 ### Common errors and fixes
 
 | Error | Cause | Fix |
 |-------|-------|-----|
-| PENDING_INSTALL | Image pull / probes | `helm status` + `kubectl describe` |
-| lint failed | Template YAML break | Fix templates; re-run helm lint |
-| context deadline | Slow cluster | Increase --timeout or fix readiness |
+| PDB not created | `podDisruptionBudget.enabled: false` | Enable in values; ensure selector labels match Pod template |
+| Package name mismatch | Forgot to bump `version` in Chart.yaml | Edit `Chart.yaml`; re-run `helm package` |
+| Lint warning on icon | Missing `icon` field | Add icon URL or accept INFO-level lint hints |
+| Install from tgz fails | Wrong path or corrupt archive | Confirm `prod-chart-1.1.0.tgz` in current directory |
 
 ### Challenge exercise
 
-Add a ConfigMap template driven by values and prove it with `helm get manifest`.
+Add a `values.schema.json` requiring `replicaCount` and prove lint catches a missing key when you pass an empty values file:
+
+Create `prod-chart/values.schema.json`:
+
+```json
+{
+  "$schema": "https://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "required": ["replicaCount"],
+  "properties": {
+    "replicaCount": { "type": "integer", "minimum": 1 }
+  }
+}
+```
+
+```bash
+cd ~/rebash-helm/module-11
+helm lint ./prod-chart --values /dev/null 2>&1 | tee schema-lint.txt || true
+helm lint ./prod-chart | tee schema-lint-ok.txt
+grep -q '0 chart(s) failed' schema-lint-ok.txt
+```
+
+**Expected output:** Lint with valid defaults passes; invalid/missing values may produce schema warnings depending on Helm version.
 
 ### Learning outcomes
 
-- Packaged Kubernetes YAML as a chart
-- Overrode values safely
-- Cleaned up the release
+- Versioned charts with SemVer and documented `appVersion`
+- Applied reusable label helpers and production resource defaults
+- Protected workloads with a PodDisruptionBudget template
+- Packaged and verified an immutable `.tgz` release artefact
 
 ### Cleanup
 
 ```bash
-helm uninstall labchart -n rebash-helm 2>/dev/null || true
-kubectl delete namespace rebash-helm --ignore-not-found
+helm uninstall prod-demo -n rebash-helm-m11 2>/dev/null || true
+kubectl delete namespace rebash-helm-m11 --ignore-not-found
+rm -f ~/rebash-helm/module-11/prod-chart-*.tgz
 ```
 
 ## Validation
@@ -243,9 +397,9 @@ kubectl delete namespace rebash-helm --ignore-not-found
 
 
 - [ ] Lab commands run under `~/rebash-helm/module-11/`
-- [ ] You can explain each Theory section in your own words
-- [ ] You used modern tooling where it applies to this topic
-- [ ] You can describe one production failure mode for this topic
+- [ ] Chart uses SemVer and packages to a verifiable `.tgz`
+- [ ] Rendered manifests include labels, resources, and PDB
+- [ ] You can describe one production failure mode for production chart publishing
 
 ## Code Walkthrough
 

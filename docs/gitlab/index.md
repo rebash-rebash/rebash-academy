@@ -4,7 +4,7 @@ description: "GitLab CI/CD for Cloud & DevOps Engineers — 18 modules covering 
 difficulty: intermediate
 estimated_time: "8–10 weeks"
 author: Shaik Basha
-last_updated: "2026-07-31"
+last_updated: "2026-08-03"
 category: gitlab
 tags:
   - gitlab

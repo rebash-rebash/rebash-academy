@@ -32,7 +32,7 @@ tags:
   - hpa
   - keda
 author: Shaik Basha
-last_updated: "2026-07-31"
+last_updated: "2026-08-03"
 comments: false
 ---
 
@@ -160,23 +160,18 @@ Avoid running VPA auto mode and HPA on CPU/memory against the same container wit
 
 ## Hands-on Lab
 
-
-
 ### Objective
 
-Build and verify a working Kubernetes solution for **Kubernetes Autoscaling** that you can inspect, prove, and tear down safely.
+Create a Deployment with resource requests and a HorizontalPodAutoscaler (HPA), apply both, and validate the HPA object with `kubectl describe hpa` even when Metrics Server is missing.
 
 ### Prerequisites
 
-- kubectl configured against a lab cluster (kind/minikube preferred)
-- Cluster-admin or namespace-create rights in the lab cluster
+- kubectl configured against a lab cluster (kind or minikube)
 - Writable workspace at `~/rebash-k8s/module-13`
 
 ### Lab environment
 
-Workspace: `~/rebash-k8s/module-13`
-
-Local kind/minikube or a dedicated sandbox cluster. Never target a shared production API server.
+Workspace: `~/rebash-k8s/module-13` on a disposable lab cluster.
 
 ```bash
 mkdir -p ~/rebash-k8s/module-13 && cd ~/rebash-k8s/module-13
@@ -184,63 +179,149 @@ mkdir -p ~/rebash-k8s/module-13 && cd ~/rebash-k8s/module-13
 
 ### Real-world scenario
 
-Your platform team is rolling out **Kubernetes Autoscaling** for a new microservice. You must apply the change in an isolated namespace, prove it works with kubectl, and leave evidence for the on-call handover.
+Traffic to **checkout-api** is spiky. Platform engineering wants an HPA on CPU utilisation with sane min/max bounds. You will commit the manifests, apply them, and capture HPA status — noting if metrics are unavailable on the lab cluster.
 
 ### Step-by-step tasks
 
-#### Task 1 – Apply a topic workload
+#### Task 1 – Namespace and Deployment with requests
 
-Create a namespace and a small Deployment to practise **What it is** against a live API.
+Create `namespace.yaml`:
 
-```bash
-kubectl create namespace rebash-lab --dry-run=client -o yaml | kubectl apply -f -
-kubectl create deployment topic --image=nginx:1.27-alpine -n rebash-lab
-kubectl rollout status deployment/topic -n rebash-lab
-kubectl get all -n rebash-lab
+```yaml
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: rebash-m13
 ```
 
-**Expected output:** Deployment Ready; Pods listed under the namespace.
+Create `deployment.yaml`:
 
-#### Task 2 – Inspect and gather evidence
-
-Production changes always leave an audit trail of describe/Events.
-
-```bash
-kubectl describe deploy topic -n rebash-lab | tee describe.txt
-kubectl get events -n rebash-lab --sort-by=.lastTimestamp | tail -n 15 | tee events.txt
+```yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: checkout-api
+  namespace: rebash-m13
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: checkout-api
+  template:
+    metadata:
+      labels:
+        app: checkout-api
+    spec:
+      containers:
+        - name: api
+          image: nginxinc/nginx-unprivileged:1.27-alpine
+          ports:
+            - containerPort: 8080
+          resources:
+            requests:
+              cpu: 100m
+              memory: 64Mi
+            limits:
+              cpu: 200m
+              memory: 128Mi
 ```
 
-**Expected output:** describe.txt and events.txt capture healthy Objects/Events.
+Apply:
+
+```bash
+cd ~/rebash-k8s/module-13
+kubectl apply -f namespace.yaml -f deployment.yaml
+kubectl rollout status deployment/checkout-api -n rebash-m13 --timeout=120s
+kubectl get deploy checkout-api -n rebash-m13 | tee deploy-m13.txt
+```
+
+**Expected output:** Deployment shows `2/2` Ready replicas.
+
+#### Task 2 – HorizontalPodAutoscaler manifest
+
+Create `hpa.yaml`:
+
+```yaml
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: checkout-api-hpa
+  namespace: rebash-m13
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: checkout-api
+  minReplicas: 2
+  maxReplicas: 5
+  metrics:
+    - type: Resource
+      resource:
+        name: cpu
+        target:
+          type: Utilization
+          averageUtilization: 50
+```
+
+Apply and describe:
+
+```bash
+cd ~/rebash-k8s/module-13
+kubectl apply -f hpa.yaml
+kubectl get hpa checkout-api-hpa -n rebash-m13 | tee hpa-m13.txt
+kubectl describe hpa checkout-api-hpa -n rebash-m13 | tee hpa-describe-m13.txt
+grep -E 'Min replicas|Max replicas|checkout-api' hpa-describe-m13.txt
+```
+
+**Expected output:** HPA exists with min 2, max 5, targeting `checkout-api`.
+
+#### Task 3 – Interpret metrics availability
+
+Check whether the HPA can read metrics:
+
+```bash
+cd ~/rebash-k8s/module-13
+if kubectl top pods -n rebash-m13 >/dev/null 2>&1; then
+  kubectl top pods -n rebash-m13 | tee hpa-metrics-m13.txt
+else
+  echo "Metrics Server unavailable — HPA object valid but scaling may show Unknown targets" | tee hpa-metrics-m13.txt
+fi
+kubectl describe hpa checkout-api-hpa -n rebash-m13 | grep -E 'AbleToScale|ScalingActive|FailedGetResourceMetric' | tee hpa-conditions-m13.txt || true
+```
+
+**Expected output:** Either live CPU metrics or conditions explaining missing metrics API — both are valid lab outcomes if documented.
 
 ### Validation steps
 
-- [ ] Namespace `rebash-lab` contains the expected Ready objects
-- [ ] You can explain each Task command from the Theory section
-- [ ] Cleanup deletes the namespace without leftover workloads
+- [ ] Deployment has CPU/memory requests defined
+- [ ] HPA references the correct Deployment scale target
+- [ ] `kubectl describe hpa` shows min/max replica bounds
+- [ ] Metrics availability documented honestly
 
 ### Common errors and fixes
 
 | Error | Cause | Fix |
 |-------|-------|-----|
-| ImagePullBackOff | Wrong tag or registry auth | Fix image reference; check pull secrets |
-| Pending Pod | Scheduling / quota / PVC | `kubectl describe pod` and read Events |
-| Empty Endpoints | Selector or readiness mismatch | Compare Service selector to Pod labels and Ready |
+| HPA `FailedGetResourceMetric` | No metrics-server | Install metrics-server or accept lab limitation |
+| HPA never scales | Missing Pod requests | Add `resources.requests.cpu` |
+| `minReplicas` > Deployment replicas | Spec mismatch | Align initial replicas with HPA minimum |
+| Invalid scale target | Wrong Deployment name | Fix `scaleTargetRef.name` |
 
 ### Challenge exercise
 
-Add a readinessProbe and a ResourceQuota to the namespace, then show that over-quota creates are rejected.
+Lower `averageUtilization` to 10 and run a CPU load Job in the namespace; capture `kubectl get hpa -w` output in `hpa-scale-watch.txt` if Metrics Server is present.
 
 ### Learning outcomes
 
-- Applied a real cluster change for Kubernetes Autoscaling
-- Used describe/Events for verification
-- Destroyed lab resources cleanly
+- Created an HPA v2 manifest tied to resource requests
+- Applied and inspected autoscaling configuration with kubectl
+- Diagnosed metrics API dependency for scaling decisions
+- Understood min/max replica guardrails
 
 ### Cleanup
 
 ```bash
-kubectl delete namespace rebash-lab --ignore-not-found
-# Keep ~/rebash-kubernetes/ for later tutorials
+kubectl delete namespace rebash-m13 --ignore-not-found
 ```
 
 ## Validation

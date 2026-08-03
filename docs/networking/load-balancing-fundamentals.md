@@ -147,8 +147,11 @@ Before buying a cloud load balancer, you prove the design on a laptop: two app i
 ```bash
 cd ~/rebash-networking/lab16
 set -euo pipefail
+```
 
-cat > backend.py << 'EOF'
+Create `backend.py`:
+
+```python
 #!/usr/bin/env python3
 import sys
 from http.server import BaseHTTPRequestHandler, HTTPServer
@@ -169,8 +172,9 @@ class H(BaseHTTPRequestHandler):
 
 HTTPServer.allow_reuse_address = True
 HTTPServer(("127.0.0.1", PORT), H).serve_forever()
-EOF
+```
 
+```bash
 chmod +x backend.py
 python3 backend.py A 18081 >backend-a.log 2>&1 &
 echo $! > backend-a.pid
@@ -187,12 +191,9 @@ grep -q 'backend=B' hit-b.txt
 
 #### Task 2 – nginx upstream **or** fallback balancer
 
-```bash
-cd ~/rebash-networking/lab16
-set -euo pipefail
+Create `nginx-lb.conf`:
 
-if command -v nginx >/dev/null 2>&1; then
-  cat > nginx-lb.conf << 'EOF'
+```nginx
 worker_processes 1;
 error_log /tmp/rebash-lab16-nginx.err;
 pid /tmp/rebash-lab16-nginx.pid;
@@ -210,24 +211,35 @@ http {
     }
   }
 }
-EOF
-  nginx -t -c "$PWD/nginx-lb.conf"
-  nginx -c "$PWD/nginx-lb.conf"
-  echo mode=nginx | tee mode.txt
-else
-  # Fallback artefact: bash round-robin client (documents missing nginx)
-  cat > rr-client.sh << 'EOF'
+```
+
+Create `rr-client.sh` (fallback when nginx is absent):
+
+{% raw %}
+```bash
 #!/usr/bin/env bash
 set -euo pipefail
 N="${1:-10}"
 ports=(18081 18082)
 i=0
 for ((k=0; k<N; k++)); do
-  p="${ports[$((i % {{ '${#ports[@]}' }}))]}"
+  p="${ports[$((i % ${#ports[@]}))]}"
   curl -sS "http://127.0.0.1:${p}/"
   i=$((i+1))
 done
-EOF
+```
+{% endraw %}
+
+```bash
+cd ~/rebash-networking/lab16
+set -euo pipefail
+
+if command -v nginx >/dev/null 2>&1; then
+  nginx -t -c "$PWD/nginx-lb.conf"
+  nginx -c "$PWD/nginx-lb.conf"
+  echo mode=nginx | tee mode.txt
+else
+  # Fallback artefact: bash round-robin client (documents missing nginx)
   chmod +x rr-client.sh
   # Simple socat multiplexer if available
   if command -v socat >/dev/null 2>&1; then

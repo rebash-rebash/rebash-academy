@@ -31,7 +31,7 @@ tags:
   - affinity
   - taints
 author: Shaik Basha
-last_updated: "2026-07-31"
+last_updated: "2026-08-03"
 comments: false
 ---
 
@@ -150,23 +150,19 @@ Taints repel Pods unless they **tolerate** the taint. Affinity attracts Pods to 
 
 ## Hands-on Lab
 
-
-
 ### Objective
 
-Build and verify a working Kubernetes solution for **Kubernetes Scheduling** that you can inspect, prove, and tear down safely.
+Label a node, deploy a Pod with `nodeSelector`, and prove the scheduler placed it on the intended node using `kubectl get pod -o wide` and `describe`.
 
 ### Prerequisites
 
-- kubectl configured against a lab cluster (kind/minikube preferred)
-- Cluster-admin or namespace-create rights in the lab cluster
+- kubectl configured against a lab cluster with at least one schedulable node
+- Rights to label nodes and create namespaces (lab cluster admin on kind/minikube is fine)
 - Writable workspace at `~/rebash-k8s/module-09`
 
 ### Lab environment
 
-Workspace: `~/rebash-k8s/module-09`
-
-Local kind/minikube or a dedicated sandbox cluster. Never target a shared production API server.
+Workspace: `~/rebash-k8s/module-09` on kind or minikube.
 
 ```bash
 mkdir -p ~/rebash-k8s/module-09 && cd ~/rebash-k8s/module-09
@@ -174,63 +170,125 @@ mkdir -p ~/rebash-k8s/module-09 && cd ~/rebash-k8s/module-09
 
 ### Real-world scenario
 
-Your platform team is rolling out **Kubernetes Scheduling** for a new microservice. You must apply the change in an isolated namespace, prove it works with kubectl, and leave evidence for the on-call handover.
+Your data platform team runs batch workers that must land on nodes tagged `workload=batch`. You will label a lab node, schedule a Pod with `nodeSelector`, and capture scheduling evidence for a change review.
 
 ### Step-by-step tasks
 
-#### Task 1 – Apply a topic workload
+#### Task 1 – Namespace and node label
 
-Create a namespace and a small Deployment to practise **What it is** against a live API.
+Create `namespace.yaml`:
 
-```bash
-kubectl create namespace rebash-lab --dry-run=client -o yaml | kubectl apply -f -
-kubectl create deployment topic --image=nginx:1.27-alpine -n rebash-lab
-kubectl rollout status deployment/topic -n rebash-lab
-kubectl get all -n rebash-lab
+```yaml
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: rebash-m09
+  labels:
+    app.kubernetes.io/part-of: rebash-lab
 ```
 
-**Expected output:** Deployment Ready; Pods listed under the namespace.
-
-#### Task 2 – Inspect and gather evidence
-
-Production changes always leave an audit trail of describe/Events.
+Apply the namespace and label the first worker node (safe on single-node kind/minikube labs):
 
 ```bash
-kubectl describe deploy topic -n rebash-lab | tee describe.txt
-kubectl get events -n rebash-lab --sort-by=.lastTimestamp | tail -n 15 | tee events.txt
+cd ~/rebash-k8s/module-09
+kubectl apply -f namespace.yaml
+NODE="$(kubectl get nodes -o jsonpath='{.items[0].metadata.name}')"
+kubectl label node "$NODE" rebash.io/workload=batch --overwrite
+kubectl get node "$NODE" --show-labels | tee node-labels.txt
+grep -q 'rebash.io/workload=batch' node-labels.txt
 ```
 
-**Expected output:** describe.txt and events.txt capture healthy Objects/Events.
+**Expected output:** `node-labels.txt` includes `rebash.io/workload=batch`.
+
+#### Task 2 – Deployment with nodeSelector
+
+Create `deployment.yaml`:
+
+```yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: batch-worker
+  namespace: rebash-m09
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: batch-worker
+  template:
+    metadata:
+      labels:
+        app: batch-worker
+    spec:
+      nodeSelector:
+        rebash.io/workload: batch
+      containers:
+        - name: worker
+          image: busybox:1.36.1
+          command: ["sh", "-c", "sleep 3600"]
+          resources:
+            requests:
+              cpu: 10m
+              memory: 32Mi
+```
+
+Apply and wait for rollout:
+
+```bash
+cd ~/rebash-k8s/module-09
+kubectl apply -f deployment.yaml
+kubectl rollout status deployment/batch-worker -n rebash-m09 --timeout=120s
+```
+
+**Expected output:** `deployment "batch-worker" successfully rolled out`.
+
+#### Task 3 – Scheduling evidence
+
+Prove the Pod landed on the labelled node:
+
+```bash
+cd ~/rebash-k8s/module-09
+kubectl get pods -n rebash-m09 -o wide | tee schedule-wide.txt
+POD="$(kubectl get pod -n rebash-m09 -l app=batch-worker -o jsonpath='{.items[0].metadata.name}')"
+kubectl describe pod "$POD" -n rebash-m09 | tee schedule-describe.txt
+grep -E 'Node:|Node-Selectors|rebash.io/workload' schedule-describe.txt
+```
+
+**Expected output:** `schedule-wide.txt` shows the Pod `NODE` column matching the labelled node; `schedule-describe.txt` lists `Node-Selectors: rebash.io/workload=batch`.
 
 ### Validation steps
 
-- [ ] Namespace `rebash-lab` contains the expected Ready objects
-- [ ] You can explain each Task command from the Theory section
-- [ ] Cleanup deletes the namespace without leftover workloads
+- [ ] Node carries label `rebash.io/workload=batch`
+- [ ] Deployment Pod is Running on that node
+- [ ] `describe` output documents the nodeSelector constraint
+- [ ] You can explain Pending Pods when no node matches the selector
 
 ### Common errors and fixes
 
 | Error | Cause | Fix |
 |-------|-------|-----|
-| ImagePullBackOff | Wrong tag or registry auth | Fix image reference; check pull secrets |
-| Pending Pod | Scheduling / quota / PVC | `kubectl describe pod` and read Events |
-| Empty Endpoints | Selector or readiness mismatch | Compare Service selector to Pod labels and Ready |
+| Pod Pending | No node with required label | `kubectl get nodes --show-labels` and fix label key/value |
+| Pod on wrong node | Typo in selector | Match `nodeSelector` key/value exactly to node labels |
+| Cannot label node | Insufficient RBAC | Use lab cluster admin or ask platform team |
+| Label lost after node recreate | kind cluster rebuilt | Re-apply label before scheduling |
 
 ### Challenge exercise
 
-Add a readinessProbe and a ResourceQuota to the namespace, then show that over-quota creates are rejected.
+Add `pod-anti-affinity` so two replicas of `batch-worker` prefer different nodes (requires multi-node cluster). On a single-node lab, switch to `requiredDuringSchedulingIgnoredDuringExecution` node affinity and document why the Pod stays Pending when the label is removed.
 
 ### Learning outcomes
 
-- Applied a real cluster change for Kubernetes Scheduling
-- Used describe/Events for verification
-- Destroyed lab resources cleanly
+- Applied node labels as scheduling inputs
+- Deployed a workload constrained by `nodeSelector`
+- Collected scheduler evidence from `get -o wide` and `describe`
+- Connected label hygiene to production placement policies
 
 ### Cleanup
 
 ```bash
-kubectl delete namespace rebash-lab --ignore-not-found
-# Keep ~/rebash-kubernetes/ for later tutorials
+kubectl delete namespace rebash-m09 --ignore-not-found
+NODE="$(kubectl get nodes -o jsonpath='{.items[0].metadata.name}' 2>/dev/null || true)"
+if [ -n "$NODE" ]; then kubectl label node "$NODE" rebash.io/workload- 2>/dev/null || true; fi
 ```
 
 ## Validation

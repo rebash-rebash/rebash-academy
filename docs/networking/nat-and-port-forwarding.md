@@ -228,14 +228,18 @@ echo "namespaces removed" | tee ns-cleanup.txt
 ```bash
 cd ~/rebash-networking/lab13
 set -euo pipefail
+```
 
-cat > nat-mental-model.txt << 'EOF'
+Create `nat-mental-model.txt`:
+
+```text
 SNAT/PAT: private source rewritten for egress (cloud NAT gateway).
 DNAT: public destination:port rewritten to private target (port forward).
 Conntrack: remembers reverse mapping for replies.
 NAT is not a firewall — filter policy still required.
-EOF
+```
 
+```bash
 tar -czf nat-evidence.tgz \
   admin-user.txt ip-addr.txt ip-route.txt tools.txt \
   routing-snapshot.txt ip-forward.txt nat-mental-model.txt \

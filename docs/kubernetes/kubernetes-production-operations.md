@@ -32,7 +32,7 @@ tags:
   - upgrades
   - dr
 author: Shaik Basha
-last_updated: "2026-07-31"
+last_updated: "2026-08-03"
 comments: false
 ---
 
@@ -150,23 +150,20 @@ Controllers keep reconciling during maintenance if capacity remains; drains are 
 
 ## Hands-on Lab
 
-
-
 ### Objective
 
-Build and verify a working Kubernetes solution for **Kubernetes Production Operations** that you can inspect, prove, and tear down safely.
+Create a production operations checklist YAML, an etcd backup drill script that documents dry-run steps only, and capture cluster version/node evidence — without touching live etcd data.
 
 ### Prerequisites
 
-- kubectl configured against a lab cluster (kind/minikube preferred)
-- Cluster-admin or namespace-create rights in the lab cluster
+- kubectl configured against **kind** or **minikube**
+- Cluster read access (node/version queries); no cloud spend required
+- Bash and Python 3 with PyYAML
 - Writable workspace at `~/rebash-k8s/module-17`
 
 ### Lab environment
 
 Workspace: `~/rebash-k8s/module-17`
-
-Local kind/minikube or a dedicated sandbox cluster. Never target a shared production API server.
 
 ```bash
 mkdir -p ~/rebash-k8s/module-17 && cd ~/rebash-k8s/module-17
@@ -174,63 +171,182 @@ mkdir -p ~/rebash-k8s/module-17 && cd ~/rebash-k8s/module-17
 
 ### Real-world scenario
 
-Your platform team is rolling out **Kubernetes Production Operations** for a new microservice. You must apply the change in an isolated namespace, prove it works with kubectl, and leave evidence for the on-call handover.
+Before a control-plane upgrade, SREs run a pre-flight checklist, confirm etcd backup procedures are documented, and capture cluster inventory (version, nodes, component health). On managed services you still own runbooks even when the vendor operates etcd. You produce validated checklist artefacts and cluster evidence — **no real etcd snapshot or destructive drill** on this lab cluster.
 
 ### Step-by-step tasks
 
-#### Task 1 – Apply a topic workload
+#### Task 1 – Create production operations checklist YAML
 
-Create a namespace and a small Deployment to practise **What it is** against a live API.
+Create `prod-ops-checklist.yaml`:
 
-```bash
-kubectl create namespace rebash-lab --dry-run=client -o yaml | kubectl apply -f -
-kubectl create deployment topic --image=nginx:1.27-alpine -n rebash-lab
-kubectl rollout status deployment/topic -n rebash-lab
-kubectl get all -n rebash-lab
+```yaml
+# Production operations pre-flight checklist (Module 17)
+cluster:
+  capture:
+    - kubectl version --output=yaml
+    - kubectl get nodes -o wide
+    - kubectl get componentstatuses
+    - kubectl get --raw /readyz?verbose
+upgrade:
+  gates:
+    - api_deprecation_warnings_resolved: true
+    - pdb_coverage_reviewed: true
+    - backup_restore_drill_scheduled: true
+    - change_ticket_approved: true
+backup:
+  etcd:
+    lab_mode: dry-run-only
+    production_steps:
+      - snapshot_etcd_member_with_official_tooling
+      - verify_snapshot_integrity_on_staging
+      - record_restore_rpo_rto_in_runbook
+    never_on_kind: true
+drain:
+  order:
+    - cordon_node
+    - kubectl drain with ignore-daemonsets
+    - verify pdb minAvailable
+    - uncordon after validation
 ```
 
-**Expected output:** Deployment Ready; Pods listed under the namespace.
-
-#### Task 2 – Inspect and gather evidence
-
-Production changes always leave an audit trail of describe/Events.
+Validate offline:
 
 ```bash
-kubectl describe deploy topic -n rebash-lab | tee describe.txt
-kubectl get events -n rebash-lab --sort-by=.lastTimestamp | tail -n 15 | tee events.txt
+cd ~/rebash-k8s/module-17
+set -euo pipefail
+python3 -c "
+import yaml
+doc = yaml.safe_load(open('prod-ops-checklist.yaml'))
+assert doc['backup']['etcd']['lab_mode'] == 'dry-run-only'
+assert doc['backup']['etcd']['never_on_kind'] is True
+print('prod-ops-checklist.yaml OK')
+"
 ```
 
-**Expected output:** describe.txt and events.txt capture healthy Objects/Events.
+**Expected output:** `prod-ops-checklist.yaml OK`
+
+#### Task 2 – Create etcd backup reference and drill script
+
+Create `etcd-backup-commands.txt`:
+
+```text
+# Production self-managed cluster example (DO NOT RUN on kind/minikube):
+# ETCDCTL_API=3 etcdctl snapshot save /var/backups/etcd-$(date +%F).db \
+#   --endpoints=https://127.0.0.1:2379 \
+#   --cacert=/etc/kubernetes/pki/etcd/ca.crt \
+#   --cert=/etc/kubernetes/pki/etcd/server.crt \
+#   --key=/etc/kubernetes/pki/etcd/server.key
+#
+# Verify: ETCDCTL_API=3 etcdctl snapshot status /var/backups/etcd-YYYY-MM-DD.db
+```
+
+Create `etcd-backup-drill.sh`:
+
+```bash
+#!/usr/bin/env bash
+set -euo pipefail
+
+LAB_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+CHECKLIST="${LAB_ROOT}/prod-ops-checklist.yaml"
+COMMANDS="${LAB_ROOT}/etcd-backup-commands.txt"
+EVIDENCE_DIR="${LAB_ROOT}/evidence"
+mkdir -p "${EVIDENCE_DIR}"
+
+echo "=== etcd backup drill (DRY-RUN ONLY) ==="
+echo "This script documents production steps. It does NOT snapshot etcd on kind/minikube."
+echo
+
+python3 -c "import yaml; yaml.safe_load(open('${CHECKLIST}')); print('checklist parsed OK')"
+test -f "${COMMANDS}"
+
+echo "--- Step 1: capture cluster inventory ---"
+kubectl version --output=yaml | tee "${EVIDENCE_DIR}/version.yaml"
+kubectl get nodes -o wide | tee "${EVIDENCE_DIR}/nodes.txt"
+kubectl get pods -n kube-system -o wide | tee "${EVIDENCE_DIR}/kube-system-pods.txt"
+
+echo "--- Step 2: copy documented etcd backup commands (NOT executed) ---"
+cp "${COMMANDS}" "${EVIDENCE_DIR}/etcd-backup-commands.txt"
+
+echo "--- Step 3: readiness probe ---"
+kubectl get --raw='/readyz?verbose' 2>/dev/null | head -n 20 | tee "${EVIDENCE_DIR}/readyz.txt" || echo "readyz not available on this cluster" | tee "${EVIDENCE_DIR}/readyz.txt"
+
+echo
+echo "DRY-RUN complete. Evidence written to ${EVIDENCE_DIR}/"
+```
+
+Run the drill:
+
+```bash
+cd ~/rebash-k8s/module-17
+chmod +x etcd-backup-drill.sh
+./etcd-backup-drill.sh | tee drill-run.txt
+test -f evidence/version.yaml
+test -f evidence/nodes.txt
+grep -q 'DRY-RUN ONLY' drill-run.txt
+```
+
+**Expected output:** `checklist parsed OK`; evidence files under `evidence/`; drill log states dry-run only.
+
+#### Task 3 – Apply checklist namespace and capture handover bundle
+
+Create `namespace.yaml`:
+
+```yaml
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: rebash-prodops-lab
+  labels:
+    app.kubernetes.io/managed-by: rebash-lab
+    purpose: prod-ops-evidence
+```
+
+Apply and archive:
+
+```bash
+cd ~/rebash-k8s/module-17
+kubectl apply -f namespace.yaml
+kubectl get ns rebash-prodops-lab | tee evidence/namespace.txt
+tar -czf module-17-prodops-evidence.tgz prod-ops-checklist.yaml etcd-backup-commands.txt etcd-backup-drill.sh evidence/ drill-run.txt
+ls -l module-17-prodops-evidence.tgz
+```
+
+**Expected output:** Namespace `Active`; tarball lists checklist, script, and evidence files.
 
 ### Validation steps
 
-- [ ] Namespace `rebash-lab` contains the expected Ready objects
-- [ ] You can explain each Task command from the Theory section
-- [ ] Cleanup deletes the namespace without leftover workloads
+- [ ] Checklist YAML parses and marks etcd drills as dry-run only on lab clusters
+- [ ] Drill script captures version, nodes, and kube-system pod inventory
+- [ ] No etcd snapshot command is executed against the lab cluster
+- [ ] Evidence tarball contains checklist, script output, and cluster inventory
+- [ ] Namespace `rebash-prodops-lab` exists for labelled demo scope
 
 ### Common errors and fixes
 
 | Error | Cause | Fix |
 |-------|-------|-----|
-| ImagePullBackOff | Wrong tag or registry auth | Fix image reference; check pull secrets |
-| Pending Pod | Scheduling / quota / PVC | `kubectl describe pod` and read Events |
-| Empty Endpoints | Selector or readiness mismatch | Compare Service selector to Pod labels and Ready |
+| `componentstatuses` deprecated | Removed in newer Kubernetes | Use `kubectl get --raw /readyz` instead |
+| readyz permission denied | RBAC on managed cluster | Capture nodes/version only; note limitation |
+| Python import error | PyYAML missing | `pip install pyyaml` in venv |
+| Script not executable | Missing chmod | `chmod +x etcd-backup-drill.sh` |
+| Accidental etcd access | Ran production commands on lab | Follow `never_on_kind: true`; dry-run only |
 
 ### Challenge exercise
 
-Add a readinessProbe and a ResourceQuota to the namespace, then show that over-quota creates are rejected.
+Extend `prod-ops-checklist.yaml` with a `post_upgrade` section listing three validation commands, then add a grep check to `etcd-backup-drill.sh` that fails if `never_on_kind` is not `true`.
 
 ### Learning outcomes
 
-- Applied a real cluster change for Kubernetes Production Operations
-- Used describe/Events for verification
-- Destroyed lab resources cleanly
+- Authored a structured production operations checklist as YAML
+- Built a dry-run etcd backup drill script with documented production commands
+- Captured cluster version and node inventory for upgrade planning
+- Packaged evidence without destructive cluster operations
 
 ### Cleanup
 
 ```bash
-kubectl delete namespace rebash-lab --ignore-not-found
-# Keep ~/rebash-kubernetes/ for later tutorials
+kubectl delete namespace rebash-prodops-lab --ignore-not-found --wait=true
+rm -rf ~/rebash-k8s/module-17/evidence ~/rebash-k8s/module-17/drill-run.txt ~/rebash-k8s/module-17/module-17-prodops-evidence.tgz
 ```
 
 ## Validation

@@ -159,14 +159,20 @@ set -euo pipefail
 source .venv/bin/activate
 
 mkdir -p data
-cat > data/hosts.csv << 'EOF'
+```
+
+Create `data/hosts.csv`:
+
+```text
 name,env,ip
 web-01,prod,10.0.1.11
 web-02,prod,10.0.1.12
 db-01,prod,10.0.2.11
-EOF
+```
 
-cat > invcli.py << 'PY'
+Create `invcli.py`:
+
+```python
 from __future__ import annotations
 
 import argparse
@@ -243,7 +249,13 @@ def main(argv: list[str] | None = None) -> int:
 
 if __name__ == "__main__":
     raise SystemExit(main())
-PY
+```
+
+Run:
+
+```bash
+test -f data/hosts.csv
+test -f invcli.py
 ```
 
 **Expected output:** `data/hosts.csv` and `invcli.py` exist.

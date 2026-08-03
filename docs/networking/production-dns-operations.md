@@ -158,8 +158,11 @@ test -s dig-a-stats.txt
 cd ~/rebash-networking/lab24
 set -euo pipefail
 DOMAIN="$(cut -d= -f2 domain.txt)"
+```
 
-cat > check-soa-ns.sh << 'EOF'
+Create `check-soa-ns.sh`:
+
+```bash
 #!/usr/bin/env bash
 set -euo pipefail
 DOMAIN="${1:?usage: check-soa-ns.sh domain}"
@@ -194,7 +197,9 @@ else
   echo "stale_cache_risk: could not parse A TTL; discuss SOA minimum and record TTLs from ns-answer/soa-answer." \
     | tee "$OUTDIR/ttl-risk.txt"
 fi
-EOF
+```
+
+```bash
 chmod +x check-soa-ns.sh
 ./check-soa-ns.sh "$DOMAIN" .
 test -s soa-answer.txt && test -s ns-answer.txt && test -s ttl-risk.txt

@@ -179,13 +179,10 @@ Your platform team wants a lightweight agentless check on new Ubuntu build VMs: 
 
 #### Task 1 – Safe subprocess probe (uname / ip / ss)
 
-```bash
-cd ~/rebash-python/lab13
-set -euo pipefail
-# shellcheck disable=SC1091
-source .venv/bin/activate
 
-cat > host_probe.py << 'EOF'
+Create `host_probe.py`:
+
+```python
 #!/usr/bin/env python3
 """Safe host facts via subprocess — no shell=True."""
 from __future__ import annotations
@@ -262,8 +259,15 @@ def main() -> int:
 
 if __name__ == "__main__":
     raise SystemExit(main())
-EOF
+```
 
+Run:
+
+```bash
+cd ~/rebash-python/lab13
+set -euo pipefail
+# shellcheck disable=SC1091
+source .venv/bin/activate
 python host_probe.py | tee probe-run.txt
 test -s host-evidence.json
 python -c 'import json; d=json.load(open("host-evidence.json")); assert d["commands"][0]["ok"]; print("uname_ok")'
@@ -273,13 +277,10 @@ python -c 'import json; d=json.load(open("host-evidence.json")); assert d["comma
 
 #### Task 2 – Optional psutil CPU/memory sample
 
-```bash
-cd ~/rebash-python/lab13
-set -euo pipefail
-# shellcheck disable=SC1091
-source .venv/bin/activate
 
-cat > metrics_sample.py << 'EOF'
+Create `metrics_sample.py`:
+
+```python
 #!/usr/bin/env python3
 """Optional psutil sample; degrades cleanly if missing."""
 from __future__ import annotations
@@ -312,8 +313,15 @@ def main() -> int:
 
 if __name__ == "__main__":
     raise SystemExit(main())
-EOF
+```
 
+Run:
+
+```bash
+cd ~/rebash-python/lab13
+set -euo pipefail
+# shellcheck disable=SC1091
+source .venv/bin/activate
 python metrics_sample.py | tee metrics-run.txt
 test -s metrics.json
 python -c 'import json; d=json.load(open("metrics.json")); assert "psutil" in d; print("metrics_ok", d["psutil"])'
@@ -323,13 +331,10 @@ python -c 'import json; d=json.load(open("metrics.json")); assert "psutil" in d;
 
 #### Task 3 – Merge evidence pack
 
-```bash
-cd ~/rebash-python/lab13
-set -euo pipefail
-# shellcheck disable=SC1091
-source .venv/bin/activate
 
-python - << 'EOF'
+Create `merge_evidence.py`:
+
+```python
 import json
 from pathlib import Path
 
@@ -340,8 +345,16 @@ merged = {"host": host, "metrics": metrics}
 (base / "lab13-evidence.json").write_text(json.dumps(merged, indent=2) + "\n", encoding="utf-8")
 print("merged ok")
 assert host["commands"][0]["ok"]
-EOF
+```
 
+Run:
+
+```bash
+cd ~/rebash-python/lab13
+set -euo pipefail
+# shellcheck disable=SC1091
+source .venv/bin/activate
+python merge_evidence.py
 ls -l lab13-evidence.json host-evidence.json metrics.json | tee evidence-ls.txt
 ```
 

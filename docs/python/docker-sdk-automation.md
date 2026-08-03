@@ -159,35 +159,43 @@ Build agents are running out of disk. Before any cleanup policy, platform wants 
 
 #### Task 1 – Fixtures for dry-run mode
 
-```bash
-cd ~/rebash-python/lab17
-set -euo pipefail
 
-cat > fixtures/version.json << 'EOF'
+Create `fixtures/version.json`:
+
+```json
 {
   "Client": {"Version": "27.0.0"},
   "Server": {"Version": "27.0.0", "Os": "linux", "Arch": "amd64"}
 }
-EOF
+```
 
-cat > fixtures/ps.json << 'EOF'
+Create `fixtures/ps.json`:
+
+```json
 {
   "containers": [
     {"Id": "abc123", "Names": ["/rebash-lab-web"], "Status": "Up 2 hours", "Image": "nginx:1.27"},
     {"Id": "def456", "Names": ["/rebash-lab-redis"], "Status": "Exited (0) 1 hour ago", "Image": "redis:7"}
   ]
 }
-EOF
+```
 
-cat > fixtures/images.json << 'EOF'
+Create `fixtures/images.json`:
+
+```json
 {
   "images": [
     {"Id": "sha256:111", "Tags": ["nginx:1.27"], "Size": 187000000},
     {"Id": "sha256:222", "Tags": ["redis:7"], "Size": 116000000}
   ]
 }
-EOF
+```
 
+Run:
+
+```bash
+cd ~/rebash-python/lab17
+set -euo pipefail
 echo "fixtures ok"
 ```
 
@@ -195,13 +203,10 @@ echo "fixtures ok"
 
 #### Task 2 – Inventory client (live or dry-run)
 
-```bash
-cd ~/rebash-python/lab17
-set -euo pipefail
-# shellcheck disable=SC1091
-source .venv/bin/activate
 
-cat > docker_inventory.py << 'EOF'
+Create `docker_inventory.py`:
+
+```python
 #!/usr/bin/env python3
 """Read-only Docker inventory — SDK, CLI, or fixtures. No deletes."""
 from __future__ import annotations
@@ -328,8 +333,15 @@ def main() -> int:
 
 if __name__ == "__main__":
     raise SystemExit(main())
-EOF
+```
 
+Run:
+
+```bash
+cd ~/rebash-python/lab17
+set -euo pipefail
+# shellcheck disable=SC1091
+source .venv/bin/activate
 python docker_inventory.py | tee inventory-run.txt
 test -s docker-inventory.json
 ```
@@ -337,6 +349,19 @@ test -s docker-inventory.json
 **Expected output:** `docker-inventory.json` with `mode` of `live-sdk`, `live-cli`, or `dry-run-fixture`; policy read-only.
 
 #### Task 3 – Force fixture, refuse destructive flags, pack evidence
+
+
+Create `pack_evidence.py`:
+
+```python
+import json
+from pathlib import Path
+d = json.loads(Path("docker-inventory.json").read_text(encoding="utf-8"))
+Path("lab17-evidence.json").write_text(json.dumps({"inventory": d, "prune_refused": True}, indent=2) + "\n", encoding="utf-8")
+print("evidence ok")
+```
+
+Run:
 
 ```bash
 cd ~/rebash-python/lab17
@@ -353,14 +378,7 @@ rc=$?
 set -e
 test "$rc" -eq 2
 grep -F 'REFUSED' prune-denied.txt
-
-python - << 'EOF'
-import json
-from pathlib import Path
-d = json.loads(Path("docker-inventory.json").read_text(encoding="utf-8"))
-Path("lab17-evidence.json").write_text(json.dumps({"inventory": d, "prune_refused": True}, indent=2) + "\n", encoding="utf-8")
-print("evidence ok")
-EOF
+python pack_evidence.py
 ```
 
 **Expected output:** fixture mode works; `--prune` exits 2; `lab17-evidence.json` written.

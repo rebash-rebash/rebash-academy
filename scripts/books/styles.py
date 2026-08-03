@@ -1,11 +1,118 @@
 """Print/EPUB stylesheet for professional course books (compact layout)."""
 
-BOOK_CSS = r"""
-/* ===== Page chrome (WeasyPrint / print) ===== */
-@page {
-  size: A4;
-  margin: 14mm 12mm 16mm 12mm;
+from __future__ import annotations
 
+from typing import TypedDict
+
+
+class PageProfile(TypedDict):
+    label: str
+    size_css: str
+    width: str
+    height: str
+    margin_top: str
+    margin_outside: str
+    margin_bottom: str
+    margin_inside: str
+    mirrored: bool
+    cover_px: tuple[int, int]
+    notes: str
+
+
+# Amazon KDP popular trade paperback trim. Interior manuscript page size must
+# equal the trim size. Cover wrap is uploaded separately in KDP; the "with
+# cover" PDF here is for preview / complete-book distribution.
+PAGE_PROFILES: dict[str, PageProfile] = {
+    "a4": {
+        "label": "A4",
+        "size_css": "A4",
+        "width": "210mm",
+        "height": "297mm",
+        "margin_top": "14mm",
+        "margin_outside": "12mm",
+        "margin_bottom": "16mm",
+        "margin_inside": "12mm",
+        "mirrored": False,
+        "cover_px": (2480, 3508),  # A4 @ ~300 dpi
+        "notes": "Default academy download size",
+    },
+    "kdp-6x9": {
+        "label": 'KDP 6" × 9"',
+        "size_css": "6in 9in",
+        "width": "6in",
+        "height": "9in",
+        # No-bleed interior (KDP: page size = trim).
+        # Minima for 151–300 pages: gutter ≥0.5", outer/top/bottom ≥0.25".
+        # Use generous values so running heads in margin boxes and wide code
+        # still clear KDP's live-area check.
+        # https://kdp.amazon.com/help/topic/GVBQ3CMEQW3W2VL6
+        "margin_top": "0.7in",
+        "margin_outside": "0.65in",
+        "margin_bottom": "0.7in",
+        "margin_inside": "0.75in",
+        "mirrored": True,
+        "cover_px": (1800, 2700),  # 6x9 @ 300 dpi
+        "notes": "Amazon KDP paperback trim 6 x 9 in, no bleed (15.24 x 22.86 cm)",
+    },
+}
+
+
+def list_page_profiles() -> list[str]:
+    return list(PAGE_PROFILES)
+
+
+def get_page_profile(page_size: str) -> PageProfile:
+    key = page_size.strip().lower()
+    if key not in PAGE_PROFILES:
+        known = ", ".join(PAGE_PROFILES)
+        raise ValueError(f"unknown page size {page_size!r}; choose one of: {known}")
+    return PAGE_PROFILES[key]
+
+
+def _mirrored_margin_block(profile: PageProfile, page_name: str = "") -> str:
+    """Emit :left/:right margin rules so named pages keep KDP gutters."""
+    sel = f"{page_name}:" if page_name else ""
+    return f"""
+@page {sel}left {{
+  size: {profile["size_css"]};
+  margin-top: {profile["margin_top"]};
+  margin-bottom: {profile["margin_bottom"]};
+  margin-left: {profile["margin_outside"]};
+  margin-right: {profile["margin_inside"]};
+}}
+@page {sel}right {{
+  size: {profile["size_css"]};
+  margin-top: {profile["margin_top"]};
+  margin-bottom: {profile["margin_bottom"]};
+  margin-left: {profile["margin_inside"]};
+  margin-right: {profile["margin_outside"]};
+}}
+""".strip()
+
+
+def _page_chrome(profile: PageProfile, *, kdp: bool = False) -> str:
+    """Generate @page rules for WeasyPrint.
+
+    KDP: keep running heads compact (no full-width border rules that can
+    paint into the gutter). Named pages must repeat mirrored margins —
+    otherwise WeasyPrint falls back to undersized defaults and KDP flags
+    “Insufficient gutter”.
+    """
+    if kdp:
+        # Minimal chrome — page number only. Running heads as margin-box
+        # text are a common KDP “text outside margins” false positive when
+        # combined with tight top margins; body pages rely on larger margins.
+        header_footer = """
+  @bottom-center {
+    content: counter(page);
+    font-family: "Source Sans 3", "Helvetica Neue", Arial, sans-serif;
+    font-size: 9pt;
+    color: #334155;
+    padding-top: 2mm;
+  }
+""".rstrip()
+    else:
+        header_footer = """
   @top-left {
     content: string(course-title);
     font-family: "Source Sans 3", "Helvetica Neue", Arial, sans-serif;
@@ -33,8 +140,51 @@ BOOK_CSS = r"""
     font-size: 8.5pt;
     color: #334155;
   }
-}
+""".rstrip()
 
+    if profile["mirrored"]:
+        margins = f"""
+@page {{
+  size: {profile["size_css"]};
+{header_footer}
+}}
+{_mirrored_margin_block(profile)}
+""".strip()
+    else:
+        margins = f"""
+@page {{
+  size: {profile["size_css"]};
+  margin: {profile["margin_top"]} {profile["margin_outside"]} {profile["margin_bottom"]} {profile["margin_inside"]};
+{header_footer}
+}}
+""".strip()
+
+    extras = ""
+    if kdp and profile["mirrored"]:
+        # Repeat gutters on every named page used by the KDP layout.
+        silent_chrome = """
+  @top-left { content: none; border: none; }
+  @top-right { content: none; border: none; }
+  @bottom-center { content: none; }
+""".rstrip()
+        extras = f"""
+{_mirrored_margin_block(profile, "frontmatter-silent")}
+@page frontmatter-silent {{
+  size: {profile["size_css"]};
+{silent_chrome}
+}}
+{_mirrored_margin_block(profile, "frontmatter")}
+@page frontmatter {{
+  size: {profile["size_css"]};
+{silent_chrome}
+}}
+@page :first {{
+  size: {profile["size_css"]};
+{silent_chrome}
+}}
+""".strip()
+    else:
+        extras = """
 @page :first {
   @top-left { content: none; border: none; }
   @top-right { content: none; border: none; }
@@ -52,7 +202,225 @@ BOOK_CSS = r"""
   }
 }
 
+@page frontmatter-silent {
+  @top-left { content: none; border: none; }
+  @top-right { content: none; border: none; }
+  @bottom-center { content: none; }
+}
+""".strip()
+
+    return (
+        f"/* ===== Page chrome (WeasyPrint / print) — {profile['label']} ===== */\n"
+        f"{margins}\n\n"
+        f"{extras}\n"
+    )
+
+
+# KDP paperback interior layout overrides
+# https://kdp.amazon.com/en_US/help/topic/GDDYZG2C7RVF5N9J
+# https://kdp.amazon.com/help/topic/GVBQ3CMEQW3W2VL6
+KDP_LAYOUT_CSS = r"""
+/* --- KDP manuscript structure --- */
+.author-name-mark { string-set: author-name content(); display: none; }
+
+.half-title,
+.title-page,
+.copyright-page,
+.toc,
+.lof,
+.blank-page {
+  page: frontmatter-silent;
+}
+
+.half-title,
+.title-page,
+.toc,
+.lof,
+#chapter-1,
+.backmatter {
+  break-before: right;
+  page-break-before: right;
+}
+
+.copyright-page {
+  break-before: left;
+  page-break-before: left;
+}
+
+.blank-page {
+  break-after: page;
+  page-break-after: always;
+  height: 0.1in;
+  visibility: hidden;
+}
+
+.half-title {
+  break-after: page;
+  page-break-after: always;
+  text-align: center;
+  padding-top: 2.2in;
+}
+.half-title h1 {
+  font-size: 1.45rem;
+  font-weight: 700;
+  margin: 0;
+  color: var(--ink);
+}
+.half-title .imprint {
+  margin-top: 1.8in;
+  font-family: "Source Sans 3", sans-serif;
+  font-size: 0.85rem;
+  color: var(--muted);
+}
+
+.title-page {
+  break-after: page;
+  page-break-after: always;
+  text-align: center;
+  padding-top: 1.5in;
+}
+.title-page h1 {
+  font-size: 1.75rem;
+  margin: 0 0 0.5rem;
+}
+.title-page .subtitle {
+  font-family: "Source Sans 3", sans-serif;
+  font-size: 1rem;
+  color: var(--muted);
+  margin: 0 0 1.2rem;
+  font-weight: 400;
+}
+.title-page .author {
+  font-family: "Source Sans 3", sans-serif;
+  font-size: 1.1rem;
+  margin: 1.2rem 0 0;
+  font-weight: 600;
+}
+.title-page .imprint {
+  margin-top: 1.8in;
+  font-family: "Source Sans 3", sans-serif;
+  font-size: 0.85rem;
+  color: var(--muted);
+}
+
+.copyright-page {
+  break-after: page;
+  page-break-after: always;
+  font-size: 0.88rem;
+}
+.copyright-page h1 { font-size: 1.05rem; }
+
+.toc, .lof {
+  break-after: page;
+  page-break-after: always;
+}
+
+/* Body text — KDP guidance: justified */
+.chapter p {
+  text-align: justify;
+  hyphens: auto;
+}
+.chapter > p {
+  text-indent: 1.15em;
+  margin: 0 0 0.15rem;
+}
+.chapter > h1 + p,
+.chapter > h2 + p,
+.chapter > h3 + p,
+.chapter > h4 + p,
+.chapter > .chapter-kicker + h1 + p,
+.chapter > .lab-banner + p,
+.chapter > .interview-banner + p,
+.chapter > .figure + p,
+.chapter > .callout + p,
+.chapter > pre + p,
+.chapter > .highlight + p {
+  text-indent: 0;
+}
+
+/* Hard clip: nothing may paint outside the content box */
+img, svg, .figure, .figure img, .lab-qr img {
+  max-width: 100% !important;
+  height: auto !important;
+}
+pre, .codehilite, .highlight, .highlight pre, .codehilite pre {
+  overflow: hidden !important;
+  overflow-x: hidden !important;
+  white-space: pre-wrap !important;
+  word-break: break-word !important;
+  overflow-wrap: anywhere !important;
+  max-width: 100% !important;
+  font-size: 0.72em !important;
+}
+table {
+  table-layout: fixed !important;
+  width: 100% !important;
+  max-width: 100% !important;
+}
+th, td {
+  word-break: break-word !important;
+  overflow-wrap: anywhere !important;
+}
+.toc-list, .lof-list, .index-list {
+  max-width: 100%;
+}
+/* Index page numbers were painting past the trim (KDP object/text errors). */
+.index-list {
+  columns: 2 !important;
+  column-gap: 0.3in !important;
+  column-fill: auto;
+  font-size: 0.7rem !important;
+  max-width: 100% !important;
+  overflow: hidden !important;
+}
+.index-list li {
+  max-width: 100% !important;
+  overflow: hidden !important;
+  word-break: break-word !important;
+  overflow-wrap: anywhere !important;
+  display: block !important;
+}
+.index-list .dots {
+  display: none !important; /* leader dots + long page lists overflow columns */
+}
+.index-list .pg,
+.index-list .pg::after {
+  word-break: break-word !important;
+  overflow-wrap: anywhere !important;
+}
+.lab-qr {
+  max-width: 100%;
+  overflow: hidden;
+}
+.lab-qr a, .lab-qr .lab-qr-text {
+  word-break: break-all;
+  overflow-wrap: anywhere;
+}
+
+/* Print PDF: no interactive links (KDP strips them as non-printable markup
+   and link annotation boxes often fail the margin check). */
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+.about-author.backmatter h1,
+.glossary.backmatter h1,
+.index-section.backmatter h1 {
+  break-after: avoid;
+}
+"""
+
+
+_BODY_TEMPLATE = '''
 :root {
+  /* Page geometry — set by book_css(profile) */
+  --page-w: __PAGE_W__;
+  --page-h: __PAGE_H__;
+  --m-top: __M_TOP__;
+  --m-out: __M_OUT__;
+  --m-bot: __M_BOT__;
+  --m-in: __M_IN__;
   --ink: #0f172a;
   --muted: #475569;
   --accent: #0f766e;
@@ -118,20 +486,20 @@ p, li { orphans: 2; widows: 2; }
 .cover {
   page: :first;
   position: relative;
-  min-height: 260mm;
+  min-height: calc(var(--page-h) - var(--m-top) - var(--m-bot));
   overflow: hidden;
   color: #f8fafc;
-  margin: -14mm -12mm 0;
+  margin: calc(-1 * var(--m-top)) calc(-1 * var(--m-out)) 0 calc(-1 * var(--m-in));
   padding: 0;
   break-after: page;
   background: #0b1220;
 }
 .cover-fullbleed {
-  /* Full A4 page; negative margins cancel @page margins */
+  /* Full trim page; negative margins cancel @page margins (recto/first) */
   box-sizing: border-box;
-  width: 210mm;
-  height: 297mm;
-  margin: -14mm -12mm -16mm -12mm;
+  width: var(--page-w);
+  height: var(--page-h);
+  margin: calc(-1 * var(--m-top)) calc(-1 * var(--m-out)) calc(-1 * var(--m-bot)) calc(-1 * var(--m-in));
   padding: 0;
   background: #0b1220;
   display: flex;
@@ -141,8 +509,8 @@ p, li { orphans: 2; widows: 2; }
 }
 .cover-fullbleed-img {
   /* Show the entire artwork — including author/footer — never crop */
-  width: 210mm;
-  height: 297mm;
+  width: var(--page-w);
+  height: var(--page-h);
   object-fit: contain;
   object-position: center center;
   display: block;
@@ -158,12 +526,12 @@ p, li { orphans: 2; widows: 2; }
 .cover-overlay {
   position: relative;
   z-index: 1;
-  min-height: 260mm;
+  min-height: calc(var(--page-h) - var(--m-top) - var(--m-bot));
   display: flex;
   flex-direction: column;
   justify-content: space-between;
   text-align: center;
-  padding: 16mm 14mm 18mm;
+  padding: calc(var(--m-top) + 2mm) calc(var(--m-out) + 2mm) calc(var(--m-bot) + 2mm) calc(var(--m-in) + 2mm);
   background: linear-gradient(
     180deg,
     rgba(11, 18, 32, 0.72) 0%,
@@ -681,4 +1049,25 @@ blockquote {
   }
   .cover-overlay { min-height: 28rem; padding: 2rem 1.2rem; }
 }
-"""
+'''
+
+def book_css(page_size: str = "a4") -> str:
+    """Return full print stylesheet for the given page profile."""
+    profile = get_page_profile(page_size)
+    kdp = page_size.startswith("kdp")
+    body = (
+        _BODY_TEMPLATE.replace("__PAGE_W__", profile["width"])
+        .replace("__PAGE_H__", profile["height"])
+        .replace("__M_TOP__", profile["margin_top"])
+        .replace("__M_OUT__", profile["margin_outside"])
+        .replace("__M_BOT__", profile["margin_bottom"])
+        .replace("__M_IN__", profile["margin_inside"])
+    )
+    css = _page_chrome(profile, kdp=kdp) + "\n" + body
+    if kdp:
+        css += "\n" + KDP_LAYOUT_CSS
+    return css
+
+
+# Back-compat default (A4 free download)
+BOOK_CSS = book_css("a4")

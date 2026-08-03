@@ -33,7 +33,7 @@ tags:
   - gitops
   - argocd
 author: Shaik Basha
-last_updated: "2026-07-31"
+last_updated: "2026-08-03"
 comments: false
 ---
 
@@ -150,87 +150,250 @@ Desired state lives in Git; the cluster is a projection. Controllers still own r
 
 ## Hands-on Lab
 
-
-
 ### Objective
 
-Build and verify a working Kubernetes solution for **GitOps and CI/CD with Kubernetes** that you can inspect, prove, and tear down safely.
+Create a GitOps repository layout (`apps/demo` + `clusters/dev`), a CI workflow stub that kubectl dry-runs manifests, and offline YAML validation — then apply to an isolated namespace and prove Ready.
 
 ### Prerequisites
 
-- kubectl configured against a lab cluster (kind/minikube preferred)
-- Cluster-admin or namespace-create rights in the lab cluster
-- Writable workspace at `~/rebash-k8s/module-15/{apps/demo,clusters/dev}`
+- kubectl configured against **kind** or **minikube** (local lab cluster only)
+- Python 3 with PyYAML (`python3 -c "import yaml"` — install `pyyaml` if import fails)
+- Optional: `kustomize` or `kubectl kustomize` for overlay rendering
+- Namespace-create rights; never target a shared production API server
+- Writable workspace at `~/rebash-k8s/module-15`
 
 ### Lab environment
 
-Workspace: `~/rebash-k8s/module-15/{apps/demo,clusters/dev}`
-
-Local kind/minikube or a dedicated sandbox cluster. Never target a shared production API server.
+Workspace: `~/rebash-k8s/module-15`
 
 ```bash
-mkdir -p ~/rebash-k8s/module-15/{apps/demo,clusters/dev} && cd ~/rebash-k8s/module-15/{apps/demo,clusters/dev}
+mkdir -p ~/rebash-k8s/module-15/{apps/demo,clusters/dev,.github/workflows}
+cd ~/rebash-k8s/module-15
 ```
 
 ### Real-world scenario
 
-Your platform team is rolling out **GitOps and CI/CD with Kubernetes** for a new microservice. You must apply the change in an isolated namespace, prove it works with kubectl, and leave evidence for the on-call handover.
+Your platform team adopts GitOps: application manifests live in `apps/demo`, environment overlays in `clusters/dev`, and CI validates every pull request with `kubectl apply --dry-run=client` before a cluster reconciler syncs. You scaffold the repo layout, wire a dry-run workflow stub, validate YAML offline, then prove the dev overlay reaches Ready in namespace `rebash-gitops-lab`.
 
 ### Step-by-step tasks
 
-#### Task 1 – Apply a topic workload
+#### Task 1 – Create base app manifests
 
-Create a namespace and a small Deployment to practise **What it is** against a live API.
+Create `apps/demo/deployment.yaml`:
 
-```bash
-kubectl create namespace rebash-lab --dry-run=client -o yaml | kubectl apply -f -
-kubectl create deployment topic --image=nginx:1.27-alpine -n rebash-lab
-kubectl rollout status deployment/topic -n rebash-lab
-kubectl get all -n rebash-lab
+```yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: demo-api
+  labels:
+    app: demo-api
+    app.kubernetes.io/part-of: rebash-gitops
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: demo-api
+  template:
+    metadata:
+      labels:
+        app: demo-api
+    spec:
+      containers:
+        - name: api
+          image: nginx:1.27-alpine
+          ports:
+            - containerPort: 80
+          readinessProbe:
+            httpGet:
+              path: /
+              port: 80
+            initialDelaySeconds: 2
+            periodSeconds: 5
+          resources:
+            requests:
+              cpu: 50m
+              memory: 64Mi
+            limits:
+              cpu: 200m
+              memory: 128Mi
 ```
 
-**Expected output:** Deployment Ready; Pods listed under the namespace.
+Create `apps/demo/service.yaml`:
 
-#### Task 2 – Inspect and gather evidence
-
-Production changes always leave an audit trail of describe/Events.
-
-```bash
-kubectl describe deploy topic -n rebash-lab | tee describe.txt
-kubectl get events -n rebash-lab --sort-by=.lastTimestamp | tail -n 15 | tee events.txt
+```yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: demo-api
+  labels:
+    app: demo-api
+spec:
+  selector:
+    app: demo-api
+  ports:
+    - port: 80
+      targetPort: 80
 ```
 
-**Expected output:** describe.txt and events.txt capture healthy Objects/Events.
+Validate offline:
+
+```bash
+cd ~/rebash-k8s/module-15
+set -euo pipefail
+python3 -c "
+import yaml, pathlib
+for p in ['apps/demo/deployment.yaml', 'apps/demo/service.yaml']:
+    yaml.safe_load(pathlib.Path(p).read_text())
+print('apps/demo manifests OK')
+"
+```
+
+**Expected output:** `apps/demo manifests OK`
+
+#### Task 2 – Create dev cluster overlay with Kustomize
+
+Create `clusters/dev/kustomization.yaml`:
+
+```yaml
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+namespace: rebash-gitops-lab
+resources:
+  - namespace.yaml
+  - ../../apps/demo/deployment.yaml
+  - ../../apps/demo/service.yaml
+commonLabels:
+  environment: dev
+```
+
+Create `clusters/dev/namespace.yaml`:
+
+```yaml
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: rebash-gitops-lab
+  labels:
+    environment: dev
+    app.kubernetes.io/managed-by: rebash-lab
+```
+
+Render and validate:
+
+```bash
+cd ~/rebash-k8s/module-15
+set -euo pipefail
+if command -v kustomize >/dev/null 2>&1; then
+  kustomize build clusters/dev | tee clusters/dev/rendered.yaml
+elif kubectl kustomize clusters/dev | tee clusters/dev/rendered.yaml; then
+  :
+else
+  echo "Install kustomize or use kubectl with kustomize support" >&2
+  exit 1
+fi
+python3 -c "import yaml; list(yaml.safe_load_all(open('clusters/dev/rendered.yaml'))); print('rendered overlay OK')"
+grep -q 'namespace: rebash-gitops-lab' clusters/dev/rendered.yaml
+```
+
+**Expected output:** `rendered overlay OK`; rendered YAML includes `rebash-gitops-lab`.
+
+#### Task 3 – Create CI workflow stub for kubectl dry-run
+
+Create `.github/workflows/k8s-manifest-dry-run.yml`:
+
+{% raw %}
+```yaml
+name: Kubernetes manifest dry-run
+on:
+  pull_request:
+    paths:
+      - 'apps/**'
+      - 'clusters/**'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Render dev overlay
+        run: |
+          kubectl kustomize clusters/dev > /tmp/rendered.yaml
+      - name: Client dry-run against cluster
+        run: |
+          kubectl apply --dry-run=client -f /tmp/rendered.yaml
+        env:
+          KUBECONFIG: ${{ secrets.LAB_KUBECONFIG }}
+```
+{% endraw %}
+
+Validate offline (no cluster required):
+
+```bash
+cd ~/rebash-k8s/module-15
+set -euo pipefail
+python3 -c "import yaml; yaml.safe_load(open('.github/workflows/k8s-manifest-dry-run.yml')); print('workflow YAML OK')"
+grep -q 'dry-run=client' .github/workflows/k8s-manifest-dry-run.yml
+grep -q 'kubectl kustomize clusters/dev' .github/workflows/k8s-manifest-dry-run.yml
+```
+
+**Expected output:** `workflow YAML OK`
+
+#### Task 4 – Apply dev overlay and capture evidence
+
+Apply the GitOps dev overlay to your lab cluster and prove Ready.
+
+```bash
+cd ~/rebash-k8s/module-15
+set -euo pipefail
+kubectl apply -k clusters/dev
+kubectl rollout status deployment/demo-api -n rebash-gitops-lab --timeout=120s
+kubectl get deploy,po,svc -n rebash-gitops-lab | tee gitops-evidence.txt
+kubectl get events -n rebash-gitops-lab --sort-by=.lastTimestamp | tail -n 10 | tee -a gitops-evidence.txt
+tar -czf module-15-gitops-evidence.tgz apps/demo clusters/dev .github/workflows/k8s-manifest-dry-run.yml gitops-evidence.txt
+ls -l module-15-gitops-evidence.tgz
+```
+
+**Expected output:** Deployment Available; tarball lists manifests and evidence.
 
 ### Validation steps
 
-- [ ] Namespace `rebash-lab` contains the expected Ready objects
-- [ ] You can explain each Task command from the Theory section
-- [ ] Cleanup deletes the namespace without leftover workloads
+- [ ] `apps/demo` Deployment and Service parse with Python YAML
+- [ ] `clusters/dev` kustomize build sets namespace `rebash-gitops-lab`
+- [ ] CI workflow stub references kubectl dry-run and kustomize render
+- [ ] Applied overlay reaches Ready in the lab cluster
+- [ ] Evidence tarball contains manifests and `gitops-evidence.txt`
 
 ### Common errors and fixes
 
 | Error | Cause | Fix |
 |-------|-------|-----|
-| ImagePullBackOff | Wrong tag or registry auth | Fix image reference; check pull secrets |
-| Pending Pod | Scheduling / quota / PVC | `kubectl describe pod` and read Events |
-| Empty Endpoints | Selector or readiness mismatch | Compare Service selector to Pod labels and Ready |
+| Kustomize path not found | Wrong relative `resources` path | Paths in overlay are relative to `kustomization.yaml` |
+| dry-run auth failure | CI secret missing or wrong context | Use local `kubectl apply -k` first; fix kubeconfig in CI later |
+| Pods NotReady | Probe path wrong for image | Use `/` for nginx; check `describe pod` Events |
+| MkDocs build breaks on workflow | Unescaped Actions expressions in tutorial | Wrap workflow YAML in raw Jinja blocks |
+| Namespace not created | Forgot `namespace.yaml` in overlay | Add Namespace manifest to kustomization resources |
 
 ### Challenge exercise
 
-Add a readinessProbe and a ResourceQuota to the namespace, then show that over-quota creates are rejected.
+Add a `ConfigMap` generator in `clusters/dev/kustomization.yaml` that sets `LOG_LEVEL=debug`, re-render, and prove the env var appears in the Pod spec after apply.
 
 ### Learning outcomes
 
-- Applied a real cluster change for GitOps and CI/CD with Kubernetes
-- Used describe/Events for verification
-- Destroyed lab resources cleanly
+- Structured a GitOps repo with app base and environment overlay
+- Authored a CI workflow stub for client-side dry-run validation
+- Validated manifests offline with Python and kustomize
+- Applied an overlay and captured rollout evidence
 
 ### Cleanup
 
 ```bash
-kubectl delete namespace rebash-lab --ignore-not-found
-# Keep ~/rebash-kubernetes/ for later tutorials
+kubectl delete namespace rebash-gitops-lab --ignore-not-found --wait=true
+rm -f ~/rebash-k8s/module-15/clusters/dev/rendered.yaml ~/rebash-k8s/module-15/gitops-evidence.txt ~/rebash-k8s/module-15/module-15-gitops-evidence.tgz
 ```
 
 ## Validation

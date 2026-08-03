@@ -167,13 +167,10 @@ Your team wants a small release helper that records the latest commit on a polic
 
 #### Task 1 – Temp repo and local commits via subprocess
 
-```bash
-cd ~/rebash-python/lab16
-set -euo pipefail
-# shellcheck disable=SC1091
-source .venv/bin/activate
 
-cat > local_git_lab.py << 'EOF'
+Create `local_git_lab.py`:
+
+```python
 #!/usr/bin/env python3
 """Create a disposable repo and two commits — lab directory only."""
 from __future__ import annotations
@@ -234,8 +231,15 @@ def main() -> int:
 
 if __name__ == "__main__":
     raise SystemExit(main())
-EOF
+```
 
+Run:
+
+```bash
+cd ~/rebash-python/lab16
+set -euo pipefail
+# shellcheck disable=SC1091
+source .venv/bin/activate
 python local_git_lab.py | tee local-git-run.txt
 test -s local-git-evidence.json
 test -d sample-repo/.git
@@ -245,13 +249,10 @@ test -d sample-repo/.git
 
 #### Task 2 – Read-only public GitHub API (or skip)
 
-```bash
-cd ~/rebash-python/lab16
-set -euo pipefail
-# shellcheck disable=SC1091
-source .venv/bin/activate
 
-cat > forge_readonly.py << 'EOF'
+Create `forge_readonly.py`:
+
+```python
 #!/usr/bin/env python3
 """Read-only public GitHub API canary — no mutations."""
 from __future__ import annotations
@@ -306,8 +307,15 @@ def main() -> int:
 
 if __name__ == "__main__":
     raise SystemExit(main())
-EOF
+```
 
+Run:
+
+```bash
+cd ~/rebash-python/lab16
+set -euo pipefail
+# shellcheck disable=SC1091
+source .venv/bin/activate
 python forge_readonly.py | tee forge-run.txt
 test -s forge-evidence.json
 ```
@@ -315,6 +323,24 @@ test -s forge-evidence.json
 **Expected output:** `forge-evidence.json` with `mode` `live` (status 200) or `skipped` on network errors — both acceptable.
 
 #### Task 3 – Evidence pack and mutate refusal
+
+
+Create `pack_evidence.py`:
+
+```python
+import json
+from pathlib import Path
+
+pack = {
+    "local": json.loads(Path("local-git-evidence.json").read_text(encoding="utf-8")),
+    "forge": json.loads(Path("forge-evidence.json").read_text(encoding="utf-8")),
+}
+Path("lab16-evidence.json").write_text(json.dumps(pack, indent=2) + "\n", encoding="utf-8")
+assert pack["local"]["commit_count"] >= 2
+print("evidence ok")
+```
+
+Run:
 
 ```bash
 cd ~/rebash-python/lab16
@@ -328,19 +354,7 @@ rc=$?
 set -e
 test "$rc" -eq 2
 grep -F 'REFUSED' mutate-denied.txt
-
-python - << 'EOF'
-import json
-from pathlib import Path
-
-pack = {
-    "local": json.loads(Path("local-git-evidence.json").read_text(encoding="utf-8")),
-    "forge": json.loads(Path("forge-evidence.json").read_text(encoding="utf-8")),
-}
-Path("lab16-evidence.json").write_text(json.dumps(pack, indent=2) + "\n", encoding="utf-8")
-assert pack["local"]["commit_count"] >= 2
-print("evidence ok")
-EOF
+python pack_evidence.py
 ```
 
 **Expected output:** mutate refused; `lab16-evidence.json` merges local + forge facts.

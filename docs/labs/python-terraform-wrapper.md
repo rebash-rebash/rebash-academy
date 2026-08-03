@@ -64,9 +64,9 @@ python3 -m venv .venv && source .venv/bin/activate
 ```
 
 ## Initial State — fixture plan
+Create `fixtures/plan.json`:
 
-```bash
-cat > fixtures/plan.json << 'EOF'
+```json
 {
   "resource_changes": [
     {"address": "aws_instance.web", "change": {"actions": ["update"]}},
@@ -74,7 +74,6 @@ cat > fixtures/plan.json << 'EOF'
     {"address": "aws_security_group.old", "change": {"actions": ["delete"]}}
   ]
 }
-EOF
 ```
 
 ## Task

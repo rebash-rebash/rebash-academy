@@ -148,21 +148,18 @@ A junior engineer’s “service inventory” script is used in CI. It should li
 
 The script below is intentionally wrong: weak quoting, no `pipefail`, and it forces exit `0` at the end.
 
-```bash
-cd ~/rebash-shell/lab18
-set -euo pipefail
+Create `sample data/services.txt`:
 
-mkdir -p "sample data"
-cat > "sample data/services.txt" << 'EOF'
+```text
 nginx.service
 ssh.service
 cron.service
 redis.service
-EOF
-# Copy without spaces so the exit-code bug can be shown separately from quoting
-cp "sample data/services.txt" ./services.txt
+```
 
-cat > inventory-broken.sh << 'EOF'
+Create `inventory-broken.sh`:
+
+```bash
 #!/usr/bin/env bash
 # BROKEN on purpose — do not use in production
 set -euo
@@ -177,7 +174,18 @@ matches=$(grep $PATTERN $FILE | wc -l)
 echo "matches=$matches"
 # Bug 3: always exit success for "CI calm"
 exit 0
-EOF
+```
+
+Run:
+
+```bash
+cd ~/rebash-shell/lab18
+set -euo pipefail
+
+mkdir -p "sample data"
+# Copy without spaces so the exit-code bug can be shown separately from quoting
+cp "sample data/services.txt" ./services.txt
+
 chmod +x inventory-broken.sh
 
 # Before A: path with spaces — unquoted $FILE splits the path (expect non-zero / errors)
@@ -200,17 +208,16 @@ test "${ec_nomatch}" -eq 0
 grep -F 'matches=0' before-nomatch-out.txt | tee before-nomatch-snip.txt
 ```
 
+
 **Expected output:** spaces path fails or errors (`before-spaces-err.txt` / non-zero exit). No-match on `./services.txt` still exits `0` with `matches=0` — that is the CI bug.
 
 #### Task 2 – Fix quoting, pipefail, and exit codes
 
 Write `inventory-fixed.sh` with correct quoting, `set -euo pipefail`, and honest exits (`0` when matches ≥ 1, `3` when no matches, `1` on usage).
 
-```bash
-cd ~/rebash-shell/lab18
-set -euo pipefail
+Create `inventory-fixed.sh`:
 
-cat > inventory-fixed.sh << 'EOF'
+```bash
 #!/usr/bin/env bash
 set -euo pipefail
 
@@ -256,7 +263,14 @@ main() {
 }
 
 main "$@"
-EOF
+```
+
+Run:
+
+```bash
+cd ~/rebash-shell/lab18
+set -euo pipefail
+
 chmod +x inventory-fixed.sh
 
 # After: path with spaces works
@@ -273,6 +287,7 @@ printf '%s\n' "${ec}" | tee after-nomatch-exit.txt
 test "${ec}" -eq 3
 grep -F 'RESULT=status=nomatch' after-nomatch-out.txt | tee after-nomatch-snip.txt
 ```
+
 
 **Expected output:** spaces path succeeds with `RESULT=status=ok`; no-match path exits `3`.
 

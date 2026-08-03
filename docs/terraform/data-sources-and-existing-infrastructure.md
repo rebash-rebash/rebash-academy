@@ -1,8 +1,8 @@
 ---
 title: "Data Sources and Existing Infrastructure"
-description: "Read existing infrastructure with Terraform data sources — remote lookups, external data patterns, and when not to manage what you only need to reference."
+description: "Query existing infrastructure with Terraform data sources — local files, external programs, HTTP, and terraform_remote_state — without importing management."
 difficulty: intermediate
-estimated_time: "45–60 min"
+estimated_time: "60–70 min"
 technology: terraform
 category: terraform
 module: "Module 11 · Data Sources"
@@ -14,13 +14,15 @@ career_paths:
 skills:
   - terraform
   - data-sources
+  - import
 prerequisites:
   - terraform/functions-templates-and-dynamic-blocks
+  - terraform/remote-state-and-backends
 next:
   - terraform/workspaces-and-environment-strategies
 related:
-  - terraform/resources-dependencies-and-meta-arguments
-  - terraform/remote-state-and-backends
+  - terraform/terraform-state-fundamentals
+  - terraform/troubleshooting-terraform
 labs: []
 projects: []
 interview: interview/terraform
@@ -29,352 +31,558 @@ certifications:
 tags:
   - terraform
   - data-sources
-  - existing-infrastructure
 author: Shaik Basha
-last_updated: "2026-07-31"
+last_updated: "2026-08-03"
 comments: false
 ---
-
 
 # Data Sources and Existing Infrastructure
 
 ## Overview
 
+Not everything belongs in Terraform state on day one. **Data sources** read existing infrastructure, files, HTTP endpoints, or other stacks **without managing lifecycle** — ideal for looking up VPC IDs, AMI filters, certificate ARNs, or values maintained by another team.
 
+This tutorial covers **`data` sources**, **`terraform_remote_state`**, **`external`**, and **`http`** patterns for **existing infrastructure**. The lab under `~/rebash-terraform/module-11` reads a brownfield Docker network and config file, calls an **external** owner lookup, and wires data into a new container — real apply against Docker Engine.
 
-
-
-
-
-Use data sources to read existing objects, contrast them with managed resources, and practise remote / local lookup patterns without taking ownership of lifecycle.
-
-**Data sources** read objects Terraform does not manage. They answer “what already exists?” during plan and refresh — AMI IDs, VPC IDs, shared DNS zones, files seeded outside the root. Pair them with resources that *you* own; do not use a data source as a substitute for managing something your stack should create and destroy.
-
-This is a core tutorial in **Module 11 · Data Sources** of the REBASH Academy **Terraform for Cloud & DevOps Engineers** series — written for Cloud, DevOps, Platform, and SRE engineers.
+This is **Tutorial 13** in **Module 11: Data Sources** of the REBASH Academy **Terraform for Cloud & DevOps Engineers** series.
 
 ## Prerequisites
 
-
-
-
-
-
-
 - [Functions, Templates, and Dynamic Blocks](functions-templates-and-dynamic-blocks.md)
-- Terraform CLI 1.9+
+- [Remote State and Backends](remote-state-and-backends.md)
+- Terraform CLI ≥ 1.5
+- `bash` and `curl` available
 
 ## Learning Objectives
 
-
-
-
-
-
-
 By the end of this tutorial, you will be able to:
 
-- [ ] Contrast `resource` vs `data` addresses  
-- [ ] Read local / remote existing infrastructure safely  
-- [ ] Explain when `terraform_remote_state` or cloud lookups fit  
-- [ ] Avoid managing objects you only meant to reference
+- [ ] Declare `data` blocks and reference `data.TYPE.NAME.attribute`
+- [ ] Read local files and external program JSON with data sources
+- [ ] Fetch remote metadata with `http` data sources safely
+- [ ] Contrast data sources with `terraform import` for management handover
+- [ ] Explain when read-only lookups beat duplicating hard-coded IDs
 
 ## Architecture
 
+Data sources fetch read-only values at plan time; managed resources depend on those values but data sources are never created or destroyed by apply.
 
-
-
-
-
-
-This topic’s control points and relationships are shown below.
-
-![Data sources](../assets/excalidraw/terraform-data-sources.svg)
+![Terraform data sources](../assets/excalidraw/terraform-data-sources.svg)
 
 ## Theory
 
-
-
-
-
-
-
 ### What it is
 
-A **data source** is a read-only lookup declared with a `data` block. Address form: `data.TYPE.NAME.ATTRIBUTE`. Providers implement data sources for cloud inventories (for example latest AMI, existing subnet by tag) and utility lookups (`local_file`, `http`, and similar). **Remote data** often means reading another team’s outputs via `terraform_remote_state` or querying shared cloud resources by filter. **External** patterns (for example the `external` provider) shell out to programmes that return JSON — powerful and easy to abuse; prefer native data sources when they exist.
+**Data sources** use the `data` block:
+
+```hcl
+data "local_file" "config" {
+  filename = "${path.module}/config/existing.env"
+}
+
+resource "null_resource" "app" {
+  triggers = {
+    config_hash = md5(data.local_file.config.content)
+  }
+}
+```
+
+Reference attributes as **`data.local_file.config.content`**.
+
+Common data sources:
+
+| Data source | Reads |
+|-------------|-------|
+| `aws_vpc`, `aws_ami`, … | Live cloud objects (provider-specific) |
+| `local_file` | File on disk |
+| `http` | HTTP/HTTPS response body |
+| `external` | JSON from a helper program stdout |
+| `terraform_remote_state` | Outputs from another stack's state |
+
+**Data vs managed resource:** Terraform **never creates or destroys** data source objects — it **reads** them each plan/apply (refresh).
+
+**Data vs import:** **Import** brings an existing object **under management** in state. **Data source** leaves ownership elsewhere — you only read attributes.
 
 ### Why it matters
 
-Real platforms are not greenfield. You attach workloads to an existing VPC, resolve a shared KMS key, or read a landing-zone output. Data sources keep those dependencies explicit in the graph: your apply waits until lookups succeed, and plans fail loudly when the shared object disappears. Misusing them — reading an object your root should own — causes split-brain: nobody knows who may destroy it, and drift becomes invisible to the “wrong” state file.
+Brownfield deployments reference shared network, DNS, and certificates owned by platform teams. Hard-coding IDs breaks when upstream changes. Data sources keep your module **loosely coupled** — read the current VPC filter result at plan time. Wrong data source configuration fails plans early instead of at apply.
 
 ### How it works
 
-1. Declare `data "local_file" "seed" { filename = ... }` (or a cloud data source with filters).
-2. During plan/refresh, the provider reads the object and exposes attributes.
-3. Resources reference `data.local_file.seed.content` — creating an implicit dependency edge.
-4. Terraform does **not** create, update, or destroy the looked-up object when you destroy the root (unless a separate resource manages it).
-5. For cross-stack contracts, prefer a few stable remote outputs or a data plane over deep remote-state webs.
+1. Terraform configures the data source with lookup parameters.
+2. Provider (or built-in logic) fetches data during plan refresh.
+3. Attributes populate expressions for resources, locals, and outputs.
+4. Data sources appear in dependency graph — resources wait for successful read.
+5. If lookup fails (404, missing file), plan errors unless optional patterns used.
 
-Cloud filters must be unique or plans become non-deterministic. Pin AMI filters carefully unless you intend every new image to trigger churn.
+**external data source** runs a program that must print JSON to stdout:
+
+```hcl
+data "external" "owner" {
+  program = ["bash", "${path.module}/scripts/read-owner.sh"]
+}
+# data.external.owner.result["owner_email"]
+```
 
 ### Key concepts and comparisons
 
-| Construct | Lifecycle | Typical use |
-|-----------|-----------|-------------|
-| `resource` | Create / update / destroy | Objects you own |
-| `data` | Read only | Shared / others’ objects |
-| `terraform_remote_state` | Read outputs | Cross-stack contracts |
+| Pattern | Manages resource? | Use when |
+|---------|-------------------|----------|
+| `resource` | Yes | Terraform owns lifecycle |
+| `data` | No | Read-only reference |
+| `import` + `resource` | Yes after import | Adopt existing object |
+| `terraform_remote_state` | No (reads other state) | Cross-stack outputs |
 
-Prefer a data source for shared VPC/AMI/DNS you must not destroy; import when taking ownership; use tfvars when the value is config, not a live lookup.
+| Risk | Mitigation |
+|------|------------|
+| Data changes between plan and apply | Re-run plan before apply; short plan-apply window |
+| external script failure | Validate JSON; test script in CI |
+| http to untrusted URL | Allow-list hosts; TLS verify |
 
 ### Common pitfalls
 
-- Data source for something this root should manage — ownership confusion.
-- Non-unique filters — plans pick different objects over time.
-- Assuming destroy removes looked-up cloud objects — it does not.
-- `external` programmes that are slow, non-hermetic, or secret-leaky in CI.
+- **Confusing data and resource addresses** — `data.aws_vpc.main` vs `aws_vpc.main`.
+- **external program prints logs to stdout** — corrupts JSON parse.
+- **File path outside module** — breaks CI checkout paths; use `path.module`.
+- **Assuming data is free** — cloud API lookups count against rate limits.
+- **Reading secrets via http** — secrets enter state; prefer vault data sources.
 
 ## Hands-on Lab
 
-
-
 ### Objective
 
-Run a complete Terraform workflow (init → plan → apply → prove → destroy) for **Data Sources and Existing Infrastructure** without paid cloud resources.
+Read a pre-existing Docker network and config file, call an **external** script for JSON metadata, fetch public HTTP metadata, and wire data sources into a real **Docker container** under `~/rebash-terraform/module-11`.
 
 ### Prerequisites
 
 - Terraform CLI ≥ 1.5
-- Network access to download the null provider once
+- Docker Engine running (`docker info` succeeds)
+- Network access for `http` data source (HashiCorp checkpoint endpoint)
 
 ### Lab environment
 
-Workspace: `~/rebash-terraform/module-11/data-sources/{seed,out}`
-
-Local Terraform only (`null`/`local` providers). No AWS/GCP/Azure credentials required.
-
 ```bash
-mkdir -p ~/rebash-terraform/module-11/data-sources/{seed,out} && cd ~/rebash-terraform/module-11/data-sources/{seed,out}
+mkdir -p ~/rebash-terraform/module-11/{config,scripts} && cd ~/rebash-terraform/module-11
 ```
+
+Runtime: local Docker Engine.
 
 ### Real-world scenario
 
-You are automating **Data Sources and Existing Infrastructure** for a platform repo. Reviewers expect a clean plan artefact, applied evidence, and a destroy path before merge.
+Your application stack must attach to a **platform-owned Docker network**, read a **brownfield config file**, resolve **owner email** from an internal script (simulating CMDB lookup), and verify **Terraform CLI version metadata** from HashiCorp's checkpoint service before provisioning the service container.
 
 ### Step-by-step tasks
 
-#### Task 1 – Author and initialise configuration
+#### Task 1 – Seed brownfield network and config
 
-Use local/null providers so the lab never bills a cloud account.
+Create the platform network outside Terraform (simulating existing infrastructure):
 
 ```bash
-cat > versions.tf << 'EOF'
+docker network create rebash-platform-net | tee platform-net-create.txt
+grep -q 'rebash-platform-net' platform-net-create.txt
+```
+
+Create `config/existing.env`:
+
+```text
+UPSTREAM_SERVICE=payments-api
+UPSTREAM_VERSION=2.4.1
+MAINTENANCE_WINDOW=sunday-02:00-04:00-utc
+```
+
+Create `versions.tf`:
+
+```hcl
 terraform {
   required_version = ">= 1.5.0"
+
   required_providers {
-    null = { source = "hashicorp/null", version = "~> 3.2" }
+    docker = {
+      source  = "kreuzwerker/docker"
+      version = "~> 3.0"
+    }
+    local = {
+      source  = "hashicorp/local"
+      version = "~> 2.5"
+    }
+    external = {
+      source  = "hashicorp/external"
+      version = "~> 2.3"
+    }
+    http = {
+      source  = "hashicorp/http"
+      version = "~> 3.4"
+    }
   }
 }
-EOF
-cat > main.tf << 'EOF'
-resource "null_resource" "lab" {
-  triggers = { topic = "rebash-lab" }
-  provisioner "local-exec" {
-    command = "echo applied > applied.txt"
-  }
-}
-output "note" { value = null_resource.lab.triggers.topic }
-EOF
-terraform init
-terraform validate
 ```
 
-**Expected output:** `Terraform has been successfully initialized` and validate succeeds.
+Create `providers.tf`:
 
-#### Task 2 – Plan, apply, and prove outputs
+```hcl
+provider "docker" {}
+```
 
-Treat the plan as the change ticket — review before apply.
+Create `data.tf`:
+
+```hcl
+data "docker_network" "platform" {
+  name = "rebash-platform-net"
+}
+
+data "local_file" "platform_config" {
+  filename = "${path.module}/config/existing.env"
+}
+
+data "external" "owner_lookup" {
+  program = ["bash", "${path.module}/scripts/read-owner.sh"]
+
+  query = {
+    service = "payments-api"
+  }
+}
+
+data "http" "terraform_checkpoint" {
+  url = "https://checkpoint-api.hashicorp.com/v1/check/terraform"
+}
+```
+
+Create `scripts/read-owner.sh`:
 
 ```bash
-terraform plan -out=tfplan
-terraform show -no-color tfplan | tee plan.txt
-terraform apply tfplan
-terraform output
-test -f applied.txt && cat applied.txt
+#!/usr/bin/env bash
+set -euo pipefail
+query="$(cat)"
+service="$(echo "$query" | jq -r '.service')"
+owner_email="${service}-owner@example.com"
+jq -n --arg owner "$owner_email" --arg service "$service" \
+  '{owner_email: $owner, service: $service}'
 ```
 
-**Expected output:** plan.txt shows create; `applied` written; output prints the note.
+Run:
+
+```bash
+chmod +x ~/rebash-terraform/module-11/scripts/read-owner.sh
+cd ~/rebash-terraform/module-11
+terraform init
+echo '{"service":"payments-api"}' | bash scripts/read-owner.sh | grep -q owner_email
+echo "seed OK" | tee seed-ok.txt
+```
+
+**Expected output:** External script prints JSON with `owner_email`; platform network exists.
+
+#### Task 2 – Wire data sources into Docker container and outputs
+
+Create `main.tf`:
+
+```hcl
+locals {
+  config_lines = split("\n", trimspace(data.local_file.platform_config.content))
+  upstream_version = [
+    for line in local.config_lines : trimspace(split("=", line)[1])
+    if startswith(line, "UPSTREAM_VERSION=")
+  ][0]
+}
+
+resource "docker_image" "app" {
+  name         = "nginx:1.27-alpine"
+  keep_locally = true
+}
+
+resource "docker_container" "app" {
+  name  = "payments-api-${local.upstream_version}"
+  image = docker_image.app.image_id
+
+  networks_advanced {
+    name = data.docker_network.platform.name
+  }
+
+  labels = {
+    upstream_version = local.upstream_version
+    owner_email      = data.external.owner_lookup.result.owner_email
+    tf_current       = jsondecode(data.http.terraform_checkpoint.response_body).current_version
+    managed_by       = "terraform"
+  }
+}
+```
+
+Create `outputs.tf`:
+
+```hcl
+output "upstream_version" {
+  value = local.upstream_version
+}
+
+output "owner_email" {
+  value = data.external.owner_lookup.result.owner_email
+}
+
+output "network_id" {
+  value = data.docker_network.platform.id
+}
+
+output "container_name" {
+  value = docker_container.app.name
+}
+```
+
+Run:
+
+{% raw %}
+```bash
+cd ~/rebash-terraform/module-11
+terraform validate
+terraform apply -auto-approve
+terraform output -raw upstream_version | tee upstream-version.txt
+test "$(cat upstream-version.txt)" = "2.4.1"
+docker inspect payments-api-2.4.1 --format '{{index .Config.Labels "owner_email"}}' \
+  | tee owner-label.txt
+grep -q 'payments-api-owner@example.com' owner-label.txt
+docker network inspect rebash-platform-net --format '{{len .Containers}}' | tee net-containers.txt
+test "$(cat net-containers.txt)" -ge 1
+echo "task2 OK" | tee task2-ok.txt
+```
+{% endraw %}
+
+**Expected output:** Container attached to platform network with owner label from external data.
+
+#### Task 3 – Prove plan changes when upstream file changes
+
+Update `config/existing.env`:
+
+```text
+UPSTREAM_SERVICE=payments-api
+UPSTREAM_VERSION=2.5.0
+MAINTENANCE_WINDOW=sunday-02:00-04:00-utc
+```
+
+Run:
+
+{% raw %}
+```bash
+cd ~/rebash-terraform/module-11
+terraform plan -no-color | tee plan-after-config-change.txt
+grep -q '2.5.0' plan-after-config-change.txt
+terraform apply -auto-approve
+terraform output -raw upstream_version | grep -q '2.5.0'
+docker ps --filter "name=payments-api-2.5.0" --format '{{.Names}}' | tee new-container.txt
+grep -q 'payments-api-2.5.0' new-container.txt
+echo "task3 OK" | tee task3-ok.txt
+```
+{% endraw %}
+
+**Expected output:** Plan detects container rename from version change; new container running.
+
+#### Task 4 – Data sources evidence script
+
+Create `data-evidence.sh`:
+
+{% raw %}
+```bash
+#!/usr/bin/env bash
+set -euo pipefail
+cd ~/rebash-terraform/module-11
+terraform validate
+terraform output -raw upstream_version | grep -q .
+terraform output -raw owner_email | grep -q '@example.com'
+terraform state list | grep -q 'data.docker_network.platform'
+docker inspect "$(terraform output -raw container_name)" --format '{{.State.Running}}' | grep -q true
+echo "data-evidence PASS" | tee data-evidence-pass.txt
+```
+{% endraw %}
+
+Run:
+
+```bash
+chmod +x ~/rebash-terraform/module-11/data-evidence.sh
+~/rebash-terraform/module-11/data-evidence.sh
+```
+
+**Expected output:** `data-evidence-pass.txt` contains `data-evidence PASS`.
 
 ### Validation steps
 
-- [ ] terraform validate passes
-- [ ] Plan was saved and reviewed before apply
-- [ ] Destroy completes with empty state (or resources removed)
+- [ ] `data.docker_network` read brownfield network without managing it
+- [ ] external script returned JSON consumed by Terraform
+- [ ] http data source fetched checkpoint metadata
+- [ ] Plan reacted to upstream file edit with container replace
+- [ ] Evidence script passes with running container
 
 ### Common errors and fixes
 
 | Error | Cause | Fix |
 |-------|-------|-----|
-| Provider not found | Missing init / network | Run `terraform init` again |
-| State locked | Concurrent apply | Wait or coordinate; never force-unlock casually |
-| Unexpected destroy in plan | Drift or wrong workspace | Read plan line-by-line before apply |
+| external JSON parse error | Script printed logs to stdout | Send logs to stderr only |
+| Network not found | Network not pre-created | Run `docker network create rebash-platform-net` |
+| http SSL error | Corporate proxy | Fix CA trust or use allowed internal URL |
+| Container name invalid | Version contains dots | Use `replace()` on version in name if needed |
+| Data source read during apply fail | Network blip | Re-run plan; add retry in provider config |
 
 ### Challenge exercise
 
-Add an input variable with a validation block and fail the plan with an illegal value, then fix it.
+Add a `data "local_file"` read of `scripts/read-owner.sh` and output its SHA256; add a `data "docker_image"` lookup for `nginx:1.27-alpine` and output image ID:
+
+```hcl
+data "local_file" "owner_script" {
+  filename = "${path.module}/scripts/read-owner.sh"
+}
+
+data "docker_image" "nginx" {
+  name = "nginx:1.27-alpine"
+}
+
+output "owner_script_sha" {
+  value = sha256(data.local_file.owner_script.content)
+}
+
+output "nginx_image_id" {
+  value = data.docker_image.nginx.id
+}
+```
+
+Apply and verify:
+
+```bash
+cd ~/rebash-terraform/module-11
+terraform apply -auto-approve
+terraform output -raw owner_script_sha | grep -q .
+terraform output -raw nginx_image_id | grep -q .
+echo "data challenge OK"
+```
+
+**Expected output:** Non-empty SHA256 and image ID outputs.
 
 ### Learning outcomes
 
-- Completed a reviewable plan/apply cycle
-- Proved outputs/files exist
-- Destroyed lab state
+- Data vs resource mental model on real Docker objects
+- external program contract (JSON stdout)
+- Wiring data attributes into container labels and network attachment
+- Brownfield reads without import
 
 ### Cleanup
 
 ```bash
+cd ~/rebash-terraform/module-11
 terraform destroy -auto-approve
-rm -rf .terraform tfplan 2>/dev/null || true
+docker network rm rebash-platform-net 2>/dev/null || true
+rm -f seed-ok.txt upstream-version.txt owner-label.txt net-containers.txt \
+  task*-ok.txt plan-after-config-change.txt new-container.txt data-evidence-pass.txt \
+  platform-net-create.txt
+rm -rf .terraform .terraform.lock.hcl terraform.tfstate terraform.tfstate.backup
 ```
 
 ## Validation
 
-
-
-
-
-
-
-- [ ] Lab commands run under `~/rebash-terraform/module-11/data-sources/{seed,out}/`
-- [ ] You can explain each Theory section in your own words
-- [ ] You used modern tooling where it applies to this topic
-- [ ] You can describe one production failure mode for this topic
+- [ ] Completed module-11 data sources lab
+- [ ] Can explain data vs import decision
+- [ ] Know external script JSON requirements
+- [ ] Understand data sources refresh each plan
 
 ## Code Walkthrough
 
-
-
-
-
-
-
-Production practice for **Data Sources and Existing Infrastructure** always combines:
-
-1. Inspect before you change (status, plan, logs, dry-run)
-2. Prefer reversible, documented changes (Git, IaC, drop-ins, version pins)
-3. Capture evidence (command output, pipeline logs) for handovers
-4. Prefer current tools and APIs over legacy shortcuts
-5. Least privilege — escalate credentials only when required
-
-Keep runbooks short enough to follow under pressure. Automate checks; keep humans for judgement.
+1. **Brownfield file outside Terraform** — `local_file` data source reads it; no import needed.
+2. **external for CMDB** — script encapsulates lookup; swap script per environment.
+3. **http for version checks** — gate modules on minimum provider/tool versions.
+4. **Parse in locals** — keep resource blocks clean.
+5. **Triggers from data** — force replace when upstream metadata changes.
 
 ## Security Considerations
 
-
-
-
-
-
-
-- Treat credentials and tokens for terraform as privileged — never commit them
-- Prefer short-lived auth (OIDC, roles, SSO) over long-lived keys
-- Validate blast radius before apply/deploy/delete operations
-- Restrict who can approve production changes
-- Collect audit logs; limit who can read sensitive traces
+- `external` runs arbitrary programs — review scripts; restrict who can change them.
+- `http` data sources can leak response bodies into state — avoid authenticated URLs with secrets in response.
+- Do not fetch credentials from plain HTTP endpoints.
+- Validate and sanitise external JSON before use in resources.
+- Cloud data sources need read-only IAM — separate from apply roles.
 
 ## Common Mistakes
 
+!!! warning "Managing data source objects manually"
+    Editing the VPC in console while using `data.aws_vpc` is fine — Terraform reads current state.  
+    **Fix:** Do not confuse with `resource` — only resources are managed.
 
+!!! warning "external script stderr mixed into stdout"
+    Breaks JSON parsing.  
+    **Fix:** `echo debug >&2`; stdout JSON only.
 
-
-
-
-
-!!! warning "Data source for something this root should manage — ownership confusion."
-    Validate assumptions against the Theory section and official docs before changing production.
-
-!!! warning "Non-unique filters — plans pick different objects over time."
-    Lab shortcuts (open security groups, admin roles, skip approvals) must not ship unchanged.
-
-!!! warning "Changing production without a rollback path"
-    Always know how to revert (previous artefact, prior release, state rollback, DNS failback).
+!!! warning "Import when read-only suffices"
+    Import adds management overhead for shared platform resources.  
+    **Fix:** Use data source unless your team owns lifecycle.
 
 ## Best Practices
 
-
-
-
-
-
-
-- Encode Data Sources and Existing Infrastructure changes as code and review them in pull requests
-- Pin versions (images, modules, actions, provider plugins)
-- Separate environments with clear promotion gates
-- Alert on symptoms with runbooks attached
-- Destroy lab resources; tag everything with owner and expiry where possible
+- Prefer data sources for shared platform resources owned elsewhere.
+- Pin external scripts in Git; test with fixture JSON in CI.
+- Use `terraform_remote_state` for first-party stack outputs over ad-hoc data duplication.
+- Document required upstream objects (tags, names) for data source filters.
+- Handle "not found" with clear variable validation where provider allows.
 
 ## Troubleshooting
 
-
-
-
-
-
-
 | Symptom | Likely cause | Fix |
 |---------|--------------|-----|
-| Auth / permission denied | Wrong identity, policy, or scope | Check caller identity, roles, and least-privilege policies |
-| Timeout / no route | Network, DNS, security group, or endpoint | Trace path, DNS, and allow-lists before retrying |
-| Drift / unexpected plan | Manual change or wrong state/workspace | Reconcile desired vs actual; avoid click-ops on managed resources |
-| Pipeline/job red | Flaky step, cache, or missing secret | Read failing step logs; bisect recent workflow/config changes |
-| Cost spike | Idle load balancer, NAT, oversized compute | Inventory billable resources; stop/delete labs promptly |
+| data source not found error | Wrong provider alias | Check provider configuration |
+| Intermittent http failures | Network or rate limit | Retry; cache in external script |
+| Stale data in plan | Cached refresh | `-refresh=true` default; re-plan |
+| import vs data confusion | Wrong block type | `data` for read; `resource`+import for manage |
+| external exit non-zero | Script error | Run script manually with sample query JSON |
 
 ## Summary
 
-
-
-
-
-
-
-**Data Sources and Existing Infrastructure** is essential for Cloud and DevOps engineers working with terraform. Practise the lab until the inspection and change path is muscle memory, then continue the track.
+Data sources let Terraform **read** existing infrastructure and metadata without taking ownership. You consumed **local_file**, **external**, and **http** data, wired results into resources, and reacted to upstream file changes. Next, [Workspaces and Environment Strategies](workspaces-and-environment-strategies.md) separates dev and staging state.
 
 ## Interview Questions
 
+**1. What is the difference between a resource and a data source?**
 
+??? success "Reveal answer"
+    A **resource** is **managed** — Terraform creates, updates, and destroys it. A **data source** is **read-only** — Terraform fetches attributes at plan/refresh time but never changes the object. Use resources for ownership; data sources for lookups.
 
+**2. When would you use terraform import instead of a data source?**
 
+??? success "Reveal answer"
+    **Import** when your team will **manage lifecycle** of an existing object going forward (adopt legacy server into state). **Data source** when another team or system **continues to own** the object and you only need attributes (VPC ID from network stack).
 
+**3. How does the external data source work?**
 
-1. What is a data source used for?
-2. How does a data source differ from a managed resource?
-3. When is it better to import existing infrastructure than only read it with data sources?
-4. What failures occur if a data source cannot find the object?
-5. Can data source results end up in state?
+??? success "Reveal answer"
+    Terraform runs the **`program`** with **`query`** JSON on stdin (legacy) or as args depending on provider version; the program must print **JSON object to stdout**. Attributes appear under **`data.external.NAME.result`**. Errors go to stderr; non-zero exit fails the plan.
 
-!!! tip "Sample answer — question 2"
-    Data sources read existing objects; resources create and manage lifecycle. Data sources fail the plan/apply if lookups miss, while resources propose creation.
+**4. Do data sources appear in terraform state?**
 
-!!! tip "Sample answer — question 4"
-    Use import or bring resources under management when Terraform must create/update/delete them. Data sources alone will not reconcile drift on those objects.
+??? success "Reveal answer"
+    Yes — cached **attributes** are stored in state so Terraform knows dependency results. They are not **managed resources** — there is no create/destroy API call for the object itself, only refresh reads.
+
+**5. What happens if a data source lookup fails at plan time?**
+
+??? success "Reveal answer"
+    Plan **errors** — for example VPC filter matches zero subnets, file missing, HTTP 404. Fix filters, paths, or permissions before apply proceeds. This fail-fast behaviour protects against wrong infrastructure references.
+
+**6. How is terraform_remote_state different from aws_vpc data source?**
+
+??? success "Reveal answer"
+    **`terraform_remote_state`** reads **outputs from another Terraform stack's state** — first-party contract. **`aws_vpc` data source** queries **AWS API** live — useful when network was not built by Terraform or you need current AWS truth.
+
+**7. Security concern with external data source?**
+
+??? success "Reveal answer"
+    It executes ** arbitrary code** during plan with the runner's privileges — supply chain risk if scripts are editable by untrusted users. Review scripts, run in locked-down CI, avoid secrets in query args logged by debug.
+
+**8. Can data source values change between plan and apply?**
+
+??? success "Reveal answer"
+    **Yes** — upstream systems can change. Terraform refreshes again at apply by default. For critical values, minimise plan-apply delay, use `-refresh=false` only deliberately, and re-plan before production apply if window is long.
 
 ## Related Tutorials
 
-
-
-
-
-
-
-- [Course overview](index.md)
-- [Workspaces and Environment Strategies](workspaces-and-environment-strategies.md)
+- [Terraform course index](index.md)
+- **Previous:** [Functions, Templates, and Dynamic Blocks](functions-templates-and-dynamic-blocks.md)
+- **Next:** [Workspaces and Environment Strategies](workspaces-and-environment-strategies.md)
+- [Remote State and Backends](remote-state-and-backends.md)
 
 ## References
 
-
-
-
-
-
-
-- [Data Sources](https://developer.hashicorp.com/terraform/language/data-sources)  
-- [terraform_remote_state](https://developer.hashicorp.com/terraform/language/state/remote-state-data)  
-- [hashicorp/local](https://registry.terraform.io/providers/hashicorp/local/latest)
+- [Data sources](https://developer.hashicorp.com/terraform/language/data-sources)
+- [external data source](https://registry.terraform.io/providers/hashicorp/external/latest/docs/data-sources/external)
+- [http data source](https://registry.terraform.io/providers/hashicorp/http/latest/docs/data-sources/http)
+- [Import](https://developer.hashicorp.com/terraform/cli/import)
+- [terraform_remote_state](https://developer.hashicorp.com/terraform/language/state/remote-state-data)

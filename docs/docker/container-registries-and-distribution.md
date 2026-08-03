@@ -30,7 +30,7 @@ tags:
   - registry
   - ghcr
 author: Shaik Basha
-last_updated: "2026-07-31"
+last_updated: "2026-08-03"
 comments: false
 ---
 
@@ -137,22 +137,21 @@ Document who owns each registry namespace and how break-glass credentials are ro
 
 ## Hands-on Lab
 
-
-
 ### Objective
 
-Build or run a real Docker solution for **Container Registries and Distribution** and prove it with inspect/logs/HTTP.
+Build a tiny release image, record its immutable `Id`, export it with `docker save`, reload it offline, and prove the reloaded image matches the original digest metadata.
 
 ### Prerequisites
 
 - Docker Engine or Docker Desktop
-- Permission to run containers
+- Permission to build and run containers locally
+- ~500 MB free disk for layers and the export tarball
 
 ### Lab environment
 
 Workspace: `~/rebash-docker/module-10`
 
-Local Docker daemon. Clean up containers/images after the lab.
+Local Docker daemon only — no cloud registry login required.
 
 ```bash
 mkdir -p ~/rebash-docker/module-10 && cd ~/rebash-docker/module-10
@@ -160,64 +159,106 @@ mkdir -p ~/rebash-docker/module-10 && cd ~/rebash-docker/module-10
 
 ### Real-world scenario
 
-You are validating **Container Registries and Distribution** before it lands in CI. The change must be reproducible with copy-paste commands and leave no orphan containers.
+Your platform team mirrors release images to an air-gapped cluster. Before promoting a build, you must capture immutable identity, export a tarball for offline transfer, and verify the reloaded image matches the original `Id`.
 
 ### Step-by-step tasks
 
-#### Task 1 – Run and inspect a container
+#### Task 1 – Build and tag a release image
 
-Start from a known image, publish a port, and verify HTTP.
+Create `Dockerfile`:
 
-```bash
-docker run -d --name rebash-lab -p 18080:80 nginx:alpine
-docker ps --filter name=rebash-lab
-curl -sI http://127.0.0.1:18080 | head -n 5 | tee headers.txt
-docker logs rebash-lab 2>&1 | head -n 10 | tee logs.txt
+```dockerfile
+FROM alpine:3.20
+RUN echo "rebash-registry-lab v1" > /version.txt
+CMD ["cat", "/version.txt"]
 ```
 
-**Expected output:** Container Up; HTTP 200 in headers.txt.
+Build with a semver tag and a local alias:
 
-#### Task 2 – Inspect runtime config
-
-Use inspect for status — production debugging rarely starts with guesswork.
-
+{% raw %}
 ```bash
-docker inspect rebash-lab --format '{{ "{{" }}.State.Status{{ "}}" }} {{ "{{" }}.Config.Image{{ "}}" }}' | tee inspect.txt
-test -s inspect.txt
+cd ~/rebash-docker/module-10
+docker build -t rebash-registry-lab:1.0.0 -t rebash-registry-lab:local .
+docker images rebash-registry-lab --format '{{ "{{" }}.Repository{{ "}}" }}:{{ "{{" }}.Tag{{ "}}" }} {{ "{{" }}.ID{{ "}}" }}' | tee image-tags.txt
+grep -q 'rebash-registry-lab:1.0.0' image-tags.txt
 ```
+{% endraw %}
 
-**Expected output:** inspect.txt shows `running` and the nginx image.
+**Expected output:** `image-tags.txt` lists both tags pointing at the same image ID.
+
+#### Task 2 – Record digest metadata and export offline bundle
+
+Capture `Id` and `RepoDigests` (often empty until a registry push) and save a tarball:
+
+{% raw %}
+```bash
+cd ~/rebash-docker/module-10
+docker inspect rebash-registry-lab:1.0.0 --format 'Id={{ "{{" }}.Id{{ "}}" }} RepoDigests={{ "{{" }}.RepoDigests{{ "}}" }}' | tee digest-id.txt
+docker save rebash-registry-lab:1.0.0 -o rebash-registry-lab-1.0.0.tar
+test -s rebash-registry-lab-1.0.0.tar
+ls -lh rebash-registry-lab-1.0.0.tar | tee tar-size.txt
+```
+{% endraw %}
+
+**Expected output:** `digest-id.txt` contains `Id=sha256:…`; the tarball is non-empty.
+
+#### Task 3 – Load tarball and prove identity
+
+Remove local tags, reload from the tarball, and confirm the same `Id`:
+
+{% raw %}
+```bash
+cd ~/rebash-docker/module-10
+ORIG_ID="$(grep -o 'Id=sha256:[a-f0-9]*' digest-id.txt | cut -d= -f2)"
+docker rmi rebash-registry-lab:1.0.0 rebash-registry-lab:local 2>/dev/null || true
+docker load -i rebash-registry-lab-1.0.0.tar | tee load.txt
+LOADED_ID="$(docker images --format '{{ "{{" }}.ID{{ "}}" }}' --filter reference='*rebash-registry-lab*' | head -1)"
+docker tag "$LOADED_ID" rebash-registry-lab:offline
+NEW_ID="$(docker inspect rebash-registry-lab:offline --format '{{ "{{" }}.Id{{ "}}" }}')"
+test "$ORIG_ID" = "$NEW_ID"
+echo "$NEW_ID" | tee reloaded-id.txt
+docker run --rm rebash-registry-lab:offline | tee run-offline.txt
+```
+{% endraw %}
+
+**Expected output:** `reloaded-id.txt` matches the original `Id`; `run-offline.txt` prints `rebash-registry-lab v1`.
 
 ### Validation steps
 
-- [ ] Container or image behaves as Expected output describes
-- [ ] Ports respond or command output matches
-- [ ] Cleanup removes lab resources
+- [ ] Image builds with pinned `alpine:3.20` base
+- [ ] `digest-id.txt` records image `Id`
+- [ ] `docker save` / `docker load` round-trip succeeds
+- [ ] Reloaded image `Id` matches the pre-export value
+- [ ] Cleanup removes tags, tarball, and evidence files
 
 ### Common errors and fixes
 
 | Error | Cause | Fix |
 |-------|-------|-----|
-| port is already allocated | Previous lab left a container | `docker rm -f` the old name or change port |
-| permission denied | User not in docker group | Use rootless Docker or fix group membership |
-| manifest unknown | Bad tag | Pin a real tag such as `nginx:alpine` |
+| `denied: requested access to the resource is denied` | Push without login | Lab uses offline save/load only — skip push or run `docker login` first |
+| Empty `RepoDigests` | Image never pushed to a registry | Expected locally; rely on `Id` for immutability proof |
+| `no space left on device` on save | Small disk | Remove unused images: `docker image prune -f` |
+| Tag lost after load | Load restores untagged layers | Re-tag as shown in Task 3 |
 
 ### Challenge exercise
 
-Add a non-root USER (or Compose healthcheck) and prove it with inspect.
+Run `registry:2.8` as `rebash-local-registry` on host port `50100`, push `rebash-registry-lab:1.0.0` to `localhost:50100/rebash/lab:1.0.0`, pull by digest, and capture `RepoDigests` in `push-digest.txt`.
 
 ### Learning outcomes
 
-- Executed a real Docker workflow
-- Captured evidence files
-- Removed disposable resources
+- Tagged a release image and recorded immutable identity
+- Exported and imported images for offline distribution
+- Verified reload preserves image `Id`
+- Understood when `RepoDigests` appears versus local-only builds
 
 ### Cleanup
 
 ```bash
-docker rm -f rebash-lab 2>/dev/null || true
-docker rmi rebash-lab:local 2>/dev/null || true
-docker compose down -v 2>/dev/null || true
+cd ~/rebash-docker/module-10
+docker rm -f rebash-local-registry 2>/dev/null || true
+docker rmi rebash-registry-lab:1.0.0 rebash-registry-lab:local rebash-registry-lab:offline 2>/dev/null || true
+docker rmi localhost:50100/rebash/lab:1.0.0 2>/dev/null || true
+rm -f rebash-registry-lab-1.0.0.tar *.txt
 ```
 
 ## Validation

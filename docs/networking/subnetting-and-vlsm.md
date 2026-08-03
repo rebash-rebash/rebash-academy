@@ -175,8 +175,11 @@ fi
 ```bash
 cd ~/rebash-networking/lab05
 set -euo pipefail
+```
 
-cat > subnet_split.py << 'PY'
+Create `subnet_split.py`:
+
+```python
 #!/usr/bin/env python3
 """Split a base IPv4 network into equal longer prefixes (REBASH lab05)."""
 from __future__ import annotations
@@ -227,8 +230,9 @@ def main() -> None:
 
 if __name__ == "__main__":
     main()
-PY
+```
 
+```bash
 chmod +x subnet_split.py
 python3 subnet_split.py | tee subnet-split-run.txt
 test "$(wc -l < subnet-split.txt | tr -d ' ')" -eq 4
@@ -256,12 +260,17 @@ ip -4 -o addr show | tee live-ip4-oneline.txt
 } | tee live-prefix-compare.txt
 
 # Read-only note: we do NOT add addresses or change routers in this lab
-cat > safety-note.txt << 'EOF'
+```
+
+Create `safety-note.txt`:
+
+```text
 REBASH lab05 safety: calculations only.
 No ip addr add, no route changes, no cloud VPC edits.
 Compare planned /26 table in subnet-split.txt with any live prefixes above.
-EOF
+```
 
+```bash
 tar -czf subnetting-evidence.tgz \
   hostname.txt python-version.txt ipcalc-version.txt base-cidr.txt \
   ipcalc-base.txt ipcalc-subnets.txt \

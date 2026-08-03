@@ -163,13 +163,10 @@ Your platform team wants a Python health inventory: namespaces and Pod phases fo
 
 #### Task 1 – Manifest generate + YAML validation (always works)
 
-```bash
-cd ~/rebash-python/lab18
-set -euo pipefail
-# shellcheck disable=SC1091
-source .venv/bin/activate
 
-cat > generate_manifests.py << 'EOF'
+Create `generate_manifests.py`:
+
+```python
 #!/usr/bin/env python3
 """Generate sample manifests and validate YAML structure."""
 from __future__ import annotations
@@ -249,8 +246,15 @@ def main() -> int:
 
 if __name__ == "__main__":
     raise SystemExit(main())
-EOF
+```
 
+Run:
+
+```bash
+cd ~/rebash-python/lab18
+set -euo pipefail
+# shellcheck disable=SC1091
+source .venv/bin/activate
 python generate_manifests.py | tee manifest-run.txt
 test -s manifests/deployment.yaml
 test -s manifest-evidence.json
@@ -261,13 +265,10 @@ python -c 'import json; d=json.load(open("manifest-evidence.json")); assert len(
 
 #### Task 2 – Live read-only list (or honest skip)
 
-```bash
-cd ~/rebash-python/lab18
-set -euo pipefail
-# shellcheck disable=SC1091
-source .venv/bin/activate
 
-cat > k8s_inventory.py << 'EOF'
+Create `k8s_inventory.py`:
+
+```python
 #!/usr/bin/env python3
 """Read-only namespace/pod inventory — never destroy."""
 from __future__ import annotations
@@ -338,8 +339,15 @@ def main() -> int:
 
 if __name__ == "__main__":
     raise SystemExit(main())
-EOF
+```
 
+Run:
+
+```bash
+cd ~/rebash-python/lab18
+set -euo pipefail
+# shellcheck disable=SC1091
+source .venv/bin/activate
 python k8s_inventory.py | tee inventory-run.txt
 test -s k8s-inventory.json
 ```
@@ -347,6 +355,25 @@ test -s k8s-inventory.json
 **Expected output:** `k8s-inventory.json` with `mode` `live` or `skipped-live` — both acceptable.
 
 #### Task 3 – Destroy refusal and evidence pack
+
+
+Create `pack_evidence.py`:
+
+```python
+import json
+from pathlib import Path
+
+pack = {
+    "manifests": json.loads(Path("manifest-evidence.json").read_text(encoding="utf-8")),
+    "inventory": json.loads(Path("k8s-inventory.json").read_text(encoding="utf-8")),
+    "destroy_refused": True,
+}
+Path("lab18-evidence.json").write_text(json.dumps(pack, indent=2) + "\n", encoding="utf-8")
+assert pack["manifests"]["mode"] == "manifest-dry-run"
+print("evidence ok")
+```
+
+Run:
 
 ```bash
 cd ~/rebash-python/lab18
@@ -360,20 +387,7 @@ rc=$?
 set -e
 test "$rc" -eq 2
 grep -F 'REFUSED' destroy-denied.txt
-
-python - << 'EOF'
-import json
-from pathlib import Path
-
-pack = {
-    "manifests": json.loads(Path("manifest-evidence.json").read_text(encoding="utf-8")),
-    "inventory": json.loads(Path("k8s-inventory.json").read_text(encoding="utf-8")),
-    "destroy_refused": True,
-}
-Path("lab18-evidence.json").write_text(json.dumps(pack, indent=2) + "\n", encoding="utf-8")
-assert pack["manifests"]["mode"] == "manifest-dry-run"
-print("evidence ok")
-EOF
+python pack_evidence.py
 ```
 
 **Expected output:** destroy refused; `lab18-evidence.json` merges manifest + inventory evidence.

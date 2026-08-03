@@ -29,7 +29,7 @@ tags:
   - docker
   - install
 author: Shaik Basha
-last_updated: "2026-07-31"
+last_updated: "2026-08-03"
 comments: false
 ---
 
@@ -132,22 +132,20 @@ On Linux servers and CI runners, install Engine from the vendor repository, star
 
 ## Hands-on Lab
 
-
-
 ### Objective
 
-Build or run a real Docker solution for **Docker Installation and Setup** and prove it with inspect/logs/HTTP.
+Create a post-install verification script, run it, and prove Docker Engine, group/context access, and a smoke container all succeed.
 
 ### Prerequisites
 
-- Docker Engine or Docker Desktop
-- Permission to run containers
+- Docker Engine or Docker Desktop freshly installed (or already running)
+- Shell access on Ubuntu 22.04/24.04 or macOS with Docker Desktop
 
 ### Lab environment
 
 Workspace: `~/rebash-docker/module-02`
 
-Local Docker daemon. Clean up containers/images after the lab.
+Local Docker daemon. The script stays in your lab folder for re-runs after upgrades.
 
 ```bash
 mkdir -p ~/rebash-docker/module-02 && cd ~/rebash-docker/module-02
@@ -155,77 +153,119 @@ mkdir -p ~/rebash-docker/module-02 && cd ~/rebash-docker/module-02
 
 ### Real-world scenario
 
-You are validating **Docker Installation and Setup** before it lands in CI. The change must be reproducible with copy-paste commands and leave no orphan containers.
+After provisioning a CI runner or engineer laptop, platform teams require a repeatable install check before granting registry access. You ship a small `verify-docker.sh` that confirms daemon connectivity, documents group membership, and runs `hello-world` or Alpine as a smoke test.
 
 ### Step-by-step tasks
 
-#### Task 1 – Run and inspect a container
+#### Task 1 – Author the verification script
 
-Start from a known image, publish a port, and verify HTTP.
+Create `verify-docker.sh`:
+
+{% raw %}
+```bash
+#!/usr/bin/env bash
+set -euo pipefail
+
+OUT="${1:-verify-docker.log}"
+{
+  echo "=== docker version ==="
+  docker version
+  echo "=== docker info (short) ==="
+  docker info --format 'RootDir={{ "{{" }}.DockerRootDir{{ "}}" }} Context={{ "{{" }}.Name{{ "}}" }}'
+  echo "=== group membership ==="
+  id
+  groups
+  echo "=== context ==="
+  docker context ls
+  echo "=== smoke: hello-world ==="
+  docker run --rm hello-world
+} | tee "$OUT"
+```
+{% endraw %}
+
+Make it executable and dry-run syntax:
 
 ```bash
-docker run -d --name rebash-lab -p 18080:80 nginx:alpine
-docker ps --filter name=rebash-lab
-curl -sI http://127.0.0.1:18080 | head -n 5 | tee headers.txt
-docker logs rebash-lab 2>&1 | head -n 10 | tee logs.txt
+cd ~/rebash-docker/module-02
+chmod +x verify-docker.sh
+bash -n verify-docker.sh
 ```
 
-**Expected output:** Container Up; HTTP 200 in headers.txt.
+**Expected output:** `bash -n` exits 0; script is executable.
 
-#### Task 2 – Inspect runtime config
+#### Task 2 – Run verification and capture log
 
-Use inspect for status — production debugging rarely starts with guesswork.
+Execute the script and assert the daemon responded.
 
 ```bash
-docker inspect rebash-lab --format '{{ "{{" }}.State.Status{{ "}}" }} {{ "{{" }}.Config.Image{{ "}}" }}' | tee inspect.txt
-test -s inspect.txt
+cd ~/rebash-docker/module-02
+./verify-docker.sh verify-docker.log
+grep -q 'Server:' verify-docker.log
+grep -q 'Hello from Docker' verify-docker.log
 ```
 
-**Expected output:** inspect.txt shows `running` and the nginx image.
+**Expected output:** `verify-docker.log` contains Server version lines and the hello-world greeting.
+
+#### Task 3 – Alpine smoke and context proof
+
+Pin a small image for a second smoke test; record active context.
+
+```bash
+cd ~/rebash-docker/module-02
+docker run --rm alpine:3.20 echo 'alpine smoke ok' | tee alpine-smoke.txt
+docker context show | tee active-context.txt
+grep -q 'alpine smoke ok' alpine-smoke.txt
+test -s active-context.txt
+```
+
+**Expected output:** `alpine-smoke.txt` prints `alpine smoke ok`; `active-context.txt` names the current context (often `default`).
 
 ### Validation steps
 
-- [ ] Container or image behaves as Expected output describes
-- [ ] Ports respond or command output matches
-- [ ] Cleanup removes lab resources
+- [ ] `verify-docker.sh` runs without errors and writes `verify-docker.log`
+- [ ] Log shows hello-world output and Server section from `docker version`
+- [ ] `alpine-smoke.txt` and `active-context.txt` confirm smoke container and context
 
 ### Common errors and fixes
 
 | Error | Cause | Fix |
 |-------|-------|-----|
-| port is already allocated | Previous lab left a container | `docker rm -f` the old name or change port |
-| permission denied | User not in docker group | Use rootless Docker or fix group membership |
-| manifest unknown | Bad tag | Pin a real tag such as `nginx:alpine` |
+| permission denied on socket | User not in `docker` group | `sudo usermod -aG docker "$USER"` and re-login, or run script with documented `sudo` |
+| Cannot connect to daemon | Service not started | Linux: `sudo systemctl enable --now docker`; Desktop: start the app |
+| hello-world pull fails | Offline or proxy | Configure registry mirror or pull once with network access |
 
 ### Challenge exercise
 
-Add a non-root USER (or Compose healthcheck) and prove it with inspect.
+Extend the script to fail fast when `docker info` reports `LiveRestoreEnabled` as false on a production checklist — append a grep check to `verify-docker.sh` after the info block:
+
+{% raw %}
+```bash
+docker info --format '{{ "{{" }}.LiveRestoreEnabled{{ "}}" }}' | tee liverestore.txt
+```
+{% endraw %}
+
+Re-run `./verify-docker.sh verify-docker-v2.log` and keep both logs.
+
+**Expected output:** `liverestore.txt` contains `true` or `false`; second log file exists.
 
 ### Learning outcomes
 
-- Executed a real Docker workflow
-- Captured evidence files
-- Removed disposable resources
+- Packaged post-install checks into a reusable shell script
+- Verified group/context access alongside daemon health
+- Ran pinned smoke containers (`hello-world`, `alpine:3.20`)
 
 ### Cleanup
 
 ```bash
-docker rm -f rebash-lab 2>/dev/null || true
-docker rmi rebash-lab:local 2>/dev/null || true
-docker compose down -v 2>/dev/null || true
+cd ~/rebash-docker/module-02
+docker rmi hello-world alpine:3.20 2>/dev/null || true
 ```
 
 ## Validation
 
-
-
-
-
-
-
 - [ ] Lab commands run under `~/rebash-docker/module-02/`
+- [ ] `verify-docker.log` proves install smoke tests passed
 - [ ] You can explain each Theory section in your own words
-- [ ] You used modern tooling where it applies to this topic
 - [ ] You can describe one production failure mode for this topic
 
 ## Code Walkthrough

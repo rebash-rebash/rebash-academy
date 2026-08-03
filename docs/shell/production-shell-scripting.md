@@ -155,11 +155,9 @@ Ops wants a tiny log-rotation helper for a practice app directory. Requirements:
 
 #### Task 1 – Production script with help, dry-run, and mkdir lock
 
-```bash
-cd ~/rebash-shell/lab17
-set -euo pipefail
+Create `rotate-demo.sh`:
 
-cat > rotate-demo.sh << 'EOF'
+```bash
 #!/usr/bin/env bash
 set -euo pipefail
 
@@ -264,7 +262,13 @@ main() {
 }
 
 main "$@"
-EOF
+```
+
+Run:
+
+```bash
+cd ~/rebash-shell/lab17
+set -euo pipefail
 
 chmod +x rotate-demo.sh
 
@@ -279,6 +283,7 @@ fi
 ./rotate-demo.sh --help | tee help.txt
 grep -F 'Exit codes:' help.txt
 ```
+
 
 **Expected output:** `help.txt` shows usage and exit codes; `shellcheck-status.txt` is `shellcheck_ok` or `shellcheck_skipped`.
 

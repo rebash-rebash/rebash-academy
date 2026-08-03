@@ -61,8 +61,9 @@ pip install 'httpx>=0.27,<1' 'PyYAML>=6.0,<7'
 
 ## Initial State
 
-```bash
-cat > targets.yaml << 'EOF'
+Create `targets.yaml`:
+
+```yaml
 targets:
   - name: httpbin-get
     url: https://httpbin.org/status/200
@@ -70,14 +71,15 @@ targets:
   - name: httpbin-404
     url: https://httpbin.org/status/404
     expect: 200
-EOF
+```
 
-cat > fixtures/results.json << 'EOF'
+Create `fixtures/results.json`:
+
+```json
 [
   {"name": "httpbin-get", "ok": true, "status": 200, "latency_ms": 120},
   {"name": "httpbin-404", "ok": false, "status": 404, "latency_ms": 110}
 ]
-EOF
 ```
 
 ## Task

@@ -29,7 +29,7 @@ tags:
   - images
   - layers
 author: Shaik Basha
-last_updated: "2026-07-31"
+last_updated: "2026-08-03"
 comments: false
 ---
 
@@ -133,22 +133,20 @@ Deployments should promote digests, not floating tags. Understanding layers expl
 
 ## Hands-on Lab
 
-
-
 ### Objective
 
-Build or run a real Docker solution for **Working with Docker Images** and prove it with inspect/logs/HTTP.
+Pull a pinned image, retag it, inspect layers and digest metadata, then export and reload the image via a tar archive with evidence files.
 
 ### Prerequisites
 
 - Docker Engine or Docker Desktop
-- Permission to run containers
+- Network access to pull from Docker Hub (or a mirror)
 
 ### Lab environment
 
 Workspace: `~/rebash-docker/module-04`
 
-Local Docker daemon. Clean up containers/images after the lab.
+Enough disk for one small image tar (~10 MB for Alpine).
 
 ```bash
 mkdir -p ~/rebash-docker/module-04 && cd ~/rebash-docker/module-04
@@ -156,77 +154,105 @@ mkdir -p ~/rebash-docker/module-04 && cd ~/rebash-docker/module-04
 
 ### Real-world scenario
 
-You are validating **Working with Docker Images** before it lands in CI. The change must be reproducible with copy-paste commands and leave no orphan containers.
+Your team mirrors images to an air-gapped registry. Before promoting `alpine:3.20` to staging, you document its layer history, tag it for your namespace, capture Id and RepoDigests from inspect, and prove `docker save` / `docker load` works for offline transfer.
 
 ### Step-by-step tasks
 
-#### Task 1 – Run and inspect a container
+#### Task 1 – Pull, tag, and list
 
-Start from a known image, publish a port, and verify HTTP.
+{% raw %}
+```bash
+cd ~/rebash-docker/module-04
+docker pull alpine:3.20 | tee pull-alpine.txt
+docker tag alpine:3.20 rebash/alpine-lab:3.20
+docker image ls --format 'table {{ "{{" }}.Repository{{ "}}" }}\t{{ "{{" }}.Tag{{ "}}" }}\t{{ "{{" }}.ID{{ "}}" }}' | grep -E 'alpine|rebash' | tee image-ls.txt
+grep -q 'rebash/alpine-lab' image-ls.txt
+```
+{% endraw %}
+
+**Expected output:** `pull-alpine.txt` shows pull progress; `image-ls.txt` lists both `alpine` and `rebash/alpine-lab` tags.
+
+#### Task 2 – History and inspect Id/Digest
+
+{% raw %}
+```bash
+cd ~/rebash-docker/module-04
+docker image history alpine:3.20 --no-trunc=false | tee image-history.txt
+docker image inspect alpine:3.20 --format 'Id={{ "{{" }}.Id{{ "}}" }} Digest={{ "{{" }}index .RepoDigests 0{{ "}}" }}' | tee image-id-digest.txt
+grep -q 'Id=sha256:' image-id-digest.txt
+test -s image-history.txt
+```
+{% endraw %}
+
+**Expected output:** `image-history.txt` shows layer steps; `image-id-digest.txt` includes a sha256 Id and a RepoDigests entry.
+
+#### Task 3 – Save, remove local tag, and load
 
 ```bash
-docker run -d --name rebash-lab -p 18080:80 nginx:alpine
-docker ps --filter name=rebash-lab
-curl -sI http://127.0.0.1:18080 | head -n 5 | tee headers.txt
-docker logs rebash-lab 2>&1 | head -n 10 | tee logs.txt
+cd ~/rebash-docker/module-04
+docker save rebash/alpine-lab:3.20 -o rebash-alpine-lab-3.20.tar
+ls -lh rebash-alpine-lab-3.20.tar | tee tar-ls.txt
+docker rmi rebash/alpine-lab:3.20
+docker load -i rebash-alpine-lab-3.20.tar | tee load-output.txt
+docker image ls rebash/alpine-lab:3.20 | tee reload-ls.txt
+grep -q 'rebash/alpine-lab' reload-ls.txt
 ```
 
-**Expected output:** Container Up; HTTP 200 in headers.txt.
-
-#### Task 2 – Inspect runtime config
-
-Use inspect for status — production debugging rarely starts with guesswork.
-
-```bash
-docker inspect rebash-lab --format '{{ "{{" }}.State.Status{{ "}}" }} {{ "{{" }}.Config.Image{{ "}}" }}' | tee inspect.txt
-test -s inspect.txt
-```
-
-**Expected output:** inspect.txt shows `running` and the nginx image.
+**Expected output:** Tar file is non-empty; after load, `reload-ls.txt` shows `rebash/alpine-lab:3.20` again.
 
 ### Validation steps
 
-- [ ] Container or image behaves as Expected output describes
-- [ ] Ports respond or command output matches
-- [ ] Cleanup removes lab resources
+- [ ] `image-ls.txt` shows original and retagged names
+- [ ] `image-history.txt` and `image-id-digest.txt` capture layers and digest metadata
+- [ ] `load-output.txt` proves save/load round-trip succeeded
 
 ### Common errors and fixes
 
 | Error | Cause | Fix |
 |-------|-------|-----|
-| port is already allocated | Previous lab left a container | `docker rm -f` the old name or change port |
-| permission denied | User not in docker group | Use rootless Docker or fix group membership |
-| manifest unknown | Bad tag | Pin a real tag such as `nginx:alpine` |
+| manifest unknown | Wrong tag | Use pinned `alpine:3.20` |
+| Error response from daemon: No such image | Tag removed before save | Re-pull and retag before `docker save` |
+| open rebash-alpine-lab-3.20.tar: permission denied | Wrong directory | Run from `~/rebash-docker/module-04` |
 
 ### Challenge exercise
 
-Add a non-root USER (or Compose healthcheck) and prove it with inspect.
+Load the tar on a “clean” name only, then compare digests before and after:
+
+{% raw %}
+```bash
+cd ~/rebash-docker/module-04
+docker tag alpine:3.20 rebash/alpine-lab:3.20
+DIGEST_BEFORE="$(docker image inspect alpine:3.20 --format '{{ "{{" }}index .RepoDigests 0{{ "}}" }}')"
+docker save alpine:3.20 -o alpine-only.tar
+docker rmi alpine:3.20 rebash/alpine-lab:3.20 2>/dev/null || true
+docker load -i alpine-only.tar
+DIGEST_AFTER="$(docker image inspect alpine:3.20 --format '{{ "{{" }}index .RepoDigests 0{{ "}}" }}')"
+printf 'before=%s\nafter=%s\n' "$DIGEST_BEFORE" "$DIGEST_AFTER" | tee digest-compare.txt
+grep -q 'before=sha256:' digest-compare.txt
+```
+{% endraw %}
+
+**Expected output:** `digest-compare.txt` shows matching sha256 digests before and after reload.
 
 ### Learning outcomes
 
-- Executed a real Docker workflow
-- Captured evidence files
-- Removed disposable resources
+- Pulled and retagged images with explicit repository names
+- Read layer history and digest metadata for promotion checks
+- Exported and imported images with `docker save` and `docker load`
 
 ### Cleanup
 
 ```bash
-docker rm -f rebash-lab 2>/dev/null || true
-docker rmi rebash-lab:local 2>/dev/null || true
-docker compose down -v 2>/dev/null || true
+cd ~/rebash-docker/module-04
+docker rmi rebash/alpine-lab:3.20 alpine:3.20 2>/dev/null || true
+rm -f rebash-alpine-lab-3.20.tar alpine-only.tar 2>/dev/null || true
 ```
 
 ## Validation
 
-
-
-
-
-
-
 - [ ] Lab commands run under `~/rebash-docker/module-04/`
+- [ ] `image-id-digest.txt` and `load-output.txt` prove inspect and save/load workflow
 - [ ] You can explain each Theory section in your own words
-- [ ] You used modern tooling where it applies to this topic
 - [ ] You can describe one production failure mode for this topic
 
 ## Code Walkthrough

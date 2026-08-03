@@ -154,10 +154,9 @@ A deploy script works on your laptop but fails in CI with `command not found` an
 
 Write the same test twice: once for Bash, once for `sh`. Bash accepts `[[ ]]`. POSIX `sh` on Ubuntu (dash) does not.
 
-```bash
-cd ~/rebash-shell/lab01
+Create `bash-only.sh`:
 
-cat > bash-only.sh << 'EOF'
+```bash
 #!/usr/bin/env bash
 # Bash-only test: [[ ]] is not POSIX
 if [[ -n "${HOME:-}" ]]; then
@@ -167,9 +166,11 @@ else
   echo "bash_ok=no"
   exit 1
 fi
-EOF
+```
 
-cat > sh-posix.sh << 'EOF'
+Create `sh-posix.sh`:
+
+```bash
 #!/bin/sh
 # Same idea with POSIX [ ] so dash can run it
 if [ -n "${HOME:-}" ]; then
@@ -178,7 +179,21 @@ else
   echo "sh_ok=no"
   exit 1
 fi
-EOF
+```
+
+Create `bashism-under-sh.sh`:
+
+```bash
+#!/bin/sh
+if [[ -n "$HOME" ]]; then
+  echo should-not-reach
+fi
+```
+
+Run:
+
+```bash
+cd ~/rebash-shell/lab01
 
 chmod +x bash-only.sh sh-posix.sh
 
@@ -186,17 +201,12 @@ chmod +x bash-only.sh sh-posix.sh
 ./sh-posix.sh | tee sh-run.txt
 
 # Prove dash rejects Bash [[ ]]
-cat > bashism-under-sh.sh << 'EOF'
-#!/bin/sh
-if [[ -n "$HOME" ]]; then
-  echo should-not-reach
-fi
-EOF
 chmod +x bashism-under-sh.sh
 ./bashism-under-sh.sh >bashism-sh.out 2>&1 || true
 grep -E '\[\[|not found|Unexpected|Syntax' bashism-sh.out | tee bashism-error.txt
 test -s bashism-error.txt
 ```
+
 
 **Expected output:** `bash-run.txt` contains `bash_ok=yes`; `sh-run.txt` contains `sh_ok=yes`; `bashism-error.txt` shows an error about `[[` (wording varies by dash version).
 
@@ -204,6 +214,7 @@ test -s bashism-error.txt
 
 Capture `$-` and a small environment sample from your current shell and from a non-interactive `bash -c` child.
 
+{% raw %}
 ```bash
 cd ~/rebash-shell/lab01
 
@@ -230,6 +241,7 @@ bash -c '
 grep -q 'has_i_flag=no' fingerprint-noninteractive.txt
 grep -q 'options_interactive=' fingerprint-interactive.txt
 ```
+{% endraw %}
 
 **Expected output:** Non-interactive fingerprint shows `has_i_flag=no`. Your interactive `$-` often includes `i` when you run these lines in a normal terminal.
 

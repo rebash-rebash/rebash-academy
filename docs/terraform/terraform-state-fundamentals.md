@@ -1,8 +1,8 @@
 ---
 title: "Terraform State Fundamentals"
-description: "Inspect local Terraform state safely — what it stores, state commands, security, and basic drift detection for Cloud and DevOps teams."
+description: "Understand local Terraform state, state commands, drift detection, and state security — the foundation before remote backends."
 difficulty: intermediate
-estimated_time: "45–60 min"
+estimated_time: "55–65 min"
 technology: terraform
 category: terraform
 module: "Module 8 · State Management"
@@ -14,13 +14,14 @@ career_paths:
 skills:
   - terraform
   - state
+  - drift
 prerequisites:
   - terraform/variables-locals-and-outputs
 next:
   - terraform/remote-state-and-backends
 related:
-  - terraform/troubleshooting-terraform
   - terraform/terraform-security-and-secrets
+  - terraform/troubleshooting-terraform
 labs: []
 projects: []
 interview: interview/terraform
@@ -31,375 +32,469 @@ tags:
   - state
   - drift
 author: Shaik Basha
-last_updated: "2026-07-31"
+last_updated: "2026-08-03"
 comments: false
 ---
-
 
 # Terraform State Fundamentals
 
 ## Overview
 
+Terraform configuration describes **desired** infrastructure; **state** records **actual** infrastructure Terraform manages. Without accurate state, plans become destructive guesses — duplicate creates, orphaned deletes, or updates against the wrong resource IDs.
 
+This tutorial covers **local state** (`terraform.tfstate`), **state commands** (`list`, `show`, `mv`, `rm`, `pull`, `push`), **drift detection**, and **state security** basics. Remote backends and locking are covered in the next tutorial; here you operate under `~/rebash-terraform/module-08` with **kreuzwerker/docker** and real containers.
 
-
-
-
-
-Explain what Terraform state stores, inspect it with `state list` / `show` / `pull`, treat state as sensitive, and recognise basic drift in a plan.
-
-**State** is Terraform’s memory: a mapping from configuration addresses to real-world IDs and attributes. Cloud APIs do not know you called something `local_file.tracked` — state binds that address to the object Terraform manages. Local state is fine for labs; teams need remote backends next.
-
-This is a core tutorial in **Module 8 · State Management** of the REBASH Academy **Terraform for Cloud & DevOps Engineers** series — written for Cloud, DevOps, Platform, and SRE engineers.
+This is **Tutorial 8** in **Module 8: State Management** of the REBASH Academy **Terraform for Cloud & DevOps Engineers** series.
 
 ## Prerequisites
 
-
-
-
-
-
-
 - [Variables, Locals, and Outputs](variables-locals-and-outputs.md)
-- Terraform CLI 1.9+ (1.15.x recommended)
+- Terraform CLI ≥ 1.5
+- Completed Module 7 lab
 
 ## Learning Objectives
 
-
-
-
-
-
-
 By the end of this tutorial, you will be able to:
 
-- [ ] Describe what state stores and why it exists  
-- [ ] Use `terraform state list`, `show`, and `pull` safely  
-- [ ] Explain refresh and how drift appears in a plan  
-- [ ] Never commit `*.tfstate*` to Git
+- [ ] Explain what Terraform state stores and why it must be protected
+- [ ] Inspect state with `terraform state list` and `terraform state show`
+- [ ] Rename and remove state entries with `terraform state mv` and `terraform state rm`
+- [ ] Detect drift with `terraform plan` and `terraform refresh`
+- [ ] Describe risks of manual state edits and missing backups
 
 ## Architecture
 
+Terraform Core reads configuration and state, compares to provider-reported reality, and writes an updated state file after successful apply.
 
-
-
-
-
-
-This topic’s control points and relationships are shown below.
-
-![Terraform state](../assets/excalidraw/terraform-state.svg)
+![Terraform state management](../assets/excalidraw/terraform-state.svg)
 
 ## Theory
 
-
-
-
-
-
-
 ### What it is
 
-Without state, Terraform would guess which real object corresponds to each address. State stores resource type and name, provider attribution, attributes returned by the provider (often including secrets), dependency hints for destroy order, and serial / lineage metadata. Git stores desired configuration; state stores the binding to reality.
+**State** is a JSON document (by default `terraform.tfstate` in the working directory) mapping Terraform addresses to real-world resource IDs and metadata:
 
-Local backend files:
+```json
+{
+  "resources": [
+    {
+      "type": "docker_container",
+      "name": "app",
+      "instances": [{ "attributes": { "id": "123456789" } }]
+    }
+  ]
+}
+```
 
-| File | Purpose |
-|------|---------|
-| `terraform.tfstate` | Current state for the default local backend |
-| `terraform.tfstate.backup` | Previous successful write (best-effort recovery) |
+Each managed resource has an **address** like `docker_container.app`. State enables Terraform to know which cloud object corresponds to which block in your `.tf` files.
 
-Both are **sensitive**. Even `local_file` content lands in state.
+**Local state** stores the file on disk next to your configuration. It is fine for solo learning; teams quickly move to **remote state** (next tutorial).
 
 ### Why it matters
 
-Every plan and apply depends on accurate state. Lost or corrupted state risks duplicate creates, orphaned cloud objects, or surprise destroys. Drift — someone editing a security group in the console — only surfaces when refresh compares reality to state and configuration. Treating state as a secret store (not a Git artefact) is a production hygiene baseline before remote backends and team workflows.
+If state is lost, Terraform forgets what it manages — the next plan may try to **create duplicates**. If state is leaked, attackers gain resource IDs, sometimes secrets, and network topology. If state drifts from reality (manual console changes), plans may propose wrong updates or destroys. State operations belong in runbooks alongside backup and restore.
 
 ### How it works
 
-1. After apply, the CLI writes state mapping each address to provider-tracked attributes.
-2. The next plan typically **refreshes** — asks providers what objects look like now.
-3. Terraform diffs refreshed attributes against configuration and proposes create / update / destroy / replace.
-4. Inspect with `terraform state list`, `state show ADDRESS`, and `state pull` (full JSON — handle carefully).
-5. Prefer `moved` blocks and import workflows over hand-editing JSON or casual `state rm` / `state mv`.
+1. **`terraform apply`** — provider creates/updates resources; Core writes new state.
+2. **`terraform plan`** — Core reads state + config; provider refreshes current attributes; Core computes diff.
+3. **`terraform refresh`** (or refresh during plan) — updates state attributes from live APIs without applying config changes.
+4. **State commands** — manipulate the state file without changing real infrastructure (when used correctly).
 
-If you edit a managed file by hand, the next plan shows an update to restore desired content — that difference is **drift**. Decide: adopt the drift into config, or re-apply to enforce configuration as source of truth.
+| Command | Purpose |
+|---------|---------|
+| `terraform state list` | Addresses in state |
+| `terraform state show ADDR` | One resource instance |
+| `terraform state mv SRC DST` | Rename address in state |
+| `terraform state rm ADDR` | Remove from state (resource may still exist!) |
+| `terraform state pull` | Print raw JSON to stdout |
+| `terraform state push` | Write JSON to backend (dangerous — expert use) |
+
+**Drift** is when live infrastructure differs from configuration. `terraform plan` shows drift as update or replace actions. Unmanaged manual changes are a common source.
 
 ### Key concepts and comparisons
 
-| Command | Use |
-|---------|-----|
-| `terraform state list` | Addresses currently tracked |
-| `terraform state show ADDRESS` | Human-readable attributes |
-| `terraform state pull` | Full JSON to stdout |
-| `terraform state rm` / `mv` | Forget or rename — prefer `moved` / import in reviews |
+| Concept | Local state | Remote state (preview) |
+|---------|-------------|------------------------|
+| Storage | `terraform.tfstate` on laptop | S3, Azure Blob, GCS, Terraform Cloud |
+| Collaboration | Poor — file conflicts | Shared backend + locking |
+| Security | File permissions only | IAM + encryption at rest |
+| Backup | You copy the file | Versioning on bucket |
 
-| Drift source | Example |
-|--------------|---------|
-| Console / manual edit | Security group rule changed |
-| Out-of-band automation | Another tool overwrote a file |
-| Provider defaults | Remote API normalised a value |
+| Operation | Changes real infra? | Changes state? |
+|-----------|---------------------|----------------|
+| `apply` | Yes | Yes |
+| `state mv` | No | Yes |
+| `state rm` | No | Yes (orphan risk) |
+| `refresh` | No | Yes (attribute sync) |
 
 ### Common pitfalls
 
-- Committing `*.tfstate*` — secret leak and merge conflicts.
-- Hand-editing state JSON — corrupted serials, orphaned objects, unexpected destroys.
-- Deleting state to “start clean” in shared envs — orphans in the cloud.
-- Assuming local labs are harmless for Git — file content still sits in state.
+- **`terraform state rm` then forget** — resource still running, no longer managed; duplicates on next import attempt.
+- **Committing state to Git** — may contain secrets; use remote backend and `.gitignore`.
+- **Copying state between environments** — prod IDs in dev workspace causes catastrophic plans.
+- **Manual JSON edits** without backup — corrupt state stops all operations.
+- **Assuming refresh fixes drift** — refresh updates state to match reality; you still need apply to align reality to config.
 
 ## Hands-on Lab
 
-
-
 ### Objective
 
-Run a complete Terraform workflow (init → plan → apply → prove → destroy) for **Terraform State Fundamentals** without paid cloud resources.
+Apply a Docker stack, inspect and manipulate local state with official CLI commands, detect drift after a manual container label change, perform a controlled rename with `state mv`, and archive evidence under `~/rebash-terraform/module-08`.
 
 ### Prerequisites
 
-- Terraform CLI ≥ 1.5
-- Network access to download the null provider once
+- **Terraform ≥ 1.5**
+- **Docker Engine running** (`docker info` succeeds)
+- `jq` optional (evidence script uses grep)
 
 ### Lab environment
 
-Workspace: `~/rebash-terraform/module-08/state-basics/out`
-
-Local Terraform only (`null`/`local` providers). No AWS/GCP/Azure credentials required.
+Workspace: `~/rebash-terraform/module-08`
 
 ```bash
-mkdir -p ~/rebash-terraform/module-08/state-basics/out && cd ~/rebash-terraform/module-08/state-basics/out
+mkdir -p ~/rebash-terraform/module-08 && cd ~/rebash-terraform/module-08
 ```
 
 ### Real-world scenario
 
-You are automating **Terraform State Fundamentals** for a platform repo. Reviewers expect a clean plan artefact, applied evidence, and a destroy path before merge.
+An engineer renamed a resource in code without `terraform state mv`, causing a destroy/create in plan. Ticket **SRE-408**: practice safe state inspection on a real nginx container, perform a controlled rename with `state mv`, and prove drift detection when someone changed a container label outside Terraform.
 
 ### Step-by-step tasks
 
-#### Task 1 – Author and initialise configuration
+#### Task 1 – Apply baseline stack and inspect state
 
-Use local/null providers so the lab never bills a cloud account.
+Create `versions.tf`:
 
-```bash
-cat > versions.tf << 'EOF'
+```hcl
 terraform {
   required_version = ">= 1.5.0"
+
   required_providers {
-    null = { source = "hashicorp/null", version = "~> 3.2" }
+    docker = {
+      source  = "kreuzwerker/docker"
+      version = "~> 3.0"
+    }
   }
 }
-EOF
-cat > main.tf << 'EOF'
-resource "null_resource" "lab" {
-  triggers = { topic = "rebash-lab" }
-  provisioner "local-exec" {
-    command = "echo applied > applied.txt"
+
+provider "docker" {}
+```
+
+Create `main.tf`:
+
+```hcl
+resource "docker_network" "app" {
+  name = "rebash-module-08-net"
+}
+
+resource "docker_image" "nginx" {
+  name = "nginx:1.27-alpine"
+}
+
+resource "docker_container" "app" {
+  name  = "rebash-module-08-app"
+  image = docker_image.nginx.image_id
+
+  networks_advanced {
+    name = docker_network.app.name
+  }
+
+  labels {
+    label = "revision"
+    value = "v1"
   }
 }
-output "note" { value = null_resource.lab.triggers.topic }
-EOF
+```
+
+Create `outputs.tf`:
+
+```hcl
+output "container_name" {
+  value = docker_container.app.name
+}
+```
+
+Run:
+
+{% raw %}
+```bash
+cd ~/rebash-terraform/module-08
 terraform init
-terraform validate
-```
-
-**Expected output:** `Terraform has been successfully initialized` and validate succeeds.
-
-#### Task 2 – Plan, apply, and prove outputs
-
-Treat the plan as the change ticket — review before apply.
-
-```bash
-terraform plan -out=tfplan
-terraform show -no-color tfplan | tee plan.txt
-terraform apply tfplan
-terraform output
-test -f applied.txt && cat applied.txt
-```
-
-**Expected output:** plan.txt shows create; `applied` written; output prints the note.
-
-#### Task 3 – Inspect state safely
-
-State is the source of truth — list and show without hand-editing.
-
-```bash
+terraform apply -auto-approve
 terraform state list | tee state-list.txt
-terraform state show null_resource.lab | tee state-show.txt
+grep -q 'docker_container.app' state-list.txt
+grep -q 'docker_network.app' state-list.txt
+terraform state show docker_container.app | tee state-show-app.txt
+grep -q 'revision' state-show-app.txt
+docker ps --filter name=rebash-module-08-app --format '{{.Names}}' | grep -q rebash-module-08-app
+echo "task1 OK" | tee task1-ok.txt
+```
+{% endraw %}
+
+**Expected output:** Two resources in state list; container running; `state show` displays labels; `task1-ok.txt` contains `task1 OK`.
+
+#### Task 2 – Rename resource address with state mv
+
+Rename in configuration — replace the `docker_container` block label in `main.tf` from `app` to `application` (keep the same container `name` attribute):
+
+```hcl
+resource "docker_container" "application" {
+  name  = "rebash-module-08-app"
+  image = docker_image.nginx.image_id
+
+  networks_advanced {
+    name = docker_network.app.name
+  }
+
+  labels {
+    label = "revision"
+    value = "v1"
+  }
+}
 ```
 
-**Expected output:** state-list.txt contains `null_resource.lab`.
+Update `outputs.tf`:
+
+```hcl
+output "container_name" {
+  value = docker_container.application.name
+}
+```
+
+Move state to match renamed resource:
+
+{% raw %}
+```bash
+cd ~/rebash-terraform/module-08
+terraform state mv docker_container.app docker_container.application
+terraform state list | tee state-list-after-mv.txt
+grep -q 'docker_container.application' state-list-after-mv.txt
+! grep -q 'docker_container.app' state-list-after-mv.txt
+terraform plan -detailed-exitcode -out=/dev/null
+docker ps --filter name=rebash-module-08-app --format '{{.Names}}' | grep -q rebash-module-08-app
+echo "task2 OK" | tee task2-ok.txt
+```
+{% endraw %}
+
+**Expected output:** No create/destroy for the renamed container; plan exit code 0; same container still running; `task2-ok.txt` contains `task2 OK`.
+
+#### Task 3 – Detect drift via label change and apply replacement
+
+Update the revision label in `main.tf`:
+
+```hcl
+  labels {
+    label = "revision"
+    value = "v2"
+  }
+```
+
+Run:
+
+{% raw %}
+```bash
+cd ~/rebash-terraform/module-08
+terraform plan -no-color | tee plan-drift.txt
+grep -E 'must be replaced|forces replacement|docker_container.application' plan-drift.txt
+terraform apply -auto-approve
+docker inspect rebash-module-08-app --format '{{index .Config.Labels "revision"}}' | grep -q v2
+echo "task3 OK" | tee task3-ok.txt
+```
+{% endraw %}
+
+**Expected output:** Plan shows replacement due to label change (forces replacement on container); after apply, label is `v2`; `task3-ok.txt` contains `task3 OK`.
+
+#### Task 4 – State pull evidence script
+
+Create `state-evidence.sh`:
+
+{% raw %}
+```bash
+#!/usr/bin/env bash
+set -euo pipefail
+cd ~/rebash-terraform/module-08
+terraform state list | grep -q docker_container.application
+terraform state pull | tee state-pulled.json
+grep -q '"type": "docker_container"' state-pulled.json
+terraform output -raw container_name | grep -q rebash-module-08-app
+docker ps --filter name=rebash-module-08-app --format '{{.Names}}' | grep -q .
+echo "state-evidence PASS" | tee state-evidence-pass.txt
+```
+{% endraw %}
+
+Run:
+
+```bash
+chmod +x ~/rebash-terraform/module-08/state-evidence.sh
+~/rebash-terraform/module-08/state-evidence.sh
+```
+
+**Expected output:** `state-evidence-pass.txt` contains `state-evidence PASS`; `state-pulled.json` is valid state JSON.
 
 ### Validation steps
 
-- [ ] terraform validate passes
-- [ ] Plan was saved and reviewed before apply
-- [ ] Destroy completes with empty state (or resources removed)
+- [ ] Applied stack and listed resources in state
+- [ ] Renamed resource with `terraform state mv` without recreate
+- [ ] Plan detected label drift and applied replacement
+- [ ] `terraform state pull` exported JSON evidence
+- [ ] `docker ps` confirmed container throughout
 
 ### Common errors and fixes
 
 | Error | Cause | Fix |
 |-------|-------|-----|
-| Provider not found | Missing init / network | Run `terraform init` again |
-| State locked | Concurrent apply | Wait or coordinate; never force-unlock casually |
-| Unexpected destroy in plan | Drift or wrong workspace | Read plan line-by-line before apply |
+| `state mv` source not found | Wrong address or typo | Run `terraform state list` first |
+| Plan wants destroy+create after rename | Skipped `state mv` | Move state to match new resource name |
+| Empty state list | Wrong directory | `cd` to root module with `.tf` files |
+| Corrupt state JSON | Manual edit error | Restore from backup; avoid hand-editing |
+| `state rm` then duplicate create | Resource still exists in Docker | Import or delete real container first |
 
 ### Challenge exercise
 
-Add an input variable with a validation block and fail the plan with an illegal value, then fix it.
+Remove the network from state without deleting it from Docker:
+
+{% raw %}
+```bash
+cd ~/rebash-terraform/module-08
+terraform state rm docker_network.app
+terraform state list | tee state-list-challenge.txt
+! grep -q 'docker_network.app' state-list-challenge.txt
+docker network ls --filter name=rebash-module-08-net --format '{{.Name}}' | grep -q rebash-module-08-net
+echo "state rm challenge OK"
+```
+{% endraw %}
+
+**Expected output:** Network still exists in Docker; Terraform no longer tracks `docker_network.app` — next plan may propose import or recreate.
 
 ### Learning outcomes
 
-- Completed a reviewable plan/apply cycle
-- Proved outputs/files exist
-- Destroyed lab state
+- Read state addresses and attributes confidently
+- Safe rename workflow with `state mv` on real containers
+- Drift visible in plan output when labels change
+- State pull for backup/automation patterns
 
 ### Cleanup
 
 ```bash
+cd ~/rebash-terraform/module-08
 terraform destroy -auto-approve
-rm -rf .terraform tfplan 2>/dev/null || true
+rm -f state-list.txt state-show-app.txt task*-ok.txt state-list-after-mv.txt \
+  plan-drift.txt state-pulled.json state-evidence-pass.txt state-list-challenge.txt
+rm -rf .terraform .terraform.lock.hcl terraform.tfstate terraform.tfstate.backup
 ```
 
 ## Validation
 
-
-
-
-
-
-
-- [ ] Lab commands run under `~/rebash-terraform/module-08/state-basics/out/`
-- [ ] You can explain each Theory section in your own words
-- [ ] You used modern tooling where it applies to this topic
-- [ ] You can describe one production failure mode for this topic
+- [ ] Completed module-08 state lab with `docker ps` evidence
+- [ ] Can explain what happens if state is deleted
+- [ ] Used `state mv` without unnecessary replacement
+- [ ] Can describe difference between refresh and apply
 
 ## Code Walkthrough
 
-
-
-
-
-
-
-Production practice for **Terraform State Fundamentals** always combines:
-
-1. Inspect before you change (status, plan, logs, dry-run)
-2. Prefer reversible, documented changes (Git, IaC, drop-ins, version pins)
-3. Capture evidence (command output, pipeline logs) for handovers
-4. Prefer current tools and APIs over legacy shortcuts
-5. Least privilege — escalate credentials only when required
-
-Keep runbooks short enough to follow under pressure. Automate checks; keep humans for judgement.
+1. **State list before surgery** — always capture addresses before `mv`/`rm`.
+2. **Rename in code + state mv together** — never apply a rename without moving state.
+3. **Plan as diff ticket** — read replacement lines; label changes on `docker_container` force replace.
+4. **State pull for backups** — pipe JSON to secure storage before risky operations.
+5. **Never commit state** — `.gitignore` `*.tfstate*` locally until remote backend is configured.
 
 ## Security Considerations
 
-
-
-
-
-
-
-- Treat credentials and tokens for terraform as privileged — never commit them
-- Prefer short-lived auth (OIDC, roles, SSO) over long-lived keys
-- Validate blast radius before apply/deploy/delete operations
-- Restrict who can approve production changes
-- Collect audit logs; limit who can read sensitive traces
+- State may contain sensitive attributes even when outputs are marked sensitive — encrypt and restrict access.
+- Do not store state in public Git repositories.
+- Limit who can run `terraform state rm` — it enables orphan resources and takeover via import.
+- Backup state before manual operations; version remote backends in production.
+- Audit state access the same as production credentials.
 
 ## Common Mistakes
 
+!!! warning "Renaming resources without state mv"
+    Terraform plans destroy/create because the address changed.  
+    **Fix:** `terraform state mv old.address new.address` immediately after code rename.
 
+!!! warning "Using state rm to 'fix' a bad plan"
+    Removes management without destroying the resource — duplicates follow.  
+    **Fix:** Use `terraform import` or destroy the real resource deliberately.
 
-
-
-
-
-!!! warning "Committing `*.tfstate*` — secret leak and merge conflicts."
-    Validate assumptions against the Theory section and official docs before changing production.
-
-!!! warning "Hand-editing state JSON — corrupted serials, orphaned objects, unexpected destroys."
-    Lab shortcuts (open security groups, admin roles, skip approvals) must not ship unchanged.
-
-!!! warning "Changing production without a rollback path"
-    Always know how to revert (previous artefact, prior release, state rollback, DNS failback).
+!!! warning "Sharing state files between teammates via email"
+    No locking; last writer wins; secrets leak.  
+    **Fix:** Remote backend with locking (next tutorial).
 
 ## Best Practices
 
-
-
-
-
-
-
-- Encode Terraform State Fundamentals changes as code and review them in pull requests
-- Pin versions (images, modules, actions, provider plugins)
-- Separate environments with clear promotion gates
-- Alert on symptoms with runbooks attached
-- Destroy lab resources; tag everything with owner and expiry where possible
+- Back up state before `mv`, `rm`, or `push` operations.
+- Treat `terraform.tfstate` as confidential data at rest.
+- Use consistent resource naming; prefer `for_each` keys over frequent renames.
+- Run `terraform plan` in CI for every change — drift becomes visible early.
+- Document state migration steps in pull requests for reviewer sign-off.
 
 ## Troubleshooting
 
-
-
-
-
-
-
 | Symptom | Likely cause | Fix |
 |---------|--------------|-----|
-| Auth / permission denied | Wrong identity, policy, or scope | Check caller identity, roles, and least-privilege policies |
-| Timeout / no route | Network, DNS, security group, or endpoint | Trace path, DNS, and allow-lists before retrying |
-| Drift / unexpected plan | Manual change or wrong state/workspace | Reconcile desired vs actual; avoid click-ops on managed resources |
-| Pipeline/job red | Flaky step, cache, or missing secret | Read failing step logs; bisect recent workflow/config changes |
-| Cost spike | Idle load balancer, NAT, oversized compute | Inventory billable resources; stop/delete labs promptly |
+| Plan wants to create existing resource | State lost or wrong workspace | Restore backup; verify directory |
+| `state mv` fails | Destination exists | Choose unused destination address |
+| Unexpected replace | Trigger or force-new attribute changed | Review plan; adjust lifecycle if intentional |
+| Empty output after apply | Output references wrong resource name | Fix output block after rename |
+| State file huge | Many resources or long attributes | Split stacks; remote state with pruning |
 
 ## Summary
 
-
-
-
-
-
-
-**Terraform State Fundamentals** is essential for Cloud and DevOps engineers working with terraform. Practise the lab until the inspection and change path is muscle memory, then continue the track.
+State is Terraform's memory of managed infrastructure. You inspected local state, renamed resources safely with `state mv`, detected drift through plans, and exported JSON with `state pull`. Next, [Remote State and Backends](remote-state-and-backends.md) moves state off laptops into shared, lockable storage.
 
 ## Interview Questions
 
+**1. What does Terraform state contain?**
 
+??? success "Reveal answer"
+    Mappings from **resource addresses** (like `aws_instance.web`) to **provider-specific IDs and attributes**, plus metadata (serial, lineage, outputs). It is the source of truth for what Terraform believes it manages — not the desired configuration file alone.
 
+**2. What happens if you delete the state file but resources still exist?**
 
+??? success "Reveal answer"
+    Terraform **forgets** those resources. The next plan typically proposes **creating new ones**, risking **duplicates** and naming conflicts. Recovery paths include **restore from backup**, **`terraform import`**, or manual destroy outside Terraform — all painful in production.
 
+**3. When do you use `terraform state mv`?**
 
-1. What information does Terraform state store?
-2. Why is state required for Terraform to update infrastructure safely?
-3. What is state drift?
-4. Why must state files be treated as sensitive?
-5. What does `terraform state mv` help with?
+??? success "Reveal answer"
+    When you **rename** a resource or **move** it into/out of a module without destroying the real infrastructure. It updates the address in state to match refactored code. Always pair code renames with `state mv` before apply.
 
-!!! tip "Sample answer — question 2"
-    State maps configuration addresses to real remote object IDs and attributes so plans know what already exists. Without state, Terraform may try to recreate everything.
+**4. What is the difference between `terraform refresh` and `terraform apply`?**
 
-!!! tip "Sample answer — question 4"
-    State can contain secrets and resource identifiers. Encrypt remote state, restrict IAM, enable locking, and never commit state with secrets to public Git.
+??? success "Reveal answer"
+    **Refresh** updates **state attributes** from the provider APIs to match reality — it does not apply configuration changes. **Apply** reconciles **infrastructure to configuration** and updates state accordingly. Refresh alone does not fix drift relative to your `.tf` files.
+
+**5. What risks does `terraform state rm` introduce?**
+
+??? success "Reveal answer"
+    The real resource **still exists** but Terraform **stops managing** it. The next apply may **create a duplicate**. Use `rm` only when orphaning is intentional (handover to another tool) or before import into a different stack.
+
+**6. How do you detect drift in a pipeline?**
+
+??? success "Reveal answer"
+    Run **`terraform plan`** on a schedule or every merge. Non-empty plans indicate drift or pending changes. Some teams fail CI when plan is not empty on protected branches. Pair with policy checks and alerting on unexpected diffs.
+
+**7. Why should state files be encrypted and access-controlled?**
+
+??? success "Reveal answer"
+    State often holds **resource IDs**, **network layout**, and sometimes **secrets** or derived sensitive values. Leaked state helps attackers map and target infrastructure. Encryption at rest and IAM/RBAC on the backend are baseline production requirements.
+
+**8. Local state vs remote state — when is local acceptable?**
+
+??? success "Reveal answer"
+    **Local** is acceptable for **individual learning**, throwaway labs, and quick prototypes. **Teams** need **remote state** for collaboration, locking, versioning, and centralized security. Production always uses remote backends with encryption and least-privilege IAM.
 
 ## Related Tutorials
 
-
-
-
-
-
-
-- [Course overview](index.md)
-- [Remote State and Backends](remote-state-and-backends.md)
+- [Terraform course index](index.md)
+- **Previous:** [Variables, Locals, and Outputs](variables-locals-and-outputs.md)
+- **Next:** [Remote State and Backends](remote-state-and-backends.md)
+- [Troubleshooting Terraform](troubleshooting-terraform.md)
 
 ## References
 
-
-
-
-
-
-
-- [State](https://developer.hashicorp.com/terraform/language/state)  
-- [State Command](https://developer.hashicorp.com/terraform/cli/commands/state)  
-- [Sensitive Data in State](https://developer.hashicorp.com/terraform/language/state/sensitive-data)
+- [State](https://developer.hashicorp.com/terraform/language/state)
+- [State commands](https://developer.hashicorp.com/terraform/cli/commands/state)
+- [Import](https://developer.hashicorp.com/terraform/cli/import)
+- [Sensitive data in state](https://developer.hashicorp.com/terraform/language/state/sensitive-data)

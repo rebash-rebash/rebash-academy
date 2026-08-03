@@ -33,7 +33,7 @@ tags:
   - gitlab-ci
   - yaml
 author: Shaik Basha
-last_updated: "2026-07-31"
+last_updated: "2026-08-03"
 comments: false
 ---
 
@@ -153,96 +153,161 @@ Migrate away from `only` / `except` — they still work but compose poorly with 
 
 ## Hands-on Lab
 
-
-
 ### Objective
 
-Author a valid `.gitlab-ci.yml` that models **Pipeline Syntax (.gitlab-ci.yml)** and validate it locally before pushing.
+Author a rich `.gitlab-ci.yml` demonstrating `workflow`, `rules`, `variables`, and an artefacts stub — then validate structure offline and simulate job output locally.
 
 ### Prerequisites
 
 - Python 3 with PyYAML (`pip install pyyaml`)
-- Optional: GitLab project to run the pipeline
+- Optional: GitLab project to observe pipeline source variables in job logs
 
 ### Lab environment
 
 Workspace: `~/rebash-gitlab/module-04`
 
-File-first lab. Push to GitLab only when you want a runner to execute jobs.
+File-first lab. Push to GitLab only when you want to inspect `$CI_*` values on a runner.
 
 ```bash
-mkdir -p ~/rebash-gitlab/module-04 && cd ~/rebash-gitlab/module-04
+mkdir -p ~/rebash-gitlab/module-04/src && cd ~/rebash-gitlab/module-04
 ```
 
 ### Real-world scenario
 
-Your squad is encoding **Pipeline Syntax (.gitlab-ci.yml)** as CI. Reviewers reject YAML that does not parse or that skips artefacts/needs incorrectly.
+Reviewers rejected your team's pipeline because feature branches triggered deploy jobs and secrets appeared in YAML. You rewrite the file with explicit `workflow:rules`, per-job `rules`, non-secret `variables`, and a lint artefact passed to test via `needs`.
 
 ### Step-by-step tasks
 
-#### Task 1 – Write pipeline YAML
+#### Task 1 – Create the application
 
-Stages and jobs must be explicit so MR pipelines are predictable.
+Create `src/app.py`:
+
+```python
+APP_NAME = "rebash-syntax-lab"
+print(APP_NAME)
+```
+
+Run locally:
 
 ```bash
-mkdir -p src && echo 'print("ok")' > src/app.py
-cat > .gitlab-ci.yml << 'EOF'
-stages: [lint, test]
+cd ~/rebash-gitlab/module-04
+python3 src/app.py | tee app-name.txt
+grep -q 'rebash-syntax-lab' app-name.txt
+```
+
+**Expected output:** `app-name.txt` contains `rebash-syntax-lab`.
+
+#### Task 2 – Author the full pipeline syntax file
+
+Create `.gitlab-ci.yml`:
+
+```yaml
+workflow:
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
+
+variables:
+  APP_NAME: rebash-syntax-lab
+  PYTHON_IMAGE: python:3.12-alpine
+  LINT_REPORT: lint-report.txt
+
+stages:
+  - lint
+  - test
+
 lint:
   stage: lint
-  image: python:3.12-alpine
+  image: $PYTHON_IMAGE
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
   script:
     - python -m py_compile src/app.py
+    - echo "lint ok for $APP_NAME" > "$LINT_REPORT"
+  artifacts:
+    paths:
+      - lint-report.txt
+    expire_in: 1 day
+
 test:
   stage: test
-  image: python:3.12-alpine
-  needs: [lint]
+  image: $PYTHON_IMAGE
+  needs:
+    - job: lint
+      artifacts: true
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
   script:
+    - test -f lint-report.txt
     - python src/app.py
-EOF
-python3 -c "import yaml; d=yaml.safe_load(open('.gitlab-ci.yml')); assert d['stages']==['lint','test']; print('OK', list(d))"
 ```
 
-**Expected output:** Prints `OK` and job names; no YAML exception.
-
-#### Task 2 – Simulate the scripts locally
-
-Prove the job script works before burning runner minutes.
+Validate offline:
 
 ```bash
-python3 -m py_compile src/app.py
-python3 src/app.py | tee out.txt
-test "$(cat out.txt)" = 'ok'
+cd ~/rebash-gitlab/module-04
+python3 -c "
+import yaml
+d = yaml.safe_load(open('.gitlab-ci.yml'))
+assert d['variables']['APP_NAME'] == 'rebash-syntax-lab'
+assert d['lint']['artifacts']['paths'] == ['lint-report.txt']
+assert d['test']['needs'][0]['artifacts'] is True
+print('OK syntax lab')
+"
 ```
 
-**Expected output:** Compile succeeds; out.txt is `ok`.
+**Expected output:** Prints `OK syntax lab`.
+
+#### Task 3 – Simulate lint artefact and test locally
+
+Reproduce the artefact hand-off without a runner:
+
+```bash
+cd ~/rebash-gitlab/module-04
+python3 -m py_compile src/app.py
+echo "lint ok for rebash-syntax-lab" > lint-report.txt
+test -f lint-report.txt
+python3 src/app.py | tee test-out.txt
+grep -q 'rebash-syntax-lab' test-out.txt
+```
+
+**Expected output:** `lint-report.txt` exists; `test-out.txt` contains `rebash-syntax-lab`.
 
 ### Validation steps
 
-- [ ] `.gitlab-ci.yml` parses
-- [ ] Local script path matches job intent
+- [ ] `workflow:rules` limits pipelines to MRs and default branch
+- [ ] Non-secret config lives under top-level `variables`
+- [ ] `lint` publishes `lint-report.txt` as an artefact
+- [ ] `test` uses `needs` with `artifacts: true`
+- [ ] Local simulation creates and consumes the lint report
 
 ### Common errors and fixes
 
 | Error | Cause | Fix |
 |-------|-------|-----|
-| yaml.scanner.ScannerError | Indentation | Use 2-space indent; re-validate with PyYAML |
-| job stuck pending | No runner / tags | Check runner tags match job tags |
-| needs not found | Typo in job name | Align `needs` with actual job keys |
+| Duplicate MR + branch pipelines | Missing `workflow:rules` | Add explicit workflow rules before stages |
+| `test` cannot find artefact | `needs` missing `artifacts: true` | Add `artifacts: true` under the lint need entry |
+| Variable not expanded in `image:` | Wrong key scope | Use `$PYTHON_IMAGE` at job level or `default:` |
+| Deploy job on feature branch | Over-broad `rules: - when: always` | Restrict deploy jobs to protected refs |
 
 ### Challenge exercise
 
-Add an `artifacts:` path from lint to test and document expire_in.
+Add `interruptible: true` to `lint` and `test` so newer pipeline runs cancel outdated MR jobs. Re-validate YAML.
 
 ### Learning outcomes
 
-- Produced reviewable GitLab CI YAML
-- Validated structure and scripts locally
+- Combined `workflow`, job `rules`, and `variables` in one reviewable file
+- Passed artefacts between jobs with `needs` and explicit artefact download
+- Kept secrets out of YAML by using non-secret variables only
+- Validated pipeline syntax offline before pushing
 
 ### Cleanup
 
 ```bash
-# File-only lab — keep YAML for the next tutorial
+rm -f ~/rebash-gitlab/module-04/app-name.txt ~/rebash-gitlab/module-04/lint-report.txt ~/rebash-gitlab/module-04/test-out.txt
+# Keep src/ and .gitlab-ci.yml for module 05
 ```
 
 ## Validation

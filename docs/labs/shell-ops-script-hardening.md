@@ -78,16 +78,22 @@ printf 'y\n' > inbox/keep.txt
 
 ### Broken script (starting point)
 
+Create `cleanup-broken.sh`:
+
 ```bash
-cat > cleanup-broken.sh << 'EOF'
 #!/bin/bash
 TARGET=$1
 grep ERROR /var/log/syslog | wc -l
 rm -rf $TARGET/*
 echo SUCCESS
-EOF
+```
+
+Run:
+
+```bash
 chmod +x cleanup-broken.sh
 ```
+
 
 ## Task
 

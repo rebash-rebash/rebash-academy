@@ -175,13 +175,10 @@ chmod 600 lab_ed25519
 
 #### Task 2 – Connect, BatchMode, or mock
 
-```bash
-cd ~/rebash-python/lab20
-set -euo pipefail
-# shellcheck disable=SC1091
-source .venv/bin/activate
 
-cat > ssh_lab.py << 'EOF'
+Create `ssh_lab.py`:
+
+```python
 #!/usr/bin/env python3
 """Try Paramiko localhost, then OpenSSH BatchMode, then mock."""
 from __future__ import annotations
@@ -301,8 +298,15 @@ def main() -> int:
 
 if __name__ == "__main__":
     raise SystemExit(main())
-EOF
+```
 
+Run:
+
+```bash
+cd ~/rebash-python/lab20
+set -euo pipefail
+# shellcheck disable=SC1091
+source .venv/bin/activate
 python ssh_lab.py | tee ssh-run.txt
 python -c 'import json; d=json.load(open("ssh-result.json")); assert d["ok"] is True'
 ```

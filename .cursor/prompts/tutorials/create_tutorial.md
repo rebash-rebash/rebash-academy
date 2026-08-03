@@ -127,34 +127,47 @@ Cover every bullet from the technology prompt for this tutorial.
 
 # Hands-on Lab bar (critical)
 
-The lab is the product. It must be:
+The lab is the product. **All labs must be production-grade interview preparation tasks — not simple ones.**
 
-- Real-world (production-flavoured scenario)  
-- Executable copy-paste on the documented environment  
+It must be:
+
+- Production / interview-real (ticket-style scenario a hiring manager would recognise)  
+- Straight task flow: **create file → show code → run/apply → expected output**  
 - Topic-specific (not a generic baseline)  
-- Validated with expected output / asserts  
+- Validated on **system** state (Ready, exists, healthy) — not validate-only  
+- Include diagnose-and-fix where the topic allows; mandatory cleanup  
 
 Required lab subsections:
 
 Objective → Prerequisites → Lab environment → Real-world scenario → Step-by-step tasks → Validation → Common errors and fixes → Challenge (working artefact) → Learning outcomes → Cleanup  
 
-Each task:
+Each task (preferred shape):
 
-```markdown
+````markdown
 #### Task N – <action>
 
 <one-line why>
 
+Create `hello.py`:
+
+```python
+print("hello")
+```
+
+Run:
+
 ```bash
-# paste-safe commands
+python3 hello.py | tee hello-out.txt
 ```
 
-**Expected output:** <what success looks like>
-```
+**Expected output:** `hello-out.txt` contains `hello`.
+````
 
-**Forbidden:** note-taking only; `# TODO`; swapping titles on a generic `uname`/`ip` lab; Challenge = “write runbook.md”.
+**Forbidden:** simple/toy labs; validate-only or forever-optional apply; `null`/`local` stubs as the whole lab; note-taking only; `# TODO`; swapping titles on a generic `uname`/`ip` lab; Challenge = “write runbook.md”; creating files with `cat <<EOF` / `echo … > file` (ugly — show the file in a language fence instead).
 
-**Environment:** state OS/runtime clearly (e.g. Ubuntu 22.04/24.04 disposable VM + sudo). Do not imply macOS alone is enough for LVM, SELinux, or firewall labs.
+Details: `.cursor/prompts/tutorials/create_lab.md`.
+
+**Environment:** state OS/runtime clearly (e.g. Ubuntu 22.04/24.04 disposable VM + sudo; cloud sandbox / kind / LocalStack when the topic needs live infra). Do not imply macOS alone is enough for LVM, SELinux, or firewall labs.
 
 MkDocs: escape `${{`, `{%`, Go templates.
 

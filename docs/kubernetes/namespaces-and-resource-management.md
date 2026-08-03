@@ -4,7 +4,7 @@ description: Partition clusters with namespaces, enforce quotas and limits, orga
 difficulty: intermediate
 estimated_time: "35 min"
 author: Shaik Basha
-last_updated: "2026-07-28"
+last_updated: "2026-08-03"
 category: kubernetes
 tags:
   - kubernetes
@@ -212,87 +212,209 @@ NetworkPolicies (covered in later security tutorials) restrict cross-namespace t
 
 ## Hands-on Lab
 
-
-
 ### Objective
 
-Build and verify a working Kubernetes solution for **Namespaces and Resource Management** that you can inspect, prove, and tear down safely.
+Create a tenant namespace with ResourceQuota and LimitRange, deploy a constrained Pod that fits, then prove a over-quota Pod is rejected by admission.
 
 ### Prerequisites
 
-- kubectl configured against a lab cluster (kind/minikube preferred)
-- Cluster-admin or namespace-create rights in the lab cluster
-- Writable workspace at `~/rebash-kubernetes/namespaces-and-resource-management`
+- A working Kubernetes cluster (**kind**, **minikube**, or any lab cluster)
+- **kubectl** with permission to create namespaces and quotas
+- Writable workspace at `~/rebash-k8s/module-08-ns`
 
 ### Lab environment
 
-Workspace: `~/rebash-kubernetes/namespaces-and-resource-management`
-
-Local kind/minikube or a dedicated sandbox cluster. Never target a shared production API server.
+Workspace: `~/rebash-k8s/module-08-ns`
 
 ```bash
-mkdir -p ~/rebash-kubernetes/namespaces-and-resource-management && cd ~/rebash-kubernetes/namespaces-and-resource-management
+mkdir -p ~/rebash-k8s/module-08-ns && cd ~/rebash-k8s/module-08-ns
 ```
 
 ### Real-world scenario
 
-Your platform team is rolling out **Namespaces and Resource Management** for a new microservice. You must apply the change in an isolated namespace, prove it works with kubectl, and leave evidence for the on-call handover.
+Platform engineering onboards team `payments-dev`. They receive an isolated namespace, default container limits, and a hard cap of two Pods. You apply the bootstrap manifests, run one allowed workload, then demonstrate quota enforcement when someone tries to exceed the Pod count.
 
 ### Step-by-step tasks
 
-#### Task 1 – Apply a topic workload
+#### Task 1 – Namespace, LimitRange, and ResourceQuota
 
-Create a namespace and a small Deployment to practise **What Is a Namespace?** against a live API.
+Create `tenant-bootstrap.yaml`:
 
-```bash
-kubectl create namespace rebash-lab --dry-run=client -o yaml | kubectl apply -f -
-kubectl create deployment topic --image=nginx:1.27-alpine -n rebash-lab
-kubectl rollout status deployment/topic -n rebash-lab
-kubectl get all -n rebash-lab
+```yaml
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: rebash-m08-ns
+  labels:
+    team: payments-dev
+    environment: lab
+---
+apiVersion: v1
+kind: LimitRange
+metadata:
+  name: defaults
+  namespace: rebash-m08-ns
+spec:
+  limits:
+    - type: Container
+      defaultRequest:
+        cpu: 100m
+        memory: 128Mi
+      default:
+        cpu: 200m
+        memory: 256Mi
+      max:
+        cpu: 500m
+        memory: 512Mi
+---
+apiVersion: v1
+kind: ResourceQuota
+metadata:
+  name: team-quota
+  namespace: rebash-m08-ns
+spec:
+  hard:
+    pods: "2"
+    requests.cpu: "500m"
+    requests.memory: 512Mi
 ```
 
-**Expected output:** Deployment Ready; Pods listed under the namespace.
-
-#### Task 2 – Inspect and gather evidence
-
-Production changes always leave an audit trail of describe/Events.
+Apply and inspect:
 
 ```bash
-kubectl describe deploy topic -n rebash-lab | tee describe.txt
-kubectl get events -n rebash-lab --sort-by=.lastTimestamp | tail -n 15 | tee events.txt
+cd ~/rebash-k8s/module-08-ns
+kubectl apply -f tenant-bootstrap.yaml
+kubectl describe quota team-quota -n rebash-m08-ns | tee quota-describe.txt
+kubectl describe limitrange defaults -n rebash-m08-ns | tee limitrange-describe.txt
+grep -E 'pods|cpu|memory' quota-describe.txt
 ```
 
-**Expected output:** describe.txt and events.txt capture healthy Objects/Events.
+**Expected output:** Quota and LimitRange active; hard limits show `pods: 2`.
+
+#### Task 2 – Allowed Pod within quota
+
+Create `allowed-pod.yaml`:
+
+```yaml
+apiVersion: v1
+kind: Pod
+metadata:
+  name: api-one
+  namespace: rebash-m08-ns
+spec:
+  containers:
+    - name: nginx
+      image: nginx:1.27-alpine
+      resources:
+        requests:
+          cpu: 100m
+          memory: 128Mi
+        limits:
+          cpu: 200m
+          memory: 256Mi
+```
+
+Apply and verify usage:
+
+```bash
+cd ~/rebash-k8s/module-08-ns
+kubectl apply -f allowed-pod.yaml
+kubectl wait --for=condition=Ready pod/api-one -n rebash-m08-ns --timeout=120s
+kubectl describe quota team-quota -n rebash-m08-ns | tee quota-after-one.txt
+grep 'pods' quota-after-one.txt
+```
+
+**Expected output:** Pod Ready; quota used shows `1` Pod consumed.
+
+#### Task 3 – Prove quota rejection
+
+Create `second-pod.yaml`:
+
+```yaml
+apiVersion: v1
+kind: Pod
+metadata:
+  name: api-two
+  namespace: rebash-m08-ns
+spec:
+  containers:
+    - name: nginx
+      image: nginx:1.27-alpine
+      resources:
+        requests:
+          cpu: 100m
+          memory: 128Mi
+        limits:
+          cpu: 200m
+          memory: 256Mi
+```
+
+Create `third-pod.yaml`:
+
+```yaml
+apiVersion: v1
+kind: Pod
+metadata:
+  name: api-three
+  namespace: rebash-m08-ns
+spec:
+  containers:
+    - name: nginx
+      image: nginx:1.27-alpine
+      resources:
+        requests:
+          cpu: 100m
+          memory: 128Mi
+        limits:
+          cpu: 200m
+          memory: 256Mi
+```
+
+Apply second (should succeed), third (should fail):
+
+```bash
+cd ~/rebash-k8s/module-08-ns
+kubectl apply -f second-pod.yaml
+kubectl wait --for=condition=Ready pod/api-two -n rebash-m08-ns --timeout=120s
+kubectl apply -f third-pod.yaml 2>&1 | tee quota-deny.txt || true
+grep -Ei 'quota|exceeded|Forbidden' quota-deny.txt
+kubectl get pods -n rebash-m08-ns | tee pods-final.txt
+grep -c Running pods-final.txt | tee running-count.txt
+test "$(cat running-count.txt)" -eq 2
+```
+
+**Expected output:** Third Pod create fails with quota exceeded; exactly two Running Pods remain.
 
 ### Validation steps
 
-- [ ] Namespace `rebash-lab` contains the expected Ready objects
-- [ ] You can explain each Task command from the Theory section
-- [ ] Cleanup deletes the namespace without leftover workloads
+- [ ] LimitRange and ResourceQuota applied in `rebash-m08-ns`
+- [ ] Two Pods run within quota limits
+- [ ] Third Pod rejected with quota error message captured
+- [ ] `kubectl describe quota` shows used vs hard limits
 
 ### Common errors and fixes
 
 | Error | Cause | Fix |
 |-------|-------|-----|
-| ImagePullBackOff | Wrong tag or registry auth | Fix image reference; check pull secrets |
-| Pending Pod | Scheduling / quota / PVC | `kubectl describe pod` and read Events |
-| Empty Endpoints | Selector or readiness mismatch | Compare Service selector to Pod labels and Ready |
+| Pod rejected without limits | LimitRange requires resources | Add requests/limits to Pod spec |
+| Quota not enforced | Wrong namespace | Confirm `-n rebash-m08-ns` |
+| Both extra Pods run | Quota too high | Lower `pods` hard limit to `2` |
+| Pending not Forbidden | CPU quota not Pods | Check `requests.cpu` hard limit |
 
 ### Challenge exercise
 
-Add a readinessProbe and a ResourceQuota to the namespace, then show that over-quota creates are rejected.
+Add `requests.cpu: "300m"` hard limit to the ResourceQuota, keep two Pods at 100m each, then try a third Pod with `cpu: 200m` request and capture CPU quota denial.
 
 ### Learning outcomes
 
-- Applied a real cluster change for Namespaces and Resource Management
-- Used describe/Events for verification
-- Destroyed lab resources cleanly
+- Bootstrapped a tenant namespace with LimitRange defaults
+- Applied ResourceQuota hard limits
+- Observed admission rejection when quota exceeded
 
 ### Cleanup
 
 ```bash
-kubectl delete namespace rebash-lab --ignore-not-found
-# Keep ~/rebash-kubernetes/ for later tutorials
+kubectl delete namespace rebash-m08-ns --ignore-not-found --wait=true
 ```
 
 ## Validation

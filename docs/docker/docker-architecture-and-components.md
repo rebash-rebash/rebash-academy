@@ -30,7 +30,7 @@ tags:
   - architecture
   - containerd
 author: Shaik Basha
-last_updated: "2026-07-31"
+last_updated: "2026-08-03"
 comments: false
 ---
 
@@ -132,22 +132,20 @@ You type `docker` commands; the CLI calls the Engine API (local Unix socket or T
 
 ## Hands-on Lab
 
-
-
 ### Objective
 
-Build or run a real Docker solution for **Docker Architecture and Components** and prove it with inspect/logs/HTTP.
+Prove the Docker client talks to a healthy Engine by collecting version, info, context, and disk-usage evidence files.
 
 ### Prerequisites
 
-- Docker Engine or Docker Desktop
-- Permission to run containers
+- Docker Engine or Docker Desktop running
+- Permission to run `docker` commands
 
 ### Lab environment
 
 Workspace: `~/rebash-docker/module-01-arch`
 
-Local Docker daemon. Clean up containers/images after the lab.
+Local Docker daemon. Evidence files only — no long-running containers required.
 
 ```bash
 mkdir -p ~/rebash-docker/module-01-arch && cd ~/rebash-docker/module-01-arch
@@ -155,77 +153,110 @@ mkdir -p ~/rebash-docker/module-01-arch && cd ~/rebash-docker/module-01-arch
 
 ### Real-world scenario
 
-You are validating **Docker Architecture and Components** before it lands in CI. The change must be reproducible with copy-paste commands and leave no orphan containers.
+A developer reports “Docker is broken” after switching laptops. Before you restart services, you capture client versus server versions, active context, storage driver details, and disk usage — the same artefacts SREs attach to incident tickets.
 
 ### Step-by-step tasks
 
-#### Task 1 – Run and inspect a container
+#### Task 1 – Split client and server version evidence
 
-Start from a known image, publish a port, and verify HTTP.
+The CLI and daemon can differ; record both sides explicitly.
+
+{% raw %}
+```bash
+cd ~/rebash-docker/module-01-arch
+docker version | tee docker-version.txt
+docker version --format 'Client={{ "{{" }}.Client.Version{{ "}}" }} Server={{ "{{" }}.Server.Version{{ "}}" }}' | tee version-split.txt
+grep -q 'Client:' docker-version.txt
+grep -q 'Server:' docker-version.txt
+```
+{% endraw %}
+
+**Expected output:** `docker-version.txt` shows Client and Server blocks; `version-split.txt` has both version strings on one line.
+
+#### Task 2 – Engine info and storage driver
+
+`docker info` reveals runtime, cgroup driver, and storage driver — common root causes when containers fail to start.
+
+{% raw %}
+```bash
+cd ~/rebash-docker/module-01-arch
+docker info | tee docker-info.txt
+docker info --format 'StorageDriver={{ "{{" }}.Driver{{ "}}" }} CgroupDriver={{ "{{" }}.CgroupDriver{{ "}}" }}' | tee info-drivers.txt
+grep -q 'Storage Driver' docker-info.txt
+test -s info-drivers.txt
+```
+{% endraw %}
+
+**Expected output:** `docker-info.txt` is multi-line; `info-drivers.txt` names the storage and cgroup drivers.
+
+#### Task 3 – Context and disk footprint
+
+Contexts route the CLI; `docker system df` shows image/container/volume pressure on the node.
 
 ```bash
-docker run -d --name rebash-lab -p 18080:80 nginx:alpine
-docker ps --filter name=rebash-lab
-curl -sI http://127.0.0.1:18080 | head -n 5 | tee headers.txt
-docker logs rebash-lab 2>&1 | head -n 10 | tee logs.txt
+cd ~/rebash-docker/module-01-arch
+docker context ls | tee docker-contexts.txt
+docker system df | tee docker-system-df.txt
+grep -q 'CURRENT' docker-contexts.txt
+grep -E 'Images|Containers|Local Volumes' docker-system-df.txt
 ```
 
-**Expected output:** Container Up; HTTP 200 in headers.txt.
-
-#### Task 2 – Inspect runtime config
-
-Use inspect for status — production debugging rarely starts with guesswork.
-
-```bash
-docker inspect rebash-lab --format '{{ "{{" }}.State.Status{{ "}}" }} {{ "{{" }}.Config.Image{{ "}}" }}' | tee inspect.txt
-test -s inspect.txt
-```
-
-**Expected output:** inspect.txt shows `running` and the nginx image.
+**Expected output:** `docker-contexts.txt` marks the current context with `*`; `docker-system-df.txt` lists Images, Containers, and Local Volumes rows.
 
 ### Validation steps
 
-- [ ] Container or image behaves as Expected output describes
-- [ ] Ports respond or command output matches
-- [ ] Cleanup removes lab resources
+- [ ] `docker-version.txt` and `version-split.txt` prove client and server are reachable
+- [ ] `info-drivers.txt` records storage and cgroup drivers
+- [ ] `docker-contexts.txt` and `docker-system-df.txt` capture context and disk summary
 
 ### Common errors and fixes
 
 | Error | Cause | Fix |
 |-------|-------|-----|
-| port is already allocated | Previous lab left a container | `docker rm -f` the old name or change port |
-| permission denied | User not in docker group | Use rootless Docker or fix group membership |
-| manifest unknown | Bad tag | Pin a real tag such as `nginx:alpine` |
+| Cannot connect to the Docker daemon | `dockerd` stopped or wrong context | `docker context ls`; start Engine or switch context |
+| Server section missing in version | Daemon unreachable | Check Docker Desktop or `systemctl status docker` |
+| permission denied | Socket access | Fix `docker` group membership or use rootless mode |
 
 ### Challenge exercise
 
-Add a non-root USER (or Compose healthcheck) and prove it with inspect.
+Switch context temporarily (if a second context exists), re-run `docker context ls`, then switch back and append a one-line note to `docker-contexts.txt`.
+
+{% raw %}
+```bash
+cd ~/rebash-docker/module-01-arch
+ALT="$(docker context ls --format '{{ "{{" }}.Name{{ "}}" }}' | grep -v "$(docker context show)" | head -n 1 || true)"
+if [ -n "$ALT" ]; then
+  docker context use "$ALT"
+  docker context ls | tee docker-contexts-alt.txt
+  docker context use default 2>/dev/null || docker context use "$ALT"
+fi
+echo "Active context after lab: $(docker context show)" | tee -a docker-contexts.txt
+```
+{% endraw %}
+
+**Expected output:** If an alternate context exists, `docker-contexts-alt.txt` shows the switch; the final line names the restored active context.
 
 ### Learning outcomes
 
-- Executed a real Docker workflow
-- Captured evidence files
-- Removed disposable resources
+- Separated Docker CLI client output from Engine server metadata
+- Identified storage and cgroup drivers from `docker info`
+- Documented active context and node disk usage for troubleshooting handovers
 
 ### Cleanup
 
+No containers were created. Remove evidence files if you do not need them:
+
 ```bash
-docker rm -f rebash-lab 2>/dev/null || true
-docker rmi rebash-lab:local 2>/dev/null || true
-docker compose down -v 2>/dev/null || true
+cd ~/rebash-docker/module-01-arch
+rm -f docker-version.txt version-split.txt docker-info.txt info-drivers.txt \
+  docker-contexts.txt docker-contexts-alt.txt docker-system-df.txt 2>/dev/null || true
 ```
 
 ## Validation
 
-
-
-
-
-
-
 - [ ] Lab commands run under `~/rebash-docker/module-01-arch/`
+- [ ] Evidence files prove client, Engine, context, and disk usage were captured
 - [ ] You can explain each Theory section in your own words
-- [ ] You used modern tooling where it applies to this topic
 - [ ] You can describe one production failure mode for this topic
 
 ## Code Walkthrough

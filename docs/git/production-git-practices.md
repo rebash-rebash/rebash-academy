@@ -1,351 +1,429 @@
 ---
 title: "Production Git Practices"
-description: "Adopt production Git standards — trunk-based or GitHub Flow, protected main, conventional commits, CODEOWNERS, and operational hygiene for DevOps teams."
+description: "Compare GitHub Flow, Git Flow, and trunk-based development; document branch policy and governance for enterprise delivery."
 difficulty: advanced
-estimated_time: "50–70 min"
+estimated_time: "55–70 min"
 technology: git
 category: git
 module: "Module 17 · Production Git Practices"
 career_paths:
   - devops-engineer
+  - cloud-engineer
   - platform-engineer
   - site-reliability-engineer
-  - cloud-engineer
+  - devsecops-engineer
 skills:
   - git
-  - github
-  - gitops
-  - production-practices
+  - github-flow
+  - git-flow
+  - trunk-based
 prerequisites:
   - git/git-bisect-and-debugging-history
-  - git/gitops-fundamentals
 next:
-  - git/advanced-git-workflows
+  - git/index
 related:
+  - git/branching-fundamentals
   - git/pull-requests-and-code-review
-  - git/github-actions-for-devops
-  - git/signed-commits-and-git-security
-labs: []
-projects: []
-interview: interview/git
-certifications:
-  - GitHub Foundations
-  - GitHub Actions
+  - git/gitops-fundamentals
 tags:
-  - git
-  - production
+  - git-flow
   - github-flow
+  - trunk-based
+  - governance
 author: Shaik Basha
-last_updated: "2026-07-31"
+last_updated: "2026-08-03"
 comments: false
 ---
-
 
 # Production Git Practices
 
 ## Overview
 
+Teams debate **GitHub Flow**, **Git Flow**, and **trunk-based development** — not as religion, but as fit for release cadence, compliance, and team size. Production **repository governance** ties branching policy to CODEOWNERS, CI gates, semver, and GitOps sync. This capstone tutorial helps you choose and document what your org actually runs.
 
-
-
-
-
-Define a team-ready Git operating model: branching strategy, protected `main`, PR quality bar, release tags, and GitOps-friendly repo layout.
-
-Production Git is less about clever commands and more about **defaults that keep delivery safe**: short-lived branches, required checks, signed commits where policy demands, and IaC/GitOps paths owned by the right teams.
-
-This is a core tutorial in **Module 17 · Production Git Practices** of the REBASH Academy **Git for Cloud & DevOps Engineers** series — written for Cloud, DevOps, Platform, and SRE engineers.
+This is **Tutorial 1** in **Module 17: Production Git Practices** of the REBASH Academy **Git & GitHub for Cloud & DevOps Engineers** series — written for Cloud, DevOps, Platform, and SRE engineers.
 
 ## Prerequisites
 
-
-
-
-
-
-- Modules 9–16 (GitHub through troubleshooting)
+- [Git Bisect and Debugging History](git-bisect-and-debugging-history.md)
+- [Branching Fundamentals](branching-fundamentals.md)
+- [Pull Requests and Code Review](pull-requests-and-code-review.md)
 - [GitOps Fundamentals](gitops-fundamentals.md)
 
 ## Learning Objectives
 
-
-
-
-
-
 By the end of this tutorial, you will be able to:
 
-- [ ] Choose GitHub Flow / trunk-based vs long-lived release branches  
-- [ ] Document branch protection and required checks  
-- [ ] Apply conventional commit messages for changelogs  
-- [ ] Assemble a production readiness checklist for a repo  
-- [ ] Know when not to rewrite shared history
+- [ ] Compare GitHub Flow, Git Flow, and trunk-based development
+- [ ] Match workflow to release frequency and compliance needs
+- [ ] Author a branch strategy YAML decision record
+- [ ] Define sample branch protection and naming rules
+- [ ] Deliver artefacts under `~/rebash-git/module-17`
 
 ## Architecture
 
+Strategy choice drives branch longevity, release branches, hotfix paths, and CI investment — all anchored on protected main as source of truth.
 
-
-
-
-
-This topic’s control points and relationships are shown below.
-
-![Branching strategy](../assets/excalidraw/git-branching-strategy.svg)
+![Git branching strategy comparison](../assets/excalidraw/git-branching-strategy.svg)
 
 ## Theory
 
+### What it is
 
+**GitHub Flow**: short-lived branches off `main`, PR review, deploy from `main` — simple for continuous delivery. **Git Flow**: long-lived `develop`, `release/*`, `hotfix/*` — formal semver releases. **Trunk-based**: developers commit small changes to `main` (or 1-day branches) with feature flags — maximises integration frequency. **Governance** encodes rules in docs, branch protection, and automation.
 
+### Why it matters
 
-
-
-### What
-
-**Production Git practices** are the conventions that keep shared history safe: branching model, protection rules, secret hygiene, CI gates, ownership, and rollback strategy. They turn individual Git skill into a reliable delivery system for Cloud and DevOps teams.
-
-### Why
-
-A single force-push to `main` or a committed cloud key can outage or breach more than any fancy rebase skill can save. Agreeing defaults — usually trunk-based or GitHub Flow — reduces ceremony while preserving auditability. Practices must match reality: long-lived release branches are valid when you patch older versions in the field, but they need documented merge-back of hotfixes.
+Wrong workflow creates either chaos (everyone on main breaking prod) or friction (month-long release branches blocking fixes). Regulated environments may require release branches with sign-off; SaaS startups often use GitHub Flow + GitOps. Platform teams document the decision so hires and auditors align.
 
 ### How it works
 
-Most product teams keep **`main` always deployable**, use short-lived feature branches, merge via pull request, and tag releases. CI must pass before merge. CODEOWNERS covers critical paths such as `prod/` and `terraform/`. Rollback is a revert commit and/or redeploy of a previous tag that GitOps reconciles. Secrets never enter Git; scanning and push protection backstop humans. Force-push to default branches is forbidden.
+1. Assess release cadence (daily vs quarterly).
+2. Assess compliance (SOX, change tickets).
+3. Choose primary workflow; allow exceptions (hotfix).
+4. Document in `docs/BRANCH_POLICY.md`.
+5. Implement protection, CI, CODEOWNERS to match.
+6. Review strategy yearly as team scales.
 
-### Key concepts
+### Key concepts and comparisons
 
-| Practice | Default stance |
-|----------|----------------|
-| Branching | GitHub Flow / trunk-based |
-| Release branches | Only when supporting old lines |
-| Force-push to `main` | Forbidden |
-| Secrets in Git | Never |
-| CI before merge | Required |
-| Rollback | Revert and/or previous tag |
+| Model | Branch life | Release | Best for |
+|-------|-------------|---------|----------|
+| GitHub Flow | Short | Continuous from main | SaaS, GitOps |
+| Git Flow | Long release branches | Semver cadence | Packaged software |
+| Trunk-based | Hours–1 day | Continuous + flags | High maturity CI |
+
+| Criterion | Lean GitHub Flow | Formal Git Flow |
+|-----------|------------------|-----------------|
+| CI maturity | Must be strong | Can batch in release |
+| Rollback | Revert + redeploy | Patch release branch |
+| Complexity | Low | Higher |
 
 ### Common pitfalls
 
-- “We will add branch protection later” on repos that already deploy  
-- Hotfixing only on a release branch and forgetting to merge back to `main`  
-- Equating green CI on a stale branch with safe merge to a moved `main`  
-- Using personal forks as the production source of truth
+- Adopting Git Flow without release discipline — only cost, no benefit.
+- Trunk-based without feature flags — half-built features ship.
+- Document says GitHub Flow but team runs months-long branches.
+- No hotfix path documented — incidents improvise dangerously.
 
 ## Hands-on Lab
 
-
-
 ### Objective
 
-Complete a real Git workflow for **Production Git Practices** with commits you can inspect and recover.
+Research three workflows, commit `branch-strategy.yaml` with decision matrix fields, and validate with `SAMPLE_BRANCH_POLICY.yaml` rules artefact.
 
 ### Prerequisites
 
-- Git 2.x installed
+- Git 2.x
+- Course modules 1–16 context
 
 ### Lab environment
 
 Workspace: `~/rebash-git/module-17`
 
-Local Git repository only (no required remote).
-
 ```bash
 mkdir -p ~/rebash-git/module-17 && cd ~/rebash-git/module-17
+set -euo pipefail
 ```
 
 ### Real-world scenario
 
-A delivery team is standardising **Production Git Practices**. You prototype the workflow in a throwaway repo and capture log evidence for the playbook.
+You lead platform engineering for a SaaS with daily deploys and quarterly compliance audits — leadership asks for a written branching decision and enforceable policy sample.
 
 ### Step-by-step tasks
 
-#### Task 1 – Initialise a repository and first commit
+#### Task 1 – Branch strategy YAML with comparison matrix
 
-Every production change starts as a commit with clear identity config.
+Create `branch-strategy.yaml`:
+
+```yaml
+context:
+  product: SaaS platform
+  deploy_cadence: daily_staging
+  prod_promotion: gitops_from_main
+  audit: quarterly_compliance_snapshot
+
+options:
+  github_flow:
+    release_cadence: continuous
+    branch_count: low
+    hotfix_path: pr_to_main_cherry_pick_tag
+    ci_demand: high_on_main
+    audit_friendliness: pr_log_signed_merges
+  git_flow:
+    release_cadence: scheduled
+    branch_count: high
+    hotfix_path: hotfix_branch
+    ci_demand: moderate
+    audit_friendliness: release_branches
+  trunk_based:
+    release_cadence: continuous
+    branch_count: minimal
+    hotfix_path: revert_forward_on_main
+    ci_demand: highest
+    audit_friendliness: pr_and_feature_flags
+
+decision:
+  primary: github_flow
+  exceptions:
+    - git_flow_style_release_branches_for_quarterly_audit_tags
+  not_adopted:
+    - pure_trunk_based_until_feature_flag_platform_matures
+
+consequences:
+  - all_prod_changes_via_pr_to_main_with_codeowners
+  - tag_vYYYY_QN_quarterly_from_main_sha
+  - hotfix_branch_from_tag_if_needed_cherry_pick_back
+
+review_date: '2027-02-01'
+```
+
+Validate the strategy file:
 
 ```bash
+cd ~/rebash-git/module-17
+set -euo pipefail
+rm -rf governance-lab
+mkdir governance-lab && cd governance-lab
 git init -b main
 git config user.email 'lab@rebash.local'
 git config user.name 'REBASH Lab'
-echo '# lab' > README.md
-git add README.md
-git commit -m 'Initial commit'
-git log --oneline | tee log.txt
+grep -q 'primary: github_flow' branch-strategy.yaml
+grep -c 'github_flow\|git_flow\|trunk_based' branch-strategy.yaml | tee ../strategy-option-count.txt
+test "$(cat ../strategy-option-count.txt)" -ge 3
+cd ..
 ```
 
-**Expected output:** log.txt shows the initial commit on `main`.
+**Expected output:** Branch strategy YAML with three-way comparison and explicit decision.
 
-#### Task 2 – Inspect status and diff discipline
+#### Task 2 – Sample branch policy YAML artefact
 
-Clean working trees prevent accidental commits of secrets.
+Create `SAMPLE_BRANCH_POLICY.yaml`:
+
+```yaml
+branch_naming:
+  allowed_prefixes:
+    - feature/
+    - fix/
+    - chore/
+    - release/
+  max_age_days: 14
+  require_ticket_in_message: true
+
+protected_branches:
+  main:
+    require_pull_request: true
+    required_reviews: 2
+    require_codeowners: true
+    required_checks:
+      - terraform-validate
+      - secret-scan
+    block_force_push: true
+    require_signed_commits: true
+
+hotfix:
+  allowed_from: [main, tags/v*]
+  max_lifetime_hours: 48
+  require_incident_ticket: true
+
+gitops:
+  prod_changes_only_from: main
+  manual_sync_prod: true
+```
+
+Commit the policy sample:
 
 ```bash
-echo 'work' > work.txt
-git status
-git add work.txt
-git commit -m 'Add work.txt'
-git show --stat HEAD | tee show.txt
+cd ~/rebash-git/module-17/governance-lab
+set -euo pipefail
+grep -q 'require_signed_commits' SAMPLE_BRANCH_POLICY.yaml
+git add branch-strategy.yaml SAMPLE_BRANCH_POLICY.yaml
+git commit -m 'chore: branch strategy YAML and sample policy'
+cd ..
 ```
 
-**Expected output:** show.txt lists work.txt in the commit.
+**Expected output:** Machine-readable policy sample committed.
+
+#### Task 3 – Validation script and evidence
+
+Create `validate-policy.sh`:
+
+```bash
+#!/usr/bin/env bash
+set -euo pipefail
+grep -q 'main' SAMPLE_BRANCH_POLICY.yaml
+grep -q 'primary: github_flow' branch-strategy.yaml
+python3 - <<'PY'
+from pathlib import Path
+required = {
+    'branch-strategy.yaml': ['primary: github_flow', 'github_flow:', 'git_flow:', 'trunk_based:'],
+    'SAMPLE_BRANCH_POLICY.yaml': ['protected_branches:', 'require_signed_commits'],
+}
+for name, keys in required.items():
+    text = Path(name).read_text()
+    for key in keys:
+        assert key in text, f'missing {key} in {name}'
+print('yaml_ok')
+PY
+echo 'policy_ok'
+```
+
+Run validation and archive evidence:
+
+```bash
+cd ~/rebash-git/module-17/governance-lab
+set -euo pipefail
+chmod +x validate-policy.sh
+./validate-policy.sh | tee ../policy-validate.txt
+grep -q 'policy_ok' ../policy-validate.txt
+git add validate-policy.sh
+git commit -m 'chore: add policy validation script'
+tar -czf ../module-17-governance-evidence.tgz -C .. strategy-option-count.txt policy-validate.txt
+ls -l ../module-17-governance-evidence.tgz | tee ../governance-evidence.txt
+cd ..
+```
+
+**Expected output:** validate-policy.sh passes; evidence tarball created.
 
 ### Validation steps
 
-- [ ] Repository has at least two commits or a merge as designed
-- [ ] log/graph evidence files exist
+- [ ] `branch-strategy.yaml` compares three workflows
+- [ ] Explicit decision and exceptions in YAML
+- [ ] SAMPLE_BRANCH_POLICY.yaml defines main protection
+- [ ] validate-policy.sh exits success
 
 ### Common errors and fixes
 
 | Error | Cause | Fix |
 |-------|-------|-----|
-| Author identity unknown | Missing user.name/email | Set local `git config user.*` as in Task 1 |
-| merge conflict | Overlapping edits | Edit file, `git add`, complete merge |
-| detached HEAD | Checked out a raw SHA | `git switch -c` a branch before committing |
+| Policy contradicts decision | Copy-paste | Align YAML with doc |
+| No review date | Incomplete ADR | Add review section |
+| validate fails | missing string | fix grep patterns |
+| YAML typo | indent | lint yaml |
 
 ### Challenge exercise
 
-Use `git reflog` to recover a commit after a hard reset on a private branch.
+Add `rulesets_mapping` keys to `branch-strategy.yaml` mapping each policy rule to GitHub branch rulesets setting names — commit on new branch `docs/rulesets-mapping`.
 
 ### Learning outcomes
 
-- Performed real Git operations
-- Left auditable history
-- Understood recovery basics
+- Compared workflows with structured YAML matrix
+- Authored enforceable branch policy sample
+- Linked strategy to GitOps prod constraints
 
 ### Cleanup
 
 ```bash
-# Safe local repo — delete the lab directory when finished:
-# rm -rf "$(pwd)"
+ls ~/rebash-git/module-17/governance-lab
 ```
 
 ## Validation
 
-
-
-
-
-
-- [ ] Lab commands run under `~/rebash-git/module-17/`
-- [ ] You can explain each Theory section in your own words
-- [ ] You used modern tooling where it applies to this topic
-- [ ] You can describe one production failure mode for this topic
+- [ ] Lab under module-17
+- [ ] Can defend workflow choice for SaaS vs packaged software
+- [ ] Can list GitHub Flow steps
+- [ ] Can explain quarterly audit exception pattern
 
 ## Code Walkthrough
 
-
-
-
-
-
-Production practice for **Production Git Practices** always combines:
-
-1. Inspect before you change (status, plan, logs, dry-run)
-2. Prefer reversible, documented changes (Git, IaC, drop-ins, version pins)
-3. Capture evidence (command output, pipeline logs) for handovers
-4. Prefer current tools and APIs over legacy shortcuts
-5. Least privilege — escalate credentials only when required
-
-Keep runbooks short enough to follow under pressure. Automate checks; keep humans for judgement.
+1. **Write decisions down** — ADR format prevents oral tradition drift.
+2. **Policy as code** — eventually encode YAML in OPA or forge API.
+3. **Revisit on scale** — trunk-based when CI + flags mature.
+4. **Hotfix always documented** — incident stress needs runbook.
+5. **Align GitOps** — prod sync rules match branch policy.
 
 ## Security Considerations
 
-
-
-
-
-
-- Treat credentials and tokens for git as privileged — never commit them
-- Prefer short-lived auth (OIDC, roles, SSO) over long-lived keys
-- Validate blast radius before apply/deploy/delete operations
-- Restrict who can approve production changes
-- Collect audit logs; limit who can read sensitive traces
+- Signed commits in policy for regulated paths
+- Admin bypass logged and rare
+- Release tags immutable
+- CODEOWNERS on policy files themselves
+- Separate repos for prod secrets config if needed
 
 ## Common Mistakes
 
+!!! warning "Git Flow ceremony without releases"
+    Extra branches slow delivery. **Fix:** Simplify to GitHub Flow if shipping daily.
 
+!!! warning "Trunk-based without CI"
+    main breaks constantly. **Fix:** invest in tests first.
 
-
-
-
-!!! warning "“We will add branch protection later” on repos that already deploy  "
-    Validate assumptions against the Theory section and official docs before changing production.
-
-!!! warning "Hotfixing only on a release branch and forgetting to merge back to `main`  "
-    Lab shortcuts (open security groups, admin roles, skip approvals) must not ship unchanged.
-
-!!! warning "Changing production without a rollback path"
-    Always know how to revert (previous artefact, prior release, state rollback, DNS failback).
+!!! warning "Policy not enforced technically"
+    Document ignored. **Fix:** branch rulesets + required checks.
 
 ## Best Practices
 
-
-
-
-
-
-- Encode Production Git Practices changes as code and review them in pull requests
-- Pin versions (images, modules, actions, provider plugins)
-- Separate environments with clear promotion gates
-- Alert on symptoms with runbooks attached
-- Destroy lab resources; tag everything with owner and expiry where possible
+- ADR per major workflow change
+- Train new hires on named workflow
+- Metrics: branch age, PR cycle time, deploy frequency
+- Align semver tags with audit snapshots
+- Feature flags decouple deploy from release
 
 ## Troubleshooting
 
-
-
-
-
-
 | Symptom | Likely cause | Fix |
 |---------|--------------|-----|
-| Auth / permission denied | Wrong identity, policy, or scope | Check caller identity, roles, and least-privilege policies |
-| Timeout / no route | Network, DNS, security group, or endpoint | Trace path, DNS, and allow-lists before retrying |
-| Drift / unexpected plan | Manual change or wrong state/workspace | Reconcile desired vs actual; avoid click-ops on managed resources |
-| Pipeline/job red | Flaky step, cache, or missing secret | Read failing step logs; bisect recent workflow/config changes |
-| Cost spike | Idle load balancer, NAT, oversized compute | Inventory billable resources; stop/delete labs promptly |
+| Teams use different flows | No ADR | publish decision |
+| Release branch drift | infrequent merges | schedule merges |
+| Hotfix missed on main | no cherry-pick rule | update policy |
+| GitOps bypass | kubectl culture | controller permissions |
 
 ## Summary
 
-
-
-
-
-
-You can stand up a repository that matches how Cloud and DevOps teams ship: protected trunk, automated checks, clear ownership, and GitOps-friendly history.
+Production Git is policy plus tooling — choose GitHub Flow, Git Flow, or trunk-based deliberately, then enforce with protection and CI. You have completed the core Git & GitHub course tutorials — revisit the [course index](index.md) for labs, interview prep, and capstone.
 
 ## Interview Questions
 
+**1. GitHub Flow in four steps?**
 
+??? success "Reveal answer"
+    Branch from main, commit and push, open PR with review and CI, merge to main and deploy — main always releasable.
 
+**2. Git Flow release branch purpose?**
 
-1. List branch protection settings you enable on main.
-2. How do you handle hotfixes under protected branches?
-3. Why ban force-push on production branches?
-4. What audit trail should a production change leave in git?
-5. How do you onboard contractors with least privilege?
+??? success "Reveal answer"
+    Stabilise semver release with only fixes while develop continues — cut release/*, test, tag, merge to main and develop.
 
-!!! tip "Sample answer — question 2"
-    Confirm protection rules, required checks, and that the merge used the expected strategy.
+**3. Trunk-based prerequisite?**
 
-!!! tip "Sample answer — question 4"
-    Enforce SSO, 2FA, CODEOWNERS on sensitive paths, and short-lived access.
+??? success "Reveal answer"
+    Strong CI, feature flags, small batches, culture of fixing main immediately — high integration frequency discipline.
+
+**4. When prefer Git Flow over GitHub Flow?**
+
+??? success "Reveal answer"
+    Scheduled semver releases, supported versions in parallel, packaged software — when continuous deploy from main is not desired for all customers.
+
+**5. Hotfix under GitHub Flow?**
+
+??? success "Reveal answer"
+    Short-lived fix/* from main, fast PR, merge, deploy; tag if needed; cherry-pick to release line if multiple versions supported.
+
+**6. Repository governance components?**
+
+??? success "Reveal answer"
+    Branch protection, CODEOWNERS, signed commits, secret scanning, PR templates, semver tags, documented workflow ADR, audit logs.
+
+**7. Feature flags vs long branches?**
+
+??? success "Reveal answer"
+    Flags hide incomplete features on main safely; long branches hide integration risk until merge — trunk-based favours flags over month branches.
+
+**8. GitOps interaction with GitHub Flow?**
+
+??? success "Reveal answer"
+    Merge to main is approval gate; GitOps controller syncs main to cluster — branch policy must keep main deployable; prod manual sync optional extra gate.
 
 ## Related Tutorials
 
-
-
-
-
-
-- [Course overview](index.md)
-- - Related depth: [Advanced Git Workflows](advanced-git-workflows.md) · [Git Hooks](git-hooks-and-automation.md)  
-- Capstone ideas on the [course overview](index.md)
+- [Branching Fundamentals](branching-fundamentals.md)
+- [Pull Requests and Code Review](pull-requests-and-code-review.md)
+- [GitOps Fundamentals](gitops-fundamentals.md)
+- [Course index](index.md)
 
 ## References
 
-
-
-
-
-
-- [GitHub Flow](https://docs.github.com/en/get-started/using-github/github-flow)  
-- [Conventional Commits](https://www.conventionalcommits.org/)
+- [GitHub Flow](https://docs.github.com/en/get-started/using-github/github-flow)
+- [Trunk Based Development](https://trunkbaseddevelopment.com/)
+- [Git Flow original post](https://nvie.com/posts/a-successful-git-branching-model/)
+- [Architecture decision records](https://cognitect.com/blog/2011/11/15/documenting-architecture-decisions)

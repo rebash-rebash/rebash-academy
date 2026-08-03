@@ -28,7 +28,7 @@ tags:
   - helm
   - templates
 author: Shaik Basha
-last_updated: "2026-07-31"
+last_updated: "2026-08-03"
 comments: false
 ---
 
@@ -146,93 +146,241 @@ Always render locally with `helm template` (and lint) before installing. Whitesp
 
 ## Hands-on Lab
 
-
-
 ### Objective
 
-Create, lint, render, install, and uninstall a Helm chart demonstrating **Helm Templates and Go Templating**.
+Author templates that use `if`, `range`, and `include`/`define` helpers, drive optional Ingress and extra environment variables from values, and prove conditionals with `helm template`.
 
 ### Prerequisites
 
-- helm CLI
-- kubectl + lab cluster
-- Ability to create namespaces
+- Helm 3.x (`helm version`)
+- kubectl optional for install step
+- Writable workspace at `~/rebash-helm/module-04`
 
 ### Lab environment
 
-Workspace: `~/rebash-helm/module-04`
-
-Helm 3 against kind/minikube; release namespace `rebash-helm`.
+Workspace: `~/rebash-helm/module-04` on your workstation.
 
 ```bash
-mkdir -p ~/rebash-helm/module-04 && cd ~/rebash-helm/module-04
+mkdir -p ~/rebash-helm/module-04/rebash-tpl/templates && cd ~/rebash-helm/module-04
 ```
 
 ### Real-world scenario
 
-A team wants **Helm Templates and Go Templating** packaged as a chart so GitOps can promote the same artefact across environments.
+Your chart must expose optional Ingress for production while staying minimal in dev, and inject a list of extra environment variables from values. Reviewers require rendered proof that toggling values adds or removes entire YAML documents.
 
 ### Step-by-step tasks
 
-#### Task 1 – Create and lint a chart
+#### Task 1 – Values schema with toggles and lists
 
-Scaffold a chart and fail the build on lint errors before install.
+Create `rebash-tpl/Chart.yaml`:
 
-```bash
-helm version
-helm create labchart
-helm lint ./labchart | tee lint.txt
-helm template labchart ./labchart | egrep '^kind:' | sort | uniq -c | tee kinds.txt
+```yaml
+apiVersion: v2
+name: rebash-tpl
+description: Template features lab chart
+type: application
+version: 0.1.0
+appVersion: "1.27"
 ```
 
-**Expected output:** lint reports no failures; kinds.txt lists Deployment/Service/etc.
+Create `rebash-tpl/values.yaml`:
 
-#### Task 2 – Install with values override
-
-Prove values change rendered replicas, then install with wait.
-
-```bash
-kubectl create namespace rebash-helm --dry-run=client -o yaml | kubectl apply -f -
-cat > myvalues.yaml << 'EOF'
-replicaCount: 2
-EOF
-helm template labchart ./labchart -f myvalues.yaml | egrep 'replicas:' | head
-helm upgrade --install labchart ./labchart -n rebash-helm -f myvalues.yaml --wait --timeout 2m
-helm list -n rebash-helm
-kubectl get deploy -n rebash-helm
+```yaml
+replicaCount: 1
+image:
+  repository: nginxinc/nginx-unprivileged
+  tag: "1.27-alpine"
+service:
+  port: 8080
+ingress:
+  enabled: false
+  host: tpl.example.com
+extraEnv:
+  - name: LOG_LEVEL
+    value: info
+  - name: FEATURE_X
+    value: "off"
 ```
 
-**Expected output:** Release deployed; Deployment shows 2 replicas (or Ready pods).
+#### Task 2 – Helpers, Deployment with range, optional Ingress
+
+Create `rebash-tpl/templates/_helpers.tpl`:
+
+{% raw %}
+```
+{{- define "rebash-tpl.name" -}}
+{{- default .Chart.Name .Values.nameOverride | trunc 63 | trimSuffix "-" }}
+{{- end }}
+
+{{- define "rebash-tpl.fullname" -}}
+{{- printf "%s-%s" .Release.Name .Chart.Name | trunc 63 | trimSuffix "-" }}
+{{- end }}
+
+{{- define "rebash-tpl.env" -}}
+{{- range .Values.extraEnv }}
+- name: {{ .name }}
+  value: {{ .value | quote }}
+{{- end }}
+{{- end }}
+```
+{% endraw %}
+
+Create `rebash-tpl/templates/deployment.yaml`:
+
+{% raw %}
+```yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "rebash-tpl.fullname" . }}
+spec:
+  replicas: {{ .Values.replicaCount }}
+  selector:
+    matchLabels:
+      app: {{ include "rebash-tpl.name" . }}
+  template:
+    metadata:
+      labels:
+        app: {{ include "rebash-tpl.name" . }}
+    spec:
+      containers:
+        - name: web
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+          ports:
+            - containerPort: {{ .Values.service.port }}
+          env:
+            {{- include "rebash-tpl.env" . | nindent 12 }}
+```
+{% endraw %}
+
+Create `rebash-tpl/templates/service.yaml`:
+
+{% raw %}
+```yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "rebash-tpl.fullname" . }}
+spec:
+  ports:
+    - port: {{ .Values.service.port }}
+      targetPort: {{ .Values.service.port }}
+  selector:
+    app: {{ include "rebash-tpl.name" . }}
+```
+{% endraw %}
+
+Create `rebash-tpl/templates/ingress.yaml`:
+
+{% raw %}
+```yaml
+{{- if .Values.ingress.enabled }}
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: {{ include "rebash-tpl.fullname" . }}
+spec:
+  rules:
+    - host: {{ .Values.ingress.host | quote }}
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: {{ include "rebash-tpl.fullname" . }}
+                port:
+                  number: {{ .Values.service.port }}
+{{- end }}
+```
+{% endraw %}
+
+#### Task 3 – Prove conditionals with template output
+
+Create `values-ingress.yaml`:
+
+```yaml
+ingress:
+  enabled: true
+  host: tpl.lab.example.com
+extraEnv:
+  - name: LOG_LEVEL
+    value: debug
+  - name: FEATURE_X
+    value: "on"
+```
+
+```bash
+cd ~/rebash-helm/module-04
+helm lint rebash-tpl | tee lint-m04.txt
+helm template tpl-off rebash-tpl --namespace rebash-helm-m04 | tee render-off-m04.yaml
+helm template tpl-on rebash-tpl -f values-ingress.yaml --namespace rebash-helm-m04 | tee render-on-m04.yaml
+grep -c 'kind: Ingress' render-off-m04.yaml | tee ingress-off-count-m04.txt
+grep -c 'kind: Ingress' render-on-m04.yaml | tee ingress-on-count-m04.txt
+grep 'value: debug' render-on-m04.yaml | tee env-debug-m04.txt
+test "$(cat ingress-off-count-m04.txt)" -eq 0
+test "$(cat ingress-on-count-m04.txt)" -eq 1
+```
+
+**Expected output:** Ingress absent when disabled (`ingress-off-count-m04.txt` is `0`); Ingress present when enabled (`ingress-on-count-m04.txt` is `1`); `env-debug-m04.txt` shows `LOG_LEVEL` overridden to `debug`.
+
+#### Task 4 – Optional cluster install (ingress disabled)
+
+Create `namespace.yaml`:
+
+```yaml
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: rebash-helm-m04
+```
+
+```bash
+cd ~/rebash-helm/module-04
+if command -v helm >/dev/null && kubectl cluster-info >/dev/null 2>&1; then
+  kubectl apply -f namespace.yaml
+  helm upgrade --install tpl-off rebash-tpl -n rebash-helm-m04 --wait --timeout 120s | tee install-m04.txt
+  kubectl get deploy,svc -n rebash-helm-m04 | tee objects-m04.txt
+else
+  echo "Skipping install — cluster unavailable" | tee install-m04.txt
+fi
+```
+
+**Expected output:** Deployment and Service Ready in `rebash-helm-m04`; no Ingress object when defaults apply.
 
 ### Validation steps
 
-- [ ] helm lint clean
-- [ ] Release listed in namespace
-- [ ] Uninstall removes the release
+- [ ] `include`/`define` helpers render env vars from a list
+- [ ] Ingress omitted when `ingress.enabled: false`
+- [ ] Ingress rendered when override file enables it
+- [ ] `helm lint` passes without errors
+- [ ] Optional install succeeds in `rebash-helm-m04`
 
 ### Common errors and fixes
 
 | Error | Cause | Fix |
 |-------|-------|-----|
-| PENDING_INSTALL | Image pull / probes | `helm status` + `kubectl describe` |
-| lint failed | Template YAML break | Fix templates; re-run helm lint |
-| context deadline | Slow cluster | Increase --timeout or fix readiness |
+| `nil pointer evaluating` | Missing values key | Add defaults in `values.yaml` or use `default` in template |
+| Ingress always present | Condition inverted | Ensure an ingress-enabled conditional wraps the entire Ingress template file |
+| Broken YAML indentation after `range` | Missing `nindent` on include | Use `include "rebash-tpl.env" . \| nindent 12` |
+| MkDocs build error | Unescaped template delimiters | Wrap template fences in raw Jinja blocks in tutorials |
 
 ### Challenge exercise
 
-Add a ConfigMap template driven by values and prove it with `helm get manifest`.
+Add a `required` helper call so rendering fails when `ingress.enabled` is true but `ingress.host` is empty; prove failure with `helm template` exit code non-zero.
 
 ### Learning outcomes
 
-- Packaged Kubernetes YAML as a chart
-- Overrode values safely
-- Cleaned up the release
+- Used `if` to gate optional Kubernetes resources
+- Used `range` to iterate values lists into manifest fields
+- Reused env rendering via `define` and `include`
+- Verified conditional output offline before cluster apply
 
 ### Cleanup
 
 ```bash
-helm uninstall labchart -n rebash-helm 2>/dev/null || true
-kubectl delete namespace rebash-helm --ignore-not-found
+helm uninstall tpl-off -n rebash-helm-m04 2>/dev/null || true
+kubectl delete namespace rebash-helm-m04 --ignore-not-found
 ```
 
 ## Validation

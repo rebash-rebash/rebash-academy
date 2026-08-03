@@ -158,8 +158,11 @@ cd ~/rebash-python/lab04
 set -euo pipefail
 # shellcheck disable=SC1091
 source .venv/bin/activate
+```
 
-cat > healthcheck.py << 'PY'
+Create `healthcheck.py`:
+
+```python
 """Function-based health check with defaults, kwargs, and exit codes."""
 from __future__ import annotations
 
@@ -227,7 +230,12 @@ def main(argv: list[str]) -> int:
 
 if __name__ == "__main__":
     raise SystemExit(main(sys.argv))
-PY
+```
+
+Run:
+
+```bash
+test -f healthcheck.py
 ```
 
 **Expected output:** `healthcheck.py` written.

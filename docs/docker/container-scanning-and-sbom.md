@@ -33,7 +33,7 @@ tags:
   - sbom
   - cve
 author: Shaik Basha
-last_updated: "2026-07-31"
+last_updated: "2026-08-03"
 comments: false
 ---
 
@@ -136,22 +136,19 @@ Wire scanners into both pull-request and main-branch pipelines so developers see
 
 ## Hands-on Lab
 
-
-
 ### Objective
 
-Build or run a real Docker solution for **Container Scanning and SBOM** and prove it with inspect/logs/HTTP.
+Build a small lab image, attach a placeholder SBOM JSON, run Trivy when available (or a documented fallback), and validate output with a check script.
 
 ### Prerequisites
 
 - Docker Engine or Docker Desktop
-- Permission to run containers
+- `python3` for the check script
+- Optional: [Trivy](https://trivy.dev/) installed (`trivy --version`)
 
 ### Lab environment
 
 Workspace: `~/rebash-docker/module-12`
-
-Local Docker daemon. Clean up containers/images after the lab.
 
 ```bash
 mkdir -p ~/rebash-docker/module-12 && cd ~/rebash-docker/module-12
@@ -159,64 +156,156 @@ mkdir -p ~/rebash-docker/module-12 && cd ~/rebash-docker/module-12
 
 ### Real-world scenario
 
-You are validating **Container Scanning and SBOM** before it lands in CI. The change must be reproducible with copy-paste commands and leave no orphan containers.
+Your pipeline must block merges when critical CVEs appear in base images. You build a tiny service image, record an SBOM stub for traceability, scan with Trivy (or a fallback that still produces `scan-results.txt`), and gate promotion with `check-scan.sh`.
 
 ### Step-by-step tasks
 
-#### Task 1 – Run and inspect a container
+#### Task 1 – Build a scannable lab image
 
-Start from a known image, publish a port, and verify HTTP.
+Create `Dockerfile`:
 
-```bash
-docker run -d --name rebash-lab -p 18080:80 nginx:alpine
-docker ps --filter name=rebash-lab
-curl -sI http://127.0.0.1:18080 | head -n 5 | tee headers.txt
-docker logs rebash-lab 2>&1 | head -n 10 | tee logs.txt
+```dockerfile
+FROM alpine:3.20
+RUN apk add --no-cache python3 py3-pip \
+    && pip3 install --no-cache-dir flask==3.0.3
+WORKDIR /app
+COPY app.py .
+USER nobody
+EXPOSE 5000
+CMD ["python3", "app.py"]
 ```
 
-**Expected output:** Container Up; HTTP 200 in headers.txt.
+Create `app.py`:
 
-#### Task 2 – Inspect runtime config
+```python
+from flask import Flask
+app = Flask(__name__)
 
-Use inspect for status — production debugging rarely starts with guesswork.
+@app.get("/health")
+def health():
+    return {"status": "ok", "service": "rebash-scan-lab"}
 
-```bash
-docker inspect rebash-lab --format '{{ "{{" }}.State.Status{{ "}}" }} {{ "{{" }}.Config.Image{{ "}}" }}' | tee inspect.txt
-test -s inspect.txt
+if __name__ == "__main__":
+    app.run(host="0.0.0.0", port=5000)
 ```
 
-**Expected output:** inspect.txt shows `running` and the nginx image.
+Build and smoke-test:
+
+```bash
+cd ~/rebash-docker/module-12
+docker build -t rebash-scan-lab:1.0.0 .
+docker run -d --name rebash-scan-18120 -p 18120:5000 rebash-scan-lab:1.0.0
+sleep 2
+curl -sS http://127.0.0.1:18120/health | tee health-scan.txt
+grep -q '"status":"ok"' health-scan.txt
+```
+
+**Expected output:** `health-scan.txt` contains JSON with `"status":"ok"`.
+
+#### Task 2 – Add SBOM placeholder and scan
+
+Create `sbom-placeholder.json`:
+
+```json
+{
+  "bomFormat": "CycloneDX",
+  "specVersion": "1.5",
+  "version": 1,
+  "metadata": {
+    "component": {
+      "type": "container",
+      "name": "rebash-scan-lab",
+      "version": "1.0.0"
+    }
+  },
+  "components": [
+    {"type": "library", "name": "flask", "version": "3.0.3"},
+    {"type": "library", "name": "alpine", "version": "3.20"}
+  ]
+}
+```
+
+Scan with Trivy if present; otherwise document packages via `docker inspect`:
+
+{% raw %}
+```bash
+cd ~/rebash-docker/module-12
+if command -v trivy >/dev/null 2>&1; then
+  trivy image --severity HIGH,CRITICAL --format table rebash-scan-lab:1.0.0 | tee scan-results.txt
+else
+  echo "Trivy not installed — fallback: inspect rootfs layers" | tee scan-results.txt
+  docker inspect rebash-scan-lab:1.0.0 --format '{{ "{{" }}join .RootFS.Layers "\n"{{ "}}" }}' >> scan-results.txt
+fi
+test -s scan-results.txt
+test -s sbom-placeholder.json
+```
+{% endraw %}
+
+**Expected output:** `scan-results.txt` is non-empty; `sbom-placeholder.json` validates as JSON.
+
+#### Task 3 – Gate with check script
+
+Create `check-scan.sh`:
+
+```bash
+#!/usr/bin/env bash
+set -euo pipefail
+RESULTS="${1:-scan-results.txt}"
+SBOM="${2:-sbom-placeholder.json}"
+test -s "$RESULTS"
+python3 -c "import json; json.load(open('$SBOM'))"
+if grep -qiE 'CRITICAL|HIGH' "$RESULTS" 2>/dev/null; then
+  echo "Review required: HIGH/CRITICAL findings present"
+  exit 2
+fi
+echo "Scan gate passed (or fallback documented)"
+```
+
+Run the gate:
+
+```bash
+cd ~/rebash-docker/module-12
+chmod +x check-scan.sh
+./check-scan.sh scan-results.txt sbom-placeholder.json | tee gate-result.txt
+test -s gate-result.txt
+```
+
+**Expected output:** Script exits 0 or 2 with a message in `gate-result.txt`; SBOM JSON parses successfully.
 
 ### Validation steps
 
-- [ ] Container or image behaves as Expected output describes
-- [ ] Ports respond or command output matches
-- [ ] Cleanup removes lab resources
+- [ ] Lab image builds and `/health` responds
+- [ ] `sbom-placeholder.json` is valid CycloneDX-shaped JSON
+- [ ] `scan-results.txt` exists from Trivy or documented fallback
+- [ ] `check-scan.sh` validates both artefacts
+- [ ] Cleanup removes container and image
 
 ### Common errors and fixes
 
 | Error | Cause | Fix |
 |-------|-------|-----|
-| port is already allocated | Previous lab left a container | `docker rm -f` the old name or change port |
-| permission denied | User not in docker group | Use rootless Docker or fix group membership |
-| manifest unknown | Bad tag | Pin a real tag such as `nginx:alpine` |
+| `trivy: command not found` | Trivy not installed | Use the fallback block in Task 2; install Trivy for full CVE output |
+| Flask import error in container | Wrong Python path | Ensure `CMD ["python3", "app.py"]` and packages installed in Dockerfile |
+| Gate exits 2 | Real CVEs in base image | Expected on some hosts — document findings; pin a smaller base if needed |
+| Port 18120 in use | Previous lab | `docker rm -f rebash-scan-18120` |
 
 ### Challenge exercise
 
-Add a non-root USER (or Compose healthcheck) and prove it with inspect.
+Export a real SBOM with `trivy image --format cyclonedx rebash-scan-lab:1.0.0 -o sbom-cyclonedx.json` and extend `check-scan.sh` to require that file when Trivy is available.
 
 ### Learning outcomes
 
-- Executed a real Docker workflow
-- Captured evidence files
-- Removed disposable resources
+- Built a minimal image suitable for vulnerability scanning
+- Attached SBOM metadata for supply-chain traceability
+- Ran Trivy or a honest fallback that still produces evidence
+- Automated a scan gate with a shell check script
 
 ### Cleanup
 
 ```bash
-docker rm -f rebash-lab 2>/dev/null || true
-docker rmi rebash-lab:local 2>/dev/null || true
-docker compose down -v 2>/dev/null || true
+docker rm -f rebash-scan-18120 2>/dev/null || true
+docker rmi rebash-scan-lab:1.0.0 2>/dev/null || true
+rm -f ~/rebash-docker/module-12/*.txt
 ```
 
 ## Validation

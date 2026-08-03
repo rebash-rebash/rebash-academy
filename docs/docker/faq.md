@@ -8,6 +8,7 @@ author: Shaik Basha
 category: docker
 tags:
   - docker
+last_updated: "2026-08-03"
 ---
 
 # Docker — FAQ

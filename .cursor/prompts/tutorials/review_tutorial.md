@@ -191,7 +191,7 @@ Confirm the tutorial contains:
 - Prerequisites
 - Architecture
 - Theory
-- Hands-on Lab
+- Hands-on Lab (**production-grade interview preparation** — fail if toy, validate-only, or `null`/`local`-only stubs)
 - Code Walkthrough
 - Validation
 - Cleanup
@@ -203,7 +203,7 @@ Confirm the tutorial contains:
 - Summary
 - References
 
-Report missing sections.
+Report missing sections. Fail any lab that is simple/demo-only rather than production interview prep (see `.cursor/prompts/tutorials/create_lab.md`).
 
 ---
 

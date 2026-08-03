@@ -142,8 +142,11 @@ Your team lacks Prometheus for a small environment but still needs a cron-friend
 ```bash
 cd ~/rebash-networking/lab23
 set -euo pipefail
+```
 
-cat > net-probe.sh << 'EOF'
+Create `net-probe.sh`:
+
+```bash
 #!/usr/bin/env bash
 set -euo pipefail
 
@@ -210,7 +213,9 @@ if [[ "$alert" != "none" ]]; then
 fi
 echo "OK: http=${http_code} latency=${time_total}s"
 rm -f /tmp/net-probe-ping.$$ /tmp/net-probe-curl-err.$$ /tmp/net-probe-alert.$$
-EOF
+```
+
+```bash
 chmod +x net-probe.sh
 ```
 

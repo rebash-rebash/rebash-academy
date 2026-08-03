@@ -199,7 +199,7 @@ test -s evidence/listen.txt
 
 **Expected output:** `listen.txt` shows a socket on port **18880**.
 
-#### Task 2 – Capture on `lo` and complete a handshake
+#### Task 2 – Sniff on `lo` and complete a handshake
 
 Start `tcpdump` on loopback, then open a client connection so SYN / SYN-ACK / ACK appear in the pcap.
 

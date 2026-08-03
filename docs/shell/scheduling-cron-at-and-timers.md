@@ -147,19 +147,24 @@ You need a tiny heartbeat file for a practice monitoring demo: every minute, app
 
 #### Task 1 – Timestamp script
 
+Create `stamp.sh`:
+
+```bash
+#!/usr/bin/env bash
+set -euo pipefail
+LAB="${HOME}/rebash-shell/lab15"
+mkdir -p "$LAB"
+date -u +%Y-%m-%dT%H:%M:%SZ >> "$LAB/stamps.txt"
+echo "stamped=yes" >> "$LAB/stamp-run.log"
+```
+
+Run:
+
 ```bash
 cd ~/rebash-shell/lab15
 set -euo pipefail
 
 LAB="$HOME/rebash-shell/lab15"
-cat > stamp.sh << EOF
-#!/usr/bin/env bash
-set -euo pipefail
-LAB="$LAB"
-mkdir -p "\$LAB"
-date -u +%Y-%m-%dT%H:%M:%SZ >> "\$LAB/stamps.txt"
-echo "stamped=yes" >> "\$LAB/stamp-run.log"
-EOF
 chmod +x stamp.sh
 
 # Manual once (proof the script works even before the scheduler fires)
@@ -168,9 +173,39 @@ test -s stamps.txt
 grep -E '^[0-9]{4}-' stamps.txt | tee stamps-manual.txt
 ```
 
+
 **Expected output:** `stamps.txt` has at least one UTC timestamp line.
 
 #### Task 2 – Schedule with crontab or systemd --user timer
+
+Create `$HOME/.config/systemd/user/rebash-lab15-stamp.service`:
+
+```ini
+[Unit]
+Description=REBASH lab15 stamp script
+
+[Service]
+Type=oneshot
+ExecStart=%h/rebash-shell/lab15/stamp.sh
+WorkingDirectory=%h/rebash-shell/lab15
+```
+
+Create `$HOME/.config/systemd/user/rebash-lab15-stamp.timer`:
+
+```ini
+[Unit]
+Description=REBASH lab15 stamp timer (every minute)
+
+[Timer]
+OnCalendar=*:0/1
+Persistent=true
+Unit=rebash-lab15-stamp.service
+
+[Install]
+WantedBy=timers.target
+```
+
+Run:
 
 ```bash
 cd ~/rebash-shell/lab15
@@ -191,29 +226,6 @@ schedule_with_cron() {
 
 schedule_with_user_timer() {
   mkdir -p "$HOME/.config/systemd/user"
-  cat > "$HOME/.config/systemd/user/rebash-lab15-stamp.service" << EOF
-[Unit]
-Description=REBASH lab15 stamp script
-
-[Service]
-Type=oneshot
-ExecStart=$LAB/stamp.sh
-WorkingDirectory=$LAB
-EOF
-
-  cat > "$HOME/.config/systemd/user/rebash-lab15-stamp.timer" << 'EOF'
-[Unit]
-Description=REBASH lab15 stamp timer (every minute)
-
-[Timer]
-OnCalendar=*:0/1
-Persistent=true
-Unit=rebash-lab15-stamp.service
-
-[Install]
-WantedBy=timers.target
-EOF
-
   systemctl --user daemon-reload
   systemctl --user enable --now rebash-lab15-stamp.timer
   echo "scheduler=systemd-user" | tee schedule-type.txt
@@ -230,6 +242,7 @@ else
   exit 1
 fi
 ```
+
 
 **Expected output:** `schedule-type.txt` is `cron` or `systemd-user`; list file shows the lab job.
 

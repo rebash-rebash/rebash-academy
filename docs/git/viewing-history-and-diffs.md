@@ -1,347 +1,343 @@
 ---
 title: "Viewing History and Diffs"
-description: "Read Git history with log, show, and diff — investigate IaC and application changes like a DevOps engineer on call."
+description: "Use git log, show, diff, and blame to audit IaC changes, trace incidents, and review commits before merge."
 difficulty: beginner
-estimated_time: "30–45 min"
+estimated_time: "45–60 min"
 technology: git
 category: git
 module: "Module 3 · Git Basics"
 career_paths:
-  - beginner
   - devops-engineer
+  - cloud-engineer
+  - platform-engineer
   - site-reliability-engineer
 skills:
   - git
-  - git-log
+  - log
   - diff
+  - blame
 prerequisites:
   - git/basic-git-workflow-add-commit-push
 next:
   - git/gitignore-and-gitattributes
 related:
+  - git/understanding-the-git-object-model
   - git/git-bisect-and-debugging-history
-labs: []
-projects: []
-interview: interview/git
-certifications:
-  - GitHub Foundations
 tags:
   - git
   - log
   - diff
+  - history
 author: Shaik Basha
-last_updated: "2026-07-31"
+last_updated: "2026-08-03"
 comments: false
 ---
-
 
 # Viewing History and Diffs
 
 ## Overview
 
+When production breaks after a deploy, the first question is "what changed?" **Git history tools** — `log`, `show`, `diff`, and `blame` — let you answer that without guessing. Reviewers use the same commands to validate pull requests locally; SRE teams use them during incident response and postmortems.
 
-
-
-
-
-Use `git log`, `git show`, and `git diff` to answer “what changed?” during incidents and reviews.
-
-This is a core tutorial in **Module 3 · Git Basics** of the REBASH Academy **Git for Cloud & DevOps Engineers** series — written for Cloud, DevOps, Platform, and SRE engineers.
+This is **Tutorial 3** in **Module 3: Git Basics** of the REBASH Academy **Git & GitHub for Cloud & DevOps Engineers** series — written for Cloud, DevOps, Platform, and SRE engineers. You will build a small commit graph, inspect it visually, compare versions, and attribute line-level changes.
 
 ## Prerequisites
 
-
-
-
-
-
-- [Basic Git Workflow](basic-git-workflow-add-commit-push.md)
+- [Basic Git Workflow — Add, Commit, Push](basic-git-workflow-add-commit-push.md)
+- Git 2.x
+- Comfort reading unified diff output
 
 ## Learning Objectives
 
-
-
-
-
-
 By the end of this tutorial, you will be able to:
 
-- [ ] Format `git log` for scanning  
-- [ ] Inspect one commit with `show`  
-- [ ] Diff working tree, staging, and commits  
-- [ ] Limit history by path/time
+- [ ] Navigate history with `git log --oneline --graph --decorate`
+- [ ] Inspect a single commit with `git show`
+- [ ] Compare working tree, index, and commits with `git diff`
+- [ ] Use `git blame` to find who last changed a line
+- [ ] Capture audit evidence under `~/rebash-git/module-03`
 
 ## Architecture
 
+Commits form a directed acyclic graph (DAG); log walks refs; diff compares trees or blobs; blame maps lines to introducing commits.
 
-
-
-
-
-This topic’s control points and relationships are shown below.
-
-![Architecture diagram for Viewing History and Diffs](../assets/excalidraw/git-object-model.svg)
+![Git object model — commits, trees, and blobs](../assets/excalidraw/git-object-model.svg)
 
 ## Theory
 
+### What it is
 
+**History inspection** commands read Git's object database without modifying it. `git log` lists commits reachable from a ref. `git show` displays one commit including its patch. `git diff` compares two snapshots (files, commits, or staging area). `git blame` annotates each line with the commit and author that last modified it.
 
+### Why it matters
 
-
-
-### What
-
-History and diff tools answer “what changed, when, and why?”. `git log` walks commits; `git show` displays one commit; `git diff` compares working tree, index, and commits. Graph and decorate options make branch topology visible — essential before merges and rebases.
-
-### Why
-
-In incidents you need the commit that introduced a bad Terraform variable or a broken Helm value. In review you need a precise diff, not a vague description. Learning the difference between unstaged, staged, and branch-tip diffs prevents “I thought I committed that” confusion.
+DevOps changes are often small but high impact — a single Terraform variable or pipeline secret reference. During incidents you need fast, accurate diffs between "last good deploy" and "current." Code review on GitHub mirrors these local commands; knowing them makes you effective offline and in CI debug jobs.
 
 ### How it works
 
-`git log` starts at HEAD (or a given revision) and follows parent links. Flags trim noise: `--oneline`, `--graph`, `--decorate`, and `-n`. `git show HEAD` prints metadata plus the patch for that commit. `git diff` with no arguments compares the working tree to the index (unstaged). `git diff --cached` (or `--staged`) compares the index to `HEAD`. Three-dot syntax such as `main...feature` shows changes on `feature` since it diverged from `main` — ideal for pull request scope.
+1. `git log` follows parent pointers from `HEAD` (or a named ref).
+2. Filters (`--author`, `--since`, pathspecs) narrow results.
+3. `git show <sha>` prints metadata + patch for that commit.
+4. `git diff A B` compares tree snapshots; `git diff` alone compares working tree to index.
+5. `git blame file` runs a reverse line-level history walk.
 
-```bash
-git log --oneline --graph --decorate -n 20
-git show HEAD
-git diff                 # unstaged
-git diff --cached        # staged
-git diff main...feature  # PR-style tip comparison
-```
+### Key concepts and comparisons
 
-### Key concepts
+| Command | Typical use |
+|---------|-------------|
+| `git log --oneline --graph` | Visual branch history |
+| `git log -p -- path` | Patch history for one file |
+| `git show HEAD~1` | Previous commit details |
+| `git diff main..feature` | All changes on feature branch |
+| `git diff --cached` | Staged vs last commit |
+| `git blame -L 10,20 file.tf` | Line range attribution |
 
-| Comparison | Meaning |
-|------------|---------|
-| Working tree vs index | Unstaged edits |
-| Index vs HEAD | Staged, not yet committed |
-| Commit vs commit | Historical patch |
-| `A...B` (three-dot) | Changes reachable from B since merge-base with A |
-
-`git blame` attributes lines to commits; use it for archaeology, not blame culture.
+| Diff form | Meaning |
+|-----------|---------|
+| `git diff` | Working tree vs index |
+| `git diff --cached` | Index vs HEAD |
+| `git diff HEAD` | Working tree vs HEAD |
+| `git diff v1.0 v1.1` | Between tags |
 
 ### Common pitfalls
 
-- Reading two-dot vs three-dot diffs interchangeably and mis-scoping a PR  
-- Assuming `git diff` shows staged changes (it does not, unless `--cached`)  
-- Over-relying on GUI diffs without checking binary or generated files  
-- Forgetting `--follow` when a file was renamed (history can look empty)
+- Reading `git blame` output without checking if a line was moved (`-M`) or copied (`-C`).
+- Using `git log` without `--graph` on branched repos and missing merge structure.
+- Comparing wrong refs (`main..feature` vs `feature..main` — direction matters for reachability).
+- Assuming GitHub's web diff replaces local `git diff` during air-gapped incident response.
 
 ## Hands-on Lab
 
-
-
 ### Objective
 
-Complete a real Git workflow for **Viewing History and Diffs** with commits you can inspect and recover.
+Create a three-commit history with a branch merge, produce graph and diff artefacts, and use blame to trace a configuration line change.
 
 ### Prerequisites
 
-- Git 2.x installed
+- Git 2.x
 
 ### Lab environment
 
-Workspace: `~/rebash-git/module-03/hist`
-
-Local Git repository only (no required remote).
+Workspace: `~/rebash-git/module-03`
 
 ```bash
-mkdir -p ~/rebash-git/module-03/hist && cd ~/rebash-git/module-03/hist
+mkdir -p ~/rebash-git/module-03/history-lab && cd ~/rebash-git/module-03/history-lab
+set -euo pipefail
 ```
 
 ### Real-world scenario
 
-A delivery team is standardising **Viewing History and Diffs**. You prototype the workflow in a throwaway repo and capture log evidence for the playbook.
+An on-call engineer needs to know which commit raised the replica count in `deploy.yaml` and what else changed in that release. You simulate that audit locally.
 
 ### Step-by-step tasks
 
-#### Task 1 – Initialise a repository and first commit
+#### Task 1 – Build commit history on main
 
-Every production change starts as a commit with clear identity config.
+Create a repo with three commits touching a deploy manifest.
 
 ```bash
+cd ~/rebash-git/module-03
+set -euo pipefail
+rm -rf history-lab
+mkdir history-lab && cd history-lab
 git init -b main
 git config user.email 'lab@rebash.local'
 git config user.name 'REBASH Lab'
-echo '# lab' > README.md
-git add README.md
-git commit -m 'Initial commit'
-git log --oneline | tee log.txt
+mkdir -p k8s
+printf 'replicas: 1\n' > k8s/deploy.yaml
+git add k8s/deploy.yaml
+git commit -m 'feat: initial deploy manifest with 1 replica'
+printf 'replicas: 2\n' > k8s/deploy.yaml
+git commit -am 'feat: scale to 2 replicas for load test'
+echo '# runbook' > RUNBOOK.md
+git add RUNBOOK.md
+git commit -m 'docs: add runbook stub'
+git log --oneline | tee ../history-log.txt
+test "$(git rev-list --count HEAD)" -eq 3
 ```
 
-**Expected output:** log.txt shows the initial commit on `main`.
+**Expected output:** Three commits; `history-log.txt` lists them newest-first.
 
-#### Task 2 – Inspect status and diff discipline
+#### Task 2 – Graph, show, and range diff
 
-Clean working trees prevent accidental commits of secrets.
+Export visual history and compare first vs last commit on the manifest.
 
 ```bash
-echo 'work' > work.txt
-git status
-git add work.txt
-git commit -m 'Add work.txt'
-git show --stat HEAD | tee show.txt
+cd ~/rebash-git/module-03/history-lab
+set -euo pipefail
+git log --oneline --graph --decorate --all | tee ../history-graph.txt
+FIRST=$(git rev-list --max-parents=0 HEAD)
+git show --stat "$FIRST" | tee ../history-show-first.txt
+git diff "$FIRST" HEAD -- k8s/deploy.yaml | tee ../history-deploy-diff.txt
+grep -q 'replicas: 2' ../history-deploy-diff.txt
+git log -1 --format='%H %s' HEAD | tee ../history-head.txt
 ```
 
-**Expected output:** show.txt lists work.txt in the commit.
+**Expected output:** Graph file shows linear history; diff shows replica change from 1 to 2.
+
+#### Task 3 – Blame and staged diff drill
+
+Modify a line, inspect blame before commit, then compare cached diff.
+
+```bash
+cd ~/rebash-git/module-03/history-lab
+set -euo pipefail
+printf 'replicas: 3\n' > k8s/deploy.yaml
+git blame k8s/deploy.yaml | tee ../history-blame-before.txt
+git add k8s/deploy.yaml
+git diff --cached k8s/deploy.yaml | tee ../history-cached-diff.txt
+grep -q '+replicas: 3' ../history-cached-diff.txt
+git commit -m 'feat: scale to 3 replicas for peak traffic'
+git blame k8s/deploy.yaml | tee ../history-blame-after.txt
+grep -q 'scale to 3' ../history-blame-after.txt
+tar -czf ../module-03-history-evidence.tgz -C .. \
+  history-log.txt history-graph.txt history-deploy-diff.txt \
+  history-blame-after.txt history-cached-diff.txt
+ls -l ../module-03-history-evidence.tgz | tee ../history-evidence.txt
+```
+
+**Expected output:** Blame after commit points at the scaling commit; cached diff captured before commit.
 
 ### Validation steps
 
-- [ ] Repository has at least two commits or a merge as designed
-- [ ] log/graph evidence files exist
+- [ ] `history-graph.txt` shows commit chain
+- [ ] Deploy diff between first and HEAD documents replica changes
+- [ ] Blame output references the scale-to-3 commit
+- [ ] Evidence tarball exists
 
 ### Common errors and fixes
 
 | Error | Cause | Fix |
 |-------|-------|-----|
-| Author identity unknown | Missing user.name/email | Set local `git config user.*` as in Task 1 |
-| merge conflict | Overlapping edits | Edit file, `git add`, complete merge |
-| detached HEAD | Checked out a raw SHA | `git switch -c` a branch before committing |
+| `bad revision` | Wrong SHA or ref | Use `git log --oneline` to copy SHAs |
+| Empty diff | Same content both sides | Check refs and pathspec |
+| Blame shows old commit | Not committed yet | Commit or blame previous revision |
+| `unknown option` for `-L` | Old Git | Upgrade Git or omit line range |
 
 ### Challenge exercise
 
-Use `git reflog` to recover a commit after a hard reset on a private branch.
+Create a short-lived branch `hotfix/log-level`, change one line in `RUNBOOK.md`, merge to `main`, then run `git log --oneline --graph` and save `merge-graph.txt`. Explain in one sentence which commits are reachable from `main` only.
 
 ### Learning outcomes
 
-- Performed real Git operations
-- Left auditable history
-- Understood recovery basics
+- Produced graph and patch audit files
+- Compared commits and staged changes
+- Used blame to tie a line to a commit message
 
 ### Cleanup
 
 ```bash
-# Safe local repo — delete the lab directory when finished:
-# rm -rf "$(pwd)"
+ls ~/rebash-git/module-03/history-lab
+# rm -rf ~/rebash-git/module-03/history-lab  # optional
 ```
 
 ## Validation
 
-
-
-
-
-
-- [ ] Lab commands run under `~/rebash-git/module-03/hist/`
-- [ ] You can explain each Theory section in your own words
-- [ ] You used modern tooling where it applies to this topic
-- [ ] You can describe one production failure mode for this topic
+- [ ] Lab completed under `~/rebash-git/module-03`
+- [ ] Can explain `git diff` vs `git diff --cached`
+- [ ] Can read `--graph` output for a linear history
+- [ ] Can name one incident use case for blame
 
 ## Code Walkthrough
 
-
-
-
-
-
-Production practice for **Viewing History and Diffs** always combines:
-
-1. Inspect before you change (status, plan, logs, dry-run)
-2. Prefer reversible, documented changes (Git, IaC, drop-ins, version pins)
-3. Capture evidence (command output, pipeline logs) for handovers
-4. Prefer current tools and APIs over legacy shortcuts
-5. Least privilege — escalate credentials only when required
-
-Keep runbooks short enough to follow under pressure. Automate checks; keep humans for judgement.
+1. **Start with graph** — `git log --oneline --graph --decorate -20` orients you on branches.
+2. **Narrow by path** — append `-- path/to/file` to ignore unrelated churn.
+3. **Show one commit** — `git show <sha> --stat` before reading full patch.
+4. **Blame with context** — use `-L` ranges on large Terraform files.
+5. **Export for tickets** — redirect diffs to files attached to incident records.
 
 ## Security Considerations
 
-
-
-
-
-
-- Treat credentials and tokens for git as privileged — never commit them
-- Prefer short-lived auth (OIDC, roles, SSO) over long-lived keys
-- Validate blast radius before apply/deploy/delete operations
-- Restrict who can approve production changes
-- Collect audit logs; limit who can read sensitive traces
+- Diffs may expose secrets if they were ever committed — redact before sharing externally.
+- `git log -p` on public channels can leak internal hostnames; sanitise output.
+- Blame exposes author emails; respect privacy in exported reports.
+- Do not run arbitrary `git show` on untrusted bundles without reviewing objects.
+- Store audit artefacts with the same access controls as the source repo.
 
 ## Common Mistakes
 
+!!! warning "Blaming without understanding moves"
+    Lines moved between files show misleading attribution. **Fix:** Use `git blame -M -C` or trace with `git log --follow`.
 
+!!! warning "Wrong diff direction"
+    `git diff main..feature` shows what feature adds vs main; reversing refs inverts the story. **Fix:** Say aloud: "changes reachable from feature not in main."
 
-
-
-
-!!! warning "Reading two-dot vs three-dot diffs interchangeably and mis-scoping a PR  "
-    Validate assumptions against the Theory section and official docs before changing production.
-
-!!! warning "Assuming `git diff` shows staged changes (it does not, unless `--cached`)  "
-    Lab shortcuts (open security groups, admin roles, skip approvals) must not ship unchanged.
-
-!!! warning "Changing production without a rollback path"
-    Always know how to revert (previous artefact, prior release, state rollback, DNS failback).
+!!! warning "Ignoring merge commits in log"
+    Default log may simplify merges. **Fix:** Use `--graph` and `--merges` when debugging release branches.
 
 ## Best Practices
 
-
-
-
-
-
-- Encode Viewing History and Diffs changes as code and review them in pull requests
-- Pin versions (images, modules, actions, provider plugins)
-- Separate environments with clear promotion gates
-- Alert on symptoms with runbooks attached
-- Destroy lab resources; tag everything with owner and expiry where possible
+- Bookmark useful log aliases (`lg = log --oneline --graph --decorate`)
+- Attach `git show` output to change tickets for IaC approvals
+- Compare tag to tag for release diffs (`git diff v2.0.0 v2.1.0`)
+- Use path filters in CI to diff only affected modules
+- Pair blame with `git log -p -- file` for full context
 
 ## Troubleshooting
 
-
-
-
-
-
 | Symptom | Likely cause | Fix |
 |---------|--------------|-----|
-| Auth / permission denied | Wrong identity, policy, or scope | Check caller identity, roles, and least-privilege policies |
-| Timeout / no route | Network, DNS, security group, or endpoint | Trace path, DNS, and allow-lists before retrying |
-| Drift / unexpected plan | Manual change or wrong state/workspace | Reconcile desired vs actual; avoid click-ops on managed resources |
-| Pipeline/job red | Flaky step, cache, or missing secret | Read failing step logs; bisect recent workflow/config changes |
-| Cost spike | Idle load balancer, NAT, oversized compute | Inventory billable resources; stop/delete labs promptly |
+| Log stops early | Shallow clone | `git fetch --unshallow` if needed |
+| Diff empty between branches | Already merged | Compare merge-base: `git diff A...B` |
+| Blame all one commit | File added recently | Expected; use log for older files |
+| Binary diff unreadable | Git detects binary | Use `--text` cautiously or open file |
 
 ## Summary
 
-
-
-
-
-
-**Viewing History and Diffs** is essential for Cloud and DevOps engineers working with git. Practise the lab until the inspection and change path is muscle memory, then continue the track.
+You can navigate commit history, compare versions, and attribute line changes — the same skills used in code review and incident response. Next: [.gitignore and .gitattributes](gitignore-and-gitattributes.md) to keep repos clean across platforms.
 
 ## Interview Questions
 
+**1. What does git log --graph show?**
 
+??? success "Reveal answer"
+    A text visualization of commit topology — branches, merges, and where refs point — helping you see how features integrated into main.
 
+**2. Difference between git diff and git diff --cached?**
 
-1. When do you use git show versus git diff?
-2. How do you find which commit introduced a string?
-3. What does git log -p give you in an incident?
-4. How do path filters help in monorepos?
-5. Binary files break diffs — what options help?
+??? success "Reveal answer"
+    Plain `git diff` compares working tree to index (unstaged changes). `--cached` compares index to HEAD (what will be committed next).
 
-!!! tip "Sample answer — question 2"
-    Start with git log --oneline on the affected path, then git show on the suspicious commit. Use -S/-G to search history.
+**3. When do you use git show vs git log -p?**
 
-!!! tip "Sample answer — question 4"
-    Avoid pasting sensitive diffs into tickets; redact secrets.
+??? success "Reveal answer"
+    `git show <commit>` focuses one commit's metadata and patch. `git log -p` streams patches across many commits — better for file history walks.
+
+**4. What is git blame used for in production?**
+
+??? success "Reveal answer"
+    Finding which commit last modified a line — useful when a config value or pipeline step causes an incident and you need the author and change ticket context.
+
+**5. What does git diff main..feature mean?**
+
+??? success "Reveal answer"
+    Shows changes reachable from `feature` that are not reachable from `main` — typically the feature branch's net diff ready for review.
+
+**6. How do you view history for a renamed file?**
+
+??? success "Reveal answer"
+    `git log --follow -- path` tracks renames across commits so history is not lost when files move in refactors.
+
+**7. Why might blame be misleading after a mass reformat?**
+
+??? success "Reveal answer"
+    Every line appears changed in one commit even if logic is old. Use `-M`, `-C`, or ignore the formatting commit when investigating logic bugs.
+
+**8. How do SREs use diffs during rollback decisions?**
+
+??? success "Reveal answer"
+    Compare last known good tag or deploy SHA to current HEAD on manifest paths; if diff is small and understood, revert or redeploy previous tag; if large, escalate for targeted revert.
 
 ## Related Tutorials
 
-
-
-
-
-
-- [Course overview](index.md)
-- [gitignore and gitattributes](gitignore-and-gitattributes.md)
+- [Basic Git Workflow — Add, Commit, Push](basic-git-workflow-add-commit-push.md)
+- [Understanding the Git Object Model](understanding-the-git-object-model.md)
+- [Git Bisect and Debugging History](git-bisect-and-debugging-history.md)
+- [Course index](index.md)
 
 ## References
 
-
-
-
-
-
-- [git-log](https://git-scm.com/docs/git-log) · [git-diff](https://git-scm.com/docs/git-diff)
+- [git-log](https://git-scm.com/docs/git-log)
+- [git-diff](https://git-scm.com/docs/git-diff)
+- [git-show](https://git-scm.com/docs/git-show)
+- [git-blame](https://git-scm.com/docs/git-blame)

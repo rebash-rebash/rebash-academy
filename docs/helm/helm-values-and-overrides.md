@@ -29,7 +29,7 @@ tags:
   - helm
   - values
 author: Shaik Basha
-last_updated: "2026-07-31"
+last_updated: "2026-08-03"
 comments: false
 ---
 
@@ -138,93 +138,212 @@ Mental model for teams: **safe defaults in the chart → env files in Git → se
 
 ## Hands-on Lab
 
-
-
 ### Objective
 
-Create, lint, render, install, and uninstall a Helm chart demonstrating **Helm Values and Overrides**.
+Maintain base `values.yaml` plus environment overlays (`values-dev.yaml`, `values-prod.yaml`), demonstrate `-f` merge order with rendered diffs, and install production-like settings into an isolated namespace.
 
 ### Prerequisites
 
-- helm CLI
-- kubectl + lab cluster
-- Ability to create namespaces
+- Helm 3.x (`helm version`)
+- kubectl optional for install
+- Writable workspace at `~/rebash-helm/module-05`
 
 ### Lab environment
 
-Workspace: `~/rebash-helm/module-05`
-
-Helm 3 against kind/minikube; release namespace `rebash-helm`.
+Workspace: `~/rebash-helm/module-05` on your workstation.
 
 ```bash
-mkdir -p ~/rebash-helm/module-05 && cd ~/rebash-helm/module-05
+mkdir -p ~/rebash-helm/module-05/rebash-values/templates && cd ~/rebash-helm/module-05
 ```
 
 ### Real-world scenario
 
-A team wants **Helm Values and Overrides** packaged as a chart so GitOps can promote the same artefact across environments.
+The same chart promotes from dev (single replica, debug logging) to production (three replicas, production hostname). Platform engineers store safe defaults in the chart and environment diffs in Git — never secrets — and prove effective values with `helm template` before CI deploys.
 
 ### Step-by-step tasks
 
-#### Task 1 – Create and lint a chart
+#### Task 1 – Base chart and default values
 
-Scaffold a chart and fail the build on lint errors before install.
+Create `rebash-values/Chart.yaml`:
 
-```bash
-helm version
-helm create labchart
-helm lint ./labchart | tee lint.txt
-helm template labchart ./labchart | egrep '^kind:' | sort | uniq -c | tee kinds.txt
+```yaml
+apiVersion: v2
+name: rebash-values
+description: Values override lab chart
+type: application
+version: 0.1.0
+appVersion: "1.27"
 ```
 
-**Expected output:** lint reports no failures; kinds.txt lists Deployment/Service/etc.
+Create `rebash-values/values.yaml`:
 
-#### Task 2 – Install with values override
-
-Prove values change rendered replicas, then install with wait.
-
-```bash
-kubectl create namespace rebash-helm --dry-run=client -o yaml | kubectl apply -f -
-cat > myvalues.yaml << 'EOF'
-replicaCount: 2
-EOF
-helm template labchart ./labchart -f myvalues.yaml | egrep 'replicas:' | head
-helm upgrade --install labchart ./labchart -n rebash-helm -f myvalues.yaml --wait --timeout 2m
-helm list -n rebash-helm
-kubectl get deploy -n rebash-helm
+```yaml
+replicaCount: 1
+image:
+  repository: nginxinc/nginx-unprivileged
+  tag: "1.27-alpine"
+service:
+  port: 8080
+appEnv: dev
+logLevel: info
+ingress:
+  enabled: false
+  host: app.example.com
 ```
 
-**Expected output:** Release deployed; Deployment shows 2 replicas (or Ready pods).
+Create `rebash-values/templates/deployment.yaml`:
+
+{% raw %}
+```yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Release.Name }}-web
+spec:
+  replicas: {{ .Values.replicaCount }}
+  selector:
+    matchLabels:
+      app: {{ .Release.Name }}
+  template:
+    metadata:
+      labels:
+        app: {{ .Release.Name }}
+    spec:
+      containers:
+        - name: web
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+          env:
+            - name: APP_ENV
+              value: {{ .Values.appEnv | quote }}
+            - name: LOG_LEVEL
+              value: {{ .Values.logLevel | quote }}
+          ports:
+            - containerPort: {{ .Values.service.port }}
+```
+{% endraw %}
+
+Create `rebash-values/templates/service.yaml`:
+
+{% raw %}
+```yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ .Release.Name }}-web
+spec:
+  ports:
+    - port: {{ .Values.service.port }}
+      targetPort: {{ .Values.service.port }}
+  selector:
+    app: {{ .Release.Name }}
+```
+{% endraw %}
+
+#### Task 2 – Environment overlay files
+
+Create `values-dev.yaml`:
+
+```yaml
+replicaCount: 1
+appEnv: dev
+logLevel: debug
+ingress:
+  enabled: false
+```
+
+Create `values-prod.yaml`:
+
+```yaml
+replicaCount: 3
+appEnv: production
+logLevel: warn
+ingress:
+  enabled: true
+  host: app.prod.example.com
+```
+
+#### Task 3 – Render and diff merge order
+
+```bash
+cd ~/rebash-helm/module-05
+helm template vals-dev rebash-values -f values-dev.yaml --namespace rebash-helm-m05 | tee render-dev-m05.yaml
+helm template vals-prod rebash-values \
+  -f values-dev.yaml -f values-prod.yaml \
+  --namespace rebash-helm-m05 | tee render-prod-m05.yaml
+grep 'replicas:' render-dev-m05.yaml | head -1 | tee replicas-dev-m05.txt
+grep 'replicas:' render-prod-m05.yaml | head -1 | tee replicas-prod-m05.txt
+grep 'LOG_LEVEL' render-dev-m05.yaml | tee log-dev-m05.txt
+grep 'LOG_LEVEL' render-prod-m05.yaml | tee log-prod-m05.txt
+grep -q 'replicas: 1' replicas-dev-m05.txt
+grep -q 'replicas: 3' replicas-prod-m05.txt
+grep -q 'value: debug' log-dev-m05.txt
+grep -q 'value: warn' log-prod-m05.txt
+diff -u render-dev-m05.yaml render-prod-m05.yaml | tee diff-dev-prod-m05.txt || true
+```
+
+**Expected output:** Dev render shows `replicas: 1` and `LOG_LEVEL` `debug`; prod render (later file wins) shows `replicas: 3` and `LOG_LEVEL` `warn`; `diff-dev-prod-m05.txt` highlights changes.
+
+#### Task 4 – Optional install with prod overlay
+
+Create `namespace.yaml`:
+
+```yaml
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: rebash-helm-m05
+```
+
+```bash
+cd ~/rebash-helm/module-05
+if command -v helm >/dev/null && kubectl cluster-info >/dev/null 2>&1; then
+  kubectl apply -f namespace.yaml
+  helm upgrade --install vals-prod rebash-values \
+    -n rebash-helm-m05 \
+    -f values-dev.yaml -f values-prod.yaml \
+    --wait --timeout 120s | tee install-m05.txt
+  kubectl get deploy -n rebash-helm-m05 -o wide | tee deploy-m05.txt
+  helm get values vals-prod -n rebash-helm-m05 | tee live-values-m05.txt
+else
+  echo "Skipping install — cluster unavailable" | tee install-m05.txt
+fi
+```
+
+**Expected output:** Deployment shows three replicas when install runs; `live-values-m05.txt` reflects merged effective values.
 
 ### Validation steps
 
-- [ ] helm lint clean
-- [ ] Release listed in namespace
-- [ ] Uninstall removes the release
+- [ ] Base `values.yaml` contains safe defaults only (no secrets)
+- [ ] Dev and prod overlay files change replicas and log level
+- [ ] Later `-f` file overrides earlier keys (`values-prod.yaml` wins)
+- [ ] Render diff captured between environments
+- [ ] Optional install uses namespace `rebash-helm-m05`
 
 ### Common errors and fixes
 
 | Error | Cause | Fix |
 |-------|-------|-----|
-| PENDING_INSTALL | Image pull / probes | `helm status` + `kubectl describe` |
-| lint failed | Template YAML break | Fix templates; re-run helm lint |
-| context deadline | Slow cluster | Increase --timeout or fix readiness |
+| Prod still shows dev replicas | File order wrong | Pass `-f values-dev.yaml -f values-prod.yaml` (prod last) |
+| `--set` surprises | CLI overrides files | Prefer files for auditability; remember `--set` wins over `-f` |
+| List replaced unexpectedly | Helm replaces whole lists | Design list values to be replaced intentionally, not merged |
+| Secrets in Git overlay | Password copied into values | Use external-secrets or sealed-secrets; keep overlays non-secret |
 
 ### Challenge exercise
 
-Add a ConfigMap template driven by values and prove it with `helm get manifest`.
+Add `--set replicaCount=5` to the prod template command and show it overrides `values-prod.yaml` in the rendered output; capture the single `replicas:` line as evidence.
 
 ### Learning outcomes
 
-- Packaged Kubernetes YAML as a chart
-- Overrode values safely
-- Cleaned up the release
+- Structured environment-specific values without forking templates
+- Applied `-f` merge order with later files winning on conflicts
+- Compared rendered manifests between dev and prod overlays
+- Inspected live release values after install when a cluster is available
 
 ### Cleanup
 
 ```bash
-helm uninstall labchart -n rebash-helm 2>/dev/null || true
-kubectl delete namespace rebash-helm --ignore-not-found
+helm uninstall vals-prod -n rebash-helm-m05 2>/dev/null || true
+kubectl delete namespace rebash-helm-m05 --ignore-not-found
 ```
 
 ## Validation

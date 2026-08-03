@@ -61,10 +61,9 @@ Host with yq available.
 
 ## Initial State
 
-```bash
-mkdir -p ~/rebash-lab-shell/yaml
-cd ~/rebash-lab-shell/yaml
-cat > app.yaml << 'EOF'
+Create `app.yaml`:
+
+```yaml
 app:
   name: payments
   image: ghcr.io/example/payments
@@ -72,8 +71,15 @@ app:
   replicas: 3
   healthcheck:
     path: /healthz
-EOF
 ```
+
+Run:
+
+```bash
+mkdir -p ~/rebash-lab-shell/yaml
+cd ~/rebash-lab-shell/yaml
+```
+
 
 ## Lab Tasks
 

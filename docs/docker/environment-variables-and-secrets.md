@@ -4,7 +4,7 @@ description: Configure container environment variables, Docker secrets, bind mou
 difficulty: intermediate
 estimated_time: "35 min"
 author: Shaik Basha
-last_updated: "2026-07-28"
+last_updated: "2026-08-03"
 category: docker
 tags:
   - docker
@@ -192,22 +192,18 @@ Add `.env` to `.gitignore`. Scan repos with secret detection tools in CI.
 
 ## Hands-on Lab
 
-
-
 ### Objective
 
-Build or run a real Docker solution for **Environment Variables and Secrets** and prove it with inspect/logs/HTTP.
+Create `.env.example` and a Compose stack using `env_file`, then prove configuration inside the container without printing secret values to the terminal.
 
 ### Prerequisites
 
-- Docker Engine or Docker Desktop
-- Permission to run containers
+- Docker Engine with Compose v2
+- Port `18180` available
 
 ### Lab environment
 
 Workspace: `~/rebash-docker/environment-variables-and-secrets`
-
-Local Docker daemon. Clean up containers/images after the lab.
 
 ```bash
 mkdir -p ~/rebash-docker/environment-variables-and-secrets && cd ~/rebash-docker/environment-variables-and-secrets
@@ -215,64 +211,145 @@ mkdir -p ~/rebash-docker/environment-variables-and-secrets && cd ~/rebash-docker
 
 ### Real-world scenario
 
-You are validating **Environment Variables and Secrets** before it lands in CI. The change must be reproducible with copy-paste commands and leave no orphan containers.
+A staging API needs non-secret config (`APP_ENV`, `LOG_LEVEL`) and a lab token supplied at runtime. Security forbids committing real secrets — only `.env.example` goes in Git; operators copy to `.env` locally.
 
 ### Step-by-step tasks
 
-#### Task 1 – Run and inspect a container
+#### Task 1 – Create env template and application
 
-Start from a known image, publish a port, and verify HTTP.
-
-```bash
-docker run -d --name rebash-lab -p 18080:80 nginx:alpine
-docker ps --filter name=rebash-lab
-curl -sI http://127.0.0.1:18080 | head -n 5 | tee headers.txt
-docker logs rebash-lab 2>&1 | head -n 10 | tee logs.txt
-```
-
-**Expected output:** Container Up; HTTP 200 in headers.txt.
-
-#### Task 2 – Inspect runtime config
-
-Use inspect for status — production debugging rarely starts with guesswork.
+Create `.env.example`:
 
 ```bash
-docker inspect rebash-lab --format '{{ "{{" }}.State.Status{{ "}}" }} {{ "{{" }}.Config.Image{{ "}}" }}' | tee inspect.txt
-test -s inspect.txt
+APP_ENV=lab
+LOG_LEVEL=info
+API_TOKEN=replace-me-locally
 ```
 
-**Expected output:** inspect.txt shows `running` and the nginx image.
+Create `app.py`:
+
+```python
+import os
+from http.server import BaseHTTPRequestHandler, HTTPServer
+
+ENV = os.environ.get("APP_ENV", "unknown")
+LOG = os.environ.get("LOG_LEVEL", "info")
+TOKEN = os.environ.get("API_TOKEN", "")
+
+class H(BaseHTTPRequestHandler):
+    def do_GET(self):
+        if self.path == "/config":
+            body = f'env={ENV} log={LOG} token_set={bool(TOKEN)}\n'.encode()
+            self.send_response(200)
+            self.end_headers()
+            self.wfile.write(body)
+            return
+        self.send_error(404)
+    def log_message(self, *args):
+        return
+
+HTTPServer(("0.0.0.0", 8080), H).serve_forever()
+```
+
+Create `Dockerfile`:
+
+```dockerfile
+FROM python:3.12-alpine
+WORKDIR /app
+COPY app.py .
+EXPOSE 8080
+CMD ["python", "app.py"]
+```
+
+Copy the example env locally (never commit `.env`):
+
+```bash
+cd ~/rebash-docker/environment-variables-and-secrets
+cp .env.example .env
+sed -i.bak 's/replace-me-locally/lab-only-token-18180/' .env 2>/dev/null || \
+  sed -i '' 's/replace-me-locally/lab-only-token-18180/' .env
+grep -q APP_ENV .env.example
+```
+
+**Expected output:** `.env.example` exists in the repo tree; `.env` exists locally with a substituted token.
+
+#### Task 2 – Compose with env_file
+
+Create `compose.yaml`:
+
+```yaml
+services:
+  api:
+    build: .
+    image: rebash-env-lab:1.0.0
+    env_file:
+      - .env
+    ports:
+      - "18180:8080"
+```
+
+Start and verify HTTP without dumping secrets:
+
+```bash
+cd ~/rebash-docker/environment-variables-and-secrets
+docker compose up -d --build
+curl -sS http://127.0.0.1:18180/config | tee config-safe.txt
+grep -q 'env=lab token_set=True' config-safe.txt
+grep -qv 'lab-only-token' config-safe.txt
+```
+
+**Expected output:** `config-safe.txt` shows `env=lab` and `token_set=True` but not the raw token.
+
+#### Task 3 – Prove env presence via inspect (redacted check)
+
+Confirm variables are injected without echoing values:
+
+{% raw %}
+```bash
+cd ~/rebash-docker/environment-variables-and-secrets
+CID="$(docker compose ps -q api)"
+docker inspect "$CID" --format '{{ "{{" }}range .Config.Env{{ "}}" }}{{ "{{" }}.{{ "}}" }}{{ "{{" }}println{{ "}}" }}{{ "{{" }}end{{ "}}" }}' | grep -E '^APP_ENV=|^LOG_LEVEL=|^API_TOKEN=' | sed 's/API_TOKEN=.*/API_TOKEN=<redacted>/' | tee env-keys.txt
+grep -q 'APP_ENV=lab' env-keys.txt
+grep -q 'API_TOKEN=<redacted>' env-keys.txt
+```
+{% endraw %}
+
+**Expected output:** `env-keys.txt` lists keys with token redacted in the evidence file.
 
 ### Validation steps
 
-- [ ] Container or image behaves as Expected output describes
-- [ ] Ports respond or command output matches
-- [ ] Cleanup removes lab resources
+- [ ] `.env.example` committed pattern documented; `.env` local only
+- [ ] Compose loads variables through `env_file`
+- [ ] `/config` proves token is set without exposing it in curl output
+- [ ] Inspect env keys captured with token redacted
+- [ ] Cleanup removes stack and local `.env`
 
 ### Common errors and fixes
 
 | Error | Cause | Fix |
 |-------|-------|-----|
-| port is already allocated | Previous lab left a container | `docker rm -f` the old name or change port |
-| permission denied | User not in docker group | Use rootless Docker or fix group membership |
-| manifest unknown | Bad tag | Pin a real tag such as `nginx:alpine` |
+| Token visible in curl | App returned secret | Return `token_set=True` only as in `app.py` |
+| Empty env in container | Wrong env_file path | Run compose from directory containing `.env` |
+| `.env` committed to Git | Missing gitignore | Add `.env` to `.gitignore`; keep `.env.example` |
+| Port 18180 in use | Previous lab | Change host port in compose |
 
 ### Challenge exercise
 
-Add a non-root USER (or Compose healthcheck) and prove it with inspect.
+Move `API_TOKEN` to a Docker Swarm secret or bind-mounted file (`/run/secrets/api_token`) and update `app.py` to read the file when present.
 
 ### Learning outcomes
 
-- Executed a real Docker workflow
-- Captured evidence files
-- Removed disposable resources
+- Separated committable env templates from local secrets
+- Injected configuration with Compose `env_file`
+- Verified env inside the container without leaking secrets to logs
+- Used inspect with redaction for audit evidence
 
 ### Cleanup
 
 ```bash
-docker rm -f rebash-lab 2>/dev/null || true
-docker rmi rebash-lab:local 2>/dev/null || true
-docker compose down -v 2>/dev/null || true
+cd ~/rebash-docker/environment-variables-and-secrets
+docker compose down -v --remove-orphans
+docker rmi rebash-env-lab:1.0.0 2>/dev/null || true
+rm -f .env .env.bak *.txt
 ```
 
 ## Validation

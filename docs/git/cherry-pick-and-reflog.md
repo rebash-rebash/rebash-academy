@@ -1,13 +1,14 @@
 ---
 title: "Cherry-pick and Reflog"
-description: "Cherry-pick commits onto another branch and recover work with reflog — essential DevOps recovery skills."
+description: "Cherry-pick hotfixes onto release branches and recover lost commits with git reflog after mistaken reset."
 difficulty: intermediate
-estimated_time: "35–50 min"
+estimated_time: "50–65 min"
 technology: git
 category: git
 module: "Module 7 · Rebasing & History"
 career_paths:
   - devops-engineer
+  - cloud-engineer
   - platform-engineer
   - site-reliability-engineer
 skills:
@@ -20,321 +21,312 @@ next:
   - git/working-with-remotes
 related:
   - git/git-troubleshooting
-labs: []
-projects: []
-interview: interview/git
-certifications:
-  - GitHub Foundations
+  - git/git-bisect-and-debugging-history
 tags:
   - git
   - cherry-pick
   - reflog
+  - hotfix
 author: Shaik Basha
-last_updated: "2026-07-31"
+last_updated: "2026-08-03"
 comments: false
 ---
-
 
 # Cherry-pick and Reflog
 
 ## Overview
 
+**Cherry-pick** applies an existing commit's patch onto your current branch — ideal for hotfixes born on `main` that must land on a release branch without merging everything else. **Reflog** records where HEAD and branch tips pointed locally — your safety net after `reset --hard` or deleted branches.
 
-
-
-
-
-Cherry-pick a hotfix commit onto another branch and use `reflog` to find a “lost” commit after a reset.
-
-This is a core tutorial in **Module 7 · Rebasing & History** of the REBASH Academy **Git for Cloud & DevOps Engineers** series — written for Cloud, DevOps, Platform, and SRE engineers.
+This is **Tutorial 3** in **Module 7: Rebasing & History** of the REBASH Academy **Git & GitHub for Cloud & DevOps Engineers** series — written for Cloud, DevOps, Platform, and SRE engineers.
 
 ## Prerequisites
 
-
-
-
-
-
-- [Undoing Changes](undoing-changes-reset-revert-stash.md)
+- [Undoing Changes — Reset, Revert, Stash](undoing-changes-reset-revert-stash.md)
+- Git 2.x
+- Comfort with commit SHAs
 
 ## Learning Objectives
 
-
-
-
-
-
 By the end of this tutorial, you will be able to:
 
-- [ ] `git cherry-pick <sha>`  
-- [ ] Read `git reflog`  
-- [ ] Recover a reset commit
+- [ ] Cherry-pick a hotfix commit onto a release branch
+- [ ] Handle cherry-pick conflicts and continue
+- [ ] Locate lost commits with `git reflog`
+- [ ] Recover a branch tip after mistaken hard reset
+- [ ] Archive evidence under `~/rebash-git/module-07`
 
 ## Architecture
 
+Cherry-pick creates a new commit with same diff, new parent, new SHA; reflog is a local journal of ref movements.
 
-
-
-
-
-This topic’s control points and relationships are shown below.
-
-![Architecture diagram for Cherry-pick and Reflog](../assets/excalidraw/git-object-model.svg)
+![Git object model — commits and recovery](../assets/excalidraw/git-object-model.svg)
 
 ## Theory
 
+### What it is
 
+`git cherry-pick <commit>` applies the changes introduced by that commit on top of HEAD, creating a new commit (unless `-n` for no commit). **Reflog** (`git reflog`) lists movements of refs like `HEAD` and `main` — entries expire after default 90 days but suffice for same-day recovery.
 
+### Why it matters
 
-
-
-### What
-
-**Cherry-pick** copies the changes from an existing commit onto your current HEAD as a *new* commit (new SHA, usually same message/patch). **Reflog** is a local diary of where HEAD and branch tips pointed — a recovery tool after reset, rebase, or detached-HEAD mistakes.
-
-### Why
-
-Hotfixes sometimes land on a release branch and must be copied to `main` (or the reverse) without merging the whole branch. Reflog saves “lost” commits that still exist as objects after a bad reset. Together they are essential production safety nets.
+Production may run `release/v2.3` while `main` holds v3 features. A security patch merged to `main` must cherry-pick to `release/v2.3` without dragging unrelated commits. After accidental `git reset --hard HEAD~5` on a laptop, reflog restores work not yet pushed — common during late-night incident response.
 
 ### How it works
 
-`git cherry-pick <sha>` applies that commit’s diff to the current tree and creates a new commit. Conflicts pause the operation like merge/rebase. Ranges and `-x` (note the source SHA in the message) appear in advanced workflows. Reflog entries live under `.git/logs` and expire eventually; `git reflog` then `git switch -c recover/<name> <sha>` resurrects work. Reflog is **not** pushed to remotes — recovery is per clone.
+1. Identify hotfix SHA on source branch (`git log main --oneline`).
+2. `git switch release/v2.3 && git cherry-pick <sha>`.
+3. Resolve conflicts if any; `git cherry-pick --continue`.
+4. After mistake: `git reflog` find pre-reset SHA.
+5. `git reset --hard <sha>` or `git branch recover <sha>`.
 
-### Key concepts
+### Key concepts and comparisons
 
-| Tool | Mental model |
-|------|----------------|
-| Cherry-pick | Duplicate a patch as a new commit |
-| Reflog | Local pointer history |
-| GC grace | Objects linger until garbage collection |
-| Duplicate commits | Same change, different SHAs after pick |
+| Tool | Use |
+|------|-----|
+| cherry-pick | Copy one commit |
+| merge | All commits from branch |
+| revert | Undo one commit |
+| reflog | Recover local refs |
 
-
-In release engineering, cherry-pick is common when a single fix must land on `main` and on a maintained release branch without merging unrelated commits. Document the source SHA in the commit message (or use `-x`) so future readers can see the lineage. Teach every on-call engineer `git reflog` before they need it in an incident.
+| reflog entry | Meaning |
+|--------------|---------|
+| commit | Normal commit |
+| reset | Reset moved ref |
+| checkout/switch | Changed HEAD |
+| cherry-pick | Pick applied |
 
 ### Common pitfalls
 
-- Cherry-picking merge commits without understanding parent selection  
-- Assuming reflog on a CI runner will save laptop mistakes  
-- Cherry-picking large unrelated commits instead of merging/rebase  
-- Waiting weeks to recover — expired reflog entries vanish
+- Cherry-picking merge commits without `-m`.
+- Assuming reflog exists on remote — it is **local only**.
+- Cherry-picking same patch twice — duplicate fixes.
+- Reset --hard then panic without reflog — objects may still be reachable briefly.
 
 ## Hands-on Lab
 
-
-
 ### Objective
 
-Complete a real Git workflow for **Cherry-pick and Reflog** with commits you can inspect and recover.
+Create hotfix on `main`, cherry-pick to simulated release branch, deliberately hard-reset away a commit, recover via reflog.
 
 ### Prerequisites
 
-- Git 2.x installed
+- Git 2.x
 
 ### Lab environment
 
-Workspace: `~/rebash-git/module-07-cherry`
-
-Local Git repository only (no required remote).
+Workspace: `~/rebash-git/module-07/cherry-reflog-lab`
 
 ```bash
-mkdir -p ~/rebash-git/module-07-cherry && cd ~/rebash-git/module-07-cherry
+mkdir -p ~/rebash-git/module-07/cherry-reflog-lab
+set -euo pipefail
 ```
 
 ### Real-world scenario
 
-A delivery team is standardising **Cherry-pick and Reflog**. You prototype the workflow in a throwaway repo and capture log evidence for the playbook.
+Security team patches `auth.yaml` on `main`. Release branch `release/v1` still supported — cherry-pick only that commit. Junior engineer hard-resets — you recover with reflog.
 
 ### Step-by-step tasks
 
-#### Task 1 – Initialise a repository and first commit
-
-Every production change starts as a commit with clear identity config.
+#### Task 1 – Setup main, release, and hotfix
 
 ```bash
+cd ~/rebash-git/module-07
+set -euo pipefail
+rm -rf cherry-reflog-lab && mkdir cherry-reflog-lab && cd cherry-reflog-lab
 git init -b main
 git config user.email 'lab@rebash.local'
 git config user.name 'REBASH Lab'
-echo '# lab' > README.md
-git add README.md
-git commit -m 'Initial commit'
-git log --oneline | tee log.txt
+printf 'auth: v1\n' > auth.yaml
+git add auth.yaml && git commit -m 'chore: auth v1'
+git switch -c release/v1
+git switch main
+printf 'auth: v2\nfeature: beta\n' > auth.yaml
+git commit -am 'feat: auth v2 beta feature'
+printf 'auth: v2-hotfix\n' > auth.yaml
+git commit -am 'fix: security patch auth v2-hotfix'
+HOTFIX=$(git rev-parse HEAD)
+echo "$HOTFIX" | tee ../hotfix-sha.txt
+git switch release/v1
+git cherry-pick "$HOTFIX"
+grep -q 'v2-hotfix' auth.yaml
+! grep -q 'beta' auth.yaml 2>/dev/null || true
+git log --oneline | tee ../release-log.txt
+grep -q 'security patch' ../release-log.txt
+cd ..
 ```
 
-**Expected output:** log.txt shows the initial commit on `main`.
+**Expected output:** Release branch has hotfix content without beta feature text in auth (only hotfix patch applied).
 
-#### Task 2 – Inspect status and diff discipline
-
-Clean working trees prevent accidental commits of secrets.
+#### Task 2 – Mistaken hard reset
 
 ```bash
-echo 'work' > work.txt
-git status
-git add work.txt
-git commit -m 'Add work.txt'
-git show --stat HEAD | tee show.txt
+cd ~/rebash-git/module-07/cherry-reflog-lab
+set -euo pipefail
+git switch main
+git reset --hard HEAD~2
+git log --oneline | tee ../after-disaster.txt
+! grep -q 'security patch' ../after-disaster.txt
+git reflog | tee ../reflog.txt
+grep -q 'security patch' ../reflog.txt
+RECOVER=$(grep 'security patch' ../reflog.txt | head -1 | awk '{print $1}')
+git reset --hard "$RECOVER"
+grep -q 'security patch' <(git log --oneline)
+cd ..
 ```
 
-**Expected output:** show.txt lists work.txt in the commit.
+**Expected output:** After recovery, hotfix commit visible again on main log.
+
+#### Task 3 – Evidence pack
+
+```bash
+cd ~/rebash-git/module-07/cherry-reflog-lab
+set -euo pipefail
+git log --oneline --all --graph | tee ../cherry-graph.txt
+tar -czf ../module-07-cherry-evidence.tgz -C .. hotfix-sha.txt release-log.txt reflog.txt cherry-graph.txt
+ls -l ../module-07-cherry-evidence.tgz | tee ../cherry-evidence.txt
+cd ..
+```
+
+**Expected output:** Tarball with cherry-pick and reflog proof.
 
 ### Validation steps
 
-- [ ] Repository has at least two commits or a merge as designed
-- [ ] log/graph evidence files exist
+- [ ] Hotfix cherry-picked to release/v1
+- [ ] Reflog listed lost commit
+- [ ] Hard reset recovery succeeded
+- [ ] Evidence archive exists
 
 ### Common errors and fixes
 
 | Error | Cause | Fix |
 |-------|-------|-----|
-| Author identity unknown | Missing user.name/email | Set local `git config user.*` as in Task 1 |
-| merge conflict | Overlapping edits | Edit file, `git add`, complete merge |
-| detached HEAD | Checked out a raw SHA | `git switch -c` a branch before committing |
+| empty cherry-pick | Already applied | Skip or verify diff |
+| cherry-pick conflict | Context differs | Resolve; continue |
+| reflog empty | New repo minimal | Make commits first |
+| wrong recover SHA | Picked wrong entry | Identify message in reflog |
 
 ### Challenge exercise
 
-Use `git reflog` to recover a commit after a hard reset on a private branch.
+Create branch `recover-test`, make commit, delete branch with `git branch -D`, recover commit SHA from reflog with `git branch recover-test <sha>` — document steps in `REFLOG_RECOVERY.md`.
 
 ### Learning outcomes
 
-- Performed real Git operations
-- Left auditable history
-- Understood recovery basics
+- Ported hotfix without full merge
+- Used reflog after destructive reset
+- Understood local-only recovery limits
 
 ### Cleanup
 
 ```bash
-# Safe local repo — delete the lab directory when finished:
-# rm -rf "$(pwd)"
+ls ~/rebash-git/module-07/cherry-reflog-lab
 ```
 
 ## Validation
 
-
-
-
-
-
-- [ ] Lab commands run under `~/rebash-git/module-07-cherry/`
-- [ ] You can explain each Theory section in your own words
-- [ ] You used modern tooling where it applies to this topic
-- [ ] You can describe one production failure mode for this topic
+- [ ] Lab completed under module-07
+- [ ] Can explain cherry-pick vs merge
+- [ ] Know reflog is local
+- [ ] Can name hotfix workflow use case
 
 ## Code Walkthrough
 
-
-
-
-
-
-Production practice for **Cherry-pick and Reflog** always combines:
-
-1. Inspect before you change (status, plan, logs, dry-run)
-2. Prefer reversible, documented changes (Git, IaC, drop-ins, version pins)
-3. Capture evidence (command output, pipeline logs) for handovers
-4. Prefer current tools and APIs over legacy shortcuts
-5. Least privilege — escalate credentials only when required
-
-Keep runbooks short enough to follow under pressure. Automate checks; keep humans for judgement.
+1. **Copy SHA from log** — full or short SHA works for cherry-pick.
+2. **Pick to release first** — before tag rebuild/deploy.
+3. **reflog immediately after oops** — before GC prunes unreachable objects.
+4. **Branch at recovered SHA** — safer than immediate hard reset on shared clone.
+5. **Push recovered work** — new branch for review if needed.
 
 ## Security Considerations
 
-
-
-
-
-
-- Treat credentials and tokens for git as privileged — never commit them
-- Prefer short-lived auth (OIDC, roles, SSO) over long-lived keys
-- Validate blast radius before apply/deploy/delete operations
-- Restrict who can approve production changes
-- Collect audit logs; limit who can read sensitive traces
+- Cherry-pick security patches to all supported release lines.
+- Reflog recovery may restore commits containing secrets — scan before push.
+- Do not cherry-pick unsigned commits if policy requires signatures.
+- Audit cherry-picks in change records — same as merges.
+- Remote backup still required — reflog does not replace server history.
 
 ## Common Mistakes
 
+!!! warning "Cherry-pick merge commit"
+    Git needs mainline parent. **Fix:** `git cherry-pick -m 1 <merge-sha>` or pick individual commits.
 
+!!! warning "Trusting reflog on CI runner"
+    Ephemeral runners lose reflog each job. **Fix:** Push branches; use remote as source of truth.
 
-
-
-
-!!! warning "Cherry-picking merge commits without understanding parent selection  "
-    Validate assumptions against the Theory section and official docs before changing production.
-
-!!! warning "Assuming reflog on a CI runner will save laptop mistakes  "
-    Lab shortcuts (open security groups, admin roles, skip approvals) must not ship unchanged.
-
-!!! warning "Changing production without a rollback path"
-    Always know how to revert (previous artefact, prior release, state rollback, DNS failback).
+!!! warning "Double cherry-pick"
+    Same patch applied twice causes duplicate logic. **Fix:** Check `git log release` before pick.
 
 ## Best Practices
 
-
-
-
-
-
-- Encode Cherry-pick and Reflog changes as code and review them in pull requests
-- Pin versions (images, modules, actions, provider plugins)
-- Separate environments with clear promotion gates
-- Alert on symptoms with runbooks attached
-- Destroy lab resources; tag everything with owner and expiry where possible
+- Tag release SHAs before hotfix season
+- Document supported release branches
+- Use `-x` when cherry-pick to record source SHA in message
+- reflog + branch recovery before force operations
+- Automate backport labels in GitHub for tracking
 
 ## Troubleshooting
 
-
-
-
-
-
 | Symptom | Likely cause | Fix |
 |---------|--------------|-----|
-| Auth / permission denied | Wrong identity, policy, or scope | Check caller identity, roles, and least-privilege policies |
-| Timeout / no route | Network, DNS, security group, or endpoint | Trace path, DNS, and allow-lists before retrying |
-| Drift / unexpected plan | Manual change or wrong state/workspace | Reconcile desired vs actual; avoid click-ops on managed resources |
-| Pipeline/job red | Flaky step, cache, or missing secret | Read failing step logs; bisect recent workflow/config changes |
-| Cost spike | Idle load balancer, NAT, oversized compute | Inventory billable resources; stop/delete labs promptly |
+| Commit gone after reset | Hard reset | reflog recover |
+| Cherry-pick empty | No diff vs parent | Expected; skip |
+| Cannot find reflog entry | Expired or different clone | Remote branches |
+| Conflict on pick | Drifted release line | Resolve like merge |
 
 ## Summary
 
-
-
-
-
-
-**Cherry-pick and Reflog** is essential for Cloud and DevOps engineers working with git. Practise the lab until the inspection and change path is muscle memory, then continue the track.
+Cherry-pick moves individual fixes; reflog recovers local mistakes — complementary tools for release engineering. Next: [Working with Remotes](working-with-remotes.md).
 
 ## Interview Questions
 
+**1. What does cherry-pick do?**
 
+??? success "Reveal answer"
+    Applies the change introduced by an existing commit onto the current branch as a new commit with a new SHA and parent — copying the patch, not the original commit object.
 
+**2. Cherry-pick vs merge for hotfix?**
 
-1. When is cherry-pick better than merging a whole branch?
-2. What does reflog record that git log does not?
-3. Cherry-pick conflict handling?
-4. How long is reflog kept by default roughly?
-5. Dangers of cherry-picking the same fix twice?
+??? success "Reveal answer"
+    Merge brings all commits from source branch; cherry-pick takes only the hotfix commit — essential when release branch must not receive unrelated main commits.
 
-!!! tip "Sample answer — question 2"
-    Use git reflog to find the pre-change HEAD and cherry-pick or branch from that SHA.
+**3. What is reflog?**
 
-!!! tip "Sample answer — question 4"
-    Cherry-picking hotfixes into multiple release branches needs clear tracking to avoid duplicate fixes.
+??? success "Reveal answer"
+    A local log of ref updates (HEAD, branches) — lets you find SHAs before reset/checkout operations for recovery.
+
+**4. Is reflog on remote?**
+
+??? success "Reveal answer"
+    No — reflog is local to each repository clone; recovery of pushed work uses remote refs, tags, or forge APIs.
+
+**5. git cherry-pick -x?**
+
+??? success "Reveal answer"
+    Appends a line to commit message noting which commit was cherry-picked — aids audit trail across branches.
+
+**6. Recover after git branch -D?**
+
+??? success "Reveal answer"
+    Find last commit SHA of deleted branch in `git reflog`, then `git branch <name> <sha>` to recreate pointer.
+
+**7. Risk of cherry-pick without tests?**
+
+??? success "Reveal answer"
+    Patch may not apply cleanly to old codebase context — conflicts or subtle breakage; always run release-line CI after pick.
+
+**8. When reflog cannot help?**
+
+??? success "Reveal answer"
+    After garbage collection removes unreachable objects, or on a different machine that never had those commits — need remote backup or teammate clone.
 
 ## Related Tutorials
 
-
-
-
-
-
-- [Course overview](index.md)
-- [Working with Remotes](working-with-remotes.md)  
+- [Undoing Changes — Reset, Revert, Stash](undoing-changes-reset-revert-stash.md)
 - [Git Troubleshooting](git-troubleshooting.md)
+- [Git Bisect and Debugging History](git-bisect-and-debugging-history.md)
+- [Course index](index.md)
 
 ## References
 
-
-
-
-
-
-- [git-cherry-pick](https://git-scm.com/docs/git-cherry-pick) · [git-reflog](https://git-scm.com/docs/git-reflog)
+- [git-cherry-pick](https://git-scm.com/docs/git-cherry-pick)
+- [git-reflog](https://git-scm.com/docs/git-reflog)

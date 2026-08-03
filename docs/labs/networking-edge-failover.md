@@ -100,8 +100,11 @@ Your job is to prove each layer with evidence before fixing it.
 ```bash
 mkdir -p ~/rebash-lab-edge/{backend-a,backend-b}
 cd ~/rebash-lab-edge
+```
 
-cat > backend-a/server.py <<'EOF'
+Create `backend-a/server.py`:
+
+```python
 #!/usr/bin/env python3
 from http.server import BaseHTTPRequestHandler, HTTPServer
 
@@ -122,9 +125,11 @@ class Handler(BaseHTTPRequestHandler):
         return
 
 HTTPServer(("127.0.0.1", 18081), Handler).serve_forever()
-EOF
+```
 
-cat > backend-b/server.py <<'EOF'
+Create `backend-b/server.py`:
+
+```python
 #!/usr/bin/env python3
 from http.server import BaseHTTPRequestHandler, HTTPServer
 
@@ -145,8 +150,9 @@ class Handler(BaseHTTPRequestHandler):
         return
 
 HTTPServer(("127.0.0.1", 18082), Handler).serve_forever()
-EOF
+```
 
+```bash
 chmod +x backend-a/server.py backend-b/server.py
 python3 backend-a/server.py >/tmp/rebash-edge-a.log 2>&1 &
 echo $! > /tmp/rebash-edge-a.pid
@@ -178,8 +184,11 @@ ss -tlnp | grep -E '1808[12]'
 ```bash
 sudo apt update
 sudo apt install -y haproxy curl dig dnsutils
+```
 
-sudo tee /etc/haproxy/haproxy.cfg <<'EOF'
+Create `haproxy.cfg`:
+
+```text
 global
     log /dev/log local0
     maxconn 2048
@@ -202,8 +211,10 @@ backend status_pool
     http-check expect status 200
     server backend_a 127.0.0.1:18081 check inter 2s fall 3 rise 2
     server backend_b 127.0.0.1:18082 check inter 2s fall 3 rise 2
-EOF
+```
 
+```bash
+sudo cp haproxy.cfg /etc/haproxy/haproxy.cfg
 sudo haproxy -c -f /etc/haproxy/haproxy.cfg
 sudo systemctl restart haproxy
 sudo systemctl is-active haproxy

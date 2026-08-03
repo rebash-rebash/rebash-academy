@@ -31,7 +31,7 @@ tags:
   - control-plane
   - etcd
 author: Shaik Basha
-last_updated: "2026-07-31"
+last_updated: "2026-08-03"
 comments: false
 ---
 
@@ -153,87 +153,129 @@ Reconciliation never stops: controllers and kubelets continuously compare desire
 
 ## Hands-on Lab
 
-
-
 ### Objective
 
-Build and verify a working Kubernetes solution for **Kubernetes Architecture and Components** that you can inspect, prove, and tear down safely.
+Inspect control plane and node components running in your cluster, map each role to evidence in `arch-evidence.txt`, and prove system Pods in `kube-system` are healthy.
 
 ### Prerequisites
 
-- kubectl configured against a lab cluster (kind/minikube preferred)
-- Cluster-admin or namespace-create rights in the lab cluster
+- A working **kind** cluster (`kubectl cluster-info`)
+- **kubectl** with permission to list nodes and `kube-system` Pods
 - Writable workspace at `~/rebash-k8s/module-01-arch`
 
 ### Lab environment
 
 Workspace: `~/rebash-k8s/module-01-arch`
 
-Local kind/minikube or a dedicated sandbox cluster. Never target a shared production API server.
+Use a disposable **kind** cluster. Never target a shared production API server.
 
 ```bash
 mkdir -p ~/rebash-k8s/module-01-arch && cd ~/rebash-k8s/module-01-arch
+kubectl cluster-info | tee cluster-info.txt
+kubectl get nodes | tee nodes-ready-check.txt
+grep -q Ready nodes-ready-check.txt
 ```
 
 ### Real-world scenario
 
-Your platform team is rolling out **Kubernetes Architecture and Components** for a new microservice. You must apply the change in an isolated namespace, prove it works with kubectl, and leave evidence for the on-call handover.
+During a cluster health review, your lead asks you to prove which nodes exist, which control-plane components run as Pods, and which daemons run on every node. You produce a short evidence file the on-call engineer can paste into the incident channel.
 
 ### Step-by-step tasks
 
-#### Task 1 – Apply a topic workload
+#### Task 1 – Inspect node and control-plane layout
 
-Create a namespace and a small Deployment to practise **What it is** against a live API.
-
-```bash
-kubectl create namespace rebash-lab --dry-run=client -o yaml | kubectl apply -f -
-kubectl create deployment topic --image=nginx:1.27-alpine -n rebash-lab
-kubectl rollout status deployment/topic -n rebash-lab
-kubectl get all -n rebash-lab
-```
-
-**Expected output:** Deployment Ready; Pods listed under the namespace.
-
-#### Task 2 – Inspect and gather evidence
-
-Production changes always leave an audit trail of describe/Events.
+Record node roles, versions, and runtime information.
 
 ```bash
-kubectl describe deploy topic -n rebash-lab | tee describe.txt
-kubectl get events -n rebash-lab --sort-by=.lastTimestamp | tail -n 15 | tee events.txt
+cd ~/rebash-k8s/module-01-arch
+kubectl get nodes -o wide | tee nodes-wide.txt
+kubectl get nodes -o jsonpath='{range .items[*]}{.metadata.name}{"\t"}{.status.nodeInfo.kubeletVersion}{"\t"}{.status.nodeInfo.containerRuntimeVersion}{"\n"}{end}' | tee node-runtime.txt
+grep -q Ready nodes-wide.txt
 ```
 
-**Expected output:** describe.txt and events.txt capture healthy Objects/Events.
+**Expected output:** `nodes-wide.txt` lists Ready nodes with internal IPs and container runtime versions.
+
+#### Task 2 – List kube-system components
+
+Identify control-plane and node agents running as Pods.
+
+```bash
+cd ~/rebash-k8s/module-01-arch
+kubectl get pods -n kube-system -o wide | tee kube-system-pods.txt
+kubectl get pods -n kube-system -o custom-columns=NAME:.metadata.name,NODE:.spec.nodeName,STATUS:.status.phase | tee kube-system-summary.txt
+grep -E 'coredns|kube-proxy|etcd|apiserver|scheduler|controller' kube-system-pods.txt | tee control-plane-hits.txt || true
+```
+
+**Expected output:** `kube-system-pods.txt` shows system Pods (names vary by distribution); most entries are `Running`.
+
+#### Task 3 – Build arch-evidence from live cluster output
+
+Create `build-arch-evidence.sh`:
+
+```bash
+#!/usr/bin/env bash
+set -euo pipefail
+{
+  echo "# REBASH module-01-arch — cluster component evidence"
+  echo "generated: $(date -Iseconds)"
+  echo ""
+  echo "control_plane_components:"
+  grep -E 'coredns|kube-proxy|etcd|apiserver|scheduler|controller' kube-system-pods.txt || echo "  (names vary by distribution)"
+  echo ""
+  echo "=== nodes-wide.txt ==="
+  cat nodes-wide.txt
+  echo ""
+  echo "=== kube-system-pods.txt ==="
+  cat kube-system-pods.txt
+} > arch-evidence.txt
+wc -l arch-evidence.txt | tee arch-evidence-lines.txt
+test "$(wc -l < arch-evidence.txt)" -gt 10
+```
+
+Run it:
+
+```bash
+cd ~/rebash-k8s/module-01-arch
+chmod +x build-arch-evidence.sh
+./build-arch-evidence.sh
+grep -q 'cluster component evidence' arch-evidence.txt
+```
+
+**Expected output:** `arch-evidence.txt` contains live command output and control-plane component hits; line count exceeds 10.
 
 ### Validation steps
 
-- [ ] Namespace `rebash-lab` contains the expected Ready objects
-- [ ] You can explain each Task command from the Theory section
-- [ ] Cleanup deletes the namespace without leftover workloads
+- [ ] All nodes in `nodes-wide.txt` are Ready
+- [ ] `kube-system-pods.txt` lists Running system Pods
+- [ ] `arch-evidence.txt` maps control plane vs node agents with live output appended
+- [ ] You can explain what etcd, kubelet, and CoreDNS do from this evidence
 
 ### Common errors and fixes
 
 | Error | Cause | Fix |
 |-------|-------|-----|
-| ImagePullBackOff | Wrong tag or registry auth | Fix image reference; check pull secrets |
-| Pending Pod | Scheduling / quota / PVC | `kubectl describe pod` and read Events |
-| Empty Endpoints | Selector or readiness mismatch | Compare Service selector to Pod labels and Ready |
+| Forbidden listing kube-system | RBAC limits | Use a lab cluster with admin access or ask platform team |
+| No etcd Pod visible | External etcd (managed control plane) | Note "external etcd" in arch-evidence.txt |
+| Different Pod names on minikube vs kind | Distribution packaging | Map by label: `kubectl get pods -n kube-system --show-labels` |
+| Node NotReady | Cluster still booting | Wait and re-run `kubectl get nodes -w` |
 
 ### Challenge exercise
 
-Add a readinessProbe and a ResourceQuota to the namespace, then show that over-quota creates are rejected.
+Add one line per node to `arch-evidence.txt` showing which `kube-system` DaemonSet Pods run on that node (`kubectl get pods -n kube-system -o wide --field-selector spec.nodeName=<node>`).
 
 ### Learning outcomes
 
-- Applied a real cluster change for Kubernetes Architecture and Components
-- Used describe/Events for verification
-- Destroyed lab resources cleanly
+- Correlated node Ready state with kubelet and runtime versions
+- Identified control-plane and add-on Pods in `kube-system`
+- Produced architecture evidence suitable for handover or review
 
 ### Cleanup
 
 ```bash
-kubectl delete namespace rebash-lab --ignore-not-found
-# Keep ~/rebash-kubernetes/ for later tutorials
+cd ~/rebash-k8s/module-01-arch
+# Evidence files are local only — no cluster resources to delete
+rm -f nodes-wide.txt node-runtime.txt kube-system-pods.txt kube-system-summary.txt control-plane-hits.txt arch-evidence-lines.txt
+# Keep arch-evidence.txt if you want it for notes
 ```
 
 ## Validation

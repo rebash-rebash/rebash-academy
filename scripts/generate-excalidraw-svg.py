@@ -164,6 +164,19 @@ def write_pair(name: str, width: int, height: int, body: str, elements: list):
     print(f"wrote {name}")
 
 
+def write_alias(alias: str, source: str):
+    """Duplicate a generated SVG/excalidraw pair under an alternate filename."""
+    for ext in (".svg", ".excalidraw"):
+        src = OUT / f"{source}{ext}"
+        dst = OUT / f"{alias}{ext}"
+        if not src.exists():
+            print(f"skip alias {alias} — missing {source}{ext}")
+            continue
+        dst.write_text(src.read_text(encoding="utf-8"), encoding="utf-8")
+    if (OUT / f"{source}.svg").exists():
+        print(f"wrote alias {alias} <- {source}")
+
+
 def diagram_network_types():
     rng = random.Random(11)
     parts = []
@@ -2270,6 +2283,19 @@ def diagram_terraform_troubleshoot():
     write_pair("terraform-troubleshooting", 700, 200, "\n".join(parts), [])
 
 
+def diagram_terraform_aliases():
+    """Alternate filenames referenced across the Terraform course."""
+    for alias, source in (
+        ("terraform-install-cli", "terraform-cli-commands"),
+        ("terraform-resources-meta", "terraform-resources"),
+        ("terraform-variables", "terraform-variables-flow"),
+        ("terraform-remote-state", "terraform-remote-backend"),
+        ("terraform-hcp-cloud", "terraform-cloud"),
+        ("terraform-cicd", "terraform-cicd-pipeline"),
+        ("terraform-production", "terraform-repo-structure"),
+    ):
+        write_alias(alias, source)
+
 
 # --- GitLab CI/CD for Cloud & DevOps (polished Excalidraw) ---
 
@@ -3144,6 +3170,7 @@ def main():
     diagram_terraform_kubernetes()
     diagram_terraform_production()
     diagram_terraform_troubleshoot()
+    diagram_terraform_aliases()
     diagram_gitlab_architecture()
     diagram_gitlab_pipeline_flow()
     diagram_gitlab_runners()

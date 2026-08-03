@@ -1,14 +1,13 @@
 ---
 title: "Composite Actions and Reusable Workflows"
-description: "Build composite actions and reusable workflows, pin marketplace actions by SHA, and publish internal actions for platform teams."
+description: "Build composite actions and reusable workflows to deduplicate CI/CD logic across repositories with callable workflows and local action metadata."
 difficulty: advanced
-estimated_time: "45–60 min"
+estimated_time: "50–65 min"
 technology: github-actions
 category: github-actions
 module: "Module 14 · Reusable Components"
 career_paths:
   - devops-engineer
-  - cloud-engineer
   - platform-engineer
   - site-reliability-engineer
   - devsecops-engineer
@@ -16,386 +15,462 @@ skills:
   - github-actions
   - composite-actions
   - reusable-workflows
-  - supply-chain
+  - platform-engineering
 prerequisites:
   - github-actions/release-management-and-versioning
+  - github-actions/workflow-syntax-matrix-and-reusable
 next:
   - github-actions/production-pipelines-and-environments
 related:
-  - github-actions/workflow-syntax-matrix-and-reusable
-  - github-actions/security-scanning-and-supply-chain
-labs: []
-projects: []
-interview: interview/github-actions
-certifications:
-  - GitHub Actions
-  - GitHub Administration
+  - github-actions/artifacts-and-caching
+  - jenkins/shared-libraries
 tags:
   - github-actions
-  - composite-actions
-  - reusable-workflows
-  - marketplace
+  - composite
+  - reusable-workflow
+  - DRY
 author: Shaik Basha
-last_updated: "2026-07-31"
+last_updated: "2026-08-03"
 comments: false
 ---
-
 
 # Composite Actions and Reusable Workflows
 
 ## Overview
 
+Copy-pasting fifty lines of setup into every repository does not scale. **Composite actions** bundle steps into a local or published action; **reusable workflows** expose entire jobs via `workflow_call` so service repos invoke a standard platform pipeline with inputs and secrets.
 
-
-
-
-
-
-
-Factor repeated CI into composite actions and reusable workflows, pin marketplace actions by commit SHA, and outline how platform teams publish internal actions.
-
-Copy-pasted workflow YAML drifts. **Composite actions** package a sequence of steps with inputs and outputs. **Reusable workflows** (`workflow_call`) share whole jobs — often lint, test, build, and deploy contracts — across repositories. The **marketplace** accelerates delivery; **pinning by SHA** and **internal actions** keep the supply chain under your control.
-
-This is a core tutorial in **Module 14 · Reusable Components** of the REBASH Academy **GitHub Actions for Cloud & DevOps Engineers** series — written for Cloud, DevOps, Platform, and SRE engineers.
+This is **Tutorial 14** in **Module 14: Reusable Components** of the REBASH Academy **GitHub Actions for Cloud & DevOps Engineers** series — written for Cloud, DevOps, Platform, and SRE engineers building internal developer platforms.
 
 ## Prerequisites
 
-
-
-
-
-
-
-
 - [Release Management and Versioning](release-management-and-versioning.md)
-- [Workflow Syntax, Matrix, and Reusable](workflow-syntax-matrix-and-reusable.md) (or equivalent)
+- [Workflow Syntax: Matrix and Reusable Workflows](workflow-syntax-matrix-and-reusable.md)
+- Python 3 with PyYAML for offline validation
 
 ## Learning Objectives
 
-
-
-
-
-
-
-
 By the end of this tutorial, you will be able to:
 
-- [ ] Author a composite action with inputs and outputs  
-- [ ] Call a reusable workflow with `secrets: inherit` or explicit secrets  
-- [ ] Pin third-party actions to a full commit SHA  
-- [ ] Choose composite vs reusable vs internal action repo
+- [ ] Author a composite action with `action.yml` inputs and steps
+- [ ] Create a reusable workflow callable via `workflow_call`
+- [ ] Wire a caller workflow that uses both components together
+- [ ] Pass inputs, secrets, and outputs across reusable boundaries
+- [ ] Choose composite action vs reusable workflow for a given problem
 
 ## Architecture
 
+Service repositories call reusable workflows; reusable workflows invoke composite actions for shared step bundles.
 
-
-
-
-
-
-
-This topic’s control points and relationships are shown below.
-
-![Reusable components](../assets/excalidraw/gha-reusable-components.svg)
+![Reusable components in GitHub Actions](../assets/excalidraw/gha-reusable-components.svg)
 
 ## Theory
 
-
-
-
-
-
-
-
 ### What it is
 
-A **composite action** is an `action.yml` with `runs.using: composite` — local steps (shell or nested `uses`) that look like one step to callers. A **reusable workflow** lives under `.github/workflows/`, declares `on.workflow_call`, and is invoked with `jobs.<id>.uses: org/repo/.github/workflows/ci.yml@ref`. **Marketplace actions** are public (or verified) actions you consume with `uses: owner/name@ref`. **Internal actions** are the same mechanism in a private org repo — the platform’s standard “setup language toolchain” or “OIDC deploy” building blocks.
+| Mechanism | Granularity | Defined in | Called via |
+|-----------|-------------|------------|------------|
+| Composite action | Steps (shell grouped) | `action.yml` in repo path | `uses: ./.github/actions/name` or `org/repo/path@ref` |
+| Reusable workflow | Jobs/workflows | `.github/workflows/*.yml` with `on: workflow_call` | `uses: org/repo/.github/workflows/x.yml@ref` |
+| JavaScript action | Custom Node logic | `action.yml` + `dist/` | Same as composite |
+| Marketplace action | Third-party | Published repo | `uses: owner/action@v4` (pin SHA in prod) |
 
-| Pattern | Shares | Best for |
-|---------|--------|----------|
-| Composite action | Steps | Setup, thin wrappers, repo-local helpers |
-| Reusable workflow | Jobs / permissions shape | Org-standard CI/CD contracts |
-| Marketplace (SHA-pinned) | Community capability | Well-known tools you do not maintain |
-| Internal action repo | Versioned platform steps | Multi-repo consistency + review |
+**Composite actions** cannot call other composite actions recursively in all cases — keep them focused. **Reusable workflows** support `secrets: inherit` and job outputs for platform teams.
 
 ### Why it matters
 
-Platform engineering wins by **shipping templates**, not reviewing 200-line bespoke YAML per app. Reuse cuts mean time to a compliant pipeline and centralises security fixes. SHA pinning stops a compromised or rewritten tag from changing production behaviour overnight — a core supply-chain control for GitHub Actions at enterprise scale.
+Platform engineering centralises compliance (scanning, pinning, OIDC login) once. Service teams supply inputs (app name, Python version) without forking platform YAML. Updates roll out when callers pin to new `@v2` tag or SHA.
 
 ### How it works
 
-1. Extract repeated steps into `.github/actions/<name>/action.yml` (composite) or a dedicated actions repository.  
-2. Extract org-standard job graphs into a reusable workflow with typed `inputs` and optional `outputs`.  
-3. Caller workflows stay thin: `uses: ./.github/actions/setup-python` or `uses: org/platform-workflows/.github/workflows/node-ci.yml@v2`.  
-4. For marketplace and internal actions, pin `@<full-sha>` and comment the human tag (`# v4.1.0`) for readability.  
-5. Version platform workflows with tags or release branches; consumers bump deliberately after changelog review.
+1. Platform repo publishes `/.github/actions/setup-python-app/action.yml` (composite).
+2. Platform repo publishes `/.github/workflows/ci-reusable.yml` with `workflow_call` inputs.
+3. Service repo workflow:
 
-Reusable workflows run in the **caller’s** repository context for `GITHUB_TOKEN` by default. Pass secrets explicitly or use `secrets: inherit` when policy allows. Prefer least-privilege `permissions` in the *called* workflow.
+{% raw %}
+```yaml
+jobs:
+  ci:
+    uses: my-org/platform/.github/workflows/ci-reusable.yml@v1
+    with:
+      python-version: '3.12'
+    secrets: inherit
+```
+{% endraw %}
+
+4. Reusable workflow checks out code and `uses: ./.github/actions/setup-python-app` with inputs.
+5. Outputs from reusable jobs expose version or artefact names to caller via `jobs.<id>.outputs`.
 
 ### Key concepts and comparisons
 
-| Question | Composite | Reusable workflow |
-|----------|-----------|-------------------|
-| Can define jobs? | No | Yes |
-| Ideal granularity | Thin step wrappers | Full stage contracts |
-| Local path `uses` | `./.github/actions/...` | Same-repo or remote `@ref` |
-
-Pin marketplace and internal actions to a **full commit SHA** (comment the human tag). Avoid `@main` and floating major tags in production.
+| Use composite when | Use reusable workflow when |
+|--------------------|----------------------------|
+| Bundling 3–10 shell steps | Entire CI job graph needed |
+| Same repo or lightweight share | Cross-repo standard pipeline |
+| Inputs are step parameters | Need job-level `needs`, environments |
+| No separate runner job semantics | Caller should stay minimal |
 
 ### Common pitfalls
 
-- Hiding broad secrets in callees while callers stay over-privileged.  
-- Floating marketplace tags without Dependabot/Renovate SHA updates.  
-- Giant composites that re-implement half of CI — keep them thin.  
-- Forgetting composites cannot set job-level `permissions` or `runs-on`.
+- Putting `runs-on` inside composite action (invalid — composite runs on caller's runner).
+- Reusable workflow without documenting required `secrets`.
+- Callers pin `@main` — silent breaking changes.
+- Circular `workflow_call` dependencies between repos.
+- Composite action trying to set job outputs without `outputs` in `action.yml`.
 
 ## Hands-on Lab
 
-
-
 ### Objective
 
-Author a GitHub Actions workflow that implements **Composite Actions and Reusable Workflows** and validate YAML structure locally.
+Build a **composite action** (setup + validate marker file) and a **reusable workflow** that calls it, then author a **caller workflow** in the same lab repo — all validated offline.
 
 ### Prerequisites
 
 - Python 3 with PyYAML
-- Optional: GitHub repo to run the workflow
+- Bash
 
 ### Lab environment
 
-Workspace: `~/rebash-github-actions/module-14/.github/{actions/setup-tool,workflows}`
-
-Workflows under `.github/workflows/`. In docs, wrap GitHub Actions expressions in Jinja raw blocks so MkDocs macros do not parse them; use heredocs in the lab.
+Workspace: `~/rebash-github-actions/module-14`
 
 ```bash
-mkdir -p ~/rebash-github-actions/module-14/.github/{actions/setup-tool,workflows} && cd ~/rebash-github-actions/module-14/.github/{actions/setup-tool,workflows}
+mkdir -p ~/rebash-github-actions/module-14/.github/{actions/setup-lab,workflows} && cd ~/rebash-github-actions/module-14
+set -euo pipefail
 ```
 
 ### Real-world scenario
 
-Platform engineering wants **Composite Actions and Reusable Workflows** as a reusable workflow pattern. You prototype YAML that passes review and runs on `ubuntu-latest`.
+Platform team ships `setup-lab` composite action and `ci-reusable.yml` reusable workflow. Application repos only maintain a ten-line caller workflow.
 
 ### Step-by-step tasks
 
-#### Task 1 – Create workflow file
+#### Task 1 – Composite action
 
-Jobs and steps must be explicit; pin mainstream actions.
+Create `.github/actions/setup-lab/action.yml`:
+
+{% raw %}
+```yaml
+name: Setup lab workspace
+description: Create marker file and validate lab path
+inputs:
+  lab-name:
+    description: Lab identifier
+    required: true
+outputs:
+  marker-path:
+    description: Path to marker file
+    value: ${{ steps.mk.outputs.path }}
+runs:
+  using: composite
+  steps:
+    - id: mk
+      shell: bash
+      run: |
+        set -euo pipefail
+        mkdir -p out
+        path="out/${{ inputs.lab-name }}.txt"
+        echo "lab=${{ inputs.lab-name }}" > "$path"
+        echo "path=$path" >> "$GITHUB_OUTPUT"
+    - shell: bash
+      run: test -s "${{ steps.mk.outputs.path }}"
+```
+{% endraw %}
+
+Validate offline:
 
 ```bash
-mkdir -p .github/workflows
-cat > .github/workflows/lab.yml << 'EOF'
-name: lab
+cd ~/rebash-github-actions/module-14
+set -euo pipefail
+python3 -c "import yaml; yaml.safe_load(open('.github/actions/setup-lab/action.yml')); print('composite action OK')"
+grep -q 'using: composite' .github/actions/setup-lab/action.yml
+```
+
+**Expected output:** `composite action OK`
+
+Note: The `action.yml` above uses GitHub expressions in the lab file on disk — in MkDocs the tutorial wraps those fences in raw Jinja blocks. For offline simulation, run the shell steps manually:
+
+```bash
+mkdir -p out && echo 'lab=module-14' > out/module-14.txt && test -s out/module-14.txt
+```
+
+**Expected output:** Silent success (exit 0).
+
+#### Task 2 – Reusable workflow
+
+Create `.github/workflows/ci-reusable.yml`:
+
+{% raw %}
+```yaml
+name: CI Reusable
 on:
-  workflow_dispatch:
-  push:
-permissions:
-  contents: read
+  workflow_call:
+    inputs:
+      lab-name:
+        required: true
+        type: string
+    outputs:
+      marker-path:
+        description: Marker file from setup
+        value: ${{ jobs.build.outputs.marker-path }}
+
 jobs:
   build:
     runs-on: ubuntu-latest
+    outputs:
+      marker-path: ${{ steps.setup.outputs.marker-path }}
     steps:
       - uses: actions/checkout@v4
-      - name: Prove workspace
-        run: |
-          mkdir -p out
-          echo ok > out/marker.txt
-          test -s out/marker.txt
-EOF
-python3 -c "import yaml; yaml.safe_load(open('.github/workflows/lab.yml')); print('workflow OK')"
+      - id: setup
+        uses: ./.github/actions/setup-lab
+        with:
+          lab-name: ${{ inputs.lab-name }}
+      - name: Prove marker
+        run: cat "${{ steps.setup.outputs.marker-path }}"
 ```
+{% endraw %}
 
-**Expected output:** `workflow OK` printed; file exists under `.github/workflows/`.
-
-#### Task 2 – Dry-run the shell steps locally
-
-The `run:` block should work in a normal shell before CI.
+Validate offline:
 
 ```bash
-mkdir -p out && echo ok > out/marker.txt
-test -s out/marker.txt && cat out/marker.txt
+cd ~/rebash-github-actions/module-14
+set -euo pipefail
+python3 -c "import yaml; yaml.safe_load(open('.github/workflows/ci-reusable.yml')); print('reusable workflow OK')"
+grep -q 'workflow_call' .github/workflows/ci-reusable.yml
 ```
 
-**Expected output:** Prints `ok`.
+**Expected output:** `reusable workflow OK`
+
+#### Task 3 – Caller workflow (pair)
+
+Create `.github/workflows/caller.yml`:
+
+```yaml
+name: Caller
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  platform-ci:
+    uses: ./.github/workflows/ci-reusable.yml
+    with:
+      lab-name: module-14
+```
+
+Validate offline:
+
+```bash
+cd ~/rebash-github-actions/module-14
+set -euo pipefail
+python3 -c "import yaml; yaml.safe_load(open('.github/workflows/caller.yml')); print('caller workflow OK')"
+grep -q 'uses: ./.github/workflows/ci-reusable.yml' .github/workflows/caller.yml
+```
+
+**Expected output:** `caller workflow OK`
+
+#### Task 4 – Validate pair and export reusable contract
+
+Create `reusable-contract.yaml`:
+
+```yaml
+# Module 14 reusable contract — machine-readable platform API
+composite:
+  path: .github/actions/setup-lab
+  name: setup-lab
+  inputs:
+    lab-name:
+      required: true
+      type: string
+  outputs:
+    marker-path:
+      description: Path to marker file
+reusable_workflow:
+  path: .github/workflows/ci-reusable.yml
+  trigger: workflow_call
+  inputs:
+    lab-name:
+      required: true
+      type: string
+  outputs:
+    marker-path:
+      from_job: build
+caller:
+  path: .github/workflows/caller.yml
+  invokes: ./.github/workflows/ci-reusable.yml
+  with:
+    lab-name: module-14
+pinning:
+  rule: Callers pin reusable ref to tag or SHA when published cross-repo
+```
+
+Validate and archive:
+
+```bash
+cd ~/rebash-github-actions/module-14
+set -euo pipefail
+python3 -c "
+import yaml
+with open('reusable-contract.yaml') as f:
+    doc = yaml.safe_load(f)
+assert doc['composite']['inputs']['lab-name']['required'] is True
+assert doc['reusable_workflow']['trigger'] == 'workflow_call'
+assert doc['caller']['with']['lab-name'] == 'module-14'
+print('reusable-contract.yaml OK')
+"
+tar -czf module-14-evidence.tgz .github/actions/setup-lab/action.yml .github/workflows/*.yml reusable-contract.yaml out/module-14.txt 2>/dev/null || \
+tar -czf module-14-evidence.tgz .github/actions/setup-lab/action.yml .github/workflows/*.yml reusable-contract.yaml
+ls -l module-14-evidence.tgz | tee evidence.txt
+```
+
+**Expected output:** `reusable-contract.yaml OK`; evidence archive with composite + reusable + caller.
 
 ### Validation steps
 
-- [ ] Workflow YAML parses
-- [ ] Local run steps succeed
+- [ ] Composite `action.yml` parses
+- [ ] Reusable workflow has `workflow_call` and outputs
+- [ ] Caller workflow references reusable with `with:` input
+- [ ] Contract YAML lists composite inputs/outputs and reusable `workflow_call` inputs
 
 ### Common errors and fixes
 
 | Error | Cause | Fix |
 |-------|-------|-----|
-| Invalid workflow file | YAML/indent | Validate with PyYAML / actionlint |
-| Action not found | Bad uses ref | Pin `actions/checkout@v4` |
-| Permission denied | Missing permissions/OIDC | Set least-privilege `permissions:` |
+| Composite missing `shell:` | Invalid action.yml | Add `shell: bash` per step |
+| Reusable not found | Wrong path/ref | Use `./.github/workflows/x.yml` locally |
+| Secret not passed | Caller omitted secrets | Add `secrets: inherit` or explicit map |
+| Output empty | Output not in job outputs | Wire job `outputs` to step outputs |
+| `uses:` composite in wrong path | Checkout missing | Caller must checkout before local action |
 
 ### Challenge exercise
 
-Add a second job with `needs: build` that uploads `out/` as an artefact (YAML only is fine offline).
+Publish the reusable workflow pattern to a second folder `module-14-consumer/` with only `caller.yml` that references `../module-14` via `workflow_call` path. Add a `validate-consumer.sh` script that greps for the reusable path and exits non-zero if missing.
 
 ### Learning outcomes
 
-- Created a real workflow file
-- Validated structure before push
+- Built composite action with inputs/outputs
+- Created reusable workflow callable from caller
+- Exported platform contract as validated YAML schema
+- Validated all YAML offline
 
 ### Cleanup
 
 ```bash
-# Keep workflow stubs under ~/rebash-github-actions/
+ls ~/rebash-github-actions/module-14/.github
 ```
 
 ## Validation
 
-
-
-
-
-
-
-
-- [ ] Lab commands run under `~/rebash-github-actions/module-14/.github/{actions/setup-tool,workflows}/`
-- [ ] You can explain each Theory section in your own words
-- [ ] You used modern tooling where it applies to this topic
-- [ ] You can describe one production failure mode for this topic
+- [ ] Lab completed under `~/rebash-github-actions/module-14/`
+- [ ] You can choose composite vs reusable for a scenario
+- [ ] You can explain `secrets: inherit`
+- [ ] You can describe pinning strategy for reusable refs
 
 ## Code Walkthrough
 
-
-
-
-
-
-
-
-Production practice for **Composite Actions and Reusable Workflows** always combines:
-
-1. Inspect before you change (status, plan, logs, dry-run)
-2. Prefer reversible, documented changes (Git, IaC, drop-ins, version pins)
-3. Capture evidence (command output, pipeline logs) for handovers
-4. Prefer current tools and APIs over legacy shortcuts
-5. Least privilege — escalate credentials only when required
-
-Keep runbooks short enough to follow under pressure. Automate checks; keep humans for judgement.
+1. **Composite for step bundles** — setup, lint, scan snippets.
+2. **Reusable for whole CI** — jobs, environments, gates.
+3. **Document contract** — inputs, secrets, outputs in README.
+4. **Pin refs** — SHA/tag for cross-repo callers.
+5. **Checkout first** — local actions need files on disk.
 
 ## Security Considerations
 
-
-
-
-
-
-
-
-- Treat credentials and tokens for github-actions as privileged — never commit them
-- Prefer short-lived auth (OIDC, roles, SSO) over long-lived keys
-- Validate blast radius before apply/deploy/delete operations
-- Restrict who can approve production changes
-- Collect audit logs; limit who can read sensitive traces
+- Reusable workflows run in caller context — trust platform repo owners.
+- Never pass production secrets to untrusted caller repos without policy.
+- Pin reusable refs — `@main` allows supply-chain swap.
+- Audit composite actions for credential exfiltration (`curl` with secrets).
+- Limit `workflow_call` to trusted repositories via org settings.
 
 ## Common Mistakes
 
+!!! warning "Reusable workflow on `@main`"
+    Breaking change ships silently. **Fix:** semver tags; callers pin `@v1`.
 
+!!! warning "Composite without documented outputs"
+    Callers cannot chain jobs. **Fix:** define `outputs` in `action.yml`.
 
+!!! warning "Duplicating OIDC login in every repo"
+    Drift and review burden. **Fix:** composite or reusable login job once.
 
-
-
-
-
-!!! warning "Hiding broad secrets in callees while callers stay over-privileged.  "
-    Validate assumptions against the Theory section and official docs before changing production.
-
-!!! warning "Floating marketplace tags without Dependabot/Renovate SHA updates.  "
-    Lab shortcuts (open security groups, admin roles, skip approvals) must not ship unchanged.
-
-!!! warning "Changing production without a rollback path"
-    Always know how to revert (previous artefact, prior release, state rollback, DNS failback).
+!!! warning "Mega-composite doing deploy + test + scan"
+    Hard to test and reuse. **Fix:** split composites by concern.
 
 ## Best Practices
 
-
-
-
-
-
-
-
-- Encode Composite Actions and Reusable Workflows changes as code and review them in pull requests
-- Pin versions (images, modules, actions, provider plugins)
-- Separate environments with clear promotion gates
-- Alert on symptoms with runbooks attached
-- Destroy lab resources; tag everything with owner and expiry where possible
+- Version platform components (`v1`, `v2`) with changelog.
+- Provide example caller workflow in platform repo.
+- Use `workflow_call` inputs with `type:` and defaults.
+- Test reusable workflows with `workflow_dispatch` in platform repo.
+- Align with Module 11 SHA pinning for any external actions inside reusables.
 
 ## Troubleshooting
 
-
-
-
-
-
-
-
 | Symptom | Likely cause | Fix |
 |---------|--------------|-----|
-| Auth / permission denied | Wrong identity, policy, or scope | Check caller identity, roles, and least-privilege policies |
-| Timeout / no route | Network, DNS, security group, or endpoint | Trace path, DNS, and allow-lists before retrying |
-| Drift / unexpected plan | Manual change or wrong state/workspace | Reconcile desired vs actual; avoid click-ops on managed resources |
-| Pipeline/job red | Flaky step, cache, or missing secret | Read failing step logs; bisect recent workflow/config changes |
-| Cost spike | Idle load balancer, NAT, oversized compute | Inventory billable resources; stop/delete labs promptly |
+| `workflow was not found` | Path or visibility | Public repo or same org access |
+| Composite step not found | Wrong `uses:` path | Relative to repo root |
+| Secret empty in reusable | Not mapped | `secrets: inherit` or explicit |
+| Output not available to caller | Job output not exported | Set reusable workflow `outputs` |
+| Local action fails on fork | Path only on default branch | Document minimum ref |
 
 ## Summary
 
-
-
-
-
-
-
-
-**Composite Actions and Reusable Workflows** is essential for Cloud and DevOps engineers working with github-actions. Practise the lab until the inspection and change path is muscle memory, then continue the track.
+Composite actions bundle steps; reusable workflows bundle jobs — together they form an internal Actions platform. Callers stay thin; platform teams own pins, scans, and OIDC. Next: [Production Pipelines and Environments](production-pipelines-and-environments.md).
 
 ## Interview Questions
 
+**1. What is the difference between a composite action and a reusable workflow?**
 
+??? success "Reveal answer"
+    Composite actions group steps that run on the caller's job runner; reusable workflows define callable jobs/workflows with their own job graph, `needs`, and environments invokable via `workflow_call`.
 
+**2. When would you choose a composite action over a reusable workflow?**
 
+??? success "Reveal answer"
+    When you need a small reusable step bundle (setup, lint script) within a job; reusable workflows fit when standardising entire CI pipelines across repositories.
 
+**3. How do callers pass secrets to reusable workflows?**
 
-1. Composite action vs reusable workflow — when each?
-2. How do inputs differ between the two?
-3. Why can nested actions amplify supply-chain risk?
-4. How do you test a composite action before publishing?
-5. What metadata belongs in action.yml?
+??? success "Reveal answer"
+    Explicitly map `secrets:` in the caller job or use `secrets: inherit` to pass all available secrets — document required secret names in the platform contract.
 
-!!! tip "Sample answer — question 2"
-    Confirm runs.using/workflow_call, input names, and relative uses paths. Most local composite failures are wrong working directory or missing shell on steps.
+**4. Why pin reusable workflow references by tag or SHA?**
 
-!!! tip "Sample answer — question 4"
-    Pin dependencies inside shared actions and limit secrets passed into shared units.
+??? success "Reveal answer"
+    Floating branches (`@main`) let platform changes break all callers without review; pins make upgrades deliberate and auditable.
+
+**5. Can composite actions define `runs-on`?**
+
+??? success "Reveal answer"
+    No — composite actions run in the context of the caller job's runner; only reusable workflows and regular jobs specify `runs-on`.
+
+**6. How do reusable workflow outputs reach the caller?**
+
+??? success "Reveal answer"
+    Define outputs at the reusable workflow level mapping from job outputs; caller accesses via `needs.<job-id>.outputs.<name>`.
+
+**7. What security risk do third-party reusable workflows carry?**
+
+??? success "Reveal answer"
+    They execute with access to caller secrets if passed — only use trusted org/platform repos and pin immutable refs.
+
+**8. How do reusable workflows relate to Jenkins shared libraries?**
+
+??? success "Reveal answer"
+    Both centralise pipeline logic: shared libraries supply Groovy steps/functions; reusable workflows supply callable CI graphs — service repos invoke standard behaviour with parameters.
 
 ## Related Tutorials
 
-
-
-
-
-
-
-
-- [Course overview](index.md)
+- [Workflow Syntax: Matrix and Reusable Workflows](workflow-syntax-matrix-and-reusable.md)
 - [Production Pipelines and Environments](production-pipelines-and-environments.md)
+- [Jenkins Shared Libraries](../jenkins/shared-libraries.md)
 
 ## References
 
-
-
-
-
-
-
-
-- [Creating a composite action](https://docs.github.com/en/actions/creating-actions/creating-a-composite-action)  
-- [Reusable workflows](https://docs.github.com/en/actions/using-workflows/reusing-workflows)  
-- [Security hardening for GitHub Actions](https://docs.github.com/en/actions/security-guides/security-hardening-for-github-actions)
+- [Composite actions](https://docs.github.com/en/actions/creating-actions/creating-a-composite-action)
+- [Reuse workflows](https://docs.github.com/en/actions/using-workflows/reusing-workflows)
+- [Workflow syntax — workflow_call](https://docs.github.com/en/actions/using-workflows/workflow-syntax-for-github-actions#onworkflow_call)

@@ -182,8 +182,11 @@ test -s sshd-listen-check.txt
 ```bash
 cd ~/rebash-networking/lab21
 set -euo pipefail
+```
 
-cat > inventory-listeners.sh << 'EOF'
+Create `inventory-listeners.sh`:
+
+```bash
 #!/usr/bin/env bash
 set -euo pipefail
 OUT="${1:-listeners-inventory.txt}"
@@ -205,7 +208,9 @@ OUT="${1:-listeners-inventory.txt}"
 if ss -lntu | grep -E '0\.0\.0\.0:(3306|5432|6379|27017)\b' >/dev/null 2>&1; then
   echo "WARNING: database-like port appears on 0.0.0.0" | tee -a "$OUT"
 fi
-EOF
+```
+
+```bash
 chmod +x inventory-listeners.sh
 ./inventory-listeners.sh listeners-inventory.txt
 test -s listeners-inventory.txt

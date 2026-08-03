@@ -1,408 +1,437 @@
 ---
 title: "Troubleshooting GitHub Actions"
-description: "Debug failed jobs, runners, authentication, cache, deploy failures, and slow workflows with a fixed GitHub Actions playbook."
+description: "Debug failed GitHub Actions jobs systematically — runners, authentication, cache, deploy failures, and performance optimisation."
 difficulty: expert
-estimated_time: "45–60 min"
+estimated_time: "50–65 min"
 technology: github-actions
 category: github-actions
 module: "Module 16 · Troubleshooting"
 career_paths:
   - devops-engineer
-  - cloud-engineer
   - platform-engineer
   - site-reliability-engineer
   - devsecops-engineer
 skills:
   - github-actions
   - troubleshooting
-  - runners
+  - observability
   - performance
 prerequisites:
   - github-actions/production-pipelines-and-environments
-next:
-  - github-actions/index
+next: []
 related:
   - github-actions/github-hosted-and-self-hosted-runners
-  - github-actions/secrets-variables-and-oidc
   - github-actions/artifacts-and-caching
-labs: []
-projects: []
-interview: interview/github-actions
-certifications:
-  - GitHub Actions
-  - GitHub Administration
 tags:
   - github-actions
   - troubleshooting
-  - debugging
+  - debug
+  - runners
   - performance
 author: Shaik Basha
-last_updated: "2026-07-31"
+last_updated: "2026-08-03"
 comments: false
 ---
-
 
 # Troubleshooting GitHub Actions
 
 ## Overview
 
+Green workflows are quiet; failed workflows need a **systematic ladder** — read the failed step log, reproduce locally, isolate runner vs auth vs cache vs deploy, then optimise slow paths. This tutorial gives a production troubleshooting method for GitHub Actions operators.
 
-
-
-
-
-
-
-Diagnose failed jobs, runner problems, authentication errors, cache misses, deploy failures, and slow workflows with a fixed order: trigger → permissions → runner → credentials → cache → deploy target → performance.
-
-Most “Actions is broken” tickets are skipped jobs, missing permissions, offline self-hosted runners, expired OIDC trust, or poisoned caches — not mysterious GitHub bugs. Separate **definition** failures (workflow never ran the job you expected) from **execution** failures before changing production secrets.
-
-This is a core tutorial in **Module 16 · Troubleshooting** of the REBASH Academy **GitHub Actions for Cloud & DevOps Engineers** series — written for Cloud, DevOps, Platform, and SRE engineers.
+This is **Tutorial 16** in **Module 16: Troubleshooting** of the REBASH Academy **GitHub Actions for Cloud & DevOps Engineers** series — written for Cloud, DevOps, Platform, and SRE engineers.
 
 ## Prerequisites
 
-
-
-
-
-
-
-
 - [Production Pipelines and Environments](production-pipelines-and-environments.md)
-- Runner, secrets/OIDC, and cache modules completed (or equivalent)
+- [GitHub Hosted and Self-hosted Runners](github-hosted-and-self-hosted-runners.md)
+- [Artifacts and Caching](artifacts-and-caching.md)
 
 ## Learning Objectives
 
-
-
-
-
-
-
-
 By the end of this tutorial, you will be able to:
 
-- [ ] Classify trigger / permissions / runner / auth / cache / deploy failures  
-- [ ] Use job logs, `CONTEXT` dumps, and `act`-free local YAML checks systematically  
-- [ ] Recover from queued jobs and self-hosted executor errors  
-- [ ] Apply a performance triage for slow workflows
+- [ ] Follow a failed-job ladder from log to root cause
+- [ ] Diagnose runner capacity, labels, and self-hosted connectivity issues
+- [ ] Fix OIDC and secret permission failures
+- [ ] Resolve cache miss/hit and corrupt cache problems
+- [ ] Triage deploy failures and workflow performance bottlenecks
 
 ## Architecture
 
+Start at the failed step; branch by category (runner, auth, cache, deploy, perf); fix and add guardrails.
 
-
-
-
-
-
-
-This topic’s control points and relationships are shown below.
-
-![Troubleshooting ladder](../assets/excalidraw/gha-troubleshooting.svg)
+![Troubleshooting ladder for GitHub Actions](../assets/excalidraw/gha-troubleshooting.svg)
 
 ## Theory
 
-
-
-
-
-
-
-
 ### What it is
 
-**Troubleshooting GitHub Actions** locates which layer failed: trigger/`if`, `permissions`, runner capacity, step runtime, secrets/OIDC, cache/artefacts, or the deploy target. A red step log is necessary but not sufficient — **queued** jobs never produce script output.
+| Layer | Common symptoms | First checks |
+|-------|-----------------|--------------|
+| Workflow syntax | Workflow not run / invalid | Actions tab annotation; `actionlint` locally |
+| Job / step | Red X on one step | Expand step log; exit code |
+| Runner | Queued forever / offline | Labels; self-hosted service; org minutes |
+| Auth | 403 AssumeRole / login fail | `permissions:`; OIDC trust; secret scope |
+| Cache | Slow builds; wrong deps | Cache key; branch scope; path |
+| Deploy | Health check fail | Same digest? kube creds? environment gate |
+| Performance | 45 min CI | Parallelise; cache; shrink matrix |
 
-| Symptom | First checks |
-|---------|----------------|
-| Workflow not listed | `on:` / paths / workflow enabled |
-| Job skipped | Job `if`, failed/skipped `needs` |
-| Queued forever | Labels, concurrency, self-hosted online |
-| Step exit ≠ 0 | Failing command, tool/image version |
-| 401 / forbidden | `permissions`, secrets, OIDC, environments |
-| Flaky / slow | Cache keys, cold images, serial `needs` |
+**Failed-job ladder:**
+
+1. Identify first failing step (not last warning).
+2. Read stderr; enable debug logging (`ACTIONS_STEP_DEBUG`, `ACTIONS_RUNNER_DEBUG`) temporarily.
+3. Re-run failed jobs only (`Re-run failed jobs`).
+4. Reproduce shell commands locally on same OS image where possible.
+5. Classify: runner / auth / cache / test flake / deploy.
+6. Fix + add assert/gate so failure cannot silently pass again.
 
 ### Why it matters
 
-Delivery recovery depends on CI as much as apps. Platform on-call needs a playbook juniors can follow under pressure. Shift-left YAML checks and action-pin review catch definition errors before they burn hosted minutes.
+Random fixes waste hours and repeat incidents. Platform teams need shared runbooks. Performance issues burn runner minutes and slow delivery. Auth misconfigurations look like "flaky CI" until production deploy fails.
 
 ### How it works
 
-1. **Trigger** — Did `on:` match?  
-2. **Graph** — Skipped via `needs` / `if`?  
-3. **Permissions** — Least privilege (`contents`, `id-token`, `packages`)?  
-4. **Runner** — Labels match? Self-hosted up, disk, Docker?  
-5. **Log** — Read the failing step; use step debug only in safe repos.  
-6. **Auth** — Secrets/OIDC/environment gates/registry login?  
-7. **Cache** — Wrong key, missing `needs`, or corrupt restore?  
-8. **Deploy / perf** — Target RBAC/probes/approvals; then longest jobs and serial chains.
+**Runners:** GitHub-hosted runners are ephemeral Ubuntu/Windows/macOS VMs. Self-hosted runners need outbound GitHub connectivity, correct labels (`runs-on: [self-hosted, linux, gpu]`), and non-conflicting work directories.
 
-Prefer root-cause fixes over retry-as-strategy. Reproduce with a minimal workflow when stuck.
+**Auth:** OIDC requires {% raw %}`id-token: write`{% endraw %}; secrets unavailable to fork pull requests unless `pull_request_target` (risky). Environment secrets require `environment:` on the job.
+
+**Cache:** `actions/cache@v4` keys should include lockfile hash; restore keys for partial hits; caches are branch-scoped by default.
+
+**Deploy failures:** Often wrong artefact, missing smoke test, or cloud role not scoped to target cluster/account.
+
+**Performance:** Split jobs, cache dependencies, avoid redundant checkouts, use matrix `fail-fast`, consider larger runners or self-hosted pools for heavy builds.
 
 ### Key concepts and comparisons
 
-| Failure class | Looks like | Not fixed by |
-|---------------|------------|--------------|
-| Definition | Job absent / skipped | Restarting runners |
-| Capacity | Queued, no runners | Editing script only |
-| Runtime | Red step | Adding runners alone |
-| Auth | 401/403 | Clearing cache |
-| Cache / deploy | Missing files / target reject | Blind re-run |
+| Debug tool | Use |
+|------------|-----|
+| Job summary (`$GITHUB_STEP_SUMMARY`) | Human-readable report in UI |
+| Artifacts | Download test traces, plans |
+| `gh run view --log-failed` | CLI log tail |
+| actionlint | Static workflow lint |
+| Re-run failed jobs | Skip green work |
 
 ### Common pitfalls
 
-- Blaming GitHub.com when no runner matches `runs-on` labels.  
-- Clearing all caches first — hides bad key design.  
-- Echoing secrets into logs on shared runners.  
-- `continue-on-error: true` as a permanent broken gate.  
-- Re-running while an Environment still awaits approval.
+- Chasing the last log line instead of first failing step.
+- Enabling debug logging permanently — noisy and leaky.
+- Clearing all caches instead of fixing keys — hides root cause briefly.
+- Re-running entire workflow for flake without quarantine.
+- Self-hosted runner disk full — cryptic tool failures.
 
 ## Hands-on Lab
 
-
-
 ### Objective
 
-Author a GitHub Actions workflow that implements **Troubleshooting GitHub Actions** and validate YAML structure locally.
+Simulate failure categories locally, build a diagnostic shell script that emits `diagnose.txt`, and author a diagnostic workflow stub with job summary output — validated offline.
 
 ### Prerequisites
 
-- Python 3 with PyYAML
-- Optional: GitHub repo to run the workflow
+- Bash, Python 3 with PyYAML
+- Optional: [actionlint](https://github.com/rhysd/actionlint) installed
 
 ### Lab environment
 
-Workspace: `~/rebash-github-actions/module-16/.github/workflows`
-
-Workflows under `.github/workflows/`. In docs, wrap GitHub Actions expressions in Jinja raw blocks so MkDocs macros do not parse them; use heredocs in the lab.
+Workspace: `~/rebash-github-actions/module-16`
 
 ```bash
-mkdir -p ~/rebash-github-actions/module-16/.github/workflows && cd ~/rebash-github-actions/module-16/.github/workflows
+mkdir -p ~/rebash-github-actions/module-16/.github/workflows && cd ~/rebash-github-actions/module-16
+set -euo pipefail
 ```
 
 ### Real-world scenario
 
-Platform engineering wants **Troubleshooting GitHub Actions** as a reusable workflow pattern. You prototype YAML that passes review and runs on `ubuntu-latest`.
+On-call engineer receives alert: workflow failed. You produce a diagnostic script that writes structured evidence and a workflow that surfaces a step summary table for common checks.
 
 ### Step-by-step tasks
 
-#### Task 1 – Create workflow file
+#### Task 1 – Simulate failure classes locally
 
-Jobs and steps must be explicit; pin mainstream actions.
+Create `simulate-failures.sh`:
 
 ```bash
-mkdir -p .github/workflows
-cat > .github/workflows/lab.yml << 'EOF'
-name: lab
+#!/usr/bin/env bash
+set -euo pipefail
+echo '=== auth fail simulation ==='
+( export AWS_ACCESS_KEY_ID=''; aws sts get-caller-identity 2>&1 || true ) | head -1 | tee auth-fail-sample.txt
+echo '=== cache key demo ==='
+LOCK_HASH=$(sha256sum <<< 'fake-lock-v1' | awk '{print $1}')
+echo "cache-key=deps-${LOCK_HASH}" | tee cache-key-sample.txt
+echo '=== first failing step rule ==='
+echo 'If step A and B fail, fix A first' | tee ladder-rule.txt
+```
+
+Run it:
+
+```bash
+cd ~/rebash-github-actions/module-16
+set -euo pipefail
+chmod +x simulate-failures.sh
+./simulate-failures.sh
+```
+
+**Expected output:** Sample files `auth-fail-sample.txt`, `cache-key-sample.txt`, `ladder-rule.txt` created.
+
+#### Task 2 – Troubleshooting diagnostic script
+
+Create `troubleshoot.sh`:
+
+```bash
+#!/usr/bin/env bash
+set -euo pipefail
+{
+  echo "# GitHub Actions diagnostic report"
+  echo "generated_at=$(date -u +%Y-%m-%dT%H:%M:%SZ)"
+  echo ""
+  echo "## Ladder"
+  echo "1. Open failed run — first red step"
+  echo "2. Read stderr and exit code"
+  echo "3. Re-run failed jobs only"
+  echo "4. Reproduce run locally (ubuntu-latest ≈ bash for simple scripts)"
+  echo "5. Classify: runner | auth | cache | test | deploy | perf"
+  echo ""
+  echo "## Runner checks"
+  echo "queued_long=org concurrency / billing / label mismatch"
+  echo "self_hosted_offline=service status; github.com connectivity"
+  echo ""
+  echo "## Auth checks"
+  echo "oidc=id-token write + trust subject"
+  echo "secrets=environment scoped; fork PR isolation"
+  echo ""
+  echo "## Cache checks"
+  echo "key_includes_lockfile_hash=yes"
+  echo "post_job_save_required=yes"
+  echo ""
+  echo "## Deploy checks"
+  echo "same_digest_as_staging=verify"
+  echo "rollout_status=required"
+  echo ""
+  echo "## Performance"
+  echo "parallel_jobs=yes; cache_deps=yes; shrink_matrix_on_pr=yes"
+} | tee diagnose.txt
+grep -q 'first red step' diagnose.txt
+grep -q 'oidc=' diagnose.txt
+echo 'troubleshoot.sh OK'
+```
+
+Run it:
+
+```bash
+cd ~/rebash-github-actions/module-16
+set -euo pipefail
+chmod +x troubleshoot.sh
+./troubleshoot.sh
+```
+
+**Expected output:** `troubleshoot.sh OK`; `diagnose.txt` contains ladder and auth sections.
+
+#### Task 3 – Diagnostic workflow with job summary
+
+Create `.github/workflows/diagnostics.yml`:
+
+```yaml
+name: Diagnostics
 on:
   workflow_dispatch:
-  push:
+
 permissions:
   contents: read
+
 jobs:
-  build:
+  diagnose:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Prove workspace
+      - name: Write troubleshooting summary
         run: |
-          mkdir -p out
-          echo ok > out/marker.txt
-          test -s out/marker.txt
-EOF
-python3 -c "import yaml; yaml.safe_load(open('.github/workflows/lab.yml')); print('workflow OK')"
+          {
+            echo "## Troubleshooting checklist"
+            echo "| Check | Status |"
+            echo "|-------|--------|"
+            echo "| Workflow parses | OK |"
+            echo "| Runner online | OK |"
+            echo "| Secrets/OIDC | manual |"
+          } >> "$GITHUB_STEP_SUMMARY"
+      - name: Intentional assert for lab
+        run: test -f diagnose.txt
 ```
 
-**Expected output:** `workflow OK` printed; file exists under `.github/workflows/`.
-
-#### Task 2 – Dry-run the shell steps locally
-
-The `run:` block should work in a normal shell before CI.
+Validate offline:
 
 ```bash
-mkdir -p out && echo ok > out/marker.txt
-test -s out/marker.txt && cat out/marker.txt
+cd ~/rebash-github-actions/module-16
+set -euo pipefail
+python3 -c "import yaml; yaml.safe_load(open('.github/workflows/diagnostics.yml')); print('diagnostics workflow OK')"
+grep -q 'GITHUB_STEP_SUMMARY' .github/workflows/diagnostics.yml
 ```
 
-**Expected output:** Prints `ok`.
+**Expected output:** `diagnostics workflow OK`
+
+#### Task 4 – Lint workflows and bundle evidence
+
+```bash
+cd ~/rebash-github-actions/module-16
+set -euo pipefail
+
+if command -v actionlint >/dev/null; then
+  actionlint .github/workflows/diagnostics.yml | tee actionlint.txt || true
+else
+  echo 'actionlint not installed — skipped' | tee actionlint.txt
+fi
+
+tar -czf module-16-evidence.tgz diagnose.txt troubleshoot.sh .github/workflows/diagnostics.yml simulate-failures.sh *.txt
+ls -l module-16-evidence.tgz | tee evidence.txt
+```
+
+**Expected output:** Evidence archive listed in `evidence.txt`.
 
 ### Validation steps
 
-- [ ] Workflow YAML parses
-- [ ] Local run steps succeed
+- [ ] `troubleshoot.sh` writes `diagnose.txt` with failed-job ladder
+- [ ] Simulation script produces sample failure notes
+- [ ] Diagnostics workflow parses and asserts `diagnose.txt` exists
+- [ ] Evidence tarball created
 
 ### Common errors and fixes
 
 | Error | Cause | Fix |
 |-------|-------|-----|
-| Invalid workflow file | YAML/indent | Validate with PyYAML / actionlint |
-| Action not found | Bad uses ref | Pin `actions/checkout@v4` |
-| Permission denied | Missing permissions/OIDC | Set least-privilege `permissions:` |
+| Cannot reproduce locally | OS/service mismatch | Use container job or match runner image |
+| Intermittent pass | Flaky test/resource | Quarantine; increase timeout; retry budget |
+| OIDC works on main not PR | Trust subject branch filter | Expected; adjust trust or use staging |
+| Cache always miss | Key changes every commit | Stabilise key prefix + lock hash |
+| Self-hosted stale tools | No image refresh | Reimage runner; pin tool versions in workflow |
 
 ### Challenge exercise
 
-Add a second job with `needs: build` that uploads `out/` as an artefact (YAML only is fine offline).
+Add a workflow job that deliberately fails auth check in a safe way (mock) and extend `troubleshoot.sh` to append a `gh run view RUN_ID --log-failed` usage hint to `diagnose.txt`.
 
 ### Learning outcomes
 
-- Created a real workflow file
-- Validated structure before push
+- Built `troubleshoot.sh` that emits structured `diagnose.txt` evidence
+- Simulated auth/cache failure notes
+- Authored diagnostics workflow with step summary
+- Optional actionlint on workflow YAML
 
 ### Cleanup
 
 ```bash
-# Keep workflow stubs under ~/rebash-github-actions/
+ls ~/rebash-github-actions/module-16
 ```
 
 ## Validation
 
-
-
-
-
-
-
-
-- [ ] Lab commands run under `~/rebash-github-actions/module-16/.github/workflows/`
-- [ ] You can explain each Theory section in your own words
-- [ ] You used modern tooling where it applies to this topic
-- [ ] You can describe one production failure mode for this topic
+- [ ] Lab completed under `~/rebash-github-actions/module-16/`
+- [ ] You can walk the failed-job ladder without skipping steps
+- [ ] You can list three auth failure checks
+- [ ] You can name two performance optimisations
 
 ## Code Walkthrough
 
-
-
-
-
-
-
-
-Production practice for **Troubleshooting GitHub Actions** always combines:
-
-1. Inspect before you change (status, plan, logs, dry-run)
-2. Prefer reversible, documented changes (Git, IaC, drop-ins, version pins)
-3. Capture evidence (command output, pipeline logs) for handovers
-4. Prefer current tools and APIs over legacy shortcuts
-5. Least privilege — escalate credentials only when required
-
-Keep runbooks short enough to follow under pressure. Automate checks; keep humans for judgement.
+1. **First red step** — root cause usually here.
+2. **Re-run failed jobs** — save runner minutes.
+3. **Debug logging temporary** — disable after fix.
+4. **Step summary** — operational context for on-call.
+5. **Lint workflows in CI** — catch syntax before merge.
 
 ## Security Considerations
 
-
-
-
-
-
-
-
-- Treat credentials and tokens for github-actions as privileged — never commit them
-- Prefer short-lived auth (OIDC, roles, SSO) over long-lived keys
-- Validate blast radius before apply/deploy/delete operations
-- Restrict who can approve production changes
-- Collect audit logs; limit who can read sensitive traces
+- Debug logs may expose secrets — scrub before sharing externally.
+- Do not paste production logs into public issues without redaction.
+- Self-hosted runners retain workspace disk — clean between jobs.
+- Fork PR workflows must not echo secrets in "diagnostic" steps.
+- Limit who can enable org-wide debug logging.
 
 ## Common Mistakes
 
+!!! warning "Fixing symptoms not first failure"
+    Later steps cascade. **Fix:** always expand the earliest failed step.
 
+!!! warning "Permanent debug logging"
+    Noise and leak risk. **Fix:** enable only for targeted re-run.
 
+!!! warning "Deleting cache randomly"
+    Slow builds return. **Fix:** fix cache key logic.
 
-
-
-
-
-!!! warning "Blaming GitHub.com when no runner matches `runs-on` labels.  "
-    Validate assumptions against the Theory section and official docs before changing production.
-
-!!! warning "Clearing all caches first — hides bad key design.  "
-    Lab shortcuts (open security groups, admin roles, skip approvals) must not ship unchanged.
-
-!!! warning "Changing production without a rollback path"
-    Always know how to revert (previous artefact, prior release, state rollback, DNS failback).
+!!! warning "Ignoring queued time"
+    Assume code bug. **Fix:** check runner pool and billing first.
 
 ## Best Practices
 
-
-
-
-
-
-
-
-- Encode Troubleshooting GitHub Actions changes as code and review them in pull requests
-- Pin versions (images, modules, actions, provider plugins)
-- Separate environments with clear promotion gates
-- Alert on symptoms with runbooks attached
-- Destroy lab resources; tag everything with owner and expiry where possible
+- Add `$GITHUB_STEP_SUMMARY` tables for deploy/test outcomes.
+- Upload artefacts on failure (`if: always()`).
+- Pin runner tool versions (`setup-node`, `setup-python` with exact version).
+- Monitor workflow duration trends in org insights.
+- Maintain troubleshooting runbook linked from platform repo README.
 
 ## Troubleshooting
 
-
-
-
-
-
-
-
 | Symptom | Likely cause | Fix |
 |---------|--------------|-----|
-| Auth / permission denied | Wrong identity, policy, or scope | Check caller identity, roles, and least-privilege policies |
-| Timeout / no route | Network, DNS, security group, or endpoint | Trace path, DNS, and allow-lists before retrying |
-| Drift / unexpected plan | Manual change or wrong state/workspace | Reconcile desired vs actual; avoid click-ops on managed resources |
-| Pipeline/job red | Flaky step, cache, or missing secret | Read failing step logs; bisect recent workflow/config changes |
-| Cost spike | Idle load balancer, NAT, oversized compute | Inventory billable resources; stop/delete labs promptly |
+| Job queued hours | No matching runner / limits | Fix labels; purchase minutes; scale self-hosted |
+| `Error: Resource not accessible by integration` | GITHUB_TOKEN permissions | Add required `permissions:` |
+| Cache not found | First run or key change | Expected once; verify restore-keys |
+| Works on re-run only | Flake/timing | Stabilise tests; add wait-for healthy |
+| Slow npm/pip every run | Cache miss | Lockfile-hash cache key |
+| Deploy 401/403 | OIDC trust/role | Fix subject; environment secrets |
 
 ## Summary
 
-
-
-
-
-
-
-
-You can design, secure, promote, and troubleshoot production GitHub Actions pipelines end to end.
+Troubleshooting GitHub Actions follows a ladder: first failing step, classify runner/auth/cache/deploy/performance, fix with evidence, and harden with linting and summaries. You have completed the 16-module GitHub Actions course — revisit [Course overview](index.md) for labs, capstone, and interview prep.
 
 ## Interview Questions
 
+**1. What is the first thing you check when a workflow fails?**
 
+??? success "Reveal answer"
+    The earliest failing step in the job graph — expand its log for stderr and exit code; later failures are often cascading symptoms.
 
+**2. How do you debug OIDC authentication failures in Actions?**
 
+??? success "Reveal answer"
+    Verify {% raw %}`permissions: id-token: write`{% endraw %}, cloud trust policy subject/audience matches repo/ref/environment, role ARN is correct, and the job is not a fork pull request excluded by trust.
 
+**3. Why might a job stay queued indefinitely?**
 
-1. Give a step-by-step triage for a red workflow.
-2. When is Actions debug logging appropriate?
-3. How do expression evaluation bugs show up?
-4. What local tools help reproduce workflows?
-5. How do you handle a compromised third-party action?
+??? success "Reveal answer"
+    No runner matches `runs-on` labels, organisation concurrency limits, billing/minutes exhaustion, or self-hosted runner offline/disconnected.
 
-!!! tip "Sample answer — question 2"
-    Open the failed step log first, confirm action versions and permissions, then re-run a single job after fixing.
+**4. How do cache keys cause apparent flaky CI?**
 
-!!! tip "Sample answer — question 4"
-    Debug logs can leak secrets — enable briefly on private repos only and rotate credentials if exposure is possible.
+??? success "Reveal answer"
+    Overly broad keys serve wrong dependencies; overly narrow keys always miss — symptoms look like random build failures until keys align with lockfiles and paths.
+
+**5. When should you use re-run failed jobs vs re-run all jobs?**
+
+??? success "Reveal answer"
+    Re-run failed jobs when earlier steps succeeded and artefacts remain valid; re-run all when upstream outputs (build artefacts, plan files) may be stale or missing.
+
+**6. What do ACTIONS_STEP_DEBUG and ACTIONS_RUNNER_DEBUG do?**
+
+??? success "Reveal answer"
+    Repository variables enabling verbose step and runner diagnostic logging — useful temporarily for deep investigation, not for permanent production settings.
+
+**7. How can deploy failures be mistaken for test failures?**
+
+??? success "Reveal answer"
+    Smoke tests fail after deploy when health endpoints, digests, or environment secrets differ — classify by checking deploy job logs and whether staging used the same artefact.
+
+**8. Name three performance optimisations for slow workflows.**
+
+??? success "Reveal answer"
+    Parallelise independent jobs with matrices, cache dependencies with stable lockfile-based keys, and avoid redundant checkouts/builds by promoting artefacts between jobs.
 
 ## Related Tutorials
 
-
-
-
-
-
-
-
-- [Course overview](index.md)
-- [Course overview](index.md) · [GitLab CI/CD](../gitlab/index.md) · [DevOps Engineer path](../career-paths/devops-engineer/index.md)
+- [GitHub Hosted and Self-hosted Runners](github-hosted-and-self-hosted-runners.md)
+- [Artifacts and Caching](artifacts-and-caching.md)
+- [Production Pipelines and Environments](production-pipelines-and-environments.md)
 
 ## References
 
-
-
-
-
-
-
-
-- [About monitoring and troubleshooting](https://docs.github.com/en/actions/monitoring-and-troubleshooting-workflows/about-monitoring-and-troubleshooting)  
-- [Enabling debug logging](https://docs.github.com/en/actions/monitoring-and-troubleshooting-workflows/enabling-debug-logging)  
-- [Self-hosted runners](https://docs.github.com/en/actions/hosting-your-own-runners/managing-self-hosted-runners/about-self-hosted-runners)
+- [Enabling debug logging](https://docs.github.com/en/actions/monitoring-and-troubleshooting-workflows/enabling-debug-logging)
+- [Workflow run logs](https://docs.github.com/en/actions/monitoring-and-troubleshooting-workflows/using-workflow-run-logs)
+- [actionlint](https://github.com/rhysd/actionlint)
+- [GitHub CLI run view](https://cli.github.com/manual/gh_run_view)
+- [Caching dependencies](https://docs.github.com/en/actions/using-workflows/caching-dependencies-to-speed-up-workflows)

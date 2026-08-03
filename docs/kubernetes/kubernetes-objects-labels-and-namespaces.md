@@ -30,7 +30,7 @@ tags:
   - labels
   - namespaces
 author: Shaik Basha
-last_updated: "2026-07-31"
+last_updated: "2026-08-03"
 comments: false
 ---
 
@@ -147,23 +147,19 @@ Labels identify; annotations annotate. Do not put large config in labels — use
 
 ## Hands-on Lab
 
-
-
 ### Objective
 
-Build and verify a working Kubernetes solution for **Labels, Selectors, and Namespaces** that you can inspect, prove, and tear down safely.
+Create a namespace and two Deployments with distinct label sets, then filter workloads with `kubectl get -l` selectors exactly as Services and controllers do.
 
 ### Prerequisites
 
-- kubectl configured against a lab cluster (kind/minikube preferred)
-- Cluster-admin or namespace-create rights in the lab cluster
+- A working Kubernetes cluster (**kind**, **minikube**, or any lab cluster)
+- **kubectl** with namespace-create rights
 - Writable workspace at `~/rebash-k8s/module-03-labels`
 
 ### Lab environment
 
 Workspace: `~/rebash-k8s/module-03-labels`
-
-Local kind/minikube or a dedicated sandbox cluster. Never target a shared production API server.
 
 ```bash
 mkdir -p ~/rebash-k8s/module-03-labels && cd ~/rebash-k8s/module-03-labels
@@ -171,63 +167,156 @@ mkdir -p ~/rebash-k8s/module-03-labels && cd ~/rebash-k8s/module-03-labels
 
 ### Real-world scenario
 
-Your platform team is rolling out **Labels, Selectors, and Namespaces** for a new microservice. You must apply the change in an isolated namespace, prove it works with kubectl, and leave evidence for the on-call handover.
+Two squads share a staging namespace: payments runs `api` tier Pods; storefront runs `web` tier Pods. You apply both Deployments with consistent labels and prove operators can list only one tier with label selectors— the same mechanism Services use for endpoints.
 
 ### Step-by-step tasks
 
-#### Task 1 – Apply a topic workload
+#### Task 1 – Namespace and payments Deployment
 
-Create a namespace and a small Deployment to practise **What it is** against a live API.
+Create `namespace.yaml`:
 
-```bash
-kubectl create namespace rebash-lab --dry-run=client -o yaml | kubectl apply -f -
-kubectl create deployment topic --image=nginx:1.27-alpine -n rebash-lab
-kubectl rollout status deployment/topic -n rebash-lab
-kubectl get all -n rebash-lab
+```yaml
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: rebash-m03-labels
+  labels:
+    environment: lab
+    lab: module-03-labels
 ```
 
-**Expected output:** Deployment Ready; Pods listed under the namespace.
+Create `payments-deploy.yaml`:
 
-#### Task 2 – Inspect and gather evidence
-
-Production changes always leave an audit trail of describe/Events.
-
-```bash
-kubectl describe deploy topic -n rebash-lab | tee describe.txt
-kubectl get events -n rebash-lab --sort-by=.lastTimestamp | tail -n 15 | tee events.txt
+```yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: payments-api
+  namespace: rebash-m03-labels
+  labels:
+    app: payments-api
+    team: payments
+    tier: api
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: payments-api
+  template:
+    metadata:
+      labels:
+        app: payments-api
+        team: payments
+        tier: api
+    spec:
+      containers:
+        - name: nginx
+          image: nginx:1.27-alpine
+          ports:
+            - containerPort: 80
 ```
 
-**Expected output:** describe.txt and events.txt capture healthy Objects/Events.
+Apply and wait:
+
+```bash
+cd ~/rebash-k8s/module-03-labels
+kubectl apply -f namespace.yaml
+kubectl apply -f payments-deploy.yaml
+kubectl rollout status deployment/payments-api -n rebash-m03-labels --timeout=120s
+```
+
+**Expected output:** Deployment `payments-api` becomes Available.
+
+#### Task 2 – Storefront Deployment with different labels
+
+Create `storefront-deploy.yaml`:
+
+```yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: storefront-web
+  namespace: rebash-m03-labels
+  labels:
+    app: storefront-web
+    team: storefront
+    tier: web
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: storefront-web
+  template:
+    metadata:
+      labels:
+        app: storefront-web
+        team: storefront
+        tier: web
+    spec:
+      containers:
+        - name: nginx
+          image: nginx:1.27-alpine
+          ports:
+            - containerPort: 80
+```
+
+Apply and list all Pods:
+
+```bash
+cd ~/rebash-k8s/module-03-labels
+kubectl apply -f storefront-deploy.yaml
+kubectl rollout status deployment/storefront-web -n rebash-m03-labels --timeout=120s
+kubectl get pods -n rebash-m03-labels --show-labels | tee all-pods.txt
+grep -c Running all-pods.txt | tee running-count.txt
+test "$(cat running-count.txt)" -ge 2
+```
+
+**Expected output:** At least two Running Pods with different `team` and `tier` labels.
+
+#### Task 3 – Filter with label selectors
+
+```bash
+cd ~/rebash-k8s/module-03-labels
+kubectl get pods -n rebash-m03-labels -l team=payments | tee selector-payments.txt
+kubectl get pods -n rebash-m03-labels -l tier=web | tee selector-web.txt
+kubectl get deploy -n rebash-m03-labels -l 'team in (payments,storefront)' | tee selector-teams.txt
+grep payments-api selector-payments.txt
+grep storefront selector-web.txt
+grep -E 'payments-api|storefront-web' selector-teams.txt
+```
+
+**Expected output:** Each selector returns only matching workloads; `team=payments` lists payments Pods only.
 
 ### Validation steps
 
-- [ ] Namespace `rebash-lab` contains the expected Ready objects
-- [ ] You can explain each Task command from the Theory section
-- [ ] Cleanup deletes the namespace without leftover workloads
+- [ ] Namespace `rebash-m03-labels` contains two Deployments
+- [ ] Label selectors return distinct subsets
+- [ ] Pod template labels match Deployment selectors
+- [ ] Evidence files captured under the lab directory
 
 ### Common errors and fixes
 
 | Error | Cause | Fix |
 |-------|-------|-----|
-| ImagePullBackOff | Wrong tag or registry auth | Fix image reference; check pull secrets |
-| Pending Pod | Scheduling / quota / PVC | `kubectl describe pod` and read Events |
-| Empty Endpoints | Selector or readiness mismatch | Compare Service selector to Pod labels and Ready |
+| Selector returns nothing | Label typo or wrong namespace | `kubectl get pods --show-labels -n rebash-m03-labels` |
+| Create fails on selector change | Deployment selector immutable | Delete Deployment and re-apply |
+| Both teams in one result | Over-broad `-l` expression | Narrow to `team=payments` or `tier=web` |
+| Forbidden | RBAC | Use lab cluster with create rights |
 
 ### Challenge exercise
 
-Add a readinessProbe and a ResourceQuota to the namespace, then show that over-quota creates are rejected.
+Add `environment: lab` to both pod templates, then list every Pod with `-l 'environment=lab,team=payments'`. Create a third Deployment `canary-web` with `tier=web,track=canary` and list canaries with `-l track=canary`.
 
 ### Learning outcomes
 
-- Applied a real cluster change for Labels, Selectors, and Namespaces
-- Used describe/Events for verification
-- Destroyed lab resources cleanly
+- Applied consistent label taxonomies across Deployments
+- Used equality and set-based selectors with kubectl
+- Connected label selectors to how Services choose endpoints
 
 ### Cleanup
 
 ```bash
-kubectl delete namespace rebash-lab --ignore-not-found
-# Keep ~/rebash-kubernetes/ for later tutorials
+kubectl delete namespace rebash-m03-labels --ignore-not-found --wait=true
 ```
 
 ## Validation

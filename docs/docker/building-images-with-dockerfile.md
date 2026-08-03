@@ -29,7 +29,7 @@ tags:
   - docker
   - dockerfile
 author: Shaik Basha
-last_updated: "2026-07-31"
+last_updated: "2026-08-03"
 comments: false
 ---
 
@@ -134,22 +134,20 @@ Each instruction creates a layer (conceptually). `FROM` selects a base. `RUN` ex
 
 ## Hands-on Lab
 
-
-
 ### Objective
 
-Build or run a real Docker solution for **Building Images with Dockerfile** and prove it with inspect/logs/HTTP.
+Build a small HTTP image from a `Dockerfile` and static `index.html`, tag it locally, run it, and prove the page content via curl.
 
 ### Prerequisites
 
-- Docker Engine or Docker Desktop
-- Permission to run containers
+- Docker Engine or Docker Desktop with build support
+- `curl` on the host
 
 ### Lab environment
 
 Workspace: `~/rebash-docker/module-05/app`
 
-Local Docker daemon. Clean up containers/images after the lab.
+Host port **18085** is used for this build lab.
 
 ```bash
 mkdir -p ~/rebash-docker/module-05/app && cd ~/rebash-docker/module-05/app
@@ -157,83 +155,110 @@ mkdir -p ~/rebash-docker/module-05/app && cd ~/rebash-docker/module-05/app
 
 ### Real-world scenario
 
-You are validating **Building Images with Dockerfile** before it lands in CI. The change must be reproducible with copy-paste commands and leave no orphan containers.
+You package an internal status page for a microservice. Instead of pulling a generic nginx config, you add a tiny `index.html` and a `Dockerfile` that copies it into `nginx:1.27-alpine`, build `rebash-mod05:local`, and verify the HTML served on a published port.
 
 ### Step-by-step tasks
 
-#### Task 1 – Author Dockerfile and build
+#### Task 1 – Create application files
 
-Images are the deployment unit — build a tagged local image.
+Create `index.html`:
 
-```bash
-cat > Dockerfile << 'EOF'
-FROM alpine:3.20 AS build
-WORKDIR /src
-RUN echo 'artefact' > app.txt
-FROM alpine:3.20
-COPY --from=build /src/app.txt /app.txt
-CMD ["cat", "/app.txt"]
-EOF
-docker build -t rebash-lab:local .
-docker image ls rebash-lab:local
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head><meta charset="utf-8"><title>REBASH mod05</title></head>
+<body><h1>rebash-mod05 build ok</h1></body>
+</html>
 ```
 
-**Expected output:** Image `rebash-lab:local` listed with a recent CREATED time.
+Create `Dockerfile`:
 
-#### Task 2 – Run and verify output
-
-Prove the runtime image does what the Dockerfile claims.
-
-```bash
-docker run --rm --name rebash-lab rebash-lab:local | tee out.txt
-test "$(cat out.txt)" = 'artefact'
+```dockerfile
+FROM nginx:1.27-alpine
+COPY index.html /usr/share/nginx/html/index.html
+EXPOSE 80
 ```
 
-**Expected output:** out.txt contains exactly `artefact`.
+**Expected output:** Both files exist in `~/rebash-docker/module-05/app/`.
+
+#### Task 2 – Build and tag the image
+
+```bash
+cd ~/rebash-docker/module-05/app
+docker build -t rebash-mod05:local .
+docker image ls rebash-mod05:local | tee build-ls.txt
+grep -q 'rebash-mod05' build-ls.txt
+```
+
+**Expected output:** `build-ls.txt` lists `rebash-mod05` with tag `local`.
+
+#### Task 3 – Run and verify HTTP body
+
+```bash
+cd ~/rebash-docker/module-05/app
+docker run -d --name rebash-mod05-web -p 18085:80 rebash-mod05:local
+curl -s http://127.0.0.1:18085/ | tee build-curl.txt
+grep -q 'rebash-mod05 build ok' build-curl.txt
+```
+
+**Expected output:** `build-curl.txt` contains the heading text from `index.html`.
 
 ### Validation steps
 
-- [ ] Container or image behaves as Expected output describes
-- [ ] Ports respond or command output matches
-- [ ] Cleanup removes lab resources
+- [ ] `Dockerfile` and `index.html` are present in the app directory
+- [ ] `rebash-mod05:local` image built successfully
+- [ ] `build-curl.txt` proves the custom HTML is served
 
 ### Common errors and fixes
 
 | Error | Cause | Fix |
 |-------|-------|-----|
-| port is already allocated | Previous lab left a container | `docker rm -f` the old name or change port |
-| permission denied | User not in docker group | Use rootless Docker or fix group membership |
-| manifest unknown | Bad tag | Pin a real tag such as `nginx:alpine` |
+| COPY failed: file not found | Wrong build context | Run `docker build` from the directory containing `index.html` |
+| port is already allocated | Port 18085 in use | Stop the old container or change the host port |
+| 403 Forbidden from nginx | Wrong COPY path | Ensure file lands in `/usr/share/nginx/html/` |
 
 ### Challenge exercise
 
-Add a non-root USER (or Compose healthcheck) and prove it with inspect.
+Add a `.dockerignore` that excludes `*.txt` evidence files, rebuild with tag `rebash-mod05:v2`, and confirm the image still serves HTML:
+
+Create `.dockerignore`:
+
+```text
+*.txt
+```
+
+Build and verify:
+
+```bash
+cd ~/rebash-docker/module-05/app
+docker build -t rebash-mod05:v2 .
+docker rm -f rebash-mod05-web 2>/dev/null || true
+docker run -d --name rebash-mod05-web -p 18085:80 rebash-mod05:v2
+curl -s http://127.0.0.1:18085/ | grep -q 'rebash-mod05 build ok'
+echo 'v2 ok' | tee build-v2.txt
+```
+
+**Expected output:** `build-v2.txt` contains `v2 ok`; curl still returns the custom heading.
 
 ### Learning outcomes
 
-- Executed a real Docker workflow
-- Captured evidence files
-- Removed disposable resources
+- Authored a minimal `Dockerfile` with `COPY` and a pinned base image
+- Built and tagged a local image for deployment testing
+- Validated runtime behaviour with curl against a published port
 
 ### Cleanup
 
 ```bash
-docker rm -f rebash-lab 2>/dev/null || true
-docker rmi rebash-lab:local 2>/dev/null || true
-docker compose down -v 2>/dev/null || true
+cd ~/rebash-docker/module-05/app
+docker rm -f rebash-mod05-web 2>/dev/null || true
+docker rmi rebash-mod05:local rebash-mod05:v2 2>/dev/null || true
 ```
 
 ## Validation
 
-
-
-
-
-
-
 - [ ] Lab commands run under `~/rebash-docker/module-05/app/`
+- [ ] `build-curl.txt` proves the built image serves custom content
 - [ ] You can explain each Theory section in your own words
-- [ ] You used modern tooling where it applies to this topic
 - [ ] You can describe one production failure mode for this topic
 
 ## Code Walkthrough

@@ -154,18 +154,22 @@ A health-check job prints `OK` on stdout for a load balancer probe, but engineer
 
 #### Task 1 – Split stdout and stderr
 
-```bash
-cd ~/rebash-shell/lab04
-set -euo pipefail
+Create `streams.sh`:
 
-cat > streams.sh << 'EOF'
+```bash
 #!/usr/bin/env bash
 set -euo pipefail
 
 printf 'RESULT=ok\n'
 printf 'progress: starting checks\n' >&2
 printf 'progress: checks done\n' >&2
-EOF
+```
+
+Run:
+
+```bash
+cd ~/rebash-shell/lab04
+set -euo pipefail
 
 chmod +x streams.sh
 
@@ -180,6 +184,7 @@ grep -q 'progress' stdout.txt && exit 1 || true
 grep -q 'RESULT=ok' merged.txt
 grep -q 'progress: checks done' merged.txt
 ```
+
 
 **Expected output:** `stdout.txt` has only the result line; `stderr.txt` has progress; `merged.txt` contains both.
 
@@ -218,7 +223,11 @@ test "$rc_pf" -ne 0
 
 **Expected output:** `count-a.txt` is `2`; masked exit is `0`; pipefail exit is non-zero.
 
-#### Task 3 – Here-document report (and optional process substitution)
+#### Task 3 – Variable-expanded report (and optional process substitution)
+
+Build `report.txt` from shell variables (same outcome as an unquoted here-document with expansion):
+
+Run:
 
 ```bash
 cd ~/rebash-shell/lab04
@@ -227,14 +236,13 @@ set -euo pipefail
 host="$(hostname -s)"
 ts="$(date -u +%Y-%m-%dT%H:%M:%SZ)"
 
-# Quoted delimiter: no expansion inside the body except what we write ourselves
-cat > report.txt << EOF
-REBASH lab04 I/O report
-host=${host}
-timestamp_utc=${ts}
-stdout_lines=$(wc -l < stdout.txt | tr -d ' ')
-stderr_lines=$(wc -l < stderr.txt | tr -d ' ')
-EOF
+{
+  printf 'REBASH lab04 I/O report\n'
+  printf 'host=%s\n' "$host"
+  printf 'timestamp_utc=%s\n' "$ts"
+  printf 'stdout_lines=%s\n' "$(wc -l < stdout.txt | tr -d ' ')"
+  printf 'stderr_lines=%s\n' "$(wc -l < stderr.txt | tr -d ' ')"
+} > report.txt
 
 grep -q "host=${host}" report.txt
 test -s report.txt
@@ -253,6 +261,7 @@ tar -czf io-evidence.tgz \
   report.txt diff-markers.txt
 ls -l io-evidence.tgz | tee evidence-ls.txt
 ```
+
 
 **Expected output:** `report.txt` includes host and timestamp; identical process-substitution diff is empty; differing diff has markers; evidence archive exists.
 

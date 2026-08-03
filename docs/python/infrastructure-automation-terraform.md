@@ -122,13 +122,14 @@ terraform validate
 
 ### Objective
 
-Under `~/rebash-python/lab19`, create a tiny local Terraform module (`local_file` or `null_resource`) and a Python wrapper that runs `fmt`/`validate` when Terraform is installed, or templates HCL and asserts required blocks when it is not. Never apply to paid cloud.
+Under `~/rebash-python/lab19`, create a Docker-provider Terraform module and a Python wrapper that runs fmt/validate/plan/apply/destroy when Terraform and Docker are available — proving real infrastructure lifecycle without paid cloud.
 
 ### Prerequisites
 
 - Python 3.10+
+- Docker Engine running (`docker info`)
+- `terraform` or `tofu` binary on PATH
 - Write access under your home directory
-- Optional: `terraform` or `tofu` binary
 
 ### Lab environment
 
@@ -138,56 +139,75 @@ Workspace: `~/rebash-python/lab19`
 mkdir -p ~/rebash-python/lab19 && cd ~/rebash-python/lab19
 set -euo pipefail
 python3 --version | tee python-version.txt
-command -v terraform >/dev/null && terraform version | tee terraform-version.txt || \
-  command -v tofu >/dev/null && tofu version | tee terraform-version.txt || \
-  echo "terraform_missing" | tee terraform-version.txt
+docker info | tee docker-info.txt
+terraform version | tee terraform-version.txt
 ```
 
-**Expected output:** `python-version.txt` exists; `terraform-version.txt` shows a version line or `terraform_missing`.
+**Expected output:** `python-version.txt`, `docker-info.txt`, and `terraform-version.txt` are non-empty.
 
 ### Real-world scenario
 
-Your platform team wants every pull request to prove Terraform configs are formatted and valid before merge. Cloud credentials must not be required for that check. You build a small wrapper that works with a local-only module (file on disk) so CI can run on any agent — and you keep proof for the change ticket.
+Your platform team wants every pull request to prove Terraform configs are formatted, valid, and plannable before merge — and staging apply jobs must prove resources exist before destroy. You build a Python wrapper around a Docker-provider module so CI agents with Docker can run the full lifecycle without cloud credentials.
 
 ### Step-by-step tasks
 
-#### Task 1 – Tiny local HCL module (no cloud)
+#### Task 1 – Docker-provider Terraform module
 
-Write a module that only touches a local file. No AWS, Azure, or GCP providers.
+Create `tf/main.tf`:
+
+```hcl
+terraform {
+  required_version = ">= 1.0"
+  required_providers {
+    docker = {
+      source  = "kreuzwerker/docker"
+      version = "~> 3.0"
+    }
+  }
+}
+
+provider "docker" {}
+
+resource "docker_image" "nginx" {
+  name         = "nginx:1.25-alpine"
+  keep_locally = false
+}
+
+resource "docker_container" "lab_marker" {
+  name  = "rebash-python-lab19"
+  image = docker_image.nginx.image_id
+
+  ports {
+    internal = 80
+    external = 8080
+  }
+}
+
+output "container_id" {
+  value = docker_container.lab_marker.id
+}
+```
+
+Run:
 
 ```bash
 cd ~/rebash-python/lab19
 set -euo pipefail
-
 mkdir -p tf
-cat > tf/main.tf << 'EOF'
-terraform {
-  required_version = ">= 1.0"
-}
-
-resource "local_file" "lab_marker" {
-  content  = "rebash-lab19-ok\n"
-  filename = "${path.module}/lab-marker.txt"
-}
-EOF
-
-# Prove HCL shape even before terraform runs
-grep -q 'resource "local_file"' tf/main.tf
+grep -q 'docker_container' tf/main.tf
 grep -q 'lab_marker' tf/main.tf
 wc -l tf/main.tf | tee hcl-lines.txt
 ```
 
-**Expected output:** `hcl-lines.txt` shows a positive line count; `grep` finds `local_file`.
+**Expected output:** `hcl-lines.txt` shows a positive line count; `grep` finds `docker_container`.
 
-#### Task 2 – Python wrapper: validate or template-check
+#### Task 2 – Python wrapper: validate, plan, apply, destroy
 
-```bash
-cd ~/rebash-python/lab19
-set -euo pipefail
+Create `tf_wrapper.py`:
 
-cat > tf_wrapper.py << 'EOF'
+```python
 #!/usr/bin/env python3
-"""Orchestrate terraform/tofu fmt+validate, or assert HCL shape if CLI missing."""
+"""Orchestrate terraform/tofu fmt, validate, plan, apply, and destroy for lab19."""
 from __future__ import annotations
 
 import json
@@ -198,55 +218,34 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent
 TF_DIR = ROOT / "tf"
-REQUIRED_SNIPPETS = (
-    'resource "local_file"',
-    "lab_marker",
-    "required_version",
-)
 
 
-def find_bin() -> str | None:
+def find_bin() -> str:
     for name in ("terraform", "tofu"):
         path = shutil.which(name)
         if path:
             return path
-    return None
+    raise SystemExit("terraform or tofu binary required for this lab")
 
 
-def assert_hcl(path: Path) -> dict:
-    text = path.read_text(encoding="utf-8")
-    missing = [s for s in REQUIRED_SNIPPETS if s not in text]
-    if missing:
-        raise SystemExit(f"HCL missing snippets: {missing}")
-    return {"mode": "hcl_assert", "file": str(path), "ok": True}
-
-
-def run_cli(bin_path: str) -> dict:
-    steps = []
-    for args in (
-        [bin_path, "fmt", "-check", "-recursive"],
-        [bin_path, "init", "-backend=false", "-input=false"],
-        [bin_path, "validate", "-json"],
-    ):
-        proc = subprocess.run(
-            args,
-            cwd=TF_DIR,
-            capture_output=True,
-            text=True,
-            timeout=120,
-            check=False,
-        )
-        steps.append(
-            {
-                "cmd": args,
-                "returncode": proc.returncode,
-                "stdout": proc.stdout[-2000:],
-                "stderr": proc.stderr[-2000:],
-            }
-        )
-        if proc.returncode != 0:
-            raise SystemExit(json.dumps({"ok": False, "steps": steps}, indent=2))
-    return {"mode": "cli", "bin": bin_path, "ok": True, "steps": steps}
+def run(cmd: list[str]) -> dict:
+    proc = subprocess.run(
+        cmd,
+        cwd=TF_DIR,
+        capture_output=True,
+        text=True,
+        timeout=180,
+        check=False,
+    )
+    step = {
+        "cmd": cmd,
+        "returncode": proc.returncode,
+        "stdout": proc.stdout[-2000:],
+        "stderr": proc.stderr[-2000:],
+    }
+    if proc.returncode != 0:
+        raise SystemExit(json.dumps({"ok": False, "step": step}, indent=2))
+    return step
 
 
 def main() -> int:
@@ -254,15 +253,17 @@ def main() -> int:
         print("missing tf/main.tf", file=sys.stderr)
         return 1
     bin_path = find_bin()
-    if bin_path:
-        try:
-            result = run_cli(bin_path)
-        except SystemExit:
-            # Offline agents: CLI present but provider download failed — still prove HCL
-            result = assert_hcl(TF_DIR / "main.tf")
-            result["cli_fallback"] = True
-    else:
-        result = assert_hcl(TF_DIR / "main.tf")
+    steps = []
+    for args in (
+        [bin_path, "fmt", "-check", "-recursive"],
+        [bin_path, "init", "-input=false"],
+        [bin_path, "validate", "-json"],
+        [bin_path, "plan", "-input=false", "-out=tfplan"],
+        [bin_path, "apply", "-input=false", "-auto-approve", "tfplan"],
+        [bin_path, "destroy", "-input=false", "-auto-approve"],
+    ):
+        steps.append(run(args))
+    result = {"mode": "cli", "bin": bin_path, "ok": True, "steps": steps}
     out = ROOT / "validate-result.json"
     out.write_text(json.dumps(result, indent=2) + "\n", encoding="utf-8")
     print(out.read_text(encoding="utf-8"))
@@ -271,66 +272,91 @@ def main() -> int:
 
 if __name__ == "__main__":
     raise SystemExit(main())
-EOF
-
-python3 tf_wrapper.py | tee wrapper-run.txt
-python3 -c 'import json; d=json.load(open("validate-result.json")); assert d["ok"] is True'
 ```
 
-**Expected output:** `validate-result.json` has `"ok": true` and either `"mode": "cli"` or `"mode": "hcl_assert"`.
+Run:
 
-#### Task 3 – Evidence pack (no apply)
+{% raw %}
+```bash
+cd ~/rebash-python/lab19
+set -euo pipefail
+docker info >/dev/null
+python3 tf_wrapper.py | tee wrapper-run.txt
+python3 -c 'import json; d=json.load(open("validate-result.json")); assert d["ok"] is True; assert d["mode"] == "cli"'
+docker ps -a --filter name=rebash-python-lab19 --format '{{.Names}}' | tee post-destroy-check.txt
+! grep -q rebash-python-lab19 post-destroy-check.txt || test ! -s post-destroy-check.txt
+```
+{% endraw %}
+
+**Expected output:** `validate-result.json` has `"ok": true`; container is gone after destroy.
+
+#### Task 3 – Operational proof script
+
+Create `prove-lifecycle.sh`:
+
+{% raw %}
+```bash
+#!/usr/bin/env bash
+set -euo pipefail
+cd "$(dirname "$0")/tf"
+docker info >/dev/null
+terraform init -input=false
+terraform plan -input=false -out=tfplan
+terraform apply -input=false -auto-approve tfplan
+docker ps --filter name=rebash-python-lab19 --format '{{.Names}} {{.Status}}' | tee ../container-proof.txt
+grep -q 'rebash-python-lab19' ../container-proof.txt
+curl -sf http://127.0.0.1:8080 >/dev/null
+terraform destroy -input=false -auto-approve
+echo lab19_lifecycle_ok
+```
+{% endraw %}
+
+Run:
 
 ```bash
 cd ~/rebash-python/lab19
 set -euo pipefail
-
-# Explicitly refuse apply in this lab directory
-cat > refuse-apply.sh << 'EOF'
-#!/usr/bin/env bash
-set -euo pipefail
-echo "This lab never runs terraform apply against cloud." >&2
-exit 2
-EOF
-chmod +x refuse-apply.sh
-./refuse-apply.sh > apply-guard.txt 2>&1 || test $? -eq 2
+chmod +x prove-lifecycle.sh
+./prove-lifecycle.sh | tee lifecycle-run.txt
+grep -q lab19_lifecycle_ok lifecycle-run.txt
 
 tar -czf terraform-lab-evidence.tgz \
-  python-version.txt terraform-version.txt hcl-lines.txt \
-  validate-result.json wrapper-run.txt apply-guard.txt tf/main.tf tf_wrapper.py
+  python-version.txt docker-info.txt terraform-version.txt hcl-lines.txt \
+  validate-result.json wrapper-run.txt container-proof.txt lifecycle-run.txt \
+  tf/main.tf tf_wrapper.py prove-lifecycle.sh
 ls -l terraform-lab-evidence.tgz | tee evidence-ls.txt
 test -s terraform-lab-evidence.tgz
 ```
 
-**Expected output:** `apply-guard.txt` mentions that apply is refused; `terraform-lab-evidence.tgz` is non-empty.
+**Expected output:** `lifecycle-run.txt` ends with `lab19_lifecycle_ok`; evidence archive is non-empty.
 
 ### Validation steps
 
-- [ ] `tf/main.tf` uses only `local_file` (no cloud provider block)
+- [ ] `tf/main.tf` uses the Docker provider (no cloud provider block)
 - [ ] `python3 tf_wrapper.py` writes `validate-result.json` with `"ok": true`
-- [ ] If Terraform is installed, mode is `cli`; otherwise `hcl_assert`
+- [ ] `prove-lifecycle.sh` applies, curls port 8080, and destroys the container
 - [ ] Evidence archive exists under `~/rebash-python/lab19`
-- [ ] You did **not** run `terraform apply` against paid cloud
+- [ ] No container named `rebash-python-lab19` remains after cleanup
 
 ### Common errors and fixes
 
 | Error | Cause | Fix |
 |-------|-------|-----|
-| `No such file or directory: terraform` | CLI missing | Wrapper falls back to HCL assert — re-run Task 2 |
-| `Error: Failed to query available provider packages` | Network blocked for provider download | Keep `-backend=false`; offline agents use HCL assert path |
+| `Cannot connect to the Docker daemon` | Docker not running | Start Docker Desktop or `sudo systemctl start docker` |
+| `Error: Failed to query available provider packages` | Network blocked for provider download | Run once with network; cache `.terraform/providers` |
 | `fmt -check` fails | Bad indentation | Run `terraform fmt tf/` once, then re-check |
-| Wrapper timeout | Slow provider init | Increase timeout only for CI caches; prefer validate-only |
-| Tempted to add AWS provider “to learn” | Scope creep | Stay on `local_file` for this tutorial |
+| Wrapper timeout | Slow provider init | Increase timeout in `tf_wrapper.py`; ensure Docker responds |
+| Port 8080 in use | Another service bound | Change `external` port in `main.tf` and re-plan |
 
 ### Challenge exercise
 
-Extend `tf_wrapper.py` so that when the CLI is present it also runs `terraform plan -out=tfplan` **with** `-input=false` in `tf/`, then `terraform show -json tfplan`, and writes create/update/delete counts to `plan-summary.json`. Still do **not** run apply. Save `plan-summary.json` into a second evidence tarball if you complete this stretch.
+Extend `tf_wrapper.py` so after apply it runs `docker ps --filter name=rebash-python-lab19` and writes container status to `container-proof.json` before destroy. Include that file in the evidence tarball.
 
 ### Learning outcomes
 
-- Authored a cloud-free local Terraform module
-- Orchestrated fmt/validate (or HCL shape checks) from Python
-- Captured CI-style evidence without applying infrastructure
+- Authored a Docker-provider Terraform module
+- Orchestrated fmt/validate/plan/apply/destroy from Python
+- Proved container lifecycle with `docker ps` and `curl`
 - Can explain why apply stays gated in production wrappers
 
 ### Cleanup
@@ -338,9 +364,9 @@ Extend `tf_wrapper.py` so that when the CLI is present it also runs `terraform p
 ```bash
 cd ~/rebash-python/lab19
 set -euo pipefail
-rm -rf tf/.terraform tf/.terraform.lock.hcl tf/tfplan tf/lab-marker.txt 2>/dev/null || true
-# Keep evidence if you want it; otherwise:
-# rm -f terraform-lab-evidence.tgz *.txt *.json
+(cd tf && terraform destroy -auto-approve 2>/dev/null) || true
+docker rm -f rebash-python-lab19 2>/dev/null || true
+rm -rf tf/.terraform tf/.terraform.lock.hcl tf/tfplan tf/terraform.tfstate* 2>/dev/null || true
 ```
 
 ## Validation
@@ -400,11 +426,11 @@ Keep humans for apply judgement; automate checks.
 | State locked | Concurrent apply | Do not apply from casual wrappers; wait or force-unlock with care |
 | Wrong binary | tofu vs terraform | Detect both; pin one in the image |
 | `validate` fails after fmt | Syntax / missing required_providers | Fix HCL; re-run wrapper |
-| Plan wants cloud auth | Real cloud resources in module | Keep lab on `local_file` / `null_resource` only |
+| Plan wants cloud auth | Real cloud resources in module | Keep lab on Docker provider only |
 
 ## Summary
 
-Python orchestrates Terraform: format, validate, plan, and policy — while HCL remains the source of truth. This lab proved a local-only module and a wrapper that works with or without the CLI, without applying to paid cloud. Next, automate remote hosts with [SSH Automation — Paramiko and Fabric](ssh-automation-paramiko-and-fabric.md).
+Python orchestrates Terraform: format, validate, plan, and policy — while HCL remains the source of truth. This lab proved a Docker-provider module and a wrapper that runs the full lifecycle locally without paid cloud. Next, automate remote hosts with [SSH Automation — Paramiko and Fabric](ssh-automation-paramiko-and-fabric.md).
 
 ## Interview Questions
 
@@ -441,7 +467,7 @@ Python orchestrates Terraform: format, validate, plan, and policy — while HCL 
 **7. A junior engineer wants to add an AWS provider to the lab “to make it real.” What do you say?**
 
 ??? success "Reveal answer"
-    For learning orchestration, **local_file / null_resource** already exercise fmt, validate, and plan without cost or credentials. Cloud providers belong in a sandboxed account with budget alerts and destroy automation — not in a tutorial that must stay free and safe. Prove the wrapper first; add cloud later under explicit sandbox rules.
+    For learning orchestration, the **Docker provider** already exercises fmt, validate, plan, apply, and destroy without cost or cloud credentials. Cloud providers belong in a sandboxed account with budget alerts and destroy automation — not in a tutorial that must stay free on any laptop with Docker. Prove the wrapper first; add cloud later under explicit sandbox rules.
 
 **8. How do you prove in a change ticket that a Terraform PR is safe to merge?**
 

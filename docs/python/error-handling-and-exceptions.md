@@ -143,8 +143,11 @@ Inventory fetch is flaky. You need retries for transient errors, a custom except
 cd ~/rebash-python/lab08
 set -euo pipefail
 source .venv/bin/activate
+```
 
-cat > inventory_errors.py << 'PY'
+Create `inventory_errors.py`:
+
+```python
 from __future__ import annotations
 
 from pathlib import Path
@@ -170,8 +173,11 @@ def load_inventory(path: Path, cleanup_log: Path | None = None) -> str:
             handle.close()
         if cleanup_log is not None:
             cleanup_log.write_text("finally-ran\n", encoding="utf-8")
-PY
+```
 
+Run:
+
+```bash
 python << 'PY'
 from pathlib import Path
 from inventory_errors import InventoryError, load_inventory
@@ -206,8 +212,11 @@ PY
 cd ~/rebash-python/lab08
 set -euo pipefail
 source .venv/bin/activate
+```
 
-cat > retry_helper.py << 'PY'
+Create `retry_helper.py`:
+
+```python
 from __future__ import annotations
 
 import time
@@ -238,8 +247,11 @@ def retry(
                 break
             time.sleep(delay_sec)
     raise RetryError(f"failed after {attempts} attempts: {last}") from last
-PY
+```
 
+Run:
+
+```bash
 python << 'PY'
 from pathlib import Path
 from retry_helper import RetryError, retry
@@ -278,8 +290,11 @@ PY
 cd ~/rebash-python/lab08
 set -euo pipefail
 source .venv/bin/activate
+```
 
-cat > run_check.py << 'PY'
+Create `run_check.py`:
+
+```python
 from __future__ import annotations
 
 import sys
@@ -319,8 +334,11 @@ def main(argv: list[str]) -> int:
 
 if __name__ == "__main__":
     raise SystemExit(main(sys.argv))
-PY
+```
 
+Run:
+
+```bash
 python run_check.py ok | tee task3-ok.txt
 test "$(python run_check.py ok >/dev/null; echo $?)" -eq 0
 test "$(python run_check.py missing >/dev/null 2>task3-missing.err; echo $?)" -eq 2

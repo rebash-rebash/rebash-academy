@@ -145,11 +145,9 @@ Your team wants a lightweight morning check on practice Ubuntu VMs before demos.
 
 #### Task 1 – Write the health report script
 
-```bash
-cd ~/rebash-shell/lab12
-set -euo pipefail
+Create `host-health.sh`:
 
-cat > host-health.sh << 'EOF'
+```bash
 #!/usr/bin/env bash
 set -euo pipefail
 
@@ -214,9 +212,17 @@ STATUS=0
 } | tee "$REPORT"
 
 exit "$STATUS"
-EOF
+```
+
+Run:
+
+```bash
+cd ~/rebash-shell/lab12
+set -euo pipefail
+
 chmod +x host-health.sh
 ```
+
 
 **Expected output:** `host-health.sh` is executable.
 

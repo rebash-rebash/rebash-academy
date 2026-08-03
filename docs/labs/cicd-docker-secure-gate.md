@@ -139,6 +139,7 @@ docker build -t rebash-status:local . 2>/dev/null || echo "Local Docker optional
 
 **Instructions:**
 
+{% raw %}
 ```bash
 cat > .gitlab-ci.yml <<'EOF'
 stages:
@@ -204,6 +205,7 @@ EOF
 git add .
 git commit -m "feat: docker build, scan gate, manual staging deploy"
 ```
+{% endraw %}
 
 **Expected output:** Valid YAML with three stages and manual deploy job.
 

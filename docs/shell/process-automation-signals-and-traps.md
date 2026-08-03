@@ -154,11 +154,9 @@ Your deploy helper creates a temp work directory and starts a short helper proce
 
 Write a script that creates a work directory, registers traps, and leaves a marker when cleanup runs.
 
-```bash
-cd ~/rebash-shell/lab11
-set -euo pipefail
+Create `trap-demo.sh`:
 
-cat > trap-demo.sh << 'EOF'
+```bash
 #!/usr/bin/env bash
 set -euo pipefail
 
@@ -184,9 +182,17 @@ trap 'exit 143' TERM
 mkdir -p "$WORKDIR"
 echo "ready" > "$WORKDIR/ready.txt"
 echo "workdir=$WORKDIR"
-EOF
+```
+
+Run:
+
+```bash
+cd ~/rebash-shell/lab11
+set -euo pipefail
+
 chmod +x trap-demo.sh
 ```
+
 
 **Expected output:** `trap-demo.sh` is executable.
 
@@ -194,11 +200,9 @@ chmod +x trap-demo.sh
 
 Extend the script to start a background `sleep`, record its PID, stop it with `TERM`, then exit so the `EXIT` trap runs.
 
-```bash
-cd ~/rebash-shell/lab11
-set -euo pipefail
+Create `trap-demo.sh`:
 
-cat > trap-demo.sh << 'EOF'
+```bash
 #!/usr/bin/env bash
 set -euo pipefail
 
@@ -241,11 +245,19 @@ echo "child_stopped=yes" | tee child-stopped.txt
 CHILD_PID=""   # already reaped; cleanup need not kill again
 
 exit 0
-EOF
+```
+
+Run:
+
+```bash
+cd ~/rebash-shell/lab11
+set -euo pipefail
+
 chmod +x trap-demo.sh
 
 ./trap-demo.sh | tee run.log
 ```
+
 
 **Expected output:** `child-pid.txt` and `child-stopped.txt` exist; `run.log` shows the child PID; script exits 0.
 

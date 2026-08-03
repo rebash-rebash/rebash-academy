@@ -151,8 +151,11 @@ A new engineer asks whether “security groups are Layer 3 or Layer 4.” You pr
 ```bash
 cd ~/rebash-networking/lab03
 set -euo pipefail
+```
 
-cat > osi-tcpip-map.txt << 'EOF'
+Create `osi-tcpip-map.txt`:
+
+```text
 TCP/IP layer | OSI layers (approx) | Protocols (examples)        | Linux evidence idea
 Application  | 5–7                 | HTTP, HTTPS, DNS, SSH       | curl -v, dig
 Transport    | 4                   | TCP, UDP                    | ss -tuln
@@ -164,8 +167,9 @@ Concrete walkthrough for HTTPS GET example.com:
 2. Transport: TCP destination port 443
 3. Internet: packets to the resolved A/AAAA address
 4. Link: frames to the local gateway MAC
-EOF
+```
 
+```bash
 cat osi-tcpip-map.txt
 grep -E 'Application|Transport|Internet|Link' osi-tcpip-map.txt
 ```

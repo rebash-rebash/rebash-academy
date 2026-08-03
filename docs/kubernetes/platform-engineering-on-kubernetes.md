@@ -32,7 +32,7 @@ tags:
   - operators
   - crd
 author: Shaik Basha
-last_updated: "2026-07-31"
+last_updated: "2026-08-03"
 comments: false
 ---
 
@@ -141,23 +141,20 @@ If reconciliation fails, the custom resource shows conditions — debug like any
 
 ## Hands-on Lab
 
-
-
 ### Objective
 
-Build and verify a working Kubernetes solution for **Platform Engineering on Kubernetes** that you can inspect, prove, and tear down safely.
+Create a tiny PlatformContract CustomResourceDefinition (CRD) and sample custom resource, apply them in namespace `rebash-platform-lab`, and prove the API appears with `kubectl get`.
 
 ### Prerequisites
 
-- kubectl configured against a lab cluster (kind/minikube preferred)
-- Cluster-admin or namespace-create rights in the lab cluster
+- kubectl configured against **kind** or **minikube**
+- **Cluster-admin** on the lab cluster (CRD creation requires elevated rights — not available on shared namespaces)
+- Python 3 with PyYAML for offline validation
 - Writable workspace at `~/rebash-k8s/module-16`
 
 ### Lab environment
 
 Workspace: `~/rebash-k8s/module-16`
-
-Local kind/minikube or a dedicated sandbox cluster. Never target a shared production API server.
 
 ```bash
 mkdir -p ~/rebash-k8s/module-16 && cd ~/rebash-k8s/module-16
@@ -165,63 +162,184 @@ mkdir -p ~/rebash-k8s/module-16 && cd ~/rebash-k8s/module-16
 
 ### Real-world scenario
 
-Your platform team is rolling out **Platform Engineering on Kubernetes** for a new microservice. You must apply the change in an isolated namespace, prove it works with kubectl, and leave evidence for the on-call handover.
+Your internal developer platform exposes a **PlatformContract** API so product teams declare tier, replica count, and observability defaults. Platform engineers install the CRD once, then tenants create namespaced contracts. You scaffold the CRD, apply a sample contract in an isolated namespace, and capture evidence that the extension API is registered.
 
 ### Step-by-step tasks
 
-#### Task 1 – Apply a topic workload
+#### Task 1 – Create the PlatformContract CRD
 
-Create a namespace and a small Deployment to practise **What it is** against a live API.
+Create `platform-contract-crd.yaml`:
 
-```bash
-kubectl create namespace rebash-lab --dry-run=client -o yaml | kubectl apply -f -
-kubectl create deployment topic --image=nginx:1.27-alpine -n rebash-lab
-kubectl rollout status deployment/topic -n rebash-lab
-kubectl get all -n rebash-lab
+```yaml
+apiVersion: apiextensions.k8s.io/v1
+kind: CustomResourceDefinition
+metadata:
+  name: platformcontracts.platform.rebash.io
+spec:
+  group: platform.rebash.io
+  scope: Namespaced
+  names:
+    kind: PlatformContract
+    plural: platformcontracts
+    singular: platformcontract
+    shortNames:
+      - pc
+  versions:
+    - name: v1
+      served: true
+      storage: true
+      schema:
+        openAPIV3Schema:
+          type: object
+          properties:
+            spec:
+              type: object
+              required:
+                - tier
+                - replicas
+              properties:
+                tier:
+                  type: string
+                  enum:
+                    - dev
+                    - staging
+                    - prod
+                replicas:
+                  type: integer
+                  minimum: 1
+                  maximum: 10
+                observability:
+                  type: object
+                  properties:
+                    metrics:
+                      type: boolean
+                    logs:
+                      type: boolean
 ```
 
-**Expected output:** Deployment Ready; Pods listed under the namespace.
-
-#### Task 2 – Inspect and gather evidence
-
-Production changes always leave an audit trail of describe/Events.
+Validate offline:
 
 ```bash
-kubectl describe deploy topic -n rebash-lab | tee describe.txt
-kubectl get events -n rebash-lab --sort-by=.lastTimestamp | tail -n 15 | tee events.txt
+cd ~/rebash-k8s/module-16
+set -euo pipefail
+python3 -c "import yaml; yaml.safe_load(open('platform-contract-crd.yaml')); print('CRD YAML OK')"
+grep -q 'platformcontracts.platform.rebash.io' platform-contract-crd.yaml
 ```
 
-**Expected output:** describe.txt and events.txt capture healthy Objects/Events.
+**Expected output:** `CRD YAML OK`
+
+#### Task 2 – Create namespace and sample PlatformContract
+
+Create `namespace.yaml`:
+
+```yaml
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: rebash-platform-lab
+  labels:
+    app.kubernetes.io/managed-by: rebash-lab
+```
+
+Create `sample-platform-contract.yaml`:
+
+```yaml
+apiVersion: platform.rebash.io/v1
+kind: PlatformContract
+metadata:
+  name: checkout-api
+  namespace: rebash-platform-lab
+spec:
+  tier: dev
+  replicas: 2
+  observability:
+    metrics: true
+    logs: true
+```
+
+Validate offline:
+
+```bash
+cd ~/rebash-k8s/module-16
+set -euo pipefail
+python3 -c "
+import yaml
+for p in ['namespace.yaml', 'sample-platform-contract.yaml']:
+    yaml.safe_load(open(p))
+print('sample CR YAML OK')
+"
+```
+
+**Expected output:** `sample CR YAML OK`
+
+#### Task 3 – Apply CRD and prove the API is registered
+
+Install the extension API, wait for Established, then apply the sample contract.
+
+```bash
+cd ~/rebash-k8s/module-16
+set -euo pipefail
+kubectl apply -f platform-contract-crd.yaml
+kubectl wait --for=condition=Established crd/platformcontracts.platform.rebash.io --timeout=120s
+kubectl apply -f namespace.yaml
+kubectl apply -f sample-platform-contract.yaml
+kubectl get crd platformcontracts.platform.rebash.io | tee crd-evidence.txt
+kubectl get platformcontracts -n rebash-platform-lab | tee platform-contracts.txt
+kubectl get pc checkout-api -n rebash-platform-lab -o yaml | tee sample-pc.yaml
+```
+
+**Expected output:** CRD `Established`; `checkout-api` listed under `platformcontracts.platform.rebash.io/v1`.
+
+#### Task 4 – Package platform evidence bundle
+
+Archive manifests and live object proof for handover.
+
+```bash
+cd ~/rebash-k8s/module-16
+set -euo pipefail
+kubectl api-resources | grep -i platformcontract | tee api-resources.txt
+tar -czf module-16-platform-evidence.tgz platform-contract-crd.yaml namespace.yaml sample-platform-contract.yaml crd-evidence.txt platform-contracts.txt sample-pc.yaml api-resources.txt
+ls -l module-16-platform-evidence.tgz
+```
+
+**Expected output:** Tarball created; `api-resources.txt` lists `platformcontracts`.
 
 ### Validation steps
 
-- [ ] Namespace `rebash-lab` contains the expected Ready objects
-- [ ] You can explain each Task command from the Theory section
-- [ ] Cleanup deletes the namespace without leftover workloads
+- [ ] CRD YAML parses offline with Python
+- [ ] CRD reaches `Established` condition
+- [ ] Sample PlatformContract applies in `rebash-platform-lab`
+- [ ] `kubectl get platformcontracts` shows `checkout-api`
+- [ ] Evidence tarball contains manifests and live object output
 
 ### Common errors and fixes
 
 | Error | Cause | Fix |
 |-------|-------|-----|
-| ImagePullBackOff | Wrong tag or registry auth | Fix image reference; check pull secrets |
-| Pending Pod | Scheduling / quota / PVC | `kubectl describe pod` and read Events |
-| Empty Endpoints | Selector or readiness mismatch | Compare Service selector to Pod labels and Ready |
+| CRD apply forbidden | Insufficient cluster-admin rights | Use kind/minikube with admin context |
+| CRD not Established | Schema validation or naming conflict | `kubectl describe crd platformcontracts.platform.rebash.io` |
+| CR apply fails: no matches | CRD not ready yet | Wait for Established before applying CR |
+| Unknown field on CR | Schema rejects property | Match `openAPIV3Schema` properties exactly |
+| CRD persists after cleanup | CRD is cluster-scoped | Delete CRD explicitly in Cleanup |
 
 ### Challenge exercise
 
-Add a readinessProbe and a ResourceQuota to the namespace, then show that over-quota creates are rejected.
+Add a second PlatformContract with `tier: prod` and `replicas: 3`, then use `kubectl get pc -n rebash-platform-lab -o custom-columns=NAME:.metadata.name,TIER:.spec.tier,REPLICAS:.spec.replicas`.
 
 ### Learning outcomes
 
-- Applied a real cluster change for Platform Engineering on Kubernetes
-- Used describe/Events for verification
-- Destroyed lab resources cleanly
+- Authored a namespaced CRD with schema validation
+- Applied a tenant PlatformContract custom resource
+- Verified extension API registration with `kubectl get` and `api-resources`
+- Packaged platform evidence for review
 
 ### Cleanup
 
 ```bash
-kubectl delete namespace rebash-lab --ignore-not-found
-# Keep ~/rebash-kubernetes/ for later tutorials
+kubectl delete platformcontract checkout-api -n rebash-platform-lab --ignore-not-found
+kubectl delete namespace rebash-platform-lab --ignore-not-found --wait=true
+kubectl delete crd platformcontracts.platform.rebash.io --ignore-not-found
+rm -f ~/rebash-k8s/module-16/*.txt ~/rebash-k8s/module-16/sample-pc.yaml ~/rebash-k8s/module-16/module-16-platform-evidence.tgz
 ```
 
 ## Validation

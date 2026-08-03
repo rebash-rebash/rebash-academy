@@ -30,7 +30,7 @@ tags:
   - kubernetes
   - troubleshooting
 author: Shaik Basha
-last_updated: "2026-07-31"
+last_updated: "2026-08-03"
 comments: false
 ---
 
@@ -141,23 +141,19 @@ Controllers reconcile desired state — if desired state is wrong, they will fai
 
 ## Hands-on Lab
 
-
-
 ### Objective
 
-Build and verify a working Kubernetes solution for **Troubleshooting Kubernetes Workloads** that you can inspect, prove, and tear down safely.
+Deploy a deliberately broken Deployment in namespace `rebash-triage-lab`, diagnose failure with describe/logs/events, apply a fixed manifest, and capture before/after evidence.
 
 ### Prerequisites
 
-- kubectl configured against a lab cluster (kind/minikube preferred)
-- Cluster-admin or namespace-create rights in the lab cluster
+- kubectl configured against **kind** or **minikube**
+- Namespace-create rights on the lab cluster
 - Writable workspace at `~/rebash-k8s/module-18`
 
 ### Lab environment
 
 Workspace: `~/rebash-k8s/module-18`
-
-Local kind/minikube or a dedicated sandbox cluster. Never target a shared production API server.
 
 ```bash
 mkdir -p ~/rebash-k8s/module-18 && cd ~/rebash-k8s/module-18
@@ -165,63 +161,215 @@ mkdir -p ~/rebash-k8s/module-18 && cd ~/rebash-k8s/module-18
 
 ### Real-world scenario
 
-Your platform team is rolling out **Troubleshooting Kubernetes Workloads** for a new microservice. You must apply the change in an isolated namespace, prove it works with kubectl, and leave evidence for the on-call handover.
+After a rushed manifest merge, the `web` Deployment in staging fails readiness checks — nginx serves `/` but probes hit `/healthz`. On-call needs evidence before patching. You reproduce the failure, triage with kubectl, apply a corrected manifest, and archive before/after proof.
 
 ### Step-by-step tasks
 
-#### Task 1 – Apply a topic workload
+#### Task 1 – Create namespace and broken Deployment
 
-Create a namespace and a small Deployment to practise **What it is** against a live API.
+Create `namespace.yaml`:
 
-```bash
-kubectl create namespace rebash-lab --dry-run=client -o yaml | kubectl apply -f -
-kubectl create deployment topic --image=nginx:1.27-alpine -n rebash-lab
-kubectl rollout status deployment/topic -n rebash-lab
-kubectl get all -n rebash-lab
+```yaml
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: rebash-triage-lab
+  labels:
+    app.kubernetes.io/managed-by: rebash-lab
 ```
 
-**Expected output:** Deployment Ready; Pods listed under the namespace.
+Create `web-broken.yaml`:
 
-#### Task 2 – Inspect and gather evidence
-
-Production changes always leave an audit trail of describe/Events.
-
-```bash
-kubectl describe deploy topic -n rebash-lab | tee describe.txt
-kubectl get events -n rebash-lab --sort-by=.lastTimestamp | tail -n 15 | tee events.txt
+```yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: web
+  namespace: rebash-triage-lab
+  labels:
+    app: web
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: web
+  template:
+    metadata:
+      labels:
+        app: web
+    spec:
+      containers:
+        - name: web
+          image: nginx:1.27-alpine
+          ports:
+            - containerPort: 80
+          readinessProbe:
+            httpGet:
+              path: /healthz
+              port: 80
+            initialDelaySeconds: 2
+            periodSeconds: 3
+          livenessProbe:
+            httpGet:
+              path: /healthz
+              port: 80
+            initialDelaySeconds: 5
+            periodSeconds: 5
+          resources:
+            requests:
+              cpu: 50m
+              memory: 64Mi
+            limits:
+              cpu: 200m
+              memory: 128Mi
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: web
+  namespace: rebash-triage-lab
+spec:
+  selector:
+    app: web
+  ports:
+    - port: 80
+      targetPort: 80
 ```
 
-**Expected output:** describe.txt and events.txt capture healthy Objects/Events.
+Apply and confirm failure:
+
+```bash
+cd ~/rebash-k8s/module-18
+set -euo pipefail
+kubectl apply -f namespace.yaml
+kubectl apply -f web-broken.yaml
+kubectl rollout status deployment/web -n rebash-triage-lab --timeout=60s || true
+kubectl get pods -n rebash-triage-lab -l app=web | tee before-pods.txt
+```
+
+**Expected output:** Pods `0/1 Ready` or restarts; not fully Available.
+
+#### Task 2 – Diagnose with describe, logs, and events
+
+Gather the standard triage chain before changing manifests.
+
+```bash
+cd ~/rebash-k8s/module-18
+kubectl get deploy,po,svc -n rebash-triage-lab -o wide | tee before-resources.txt
+kubectl describe deploy web -n rebash-triage-lab | tee before-describe.txt
+kubectl describe po -n rebash-triage-lab -l app=web | tee before-pod-describe.txt
+kubectl logs -n rebash-triage-lab -l app=web --tail=20 | tee before-logs.txt || true
+kubectl get events -n rebash-triage-lab --sort-by=.lastTimestamp | tail -n 20 | tee before-events.txt
+grep -Ei 'probe|healthz|unhealthy' before-events.txt before-pod-describe.txt
+```
+
+**Expected output:** Events mention probe failures on `/healthz` (nginx default page is `/`).
+
+#### Task 3 – Apply fixed manifest and verify Ready
+
+Create `web-fixed.yaml`:
+
+```yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: web
+  namespace: rebash-triage-lab
+  labels:
+    app: web
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: web
+  template:
+    metadata:
+      labels:
+        app: web
+    spec:
+      containers:
+        - name: web
+          image: nginx:1.27-alpine
+          ports:
+            - containerPort: 80
+          readinessProbe:
+            httpGet:
+              path: /
+              port: 80
+            initialDelaySeconds: 2
+            periodSeconds: 3
+          livenessProbe:
+            httpGet:
+              path: /
+              port: 80
+            initialDelaySeconds: 5
+            periodSeconds: 5
+          resources:
+            requests:
+              cpu: 50m
+              memory: 64Mi
+            limits:
+              cpu: 200m
+              memory: 128Mi
+```
+
+Apply fix and prove recovery:
+
+```bash
+cd ~/rebash-k8s/module-18
+kubectl apply -f web-fixed.yaml
+kubectl rollout status deployment/web -n rebash-triage-lab --timeout=120s
+kubectl get pods -n rebash-triage-lab -l app=web | tee after-pods.txt
+kubectl get endpoints web -n rebash-triage-lab | tee after-endpoints.txt
+grep -q '1/1' after-pods.txt
+```
+
+**Expected output:** Rollout succeeds; all Pods `1/1 Ready`; Endpoints populated.
+
+#### Task 4 – Archive before/after evidence
+
+```bash
+cd ~/rebash-k8s/module-18
+tar -czf module-18-triage-evidence.tgz namespace.yaml web-broken.yaml web-fixed.yaml before-*.txt after-*.txt
+ls -l module-18-triage-evidence.tgz
+```
+
+**Expected output:** Tarball contains broken/fixed manifests and triage output files.
 
 ### Validation steps
 
-- [ ] Namespace `rebash-lab` contains the expected Ready objects
-- [ ] You can explain each Task command from the Theory section
-- [ ] Cleanup deletes the namespace without leftover workloads
+- [ ] Broken Deployment fails readiness on `/healthz`
+- [ ] describe/events/logs identify probe path mismatch
+- [ ] Fixed manifest reaches Ready with probes on `/`
+- [ ] Endpoints list Pod IPs after recovery
+- [ ] Before/after evidence tarball created
 
 ### Common errors and fixes
 
 | Error | Cause | Fix |
 |-------|-------|-----|
-| ImagePullBackOff | Wrong tag or registry auth | Fix image reference; check pull secrets |
-| Pending Pod | Scheduling / quota / PVC | `kubectl describe pod` and read Events |
-| Empty Endpoints | Selector or readiness mismatch | Compare Service selector to Pod labels and Ready |
+| Probe failed HTTP 404 | Path not served by container | Probe a real path (`/` for nginx) |
+| CrashLoopBackOff | Liveness kills failing container | Fix readiness first; align liveness path |
+| No Events | Wrong namespace or cleared cache | `kubectl get events -n rebash-triage-lab --sort-by=.lastTimestamp` |
+| Endpoints empty | Pods not Ready | Wait for rollout; check probes |
+| Patch without file | One-off kubectl edit | Prefer Git-tracked manifest (`web-fixed.yaml`) |
 
 ### Challenge exercise
 
-Add a readinessProbe and a ResourceQuota to the namespace, then show that over-quota creates are rejected.
+Introduce a second failure by setting `image: nginx:does-not-exist-1.27` in a copy `web-bad-image.yaml`, triage `ImagePullBackOff`, then restore `nginx:1.27-alpine` and add the event snippet to your evidence tarball.
 
 ### Learning outcomes
 
-- Applied a real cluster change for Troubleshooting Kubernetes Workloads
-- Used describe/Events for verification
-- Destroyed lab resources cleanly
+- Reproduced a probe misconfiguration failure on a real Deployment
+- Executed describe → logs → events triage order
+- Applied a declarative fix and verified Ready Endpoints
+- Packaged before/after incident evidence
 
 ### Cleanup
 
 ```bash
-kubectl delete namespace rebash-lab --ignore-not-found
-# Keep ~/rebash-kubernetes/ for later tutorials
+kubectl delete namespace rebash-triage-lab --ignore-not-found --wait=true
+rm -f ~/rebash-k8s/module-18/before-*.txt ~/rebash-k8s/module-18/after-*.txt ~/rebash-k8s/module-18/module-18-triage-evidence.tgz
 ```
 
 ## Validation

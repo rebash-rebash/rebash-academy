@@ -37,7 +37,7 @@ tags:
   - secret-detection
   - sbom
 author: Shaik Basha
-last_updated: "2026-07-31"
+last_updated: "2026-08-03"
 comments: false
 ---
 
@@ -163,92 +163,207 @@ Treat false positives with tracked allowlists — not by disabling scanners glob
 
 ### Objective
 
-Author a valid `.gitlab-ci.yml` that models **Security Scanning and DevSecOps** and validate it locally before pushing.
+Assemble a DevSecOps pipeline with **secret detection** and **SAST** job stubs, define severity gates in `security-policy.yaml`, and validate everything offline.
 
 ### Prerequisites
 
 - Python 3 with PyYAML (`pip install pyyaml`)
-- Optional: GitLab project to run the pipeline
+- Optional: GitLab project with security templates enabled
 
 ### Lab environment
 
 Workspace: `~/rebash-gitlab/module-12`
 
-File-first lab. Push to GitLab only when you want a runner to execute jobs.
+File-first lab. Analysers run on GitLab runners when templates are included; this lab validates structure locally.
 
 ```bash
 mkdir -p ~/rebash-gitlab/module-12 && cd ~/rebash-gitlab/module-12
+set -euo pipefail
 ```
 
 ### Real-world scenario
 
-Your squad is encoding **Security Scanning and DevSecOps** as CI. Reviewers reject YAML that does not parse or that skips artefacts/needs incorrectly.
+Security engineering requires secret detection on every merge request and Static Application Security Testing (SAST) before build jobs — with documented severity gates. You deliver pipeline stubs and policy YAML for review before enabling analysers on shared runners.
 
 ### Step-by-step tasks
 
-#### Task 1 – Write pipeline YAML
+#### Task 1 – Application fixture (safe sample)
 
-Stages and jobs must be explicit so MR pipelines are predictable.
+Create `src/app.py`:
 
-```bash
-mkdir -p src && echo 'print("ok")' > src/app.py
-cat > .gitlab-ci.yml << 'EOF'
-stages: [lint, test]
-lint:
-  stage: lint
-  image: python:3.12-alpine
-  script:
-    - python -m py_compile src/app.py
-test:
-  stage: test
-  image: python:3.12-alpine
-  needs: [lint]
-  script:
-    - python src/app.py
-EOF
-python3 -c "import yaml; d=yaml.safe_load(open('.gitlab-ci.yml')); assert d['stages']==['lint','test']; print('OK', list(d))"
+```python
+"""Module 12 lab fixture — no real secrets."""
+
+def greet(name: str) -> str:
+    return f"hello, {name}"
 ```
 
-**Expected output:** Prints `OK` and job names; no YAML exception.
-
-#### Task 2 – Simulate the scripts locally
-
-Prove the job script works before burning runner minutes.
+Verify locally:
 
 ```bash
+cd ~/rebash-gitlab/module-12
+set -euo pipefail
 python3 -m py_compile src/app.py
-python3 src/app.py | tee out.txt
-test "$(cat out.txt)" = 'ok'
+python3 -c "from src.app import greet; assert greet('lab') == 'hello, lab'"
 ```
 
-**Expected output:** Compile succeeds; out.txt is `ok`.
+**Expected output:** No compile errors; assertion passes silently.
+
+#### Task 2 – Security policy gates
+
+Create `security-policy.yaml`:
+
+```yaml
+# Module 12 — severity gates (offline policy document)
+scanners:
+  secret_detection:
+    run_on: every_pipeline
+    block_on: verified_secret
+  sast:
+    run_on: merge_request
+    fail_on_severity: [critical, high]
+  dependency_scanning:
+    run_on: after_build
+    fail_on_severity: [critical]
+  container_scanning:
+    run_on: after_image_push
+    image_pin: digest_not_latest
+allowlist:
+  requires_ticket: true
+  max_days: 30
+sbom:
+  format: cyclonedx
+  attach_to_release: true
+```
+
+Validate offline:
+
+```bash
+cd ~/rebash-gitlab/module-12
+set -euo pipefail
+python3 -c "
+import yaml
+p = yaml.safe_load(open('security-policy.yaml'))
+assert p['scanners']['sast']['fail_on_severity'] == ['critical', 'high']
+assert p['allowlist']['requires_ticket'] is True
+print('security-policy.yaml OK')
+"
+```
+
+**Expected output:** `security-policy.yaml OK`
+
+#### Task 3 – DevSecOps pipeline stubs
+
+Create `.gitlab-ci.yml`:
+
+{% raw %}
+```yaml
+stages:
+  - security
+  - build
+
+include:
+  - template: Jobs/Secret-Detection.gitlab-ci.yml
+  - template: Security/SAST.gitlab-ci.yml
+
+variables:
+  SECRET_DETECTION_ENABLED: "true"
+  SAST_EXCLUDED_PATHS: "spec, test, tmp"
+
+secret_detection:
+  stage: security
+
+sast:
+  stage: security
+
+build-image-stub:
+  stage: build
+  image: alpine:3.20
+  needs: [secret_detection, sast]
+  script:
+    - echo "Build stub — container scan runs after real image push"
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+```
+{% endraw %}
+
+Validate offline:
+
+```bash
+cd ~/rebash-gitlab/module-12
+set -euo pipefail
+python3 -c "
+import yaml
+d = yaml.safe_load(open('.gitlab-ci.yml'))
+assert d['stages'] == ['security', 'build']
+assert any('Secret-Detection' in str(i) for i in d.get('include', []))
+assert d['build-image-stub']['needs'] == ['secret_detection', 'sast']
+print('gitlab-ci OK')
+"
+grep -q 'Security/SAST' .gitlab-ci.yml
+grep -q 'alpine:3.20' .gitlab-ci.yml
+```
+
+**Expected output:** `gitlab-ci OK`; SAST template and pinned image referenced.
+
+#### Task 4 – Offline validation bundle
+
+Create `validate-devsecops.sh`:
+
+```bash
+#!/usr/bin/env bash
+set -euo pipefail
+python3 -c "import yaml; yaml.safe_load(open('.gitlab-ci.yml')); yaml.safe_load(open('security-policy.yaml'))"
+grep -q 'fail_on_severity' security-policy.yaml
+grep -q 'SECRET_DETECTION_ENABLED' .gitlab-ci.yml
+echo 'module-12 devsecops lab passed'
+```
+
+Run it:
+
+```bash
+cd ~/rebash-gitlab/module-12
+set -euo pipefail
+chmod +x validate-devsecops.sh
+./validate-devsecops.sh | tee validation.txt
+```
+
+**Expected output:** `module-12 devsecops lab passed`
 
 ### Validation steps
 
-- [ ] `.gitlab-ci.yml` parses
-- [ ] Local script path matches job intent
+- [ ] `security-policy.yaml` defines gates for secret detection and SAST
+- [ ] Pipeline includes official Secret Detection and SAST templates
+- [ ] Build stub `needs` both security jobs
+- [ ] No secrets, tokens, or API keys in committed files
+- [ ] Offline validator script passes
 
 ### Common errors and fixes
 
 | Error | Cause | Fix |
 |-------|-------|-----|
-| yaml.scanner.ScannerError | Indentation | Use 2-space indent; re-validate with PyYAML |
-| job stuck pending | No runner / tags | Check runner tags match job tags |
-| needs not found | Typo in job name | Align `needs` with actual job keys |
+| SAST job not found after include | Template name changed | Verify template path in GitLab docs for your version |
+| Scanner green but CVEs ignored | `allow_failure: true` everywhere | Fail on Critical/High per policy |
+| Secret in Git history | Committed before detection | Rotate credential; use BFG/filter-repo |
+| Scanning `latest` tag | Wrong image reference | Pin digest from build job |
+| SBOM not tied to release | Missing artefact path | Attach SBOM to tagged pipeline |
 
 ### Challenge exercise
 
-Add an `artifacts:` path from lint to test and document expire_in.
+Add a stub `container_scan` job that declares `dependencies: [build-image-stub]` and documents which digest variable it would scan. Keep it offline with `when: manual`.
 
 ### Learning outcomes
 
-- Produced reviewable GitLab CI YAML
-- Validated structure and scripts locally
+- Defined severity gates in reviewable policy YAML
+- Wired secret detection and SAST before build stages
+- Validated GitLab security template includes offline
+- Understood allowlist and SBOM requirements for compliance
 
 ### Cleanup
 
 ```bash
-# File-only lab — keep YAML for the next tutorial
+rm -rf ~/rebash-gitlab/module-12/src/__pycache__ 2>/dev/null || true
+ls ~/rebash-gitlab/module-12
 ```
 
 ## Validation

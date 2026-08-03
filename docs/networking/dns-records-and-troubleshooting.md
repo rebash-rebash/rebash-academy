@@ -196,8 +196,11 @@ grep -E 'status: NOERROR' dig-noerror.txt
 ```bash
 cd ~/rebash-networking/lab11
 set -euo pipefail
+```
 
-cat > dns-troubleshoot.sh << 'EOF'
+Create `dns-troubleshoot.sh`:
+
+```bash
 #!/usr/bin/env bash
 # DNS troubleshooting checklist — prints evidence (not a markdown notes file)
 set -euo pipefail
@@ -233,7 +236,9 @@ echo "If NXDOMAIN: check spelling and zone delegation"
 echo "If SERVFAIL: check recursive resolver and upstream"
 echo "If wrong IP: check TTL, CNAME chain, split-horizon"
 echo "If mail issue: verify MX priorities and related TXT (SPF)"
-EOF
+```
+
+```bash
 chmod +x dns-troubleshoot.sh
 
 ./dns-troubleshoot.sh example.com "$(cat nxdomain-name.txt)" | tee checklist-output.txt

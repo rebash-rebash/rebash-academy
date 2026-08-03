@@ -1,8 +1,8 @@
 ---
 title: "Kubernetes Agents and Deploys"
-description: "Run ephemeral Kubernetes agents with Pod templates and deploy with kubectl or Helm under least privilege."
+description: "Run ephemeral Jenkins agents with Kubernetes pod templates, deploy with kubectl or Helm from Pipeline, and apply least-privilege cluster access with rollback discipline."
 difficulty: advanced
-estimated_time: "50–65 min"
+estimated_time: "60–80 min"
 technology: jenkins
 category: jenkins
 module: "Module 13 · Kubernetes Agents"
@@ -18,294 +18,546 @@ skills:
   - helm
 prerequisites:
   - jenkins/testing-reports-and-quality-gates
+  - kubernetes/introduction-to-kubernetes-and-orchestration
 next:
   - jenkins/terraform-pipelines-in-jenkins
+related:
+  - jenkins/docker-with-jenkins-pipeline
+  - helm/introduction-to-helm
 tags:
   - jenkins
   - kubernetes
   - agents
-  - helm
+  - deploy
 author: Shaik Basha
-last_updated: "2026-07-31"
+last_updated: "2026-08-03"
 comments: false
 ---
-
 
 # Kubernetes Agents and Deploys
 
 ## Overview
 
+Static agents do not scale with bursty CI. The **Kubernetes plugin** launches **ephemeral agents** as Pods using **pod templates** — containers with the exact JDK, Docker-less build tools, or `kubectl` you need — then deletes them after the build. This tutorial covers agent templates, deploying with **kubectl** / **Helm** from Pipeline, **rollbacks**, and **least-privilege** cluster credentials.
 
-
-Use the **Kubernetes plugin** and **Pod templates** so each build gets an ephemeral agent Pod.
-
-Then deploy with `kubectl` or Helm from Pipeline using least-privilege cluster access and rollback plans. Requires Kubernetes knowledge from the academy Kubernetes track.
-
-This is a core tutorial in **Module 13 · Kubernetes Agents** of the REBASH Academy **Jenkins for Cloud & DevOps Engineers** series — written for Cloud, DevOps, Platform, and SRE engineers.
+This is **Tutorial 13** in **Module 13: Kubernetes Agents** of the REBASH Academy **Jenkins for Cloud & DevOps Engineers** series — written for Cloud, DevOps, Platform, and Site Reliability Engineering (SRE) engineers.
 
 ## Prerequisites
 
-
-
-- Completed prior modules in this track where linked in frontmatter
-- [Git](../git/index.md) and [Docker](../docker/index.md) for lab workflows
-- Running Jenkins LTS from [Installing Jenkins LTS](installing-jenkins-lts.md) when a live controller is required
+- [Testing, Reports, and Quality Gates](testing-reports-and-quality-gates.md)
+- [Kubernetes](../kubernetes/index.md) fundamentals — Pods, Deployments, RBAC
+- Optional lab: kind/minikube/k3d cluster + Jenkins Kubernetes plugin
+- Helm basics helpful for deploy stages
 
 ## Learning Objectives
 
-
-
 By the end of this tutorial, you will be able to:
 
-- [ ] Describe ephemeral Kubernetes agents versus static VMs
-- [ ] Sketch a Pod template with build containers
-- [ ] Outline kubectl/Helm deploy stages with least privilege
-- [ ] Explain rollback approach after a bad deploy
+- [ ] Explain ephemeral Kubernetes agents versus static agents
+- [ ] Sketch a pod template with a builder container and optional sidecar
+- [ ] Outline `kubectl`/`helm` deploy stages with gated credentials
+- [ ] Describe rollback approaches after a bad release
+- [ ] Apply least-privilege ServiceAccount design for CI
 
 ## Architecture
 
+Jenkins requests a Pod agent; the plugin schedules it; the Pipeline runs in containers; deploy stages talk to the API server with scoped credentials.
 
-
-This topic’s control points and relationships are shown below.
-
-![Kubernetes agents and deploys](../assets/excalidraw/jenkins-kubernetes-agents.svg)
+![Jenkins Kubernetes agents and deploys](../assets/excalidraw/jenkins-kubernetes-agents.svg)
 
 ## Theory
 
-
-
 ### What it is
 
-Jenkins Kubernetes cloud provisions a Pod per build (or per stage, depending on config). Containers in the Pod provide tools (Maven, Docker-less build, kubectl). When the build ends, the Pod is deleted — clean workspaces by default. Deploy credentials should be short-lived or narrowly Role-Based Access Control (RBAC) scoped. Helm releases and `kubectl rollout undo` are typical rollback tools.
+The **Kubernetes cloud** in Jenkins connects to a cluster API. A **pod template** defines labels, containers (`jnlp` agent + `maven`/`node` builders), volumes, and ServiceAccount. Pipeline:
+
+```groovy
+agent {
+  kubernetes {
+    yaml '''
+apiVersion: v1
+kind: Pod
+spec:
+  containers:
+  - name: maven
+    image: maven:3.9.9-eclipse-temurin-21
+    command: ["sleep"]
+    args: ["99d"]
+'''
+    defaultContainer 'maven'
+  }
+}
+```
+
+**Ephemeral** means the Pod exists for the build (plus retention settings), reducing snowflake agents.
+
+**Deploys:** later stages use `kubectl apply` / `helm upgrade --install` with kubeconfig or cloud auth. Prefer short-lived tokens / OIDC over long-lived `kubeconfig` files in credentials when your platform supports it.
+
+**Rollbacks:** `kubectl rollout undo`, `helm rollback`, or re-apply last known good Git SHA (GitOps). Pipeline should store revision metadata as an artefact.
 
 ### Why it matters
 
-Static agent fleets waste capacity and drift. Kubernetes agents scale with queue depth and match cloud-native delivery. Misconfigured cluster credentials from Jenkins are a high-severity finding — treat them like production admin.
+Kubernetes agents give elasticity and clean workspaces. They also multiply RBAC mistakes: a CI ServiceAccount with `cluster-admin` turns every Jenkinsfile into a cluster break-glass. Split **build agents** (no deploy rights) from **deploy jobs** (narrow namespace rights) when possible.
 
 ### How it works
 
-1. Configure a Kubernetes cloud in Jenkins (cluster URL, credentials, namespace).
-2. Define a Pod template YAML (or UI) with a `jnlp` container and build containers.
-3. Use `agent { kubernetes { yaml '''…''' } }` in Declarative Pipeline.
-4. Deploy with least-privilege ServiceAccount; avoid cluster-admin.
-5. Validate rollout; document `rollout undo` / Helm rollback.
-
-See Kubernetes plugin docs linked from jenkins.io plugins and Scaling handbook.
+1. Install Kubernetes plugin; configure cloud (API URL, credentials, namespace).
+2. Define pod templates (UI or as code YAML in Pipeline/`podTemplate`).
+3. Jobs request `agent { label 'k8s-maven' }` or inline `kubernetes { yaml … }`.
+4. Plugin creates Pod; JNLP/WebSocket connects to controller.
+5. Steps run in `container('maven') { }` when using multiple containers.
+6. Deploy stages authenticate to cluster; apply manifests; verify rollout; rollback on failure.
 
 ### Key concepts and comparisons
 
-| Piece | Role |
-|-------|------|
-| Pod template | Agent shape |
-| Namespace | Isolation boundary |
-| RBAC Role | Deploy permissions |
-| Ephemeral Pod | Clean agent lifecycle |
+| Pattern | Use |
+|---------|-----|
+| Inline YAML agent | App-defined toolchain |
+| Named cloud template | Platform-standard images |
+| Kaniko/BuildKit in-cluster | Image builds without host docker.sock |
+| Separate deploy Pipeline | Stronger credential isolation |
 
-| Bad | Better |
-|-----|--------|
-| cluster-admin kubeconfig | namespace Role + bind |
-| Privileged DinD always | Kaniko/BuildKit patterns |
+| Privilege | Prefer |
+|-----------|--------|
+| `cluster-admin` for CI | Never |
+| Namespace-scoped edit for deploy SA | Yes, per env |
+| Get/list only for read jobs | Yes |
 
 ### Common pitfalls
 
-- Cluster-admin credentials in Jenkins for all jobs.
-- Forgetting resource requests/limits — node pressure.
-- Long-lived Pods left after aborted builds (watch plugin settings).
-- Mixing untrusted PR builds into the production deploy namespace.
+- Controller cannot reach cluster API / agents cannot reach Jenkins URL.
+- Missing `jnlp` container conventions for the plugin version.
+- Using docker.sock mounts inside K8s agents casually.
+- Helm upgrades without `--atomic` / readiness checks.
+- Storing prod kubeconfig in Multibranch folders that build fork PRs.
 
 ## Hands-on Lab
 
-
-
 ### Objective
 
-Configure a real Jenkins-facing artefact for **Kubernetes Agents and Deploys** (Compose controller and/or Jenkinsfile) you can run or import.
+Write a pod template YAML and a Declarative Pipeline that would run on Kubernetes agents; practice a local `kubectl`/`helm` dry-run deploy against a lab cluster **or** complete a no-cluster paper + YAML validation path.
 
 ### Prerequisites
 
-- Docker Engine for controller labs
-- Text editor / shell
+- `kubectl` locally recommended
+- Optional kind cluster: `kind create cluster --name rebash-jenkins`
 
 ### Lab environment
 
 Workspace: `~/rebash-jenkins/module-13`
 
-Local Docker Compose Jenkins LTS where a live UI is needed; file-only Jenkinsfile labs otherwise.
-
 ```bash
 mkdir -p ~/rebash-jenkins/module-13 && cd ~/rebash-jenkins/module-13
+set -euo pipefail
+kubectl version --client | tee kubectl-client.txt || echo 'kubectl missing — YAML-only path' | tee kubectl-client.txt
 ```
 
 ### Real-world scenario
 
-Your organisation is standardising **Kubernetes Agents and Deploys**. You prototype on a lab controller, keep everything as files, and avoid building on the built-in node in production designs.
+Platform wants CI agents on Kubernetes next quarter. You must propose a pod template, a least-privilege ServiceAccount manifest, and a Pipeline that builds in `maven` and deploys only from `main` with a rollback note.
 
 ### Step-by-step tasks
 
-#### Task 1 – Capture controller/agent mental model files
+#### Task 1 – Pod template and RBAC manifests
 
-Document how this topic shows up on a real controller.
+Run:
 
 ```bash
-tee scenario.md << 'EOF'
-Topic: Kubernetes Agents and Deploys
-- Controller owns config and orchestration
-- Agents execute untrusted build steps
-- Prefer Jenkinsfile in SCM over click-ops jobs
-EOF
-cat scenario.md
-mkdir -p jobs && echo 'pipelineJob stub' > jobs/README.txt
+cd ~/rebash-jenkins/module-13
+set -euo pipefail
+
+mkdir -p k8s
 ```
 
-**Expected output:** scenario.md and jobs/README.txt exist.
+Create `k8s/ci-pod-template.yaml`:
 
-#### Task 2 – Write a minimal Declarative stub
+```yaml
+apiVersion: v1
+kind: Pod
+metadata:
+  labels:
+    rebash/ci: "true"
+spec:
+  serviceAccountName: jenkins-agent
+  containers:
+  - name: jnlp
+    image: jenkins/inbound-agent:latest-jdk17
+  - name: maven
+    image: maven:3.9.9-eclipse-temurin-21
+    command: ["sleep"]
+    args: ["99d"]
+    resources:
+      requests:
+        cpu: "200m"
+        memory: "512Mi"
+```
 
-Even management topics should leave a Pipeline artefact.
+Create `k8s/jenkins-agent-rbac.yaml`:
+
+```yaml
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: jenkins-agent
+  namespace: jenkins
+---
+# Intentionally narrow example — agents that only BUILD may need no deploy verbs.
+# Deploy jobs should use a different SA in a deploy namespace.
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: jenkins-agent-read
+  namespace: jenkins
+rules:
+- apiGroups: [""]
+  resources: ["pods", "pods/log"]
+  verbs: ["get", "list", "watch"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: jenkins-agent-read
+  namespace: jenkins
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: jenkins-agent-read
+subjects:
+- kind: ServiceAccount
+  name: jenkins-agent
+  namespace: jenkins
+```
+
+Create `k8s/jenkins-deploy-rbac.yaml`:
+
+```yaml
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: jenkins-deploy
+  namespace: demo
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: jenkins-deploy
+  namespace: demo
+rules:
+- apiGroups: ["apps"]
+  resources: ["deployments"]
+  verbs: ["get", "list", "watch", "patch", "update"]
+- apiGroups: [""]
+  resources: ["services"]
+  verbs: ["get", "list", "patch", "update", "create"]
+```
+
+Run:
 
 ```bash
-cat > Jenkinsfile << 'EOF'
+kubectl apply --dry-run=client -f k8s/ci-pod-template.yaml | tee dry-run-pod.txt
+kubectl apply --dry-run=client -f k8s/jenkins-agent-rbac.yaml | tee dry-run-agent-rbac.txt || true
+```
+
+**Expected output:** Client dry-run validates YAML structure (namespace may warn if missing).
+
+#### Task 2 – Pipeline sketch for K8s agent + gated deploy
+
+Run:
+
+```bash
+cd ~/rebash-jenkins/module-13
+set -euo pipefail
+```
+
+Create `Jenkinsfile`:
+
+```groovy
 pipeline {
-  agent any
-  stages { stage('OK') { steps { echo 'lab' } } }
+  agent {
+    kubernetes {
+      yamlFile 'k8s/ci-pod-template.yaml'
+      defaultContainer 'maven'
+    }
+  }
+  options { timestamps() }
+  stages {
+    stage('Build') {
+      steps {
+        sh 'mvn -version'
+        sh 'echo build_ok | tee build.txt'
+      }
+    }
+    stage('Deploy demo') {
+      when { branch 'main' }
+      steps {
+        container('maven') {
+          sh '''
+            echo "Use a deploy container with kubectl/helm in real systems"
+            echo "helm upgrade --install demo ./chart -n demo --atomic --wait || true"
+          '''
+        }
+      }
+    }
+  }
+  post {
+    failure {
+      echo 'Rollback plan: helm rollback demo  OR  kubectl rollout undo deploy/demo -n demo'
+    }
+  }
 }
-EOF
-grep -n agent Jenkinsfile
 ```
 
-**Expected output:** Jenkinsfile present with an agent directive.
+Verify:
+
+```bash
+# If plugin YAML expects only custom containers, adjust jnlp per your plugin docs
+grep -q 'kubernetes' Jenkinsfile
+grep -q 'Rollback' Jenkinsfile
+```
+
+**Expected output:** Jenkinsfile references kubernetes agent and rollback note.
+
+#### Task 3 – Local deploy dry-run (optional cluster)
+
+Run:
+
+```bash
+cd ~/rebash-jenkins/module-13
+set -euo pipefail
+```
+
+Create `k8s/demo-deploy.yaml`:
+
+```yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: demo
+  namespace: demo
+spec:
+  replicas: 1
+  selector:
+    matchLabels: { app: demo }
+  template:
+    metadata:
+      labels: { app: demo }
+    spec:
+      containers:
+      - name: demo
+        image: nginx:1.27-alpine
+        ports: [{ containerPort: 80 }]
+```
+
+Create `deploy-rollback.sh`:
+
+```bash
+#!/usr/bin/env bash
+set -euo pipefail
+NS=demo
+kubectl create ns "$NS" --dry-run=client -o yaml | kubectl apply -f -
+kubectl apply -f k8s/demo-deploy.yaml
+kubectl -n "$NS" rollout status deploy/demo
+kubectl -n "$NS" rollout undo deploy/demo
+kubectl -n "$NS" rollout history deploy/demo
+```
+
+Verify:
+
+```bash
+chmod +x deploy-rollback.sh
+
+if kubectl cluster-info >/dev/null 2>&1; then
+  kubectl create ns demo --dry-run=client -o yaml | kubectl apply -f - | tee ns.txt
+  kubectl apply --dry-run=server -f k8s/demo-deploy.yaml | tee deploy-dry-run.txt || \
+    kubectl apply --dry-run=client -f k8s/demo-deploy.yaml | tee deploy-dry-run.txt
+else
+  echo 'No cluster — client dry-run only' | tee deploy-dry-run.txt
+  kubectl apply --dry-run=client -f k8s/demo-deploy.yaml | tee -a deploy-dry-run.txt || true
+fi
+grep -q rollout deploy-rollback.sh
+```
+
+**Expected output:** Dry-run output or explicit no-cluster note; rollback commands in script.
+
+#### Task 4 – Least privilege and Jenkins cloud checklist
+
+Run:
+
+```bash
+cd ~/rebash-jenkins/module-13
+set -euo pipefail
+```
+
+Create `k8s-cloud-checklist.yaml`:
+
+```yaml
+jenkins_url_reachable_from_pods: required
+cloud_credentials_least_privilege: required
+agent_sa_not_equal_deploy_sa: true
+pod_security_no_privileged_unless_dind: true
+resource_requests_set: true
+prod_kubeconfig_not_in_pr_multibranch_folder: true
+image_builds_prefer_kaniko_buildkit: true
+```
+
+Validate and archive:
+
+```bash
+python3 -c "
+import yaml
+with open('k8s-cloud-checklist.yaml') as f:
+    d = yaml.safe_load(f)
+assert d['agent_sa_not_equal_deploy_sa']
+print('k8s-cloud-checklist.yaml OK')
+" | tee k8s-cloud-validate.txt
+
+tar -czf module-13-evidence.tgz k8s Jenkinsfile deploy-rollback.sh k8s-cloud-checklist.yaml *.txt
+ls -l module-13-evidence.tgz | tee evidence.txt
+```
+
+**Expected output:** Evidence archive created.
 
 ### Validation steps
 
-- [ ] Artefacts from tasks exist
-- [ ] No secrets committed
-- [ ] Compose stack stopped if started
+- [ ] Pod template YAML exists and dry-runs
+- [ ] Separate agent vs deploy RBAC sketches exist
+- [ ] Pipeline includes kubernetes agent + rollback note
+- [ ] `k8s-cloud-checklist.yaml` validates
 
 ### Common errors and fixes
 
 | Error | Cause | Fix |
 |-------|-------|-----|
-| port 8080 in use | Another Jenkins/lab | Change host port or stop the other container |
-| permission denied on volume | Podman/rootless path | Fix volume ownership or use named volumes |
-| agent any hangs | No executors | Attach an agent or enable a lab executor carefully |
+| Agent pending forever | Bad template / quotas | Describe Pod events |
+| Cannot connect to Jenkins | Wrong Jenkins URL from Pods | Use internal URL; fix DNS |
+| Deploy forbidden | RBAC | Grant namespace Role only |
+| YAML rejected by plugin | Schema/jnlp mismatch | Match plugin docs for agent container |
 
 ### Challenge exercise
 
-Disable builds on the built-in node in your notes and document the agent label you would require instead.
+Add a `helm` chart skeleton under `chart/` with `Chart.yaml` and a Deployment template, and extend deploy with `helm template chart/ | tee helm-template.txt`.
 
 ### Learning outcomes
 
-- Produced runnable Jenkins artefacts
-- Practised safe lab controller hygiene
+- Designed an ephemeral agent pod template
+- Separated build and deploy privileges
+- Practised deploy dry-run and rollback planning
 
 ### Cleanup
 
 ```bash
-# Keep lab notes under ~/rebash-jenkins/
+# kind delete cluster --name rebash-jenkins  # if you created one
+ls ~/rebash-jenkins/module-13
 ```
 
 ## Validation
 
-
-
-- [ ] Lab commands run under `~/rebash-jenkins/module-13/`
-- [ ] You can explain each Theory section in your own words
-- [ ] You used current Jenkins LTS / Pipeline practices where they apply
-- [ ] You can describe one production failure mode for this topic
+- [ ] Lab completed under `~/rebash-jenkins/module-13/`
+- [ ] You can explain ephemeral agents
+- [ ] You can argue against `cluster-admin` for CI
+- [ ] You can name two rollback commands
 
 ## Code Walkthrough
 
-
-
-Production practice for **Kubernetes Agents and Deploys** always combines:
-
-1. Inspect before you change (status, plan, logs, dry-run)
-2. Prefer reversible, documented changes (Git, Jenkinsfile, JCasC)
-3. Capture evidence (console logs, plan artefacts) for handovers
-4. Prefer current LTS and supported plugins over legacy shortcuts
-5. Least privilege — escalate credentials only when required
-
-Keep runbooks short enough to follow under pressure. Automate checks; keep humans for judgement.
+1. **Templates as code** — YAML in Git with the app or platform repo.
+2. **Split SAs** — build ≠ deploy.
+3. **Gate deploys** — `when { branch 'main' }` + quality gates.
+4. **Record revisions** — enable rollback.
+5. **Avoid docker.sock in Pods** — prefer in-cluster builders.
 
 ## Security Considerations
 
-
-
-- Treat Jenkins credentials and cloud tokens as privileged — never commit them
-- Keep builds off the built-in node; isolate untrusted pull requests
-- Prefer short-lived auth (OIDC-style patterns, scoped RBAC) over long-lived keys
-- Validate blast radius before apply/deploy/delete operations
-- Collect audit logs; limit who can administer the controller
+- Cluster credentials in Jenkins are high value — folder scope + SSO.
+- Ephemeral agents still need network policy egress controls.
+- Privileged DinD in Kubernetes is a last resort.
+- Limit who can edit pod templates that mount secrets.
+- Audit deploy RoleBindings regularly.
 
 ## Common Mistakes
 
+!!! warning "CI ServiceAccount with cluster-admin"
+    Any Jenkinsfile becomes cluster root. **Fix:** namespace Roles; separate deploy identity.
 
+!!! warning "Same Multibranch folder for fork PRs and prod kubeconfig"
+    Untrusted code deploys. **Fix:** split folders/controllers.
 
-!!! warning "cluster-admin in Jenkins"
-    Scope ServiceAccounts to namespaces and verbs you need.
+!!! warning "No rollout verification"
+    Apply returns before pods are ready. **Fix:** `rollout status` / Helm `--wait --atomic`.
 
-!!! warning "Privileged pods by default"
-    Only add capabilities required for the build tool.
-
-!!! warning "Prod deploys from untrusted PRs"
-    Gate deploy stages to protected branches.
+!!! warning "Privileged builders by default"
+    Escape risk. **Fix:** rootless/Kaniko patterns; justify privileges.
 
 ## Best Practices
 
-
-
-- Encode **Kubernetes Agents and Deploys** changes as code and review them in pull requests
-- Prefer Jenkins LTS and pinned agent/tool versions
-- Keep builds off the controller; use labelled agents
-- Least privilege for credentials and cluster/cloud access
-- Destroy or stop lab resources; keep `~/rebash-jenkins/` notes for the track
+- Standard platform pod templates for language ecosystems.
+- Resource requests/limits on agent containers.
+- GitOps for production where possible; Jenkins applies to non-prod or via controlled jobs.
+- Store deploy diffs as build artefacts.
+- Chaos-test agent scaling and Jenkins URL reachability.
 
 ## Troubleshooting
 
-
-
 | Symptom | Likely cause | Fix |
 |---------|--------------|-----|
-| Job stuck in queue | No matching agent/label or executors busy | Check nodes, labels, and executor counts |
-| Checkout / SCM failure | Credentials, URL, or permissions | Verify credential ID and repository access |
-| Pipeline CPS / script error | Syntax, sandbox, or library mismatch | Read error line; validate Jenkinsfile; pin library version |
-| Plugin / UI broken after update | Incompatible plugin set | Restore backup; disable suspect plugin on test controller |
-| Disk full on agent/controller | Workspaces or old builds | Clean workspaces; trim build retention |
+| `Pending` agent | Image pull / resources | Events; fix imagePullSecrets |
+| Step not found in container | Wrong `container()` | Set defaultContainer |
+| Helm OOM | Small agent memory | Raise limits |
+| Rollback unknown revision | No history | `rollout history` / Helm revisions |
 
 ## Summary
 
-
-
-**Kubernetes Agents and Deploys** is essential for Cloud and DevOps engineers operating Jenkins. Practise the lab until the inspection and change path is muscle memory, then continue the track.
+Kubernetes agents give clean, elastic CI. Pair them with narrow RBAC, gated deploys, and practiced rollbacks — not cluster-admin kubeconfigs in every folder. Next: [Terraform Pipelines in Jenkins](terraform-pipelines-in-jenkins.md).
 
 ## Interview Questions
 
+**1. What is an ephemeral Kubernetes agent in Jenkins?**
 
+??? success "Reveal answer"
+    A Pod created for a build (from a pod template), connected as a Jenkins agent, then removed afterward — instead of a long-lived static VM agent.
 
-1. What advantage do ephemeral Kubernetes agents provide?
-2. What is a Pod template in Jenkins?
-3. How do you limit deploy permissions from Pipeline?
-4. How do you roll back a bad Deployment?
-5. Why separate CI and deploy credential sets?
+**2. Why include resource requests on agent containers?**
 
-!!! tip "Sample answer — question 1"
-    Clean, scalable agents that match queue demand and avoid long-lived VM drift.
+??? success "Reveal answer"
+    So the scheduler can place Pods reliably and noisy builds do not starve the node without visibility. Limits reduce noisy-neighbour risk.
 
-!!! tip "Sample answer — question 3"
-    Namespace-scoped Roles, dedicated ServiceAccounts, and credentials only on trusted jobs.
+**3. Why separate build and deploy ServiceAccounts?**
+
+??? success "Reveal answer"
+    Most CI jobs only need to compile/test. Deploy rights to production namespaces should be rare and gated — not available to every PR build agent.
+
+**4. How do you roll back a bad Deployment applied by Jenkins?**
+
+??? success "Reveal answer"
+    `kubectl rollout undo` for Deployments, `helm rollback` for Helm releases, or re-deploy the last known good Git commit/artefact. Pipelines should record revision metadata.
+
+**5. What Jenkins URL problem appears with agents in another cluster network?**
+
+??? success "Reveal answer"
+    Agent Pods must reach the controller’s JNLP/WebSocket/HTTP endpoint. Private controllers need internal DNS, ingress, or a tunnel — `http://127.0.0.1:8080` on your laptop is unreachable from the cluster.
+
+**6. Why avoid mounting docker.sock into CI Pods?**
+
+??? success "Reveal answer"
+    It grants control of the node’s Docker daemon and weakens container isolation. Prefer Kaniko/BuildKit or image-building services.
+
+**7. What is a pod template?**
+
+??? success "Reveal answer"
+    A reusable Pod specification (labels, containers, volumes, SA) Jenkins uses when provisioning a Kubernetes agent for labelled jobs or inline YAML agents.
+
+**8. How should production kubeconfig be stored?**
+
+??? success "Reveal answer"
+    As a tightly scoped Jenkins credential (preferably short-lived/OIDC), limited to deploy jobs/folders — never in Git and never on untrusted PR Multibranch projects.
 
 ## Related Tutorials
 
-
-
-- [Course overview](index.md)
-- [Testing, Reports, and Quality Gates](testing-reports-and-quality-gates.md)
+- [Docker with Jenkins Pipeline](docker-with-jenkins-pipeline.md)
 - [Terraform Pipelines in Jenkins](terraform-pipelines-in-jenkins.md)
+- [Introduction to Helm](../helm/introduction-to-helm.md)
 
 ## References
 
-
-
-- [Scaling Jenkins](https://www.jenkins.io/doc/book/scaling/)
-- [Pipeline Syntax — agent](https://www.jenkins.io/doc/book/pipeline/syntax/#agent)
 - [Kubernetes plugin](https://plugins.jenkins.io/kubernetes/)
+- [Jenkins Kubernetes docs](https://www.jenkins.io/doc/book/pipeline/kubernetes/)
+- [kubectl rollout](https://kubernetes.io/docs/concepts/workloads/controllers/deployment/#rolling-back-a-deployment)

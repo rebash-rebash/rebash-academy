@@ -33,7 +33,7 @@ tags:
   - daemonset
   - cronjob
 author: Shaik Basha
-last_updated: "2026-07-31"
+last_updated: "2026-08-03"
 comments: false
 ---
 
@@ -144,23 +144,19 @@ All still reconcile desired vs actual state through the API.
 
 ## Hands-on Lab
 
-
-
 ### Objective
 
-Build and verify a working Kubernetes solution for **Workload Controllers — StatefulSet, DaemonSet, Jobs** that you can inspect, prove, and tear down safely.
+Create a batch Job and a CronJob from YAML, wait for Job completion, and capture evidence that controllers behave differently from Deployments.
 
 ### Prerequisites
 
-- kubectl configured against a lab cluster (kind/minikube preferred)
-- Cluster-admin or namespace-create rights in the lab cluster
+- A working Kubernetes cluster (**kind**, **minikube**, or any lab cluster)
+- **kubectl** with namespace-create rights
 - Writable workspace at `~/rebash-k8s/module-04-ctl`
 
 ### Lab environment
 
 Workspace: `~/rebash-k8s/module-04-ctl`
-
-Local kind/minikube or a dedicated sandbox cluster. Never target a shared production API server.
 
 ```bash
 mkdir -p ~/rebash-k8s/module-04-ctl && cd ~/rebash-k8s/module-04-ctl
@@ -168,63 +164,171 @@ mkdir -p ~/rebash-k8s/module-04-ctl && cd ~/rebash-k8s/module-04-ctl
 
 ### Real-world scenario
 
-Your platform team is rolling out **Workload Controllers — StatefulSet, DaemonSet, Jobs** for a new microservice. You must apply the change in an isolated namespace, prove it works with kubectl, and leave evidence for the on-call handover.
+The data team needs a one-off migration Job and a nightly CronJob stub for cache warming. You ship both manifests, prove the Job reaches Complete, and verify the CronJob schedule is registered—without using a long-running Deployment.
 
 ### Step-by-step tasks
 
-#### Task 1 – Apply a topic workload
+#### Task 1 – Namespace and one-off Job
 
-Create a namespace and a small Deployment to practise **What it is** against a live API.
+Create `namespace.yaml`:
 
-```bash
-kubectl create namespace rebash-lab --dry-run=client -o yaml | kubectl apply -f -
-kubectl create deployment topic --image=nginx:1.27-alpine -n rebash-lab
-kubectl rollout status deployment/topic -n rebash-lab
-kubectl get all -n rebash-lab
+```yaml
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: rebash-m04-ctl
 ```
 
-**Expected output:** Deployment Ready; Pods listed under the namespace.
+Create `migrate-job.yaml`:
 
-#### Task 2 – Inspect and gather evidence
-
-Production changes always leave an audit trail of describe/Events.
-
-```bash
-kubectl describe deploy topic -n rebash-lab | tee describe.txt
-kubectl get events -n rebash-lab --sort-by=.lastTimestamp | tail -n 15 | tee events.txt
+```yaml
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: migrate-once
+  namespace: rebash-m04-ctl
+spec:
+  backoffLimit: 2
+  template:
+    metadata:
+      labels:
+        app: migrate-once
+    spec:
+      restartPolicy: Never
+      containers:
+        - name: busybox
+          image: busybox:1.36
+          command:
+            - sh
+            - -c
+            - echo "migration complete" && sleep 2 && exit 0
 ```
 
-**Expected output:** describe.txt and events.txt capture healthy Objects/Events.
+Apply and wait for completion:
+
+```bash
+cd ~/rebash-k8s/module-04-ctl
+kubectl apply -f namespace.yaml
+kubectl apply -f migrate-job.yaml
+kubectl wait --for=condition=complete job/migrate-once -n rebash-m04-ctl --timeout=120s
+kubectl get job migrate-once -n rebash-m04-ctl | tee job-complete.txt
+grep Complete job-complete.txt
+kubectl logs -n rebash-m04-ctl job/migrate-once | tee job-logs.txt
+grep -q 'migration complete' job-logs.txt
+```
+
+**Expected output:** Job status `Complete`; logs contain `migration complete`.
+
+#### Task 2 – CronJob stub
+
+Create `cache-cronjob.yaml`:
+
+```yaml
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: cache-warm
+  namespace: rebash-m04-ctl
+spec:
+  schedule: "*/30 * * * *"
+  successfulJobsHistoryLimit: 1
+  failedJobsHistoryLimit: 1
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          restartPolicy: Never
+          containers:
+            - name: busybox
+              image: busybox:1.36
+              command:
+                - sh
+                - -c
+                - echo "cache warm stub" && date
+```
+
+Apply and verify schedule:
+
+```bash
+cd ~/rebash-k8s/module-04-ctl
+kubectl apply -f cache-cronjob.yaml
+kubectl get cronjob cache-warm -n rebash-m04-ctl | tee cronjob.txt
+grep cache-warm cronjob.txt
+kubectl create job --from=cronjob/cache-warm cache-warm-manual -n rebash-m04-ctl
+kubectl wait --for=condition=complete job/cache-warm-manual -n rebash-m04-ctl --timeout=120s
+kubectl get jobs -n rebash-m04-ctl | tee all-jobs.txt
+```
+
+**Expected output:** CronJob listed with schedule; manual Job from CronJob completes.
+
+#### Task 3 – Contrast with Deployment (optional DaemonSet note)
+
+Create `web-deploy.yaml` to show Deployments keep Pods running (contrast with finished Job):
+
+```yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: web
+  namespace: rebash-m04-ctl
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: web
+  template:
+    metadata:
+      labels:
+        app: web
+    spec:
+      containers:
+        - name: nginx
+          image: nginx:1.27-alpine
+          ports:
+            - containerPort: 80
+```
+
+Apply and compare statuses:
+
+```bash
+cd ~/rebash-k8s/module-04-ctl
+kubectl apply -f web-deploy.yaml
+kubectl get deploy,job,cronjob -n rebash-m04-ctl | tee controllers-summary.txt
+grep -E 'migrate-once|cache-warm|web' controllers-summary.txt
+```
+
+**Expected output:** Job Complete, CronJob scheduled, Deployment Available—three controller types side by side.
 
 ### Validation steps
 
-- [ ] Namespace `rebash-lab` contains the expected Ready objects
-- [ ] You can explain each Task command from the Theory section
-- [ ] Cleanup deletes the namespace without leftover workloads
+- [ ] Job `migrate-once` reached Complete
+- [ ] CronJob `cache-warm` registered with schedule
+- [ ] Manual Job from CronJob completed
+- [ ] You can explain when to use Job vs Deployment
 
 ### Common errors and fixes
 
 | Error | Cause | Fix |
 |-------|-------|-----|
-| ImagePullBackOff | Wrong tag or registry auth | Fix image reference; check pull secrets |
-| Pending Pod | Scheduling / quota / PVC | `kubectl describe pod` and read Events |
-| Empty Endpoints | Selector or readiness mismatch | Compare Service selector to Pod labels and Ready |
+| Job stays Running | Command blocked | Check logs; simplify command |
+| CronJob never creates Jobs | Invalid schedule | Validate cron syntax |
+| Job Failed backoff | Script exits non-zero | Fix container command |
+| Forbidden create job from cronjob | RBAC | Use lab admin context |
 
 ### Challenge exercise
 
-Add a readinessProbe and a ResourceQuota to the namespace, then show that over-quota creates are rejected.
+Add a `concurrencyPolicy: Forbid` field to the CronJob manifest so overlapping runs are rejected, then document expected behaviour in a one-line comment at the top of `cache-cronjob.yaml`.
 
 ### Learning outcomes
 
-- Applied a real cluster change for Workload Controllers — StatefulSet, DaemonSet, Jobs
-- Used describe/Events for verification
-- Destroyed lab resources cleanly
+- Ran a batch Job to completion with logs as evidence
+- Declared a CronJob and triggered a manual run from it
+- Compared long-running Deployment behaviour with finished Jobs
 
 ### Cleanup
 
 ```bash
-kubectl delete namespace rebash-lab --ignore-not-found
-# Keep ~/rebash-kubernetes/ for later tutorials
+kubectl delete namespace rebash-m04-ctl --ignore-not-found --wait=true
 ```
 
 ## Validation

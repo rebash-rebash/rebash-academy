@@ -5,6 +5,7 @@ technology_id: gitlab
 hide:
   - toc
 author: Shaik Basha
+last_updated: "2026-08-03"
 category: gitlab
 tags:
   - gitlab

@@ -1,481 +1,409 @@
 ---
-title: Advanced Git Workflows
-description: Compare GitFlow, GitHub Flow, trunk-based development, and release branching; choose strategies for DevOps, platform, and application teams.
+title: "Advanced Git Workflows"
+description: "Deep-dive GitFlow, GitHub Flow, and trunk-based development; environment promotion, feature flags, and workflow migration for platform teams."
 difficulty: intermediate
-estimated_time: "45 min"
-author: Shaik Basha
-last_updated: "2026-07-28"
+estimated_time: "50–65 min"
+technology: git
 category: git
+module: "Related depth · Advanced workflows"
+career_paths:
+  - devops-engineer
+  - cloud-engineer
+  - platform-engineer
+  - site-reliability-engineer
+  - software-engineer
+skills:
+  - git
+  - gitflow
+  - github-flow
+  - trunk-based
+prerequisites:
+  - git/production-git-practices
+  - git/pull-requests-and-code-review
+  - git/rebasing-and-interactive-rebase
+related:
+  - git/git-submodules-and-subtrees
+  - git/git-in-ci-cd-and-devops
 tags:
   - git
   - workflow
   - gitflow
   - trunk-based
-prerequisites:
-  - Git Hooks and Automation
-  - Pull Requests and Code Review
-  - Rebasing and Interactive Rebase
+author: Shaik Basha
+last_updated: "2026-08-03"
 comments: false
 ---
-
 
 # Advanced Git Workflows
 
 ## Overview
 
+Branching strategy determines integration pain, release cadence, and audit shape. **GitFlow** uses long-lived `develop` and `release/*` branches; **GitHub Flow** keeps `main` always deployable with short PRs; **trunk-based development** commits small changes to trunk hourly behind feature flags. Application and platform teams often need different models — this related-depth page goes beyond [Production Git Practices](production-git-practices.md) with promotion mechanics and migration paths.
 
-
-
-
-
-Branching strategy shapes how fast you ship and how painful merges become. GitFlow's long-lived branches suit scheduled releases; trunk-based development suits continuous deployment; GitHub Flow balances simplicity and review. Platform and application teams often need different models — this tutorial helps you choose and implement the right one.
-
-This is **Tutorial 17** in **Module 6: Advanced & DevOps** of the REBASH Academy Git series.
+This is a **Related depth** tutorial in the REBASH Academy **Git & GitHub for Cloud & DevOps Engineers** series.
 
 ## Prerequisites
 
-
-
-
-
-
-- [Git Hooks and Automation](git-hooks-and-automation.md)
+- [Production Git Practices](production-git-practices.md)
 - [Pull Requests and Code Review](pull-requests-and-code-review.md)
 - [Rebasing and Interactive Rebase](rebasing-and-interactive-rebase.md)
 
 ## Learning Objectives
 
-
-
-
-
-
 By the end of this tutorial, you will be able to:
 
-- [ ] Compare GitFlow, GitHub Flow, and trunk-based development
-- [ ] Identify when long-lived vs short-lived branches fit
-- [ ] Implement environment promotion with tags and branches
-- [ ] Apply feature flags as alternative to long-lived branches
-- [ ] Align branching with CI/CD and release cadence
-- [ ] Document team workflow in CONTRIBUTING.md
-- [ ] Migrate gradually between workflow models
+- [ ] Contrast GitFlow, GitHub Flow, and trunk-based development with decision criteria
+- [ ] Model environment promotion with branches vs tags vs GitOps folders
+- [ ] Explain feature flags as alternative to long-lived feature branches
+- [ ] Draft CONTRIBUTING.md workflow section for a platform team
+- [ ] Complete comparison lab evidence under `~/rebash-git/related/workflows`
 
 ## Architecture
 
+Workflow choice constrains branch lifetime, merge methods, release artefacts, and CI investment — all anchored on protected `main`.
 
-
-
-
-
-Team workflows constrain which branches accept direct commits and how changes promote from development to release.
-
-![Branching strategy](../assets/excalidraw/git-branching-strategy.svg)
+![Branching strategy comparison](../assets/excalidraw/git-branching-strategy.svg)
 
 ## Theory
 
+### What it is
 
+An **advanced Git workflow** is the agreed rules for where work happens, how it integrates, and how releases are cut. **GitFlow** (Vincent Driessen model): `main` + `develop`, feature branches merge to develop, releases from `release/*`, hotfixes from `main`. **GitHub Flow**: branch → PR → merge `main` → deploy. **Trunk-based**: developers commit to trunk (main) within hours; incomplete work hidden behind **feature flags**; release branches optional and short.
 
+### Why it matters
 
+Wrong workflow creates either integration hell (month-long branches) or release chaos (no stabilisation window for on-prem semver). Platform GitOps repos often use GitHub Flow; shrink-wrapped software may need GitFlow release branches. Documenting the choice prevents oral-tradition drift when teams scale.
 
+### How it works
 
-### GitHub Flow
+**GitHub Flow (SaaS daily deploy):**
+1. Branch from `main`.
+2. PR + CI.
+3. Merge to `main`.
+4. CD/GitOps deploys staging then prod with gates.
 
-Popularized by GitHub — simple model for web apps with continuous deployment:
+**GitFlow (scheduled semver):**
+1. Features merge to `develop`.
+2. `release/1.2` cut; only fixes allowed.
+3. Tag `v1.2.0`; merge to `main` and back to `develop`.
+4. Hotfix from `main` tag if needed.
 
-1. `main` is always deployable
-2. Create descriptive branch from `main`
-3. Commit and push regularly
-4. Open PR when ready
-5. Review and discuss
-6. Merge to `main` after CI pass
-7. Deploy immediately from `main`
+**Trunk-based (high maturity CI):**
+1. Small PRs merge to main multiple times daily.
+2. Flags hide user-facing incomplete features.
+3. No long-lived feature branches; optional release branch ≤ few days.
 
-**Best for:** SaaS, internal tools, teams deploying multiple times daily.
+### Key concepts and comparisons
 
-**DevOps fit:** Argo CD syncs `main` to staging; production deploy on tag or manual promotion.
+| Criterion | GitHub Flow | GitFlow | Trunk-based |
+|-----------|-------------|---------|-------------|
+| Branch lifetime | Days | Weeks–months | Hours–1 day |
+| Release cadence | Continuous | Scheduled | Continuous |
+| CI maturity needed | High | Medium | Very high |
+| Feature flags | Helpful | Optional | Required |
+| Audit snapshots | Tags optional | Release branches | Tags/commits |
 
-### Trunk-Based Development
+| Promotion mechanism | Example |
+|---------------------|---------|
+| Branch | release/2025-Q1 |
+| Tag | v2.3.1 on main SHA |
+| GitOps folder | clusters/prod bump |
 
-Developers commit to **main** (trunk) or merge within 1–2 days from short branches:
+### Common pitfalls
 
-- Branches live < 48 hours
-- **Feature flags** hide incomplete work in production
-- Strong CI required — main must always pass
-- No long-lived `develop` branch
-
-Google and Meta scale this with massive CI investment.
-
-**Best for:** High-performing teams, microservices, continuous deployment.
-
-**DevOps fit:** Single pipeline on main; environment differences via config overlays, not branches.
-
-### GitFlow
-
-Vincent Driessen's model — structured releases:
-
-| Branch | Purpose |
-|--------|---------|
-| `main` | Production releases only |
-| `develop` | Integration branch |
-| `feature/*` | New work off develop |
-| `release/*` | Stabilization before prod |
-| `hotfix/*` | Emergency fix off main |
-
-Release branch gets bug fixes; merges to `main` (tagged) and back to `develop`.
-
-**Best for:** Scheduled releases, mobile apps, shrink-wrapped software.
-
-**DevOps caution:** Long-lived `develop` diverges from `main`; merge pain and drift common in IaC repos.
-
-### GitLab Flow
-
-Adds **environment branches** or **upstream-first** with optional production branch:
-
-- Merge request → `main` → auto-deploy staging
-- Cherry-pick or merge to `production` for prod deploy
-
-Bridges GitHub Flow simplicity with environment gates.
-
-### Choosing a Strategy
-
-| Factor | Trunk-based | GitHub Flow | GitFlow |
-|--------|-------------|-------------|---------|
-| Release cadence | Continuous | Daily–weekly | Weeks/months |
-| Team size | Any with CI maturity | Small–medium | Large, multi-team |
-| IaC repos | Preferred | Good | Often painful |
-| Feature flags needed | Yes | Sometimes | Less |
-| Compliance gates | Via PR + CI | Via PR + CI | Via release branch |
-
-**Platform/DevOps recommendation:** Trunk-based or GitHub Flow for Terraform/K8s — environment separation via directories or workspaces, not long-lived branches.
-
-### Feature Flags vs Feature Branches
-
-Long branches hide incomplete features. **Feature flags** (LaunchDarkly, env vars, config toggles) allow merging incomplete code disabled in prod:
-
-```hcl
-# Terraform variable
-variable "enable_new_waf" {
-  default = false
-}
-```
-
-Merge to main with flag off; enable in staging; flip in prod when ready.
-
-### Release Tagging
-
-Regardless of workflow, **annotated tags** mark releases:
-
-```bash
-git tag -a v2.4.0 -m "Release 2.4.0 — CVE fixes"
-git push origin v2.4.0
-```
-
-Tags trigger production pipelines; immutable deployment references.
-
-### Monorepo Considerations
-
-Large monorepos (Bazel, Nx) often use trunk-based with path-based CI — only test changed modules. Branch strategy matters less than selective CI.
-
-### Documenting Workflow
-
-`CONTRIBUTING.md` should specify:
-
-- Branch naming
-- Merge strategy (squash vs merge)
-- Required checks
-- Hotfix procedure
-- Release tagging process
-
-### Measuring Workflow Health
-
-High-performing teams track:
-
-- **Branch lifetime** — median hours from branch create to merge (target: under 48h)
-- **PR size** — lines changed per PR (target: under 400)
-- **Merge frequency** — commits to main per day
-- **Change failure rate** — deploys requiring hotfix revert
-
-Git commands supporting metrics:
-
-```bash
-git log --merges --since="30 days ago" --oneline | wc -l
-git for-each-ref --sort=-committerdate refs/heads/ --format='%(refname:short) %(committerdate:relative)'
-```
-
-Review quarterly with platform team; adjust workflow if branch lifetime exceeds one week consistently.
+- GitFlow without release manager — develop rots.
+- Trunk-based without flags — half-built UX ships.
+- Documenting GitHub Flow but running GitFlow in practice.
+- Environment branches (`staging`) diverging years — merge nightmares.
 
 ## Hands-on Lab
 
-
-
 ### Objective
 
-Complete a real Git workflow for **Advanced Git Workflows** with commits you can inspect and recover.
+Simulate three mini workflow tracks in one lab repo, produce `workflow-matrix.yaml` with scored matrix validated by script, and commit operational `CONTRIBUTING.md` workflow section.
 
 ### Prerequisites
 
-- Git 2.x installed
+- Git 2.x
 
 ### Lab environment
 
-Workspace: `~/rebash-git/advanced-git-workflows`
-
-Local Git repository only (no required remote).
+Workspace: `~/rebash-git/related/workflows`
 
 ```bash
-mkdir -p ~/rebash-git/advanced-git-workflows && cd ~/rebash-git/advanced-git-workflows
+mkdir -p ~/rebash-git/related/workflows && cd ~/rebash-git/related/workflows
+set -euo pipefail
 ```
 
 ### Real-world scenario
 
-A delivery team is standardising **Advanced Git Workflows**. You prototype the workflow in a throwaway repo and capture log evidence for the playbook.
+Engineering leadership asks platform team to document why SaaS services use GitHub Flow while on-prem agent uses quarterly GitFlow-style release branches.
 
 ### Step-by-step tasks
 
-#### Task 1 – Initialise a repository and first commit
-
-Every production change starts as a commit with clear identity config.
+#### Task 1 – GitHub Flow track simulation
 
 ```bash
+cd ~/rebash-git/related/workflows
+set -euo pipefail
+rm -rf wf-lab
+mkdir wf-lab && cd wf-lab
 git init -b main
 git config user.email 'lab@rebash.local'
 git config user.name 'REBASH Lab'
-echo '# lab' > README.md
-git add README.md
-git commit -m 'Initial commit'
-git log --oneline | tee log.txt
+printf 'svc: v1\n' > service.yaml
+git add service.yaml && git commit -m 'chore: baseline service'
+git switch -c feature/flag-demo
+echo 'flag: new_checkout=false' >> service.yaml
+git commit -am 'feat: add checkout flag default off'
+git switch main
+git merge --no-ff feature/flag-demo -m 'merge: PR #1 feature/flag-demo'
+git log --oneline --graph | tee ../github-flow-graph.txt
+grep -q 'feature/flag-demo' ../github-flow-graph.txt
+cd ..
 ```
 
-**Expected output:** log.txt shows the initial commit on `main`.
+**Expected output:** Single merge to main representing PR flow.
 
-#### Task 2 – Inspect status and diff discipline
-
-Clean working trees prevent accidental commits of secrets.
+#### Task 2 – GitFlow-style release branch simulation
 
 ```bash
-echo 'work' > work.txt
-git status
-git add work.txt
-git commit -m 'Add work.txt'
-git show --stat HEAD | tee show.txt
+cd ~/rebash-git/related/workflows/wf-lab
+set -euo pipefail
+git switch -c develop
+echo 'dev: true' >> service.yaml
+git commit -am 'feat: develop only tweak'
+git switch -c release/0.2.0
+echo 'release: stabilising' >> service.yaml
+git commit -am 'chore: release branch stabilisation'
+git switch main
+git merge --no-ff release/0.2.0 -m 'release: v0.2.0'
+git tag -a v0.2.0 -m 'GitFlow style release'
+git switch develop
+git merge main -m 'chore: back-merge release to develop'
+git tag -l | tee ../gitflow-tags.txt
+grep -q 'v0.2.0' ../gitflow-tags.txt
+cd ..
 ```
 
-**Expected output:** show.txt lists work.txt in the commit.
+**Expected output:** Release branch merged to main; tag v0.2.0; back-merge to develop.
+
+#### Task 3 – Workflow matrix YAML and CONTRIBUTING snippet
+
+Create `workflow-matrix.yaml`:
+
+```yaml
+criteria:
+  - simplicity
+  - scheduled_release_fit
+  - cd_gitops_fit
+  - small_team_fit
+  - mature_ci_required
+workflows:
+  github_flow:
+    simplicity: 5
+    scheduled_release_fit: 2
+    cd_gitops_fit: 5
+    small_team_fit: 5
+    mature_ci_required: 4
+  gitflow:
+    simplicity: 2
+    scheduled_release_fit: 5
+    cd_gitops_fit: 3
+    small_team_fit: 3
+    mature_ci_required: 3
+  trunk_based:
+    simplicity: 4
+    scheduled_release_fit: 3
+    cd_gitops_fit: 5
+    small_team_fit: 4
+    mature_ci_required: 5
+recommendations:
+  saas: github_flow_with_feature_flags
+  on_prem_agent: gitflow_quarterly_tags
+```
+
+Create `validate-workflow-matrix.sh`:
+
+```bash
+#!/usr/bin/env bash
+set -euo pipefail
+grep -q 'github_flow:' workflow-matrix.yaml
+grep -q 'trunk_based:' workflow-matrix.yaml
+grep -q 'saas: github_flow' workflow-matrix.yaml
+echo 'matrix_ok'
+```
+
+Create `CONTRIBUTING.md`:
+
+```markdown
+## Git workflow (platform services)
+
+- Branch from `main`: `feature/`, `fix/`, `chore/`
+- Open PR; require CI green + 1 review
+- Merge squash or merge commit per repo settings
+- Delete head branch after merge
+- Production via GitOps sync from `main` only
+```
+
+Validate and commit:
+
+```bash
+cd ~/rebash-git/related/workflows/wf-lab
+set -euo pipefail
+chmod +x validate-workflow-matrix.sh
+./validate-workflow-matrix.sh | tee ../matrix-validate.txt
+grep -q 'matrix_ok' ../matrix-validate.txt
+git add workflow-matrix.yaml validate-workflow-matrix.sh CONTRIBUTING.md
+git commit -m 'chore: workflow matrix YAML and CONTRIBUTING guide'
+grep -c 'github_flow\|gitflow\|trunk_based' workflow-matrix.yaml | tee ../comparison-rows.txt
+test "$(cat ../comparison-rows.txt)" -ge 3
+tar -czf ../related-workflows-evidence.tgz -C .. github-flow-graph.txt gitflow-tags.txt comparison-rows.txt matrix-validate.txt
+ls -l ../related-workflows-evidence.tgz | tee ../workflows-evidence.txt
+cd ..
+```
+
+**Expected output:** Workflow matrix YAML validated; operational CONTRIBUTING committed; evidence tarball.
 
 ### Validation steps
 
-- [ ] Repository has at least two commits or a merge as designed
-- [ ] log/graph evidence files exist
+- [ ] GitHub Flow merge visible in graph
+- [ ] GitFlow-style tag v0.2.0 created
+- [ ] `workflow-matrix.yaml` passes validation script
+- [ ] CONTRIBUTING.md workflow section present
 
 ### Common errors and fixes
 
 | Error | Cause | Fix |
 |-------|-------|-----|
-| Author identity unknown | Missing user.name/email | Set local `git config user.*` as in Task 1 |
-| merge conflict | Overlapping edits | Edit file, `git add`, complete merge |
-| detached HEAD | Checked out a raw SHA | `git switch -c` a branch before committing |
+| develop diverges | skipped back-merge | merge main/release into develop |
+| tag on wrong branch | checked out develop | tag on main commit |
+| graph confusing | too many merges | use --oneline --graph |
+| policy contradicts | copy-paste | align CONTRIBUTING with ADR |
 
 ### Challenge exercise
 
-Use `git reflog` to recover a commit after a hard reset on a private branch.
+Add trunk-based simulation: three tiny commits directly on `main` in `trunk-sandbox` branch with `flag_*` toggles in `service.yaml` — merge via fast-forward only; add `trunk_based` scores to `workflow-matrix.yaml` and re-run `validate-workflow-matrix.sh`.
 
 ### Learning outcomes
 
-- Performed real Git operations
-- Left auditable history
-- Understood recovery basics
+- Simulated GitHub Flow and GitFlow release paths
+- Authored scored workflow matrix YAML with validation
+- Wrote operational CONTRIBUTING workflow section
 
 ### Cleanup
 
 ```bash
-# Safe local repo — delete the lab directory when finished:
-# rm -rf "$(pwd)"
+ls ~/rebash-git/related/workflows/wf-lab
 ```
 
 ## Validation
 
-
-
-
-
-
-Confirm the lab before moving on:
-
-1. Re-run the critical commands from the Hands-on Lab and compare them to the expected output in each step.
-2. Check that you can explain *why* each successful result matters (not only that it printed).
-3. Note any warnings or unexpected output — resolve them using Troubleshooting before continuing.
-
-| Check | Pass criteria |
-|-------|----------------|
-| Workflow | Chosen workflow (GitHub Flow/GitFlow/trunk) demonstrated with branches |
-| Promotion | Tag or release step completed as documented |
-| Protection | You can state which branches forbid force-push |
-| Cleanup | Lab remotes/repos removed |
+- [ ] Lab under `~/rebash-git/related/workflows`
+- [ ] Can recommend workflow for SaaS vs on-prem
+- [ ] Can explain feature flag role in trunk-based
+- [ ] Know difference vs Production Git Practices ADR
 
 ## Code Walkthrough
 
-
-
-
-
-
-| Command | Description | Example |
-|---------|-------------|---------|
-| `git tag -a v1.0.0 -m "msg"` | Annotated release tag | Production deploy trigger |
-| `git merge --ff-only` | Trunk-based fast-forward | Enforce linear main |
-| `git switch -c hotfix/x main` | Hotfix branch | Emergency fix |
-| `git log --graph --decorate --all` | Visualize workflow | Team alignment |
-| `git branch --merged main` | Find merged branches | Cleanup |
-
-### CONTRIBUTING.md workflow snippet
-
-```markdown
-
-## Branching
-
-
-
-
-
-- Branch from `main`: `feature/`, `fix/`, `hotfix/`
-- Keep branches < 2 days (trunk-based)
-- Open PR when ready; require 1 approval + CI pass
-- Squash merge to `main`
-
-## Releases
-
-
-
-
-
-- Tag `main` with `vX.Y.Z` for production deploy
-- Hotfix: branch from tag, merge to `main`, tag patch release
-```
+1. **Start from team constraints** — release law, audit, cadence — not blog popularity.
+2. **Write CONTRIBUTING** — newcomers read this first.
+3. **Align CI cost** — GitFlow without automation is manual pain.
+4. **Migrate gradually** — shorten branch max age before trunk-based jump.
+5. **Revisit ADR yearly** — team size changes optimal model.
 
 ## Security Considerations
 
-
-
-
-
-
-- Document which branches are force-pushable; treat `main` and release lines as immutable history
-- Separate build identities from human identities for auditable releases
-- Gate promotion between environments on signed tags or attested builds
-- Avoid embedding long-lived cloud keys in workflow files — use OIDC federation
-- Review monorepo path filters so skipped CI cannot bypass security checks
+- Release branches still need signed merges on main
+- Hotfix path documented to avoid direct prod kubectl
+- Protect develop if GitFlow — not semi-public scratch space
+- Tag protection on release tags
+- CODEOWNERS on workflow policy files
 
 ## Common Mistakes
 
+!!! warning "GitFlow without releases"
+    Extra branches, no benefit. **Fix:** Simplify to GitHub Flow.
 
+!!! warning "Trunk-based without CI coverage"
+    main breaks constantly. **Fix:** Invest in tests before workflow change.
 
-
-
-
-!!! warning "GitFlow for Terraform without release cadence"
-    Long-lived develop branch drifts; plan diffs become unmanageable. Use trunk-based.
-
-!!! warning "Production branch without protection"
-    Direct pushes bypass review. Protect all production-related branches.
-
-!!! warning "Tags moved or deleted"
-    Breaks deployment traceability. Immutable tags; never retag released versions.
-
-!!! warning "No documented hotfix path"
-    Incidents cause ad-hoc force pushes. Document hotfix branch + cherry-pick procedure.
+!!! warning "Long-lived environment branches"
+    staging branch never merges — use GitOps env folders or tags instead.
 
 ## Best Practices
 
-
-
-
-
-
-!!! tip "Optimise for merge frequency, not branch count"
-    Integrate to main daily; reduce merge conflict cost.
-
-!!! tip "Separate environment config from branch strategy"
-    Use `environments/dev/` vs `environments/prod/` directories or Terraform workspaces.
-
-!!! tip "Align merge strategy with workflow"
-    Trunk-based often uses squash or rebase; GitFlow uses merge commits on release.
-
-!!! tip "Review workflow annually"
-    Team scale and release cadence change — workflow should evolve.
+- ADR per workflow change ([Production Git Practices](production-git-practices.md))
+- Feature flags owned by product + platform
+- Max branch age metric (e.g. 14 days)
+- Release manager role for GitFlow
+- Train interview candidates on your actual model
 
 ## Troubleshooting
 
-
-
-
-
-
-| Issue | Cause | Solution |
-|-------|-------|----------|
-| develop/main divergence | GitFlow without back-merge | Regular merges both directions |
-| Cannot ff-only merge | Branch diverged | Rebase feature; or allow merge commit |
-| Wrong tag deployed | Tag on wrong commit | Protect tags; verify SHA in pipeline |
-| Feature branch stale | Long-lived branch | Rebase or abandon; use flags |
-| Hotfix missing on develop | Incomplete GitFlow merge | Cherry-pick hotfix to integration branch |
-| Monorepo CI too slow | Full test on every commit | Path-based CI filters |
+| Symptom | Likely cause | Fix |
+|---------|--------------|-----|
+| Teams use different flows | No ADR | publish decision |
+| Release branch never ends | scope creep | freeze features; ship |
+| main not deployable | long branches merge | smaller PRs |
+| Flag debt | flags never removed | flag cleanup sprints |
 
 ## Summary
 
-
-
-
-
-
-- **GitHub Flow:** main + feature PRs — simple, continuous deployment friendly
-- **Trunk-based:** very short branches, feature flags — highest merge frequency
-- **GitFlow:** main + develop + release/hotfix — scheduled releases, higher overhead
-- DevOps/IaC teams typically prefer **trunk-based or GitHub Flow**
-- **Annotated tags** mark releases regardless of branching model
-- Document workflow in **CONTRIBUTING.md** and align with CI/CD gates
+Advanced workflows are organisational choices expressed in Git — match model to cadence, CI maturity, and compliance, then document in CONTRIBUTING and ADRs. Return to [course index](index.md) or optional [Git Hooks](git-hooks-and-automation.md).
 
 ## Interview Questions
 
+**1. When choose GitFlow over GitHub Flow?**
 
+??? success "Reveal answer"
+    Scheduled semver releases, multiple supported versions, packaged software delivered to customers who cannot take daily deploys — when release stabilisation branches add value.
 
+**2. Trunk-based prerequisite?**
 
-1. When do worktrees beat multiple clones?
-2. What problems does sparse checkout solve?
-3. Partial clone options for huge repos?
-4. Risks of custom merge drivers?
-5. How do you keep advanced workflows teachable for a team?
+??? success "Reveal answer"
+    Strong CI, feature flags, culture of fixing main immediately, small batches — high integration frequency discipline.
 
-!!! tip "Sample answer — question 2"
-    Check worktree list and sparse-checkout status when files appear missing.
+**3. Feature flags vs long feature branches?**
 
-!!! tip "Sample answer — question 4"
-    Document team workflows; keep hooks and custom drivers reviewed like production automation.
+??? success "Reveal answer"
+    Flags hide incomplete work on main safely; long branches defer integration risk until painful merge — trunk-based prefers flags.
+
+**4. GitFlow hotfix path?**
+
+??? success "Reveal answer"
+    Branch from production tag on main, fix, tag patch release, merge to main and develop (and release branch if open) — ship fast without waiting for develop features.
+
+**5. Environment promotion without env branches?**
+
+??? success "Reveal answer"
+    GitOps `clusters/staging` vs `clusters/prod` folders, or deploy same main SHA to staging then promote tag/manifest to prod — avoid long-lived staging branch diverging from main.
+
+**6. Migrate GitFlow → GitHub Flow?**
+
+??? success "Reveal answer"
+    Gradually: shorten release branches, increase deploy frequency, strengthen CI, retire develop or sync develop daily to main, document ADR, train team on PR-to-prod path.
+
+**7. Platform vs app team different workflows?**
+
+??? success "Reveal answer"
+    Common — app SaaS on GitHub Flow; platform modules semver tags; infra GitOps repos PR-to-main — unify principles (review, CI) not identical branch names.
+
+**8. CONTRIBUTING.md purpose in workflow?**
+
+??? success "Reveal answer"
+    Onboarding contract — branch naming, PR rules, merge method, who owns releases — reduces ad hoc git habits and audit surprises.
 
 ## Related Tutorials
 
-
-
-
-
-
-- [Git Hooks and Automation](git-hooks-and-automation.md) *(previous)*
-- [Git Submodules and Subtrees](git-submodules-and-subtrees.md) *(next)*
+- [Production Git Practices](production-git-practices.md)
 - [Pull Requests and Code Review](pull-requests-and-code-review.md)
+- [Git Submodules and Subtrees](git-submodules-and-subtrees.md)
 - [Git in CI/CD and DevOps](git-in-ci-cd-and-devops.md)
-- [Rebasing and Interactive Rebase](rebasing-and-interactive-rebase.md)
-- Cheat sheet: [Git Cheat Sheet](../cheatsheets/git.md)
-- Interview prep: [Git Interview Prep](../interview/git.md)
-- Learning path: [DevOps Engineer](../learning-paths/devops-engineer.md)
+- [Course index](index.md)
 
 ## References
 
-
-
-
-
-
+- [GitHub Flow](https://docs.github.com/en/get-started/using-github/github-flow)
 - [Trunk Based Development](https://trunkbaseddevelopment.com/)
-- [GitFlow original post](https://nvie.com/posts/a-successful-git-branching-model/)
-- [GitHub Flow guide](https://docs.github.com/en/get-started/using-github/github-flow)
-- [GitLab Flow](https://docs.gitlab.com/ee/topics/gitlab_flow.html)
-- [DORA Research – trunk-based development](https://dora.dev/)
-- [REBASH Academy – Git Overview](index.md)
+- [A successful Git branching model (GitFlow)](https://nvie.com/posts/a-successful-git-branching-model/)

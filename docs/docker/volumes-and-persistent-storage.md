@@ -29,7 +29,7 @@ tags:
   - volumes
   - storage
 author: Shaik Basha
-last_updated: "2026-07-31"
+last_updated: "2026-08-03"
 comments: false
 ---
 
@@ -129,22 +129,20 @@ Declare mounts with `docker run -v` / `--mount` or Compose `volumes:`. Named vol
 
 ## Hands-on Lab
 
-
-
 ### Objective
 
-Build or run a real Docker solution for **Volumes and Persistent Storage** and prove it with inspect/logs/HTTP.
+Persist data in a named Docker volume across container recreation, optionally mirror a host bind mount, and capture `docker volume inspect` evidence.
 
 ### Prerequisites
 
 - Docker Engine or Docker Desktop
-- Permission to run containers
+- Write access under `~/rebash-docker/module-07/host-data`
 
 ### Lab environment
 
 Workspace: `~/rebash-docker/module-07/host-data`
 
-Local Docker daemon. Clean up containers/images after the lab.
+Named volume `rebash-mod07-data` and bind path `./bind-data` are created during the lab.
 
 ```bash
 mkdir -p ~/rebash-docker/module-07/host-data && cd ~/rebash-docker/module-07/host-data
@@ -152,77 +150,99 @@ mkdir -p ~/rebash-docker/module-07/host-data && cd ~/rebash-docker/module-07/hos
 
 ### Real-world scenario
 
-You are validating **Volumes and Persistent Storage** before it lands in CI. The change must be reproducible with copy-paste commands and leave no orphan containers.
+A stateful sidecar writes cache files that must survive container upgrades. You prove a named volume keeps data after `docker rm`, add a bind mount for config files the platform team edits on the host, and attach inspect output for the change record.
 
 ### Step-by-step tasks
 
-#### Task 1 – Run and inspect a container
-
-Start from a known image, publish a port, and verify HTTP.
+#### Task 1 – Write to a named volume and recreate the container
 
 ```bash
-docker run -d --name rebash-lab -p 18080:80 nginx:alpine
-docker ps --filter name=rebash-lab
-curl -sI http://127.0.0.1:18080 | head -n 5 | tee headers.txt
-docker logs rebash-lab 2>&1 | head -n 10 | tee logs.txt
+cd ~/rebash-docker/module-07/host-data
+docker volume create rebash-mod07-data | tee volume-create.txt
+docker run --rm --name rebash-mod07-writer -v rebash-mod07-data:/data alpine:3.20 \
+  sh -c 'echo rebash-persist-v1 > /data/cache.txt && cat /data/cache.txt' | tee volume-write-v1.txt
+docker run --rm -v rebash-mod07-data:/data alpine:3.20 cat /data/cache.txt | tee volume-read-after.txt
+grep -q 'rebash-persist-v1' volume-read-after.txt
 ```
 
-**Expected output:** Container Up; HTTP 200 in headers.txt.
+**Expected output:** Second container reads `rebash-persist-v1` without the first container running.
 
-#### Task 2 – Inspect runtime config
+#### Task 2 – Inspect the named volume
 
-Use inspect for status — production debugging rarely starts with guesswork.
+{% raw %}
+```bash
+cd ~/rebash-docker/module-07/host-data
+docker volume inspect rebash-mod07-data --format 'Name={{ "{{" }}.Name{{ "}}" }} Mountpoint={{ "{{" }}.Mountpoint{{ "}}" }}' | tee volume-inspect.txt
+grep -q 'Name=rebash-mod07-data' volume-inspect.txt
+```
+{% endraw %}
+
+**Expected output:** `volume-inspect.txt` shows the volume name and host mountpoint path.
+
+#### Task 3 – Bind mount host directory and read back
+
+Create `bind-data/config.txt`:
+
+```text
+bind-mount-ok
+```
+
+Run with bind mount:
 
 ```bash
-docker inspect rebash-lab --format '{{ "{{" }}.State.Status{{ "}}" }} {{ "{{" }}.Config.Image{{ "}}" }}' | tee inspect.txt
-test -s inspect.txt
+cd ~/rebash-docker/module-07/host-data
+docker run --rm -v "$PWD/bind-data:/config:ro" alpine:3.20 cat /config/config.txt | tee bind-read.txt
+grep -q 'bind-mount-ok' bind-read.txt
 ```
 
-**Expected output:** inspect.txt shows `running` and the nginx image.
+**Expected output:** `bind-read.txt` prints `bind-mount-ok` from the host file.
 
 ### Validation steps
 
-- [ ] Container or image behaves as Expected output describes
-- [ ] Ports respond or command output matches
-- [ ] Cleanup removes lab resources
+- [ ] Data in `rebash-mod07-data` survives container removal
+- [ ] `volume-inspect.txt` records name and mountpoint
+- [ ] Bind-mounted `config.txt` is readable inside a container
 
 ### Common errors and fixes
 
 | Error | Cause | Fix |
 |-------|-------|-----|
-| port is already allocated | Previous lab left a container | `docker rm -f` the old name or change port |
-| permission denied | User not in docker group | Use rootless Docker or fix group membership |
-| manifest unknown | Bad tag | Pin a real tag such as `nginx:alpine` |
+| Volume not found | Typo in volume name | `docker volume ls` and match `rebash-mod07-data` |
+| cat: /data/cache.txt: No such file | Wrong mount path | Mount to `/data` consistently |
+| Permission denied on bind mount | SELinux/AppArmor | On enforcing hosts use `:Z` suffix cautiously in lab only |
 
 ### Challenge exercise
 
-Add a non-root USER (or Compose healthcheck) and prove it with inspect.
+Append a second line to the volume from a new container, then pack evidence:
+
+```bash
+cd ~/rebash-docker/module-07/host-data
+docker run --rm -v rebash-mod07-data:/data alpine:3.20 \
+  sh -c 'echo rebash-persist-v2 >> /data/cache.txt && wc -l /data/cache.txt' | tee volume-write-v2.txt
+grep -q '2' volume-write-v2.txt
+```
+
+**Expected output:** `volume-write-v2.txt` shows line count `2`.
 
 ### Learning outcomes
 
-- Executed a real Docker workflow
-- Captured evidence files
-- Removed disposable resources
+- Used a named volume to persist data across ephemeral containers
+- Inspected volume metadata with `docker volume inspect`
+- Contrasted named volumes with a read-only bind mount for host-managed config
 
 ### Cleanup
 
 ```bash
-docker rm -f rebash-lab 2>/dev/null || true
-docker rmi rebash-lab:local 2>/dev/null || true
-docker compose down -v 2>/dev/null || true
+cd ~/rebash-docker/module-07/host-data
+docker volume rm rebash-mod07-data 2>/dev/null || true
+rm -rf bind-data 2>/dev/null || true
 ```
 
 ## Validation
 
-
-
-
-
-
-
 - [ ] Lab commands run under `~/rebash-docker/module-07/host-data/`
+- [ ] `volume-read-after.txt` and `volume-inspect.txt` prove persistence and inspect
 - [ ] You can explain each Theory section in your own words
-- [ ] You used modern tooling where it applies to this topic
 - [ ] You can describe one production failure mode for this topic
 
 ## Code Walkthrough

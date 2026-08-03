@@ -36,7 +36,7 @@ tags:
   - observability
   - analytics
 author: Shaik Basha
-last_updated: "2026-07-31"
+last_updated: "2026-08-03"
 comments: false
 ---
 
@@ -162,92 +162,218 @@ Separate **developer feedback** (MR failed tests) from **platform pages** (share
 
 ### Objective
 
-Author a valid `.gitlab-ci.yml` that models **Pipeline Monitoring and Observability** and validate it locally before pushing.
+Create a local pipeline evidence collector script and a metrics export stub YAML — then run the collector against sample pipeline metadata offline.
 
 ### Prerequisites
 
 - Python 3 with PyYAML (`pip install pyyaml`)
-- Optional: GitLab project to run the pipeline
+- Bash 4+
+- Optional: GitLab API token for live pipeline queries (not required for this lab)
 
 ### Lab environment
 
 Workspace: `~/rebash-gitlab/module-16`
 
-File-first lab. Push to GitLab only when you want a runner to execute jobs.
+File-first lab. Metrics export integrates with observability stacks when pushed to GitLab.
 
 ```bash
 mkdir -p ~/rebash-gitlab/module-16 && cd ~/rebash-gitlab/module-16
+set -euo pipefail
 ```
 
 ### Real-world scenario
 
-Your squad is encoding **Pipeline Monitoring and Observability** as CI. Reviewers reject YAML that does not parse or that skips artefacts/needs incorrectly.
+Site Reliability Engineering (SRE) needs pipeline duration, queue time, and failure stage captured as evidence for incident reviews — without logging secrets. You deliver a collector script and metrics stub YAML validated locally.
 
 ### Step-by-step tasks
 
-#### Task 1 – Write pipeline YAML
+#### Task 1 – Pipeline evidence collector
 
-Stages and jobs must be explicit so MR pipelines are predictable.
-
-```bash
-mkdir -p src && echo 'print("ok")' > src/app.py
-cat > .gitlab-ci.yml << 'EOF'
-stages: [lint, test]
-lint:
-  stage: lint
-  image: python:3.12-alpine
-  script:
-    - python -m py_compile src/app.py
-test:
-  stage: test
-  image: python:3.12-alpine
-  needs: [lint]
-  script:
-    - python src/app.py
-EOF
-python3 -c "import yaml; d=yaml.safe_load(open('.gitlab-ci.yml')); assert d['stages']==['lint','test']; print('OK', list(d))"
-```
-
-**Expected output:** Prints `OK` and job names; no YAML exception.
-
-#### Task 2 – Simulate the scripts locally
-
-Prove the job script works before burning runner minutes.
+Create `collect-pipeline-evidence.sh`:
 
 ```bash
-python3 -m py_compile src/app.py
-python3 src/app.py | tee out.txt
-test "$(cat out.txt)" = 'ok'
+#!/usr/bin/env bash
+set -euo pipefail
+out="${1:-pipeline-evidence.json}"
+pipeline_id="${CI_PIPELINE_ID:-local-sim-001}"
+project="${CI_PROJECT_PATH:-rebash/lab}"
+duration="${CI_PIPELINE_DURATION:-42}"
+status="${CI_PIPELINE_STATUS:-success}"
+failed_job="${CI_FAILED_JOB:-}"
+
+python3 - <<'PY' "${out}" "${pipeline_id}" "${project}" "${duration}" "${status}" "${failed_job}"
+import json, sys
+out, pid, project, duration, status, failed = sys.argv[1:7]
+doc = {
+    "pipeline_id": pid,
+    "project": project,
+    "duration_seconds": int(duration),
+    "status": status,
+    "failed_job": failed or None,
+    "collector": "module-16-lab",
+}
+with open(out, "w") as f:
+    json.dump(doc, f, indent=2)
+print(f"wrote {out}")
+PY
 ```
 
-**Expected output:** Compile succeeds; out.txt is `ok`.
+Run with simulated variables:
+
+```bash
+cd ~/rebash-gitlab/module-16
+set -euo pipefail
+chmod +x collect-pipeline-evidence.sh
+CI_PIPELINE_ID=9001 CI_PIPELINE_DURATION=87 CI_PIPELINE_STATUS=failed CI_FAILED_JOB=unit-tests \
+  ./collect-pipeline-evidence.sh evidence.json | tee collect.txt
+python3 -c "import json; d=json.load(open('evidence.json')); assert d['status']=='failed'; print('evidence OK', d['pipeline_id'])"
+```
+
+**Expected output:** `wrote evidence.json` then `evidence OK 9001`
+
+#### Task 2 – Metrics export stub
+
+Create `metrics-export.yaml`:
+
+```yaml
+# Module 16 — pipeline metrics stub (offline)
+exporter: gitlab-ci-metrics-stub
+metrics:
+  - name: gitlab_pipeline_duration_seconds
+    type: gauge
+    labels: [project, ref, status]
+  - name: gitlab_job_queue_seconds
+    type: gauge
+    labels: [project, runner_type]
+  - name: gitlab_pipeline_failed_total
+    type: counter
+    labels: [project, failed_stage]
+alerts:
+  - name: PipelineFailureRateHigh
+    condition: failed / total > 0.2 over 1h
+    severity: warning
+  - name: RunnerQueueSaturated
+    condition: queue_seconds_p95 > 300
+    severity: critical
+```
+
+Validate offline:
+
+```bash
+cd ~/rebash-gitlab/module-16
+set -euo pipefail
+python3 -c "
+import yaml
+m = yaml.safe_load(open('metrics-export.yaml'))
+assert m['metrics'][0]['name'] == 'gitlab_pipeline_duration_seconds'
+assert len(m['alerts']) == 2
+print('metrics-export.yaml OK')
+"
+```
+
+**Expected output:** `metrics-export.yaml OK`
+
+#### Task 3 – GitLab CI observability job stub
+
+Create `.gitlab-ci.yml`:
+
+{% raw %}
+```yaml
+stages:
+  - observe
+
+collect-evidence:
+  stage: observe
+  image: python:3.12-alpine
+  script:
+    - chmod +x collect-pipeline-evidence.sh
+    - ./collect-pipeline-evidence.sh "${CI_PROJECT_DIR}/pipeline-evidence.json"
+    - test -s pipeline-evidence.json
+  artifacts:
+    paths:
+      - pipeline-evidence.json
+    expire_in: 7 days
+    when: always
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
+```
+{% endraw %}
+
+Validate offline:
+
+```bash
+cd ~/rebash-gitlab/module-16
+set -euo pipefail
+python3 -c "
+import yaml
+d = yaml.safe_load(open('.gitlab-ci.yml'))
+assert d['collect-evidence']['artifacts']['when'] == 'always'
+print('gitlab-ci OK')
+"
+grep -q 'python:3.12-alpine' .gitlab-ci.yml
+```
+
+**Expected output:** `gitlab-ci OK`
+
+#### Task 4 – Bundle validation
+
+Create `validate-observability.sh`:
+
+```bash
+#!/usr/bin/env bash
+set -euo pipefail
+./collect-pipeline-evidence.sh /tmp/evidence-check.json
+python3 -c "import yaml; yaml.safe_load(open('.gitlab-ci.yml')); yaml.safe_load(open('metrics-export.yaml'))"
+grep -q 'PipelineFailureRateHigh' metrics-export.yaml
+echo 'module-16 observability lab passed'
+```
+
+Run it:
+
+```bash
+cd ~/rebash-gitlab/module-16
+set -euo pipefail
+chmod +x validate-observability.sh
+./validate-observability.sh | tee validation.txt
+```
+
+**Expected output:** `module-16 observability lab passed`
 
 ### Validation steps
 
-- [ ] `.gitlab-ci.yml` parses
-- [ ] Local script path matches job intent
+- [ ] Collector writes JSON evidence without secrets
+- [ ] Metrics stub defines duration, queue, and failure counters
+- [ ] CI job uploads evidence with `when: always`
+- [ ] Pinned image `python:3.12-alpine`
+- [ ] Local simulation with env vars produces parseable JSON
 
 ### Common errors and fixes
 
 | Error | Cause | Fix |
 |-------|-------|-----|
-| yaml.scanner.ScannerError | Indentation | Use 2-space indent; re-validate with PyYAML |
-| job stuck pending | No runner / tags | Check runner tags match job tags |
-| needs not found | Typo in job name | Align `needs` with actual job keys |
+| Empty evidence file | Script not executable | `chmod +x collect-pipeline-evidence.sh` |
+| Secrets in job logs | Echoing tokens | Log pipeline IDs only; redact variables |
+| Alerts on every retry | No deduplication | Alert on stage failure rate, not single retry |
+| Missing queue metrics | Runner API not queried | Extend collector when API access exists |
+| False green rate | Skipped tests | Track required job success separately |
 
 ### Challenge exercise
 
-Add an `artifacts:` path from lint to test and document expire_in.
+Extend `collect-pipeline-evidence.sh` to accept a second argument — path to a GitLab job log file — and count lines matching `ERROR` without printing credential-like strings (`AKIA`, `glpat-`).
 
 ### Learning outcomes
 
-- Produced reviewable GitLab CI YAML
-- Validated structure and scripts locally
+- Collected pipeline evidence as structured JSON locally
+- Defined metrics and alert stubs for SRE review
+- Authored CI job to attach evidence artefacts on every pipeline
+- Understood observability without leaking CI secrets
 
 ### Cleanup
 
 ```bash
-# File-only lab — keep YAML for the next tutorial
+rm -f ~/rebash-gitlab/module-16/evidence.json /tmp/evidence-check.json 2>/dev/null || true
+ls ~/rebash-gitlab/module-16
 ```
 
 ## Validation

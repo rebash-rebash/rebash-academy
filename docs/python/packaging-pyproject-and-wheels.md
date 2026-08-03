@@ -163,11 +163,17 @@ cd ~/rebash-python/lab23
 set -euo pipefail
 
 mkdir -p src/rebash_invcheck
-cat > src/rebash_invcheck/__init__.py << 'EOF'
-__version__ = "0.1.0"
-EOF
+```
 
-cat > src/rebash_invcheck/cli.py << 'EOF'
+Create `src/rebash_invcheck/__init__.py`:
+
+```python
+__version__ = "0.1.0"
+```
+
+Create `src/rebash_invcheck/cli.py`:
+
+```python
 from __future__ import annotations
 
 import argparse
@@ -202,9 +208,11 @@ def main(argv: list[str] | None = None) -> int:
 
 if __name__ == "__main__":
     raise SystemExit(main())
-EOF
+```
 
-cat > pyproject.toml << 'EOF'
+Create `pyproject.toml`:
+
+```toml
 [build-system]
 requires = ["setuptools>=68", "wheel"]
 build-backend = "setuptools.build_meta"
@@ -222,21 +230,30 @@ rebash-invcheck = "rebash_invcheck.cli:main"
 
 [tool.setuptools.packages.find]
 where = ["src"]
-EOF
+```
 
-cat > README.md << 'EOF'
+Create `README.md`:
+
+```markdown
 # rebash-invcheck
 
 Lab package for REBASH Academy Module 23.
-EOF
+```
 
-# Escape-safe sample inventory (plain JSON — no MkDocs macros)
-cat > hosts.json << 'EOF'
+Create `hosts.json`:
+
+```json
 [
   {"name": "web1", "status": "up"},
   {"name": "web2", "status": "down"}
 ]
-EOF
+```
+
+Run:
+
+```bash
+test -f src/rebash_invcheck/cli.py
+test -f pyproject.toml
 ```
 
 **Expected output:** `src/rebash_invcheck/cli.py` and `pyproject.toml` exist.

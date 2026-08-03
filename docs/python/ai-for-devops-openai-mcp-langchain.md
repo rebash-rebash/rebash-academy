@@ -174,11 +174,10 @@ Your SRE team wants a CLI that turns a short incident blurb into suggested runbo
 
 #### Task 1 – Mock LLM client and prompt template
 
-```bash
-cd ~/rebash-python/lab26
-set -euo pipefail
 
-cat > ai_runbook.py << 'EOF'
+Create `ai_runbook.py`:
+
+```python
 """Offline-first AI runbook helper for DevOps (mock LLM + optional OpenAI)."""
 from __future__ import annotations
 
@@ -322,8 +321,13 @@ def main(argv: list[str] | None = None) -> int:
 
 if __name__ == "__main__":
     raise SystemExit(main())
-EOF
+```
 
+Run:
+
+```bash
+cd ~/rebash-python/lab26
+set -euo pipefail
 python3 -m py_compile ai_runbook.py
 ```
 

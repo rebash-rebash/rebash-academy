@@ -1,15 +1,16 @@
 ---
-title: "Working with Repositories — gitignore and gitattributes"
-description: "Control tracking with .gitignore and .gitattributes — keep secrets and build artefacts out of Git, and set attributes for DevOps repos."
+title: ".gitignore and .gitattributes"
+description: "Exclude secrets and build artefacts with .gitignore; normalise line endings and diffs with .gitattributes for cross-platform DevOps repos."
 difficulty: beginner
-estimated_time: "30–45 min"
+estimated_time: "45–60 min"
 technology: git
 category: git
 module: "Module 4 · Working with Repositories"
 career_paths:
-  - beginner
   - devops-engineer
+  - cloud-engineer
   - platform-engineer
+  - devsecops-engineer
 skills:
   - git
   - gitignore
@@ -20,339 +21,352 @@ next:
   - git/branching-fundamentals
 related:
   - git/signed-commits-and-git-security
-  - python/configuration-management-and-secrets
-labs: []
-projects: []
-interview: interview/git
-certifications:
-  - GitHub Foundations
+  - git/git-for-infrastructure-as-code
 tags:
   - git
   - gitignore
   - gitattributes
+  - security
 author: Shaik Basha
-last_updated: "2026-07-31"
+last_updated: "2026-08-03"
 comments: false
 ---
 
-
-# Working with Repositories — gitignore and gitattributes
+# .gitignore and .gitattributes
 
 ## Overview
 
+A Terraform repo that commits `.env` files or `*.tfstate` has already lost the security battle. **`.gitignore`** tells Git which paths never to track; **`.gitattributes`** controls how Git stores and displays files — line endings, diff behaviour, and merge strategies — so Linux CI and Windows laptops produce consistent commits.
 
-
-
-
-
-Keep secrets, caches, and build outputs out of Git with `.gitignore`, understand `.git/` layout at a practical level, and set useful `.gitattributes`.
-
-Tracked `.env` files and `node_modules` are classic incidents. Ignore early; use secret scanning in CI (Module 15).
-
-This is a core tutorial in **Module 4 · Working with Repositories** of the REBASH Academy **Git for Cloud & DevOps Engineers** series — written for Cloud, DevOps, Platform, and SRE engineers.
+This is **Tutorial 1** in **Module 4: Working with Repositories** of the REBASH Academy **Git & GitHub for Cloud & DevOps Engineers** series — written for Cloud, DevOps, Platform, and SRE engineers. You will configure ignores for secrets and state files and enforce `eol=lf` for IaC text.
 
 ## Prerequisites
 
-
-
-
-
-
 - [Viewing History and Diffs](viewing-history-and-diffs.md)
+- Git 2.x
+- Basic understanding of Terraform state (local files must not be shared)
 
 ## Learning Objectives
 
-
-
-
-
-
 By the end of this tutorial, you will be able to:
 
-- [ ] Write a solid `.gitignore` for ops repos  
-- [ ] Explain tracking vs ignoring  
-- [ ] Use `.gitattributes` for line endings / export  
-- [ ] Know key `.git/` directories
+- [ ] Write `.gitignore` rules for `.env`, `*.tfstate`, and build output
+- [ ] Verify ignored files never appear in `git status`
+- [ ] Configure `.gitattributes` with `* text=auto eol=lf`
+- [ ] Prove line-ending normalisation with `git check-attr`
+- [ ] Leave evidence under `~/rebash-git/module-04`
 
 ## Architecture
 
+Ignore rules filter untracked paths before they enter the object database; attributes apply on checkout, commit, and diff — shaping cross-platform IaC repos.
 
-
-
-
-
-This topic’s control points and relationships are shown below.
-
-![Repository architecture](../assets/excalidraw/git-repository-architecture.svg)
+![Repository architecture — working tree, .git, and config](../assets/excalidraw/git-repository-architecture.svg)
 
 ## Theory
 
+### What it is
 
+**`.gitignore`** is a list of patterns (globs) Git skips when scanning for untracked files. Patterns can be global (`~/.config/git/ignore`), per-repo (`.gitignore`), or per-directory (nested files). **`.gitattributes`** assigns attributes to paths — commonly `text=auto`, `eol=lf`, `linguist-generated`, or custom merge drivers — stored in the index and applied on checkout.
 
+### Why it matters
 
-
-
-### What
-
-`.gitignore` tells Git which untracked paths to skip. `.gitattributes` sets per-path attributes such as line endings, diff drivers, and “this is binary”. Together they keep repositories clean and cross-platform safe. The `.git` directory itself holds objects, refs, config, and hooks — you inspect it, you do not casually rewrite it.
-
-### Why
-
-Committed secrets, Terraform state, virtualenvs, and `node_modules` create security and size disasters. Mixed CRLF/LF endings cause noisy diffs on Windows and Linux teams. Attributes make line-ending policy explicit so CI and laptops agree.
+DevOps repos mix shell scripts, YAML, HCL, and generated JSON. Without ignores, engineers commit `.terraform/`, kubeconfig copies, and `.env` with API keys. Without attributes, Windows checkouts introduce CRLF and break Linux shebangs or Terraform plans in CI. Secret scanning helps after the fact; ignores prevent the leak at source.
 
 ### How it works
 
-Ignore rules are path patterns, optionally scoped by directory. Patterns in `.gitignore` apply from that directory downward; global excludes exist but team rules belong in the repo. Already-tracked files are **not** ignored until removed from the index (`git rm --cached`). `git check-ignore -v path` explains which rule matched. Attributes use similar path matching: `text=auto`, `eol=lf`, and `binary` are common for DevOps repos full of shell and YAML.
+1. Git checks ignore patterns (last matching rule wins) before listing untracked files.
+2. Already-tracked files stay tracked until removed with `git rm --cached`.
+3. On add/commit, `.gitattributes` may normalise line endings to LF in the object store.
+4. `git check-attr` reports effective attributes for a path.
+5. CI should clone with the same attributes as developers — committed in repo root.
 
-```gitignore
-.env
-*.tfstate*
-.terraform/
-__pycache__/
-.venv/
-dist/
-```
+### Key concepts and comparisons
 
-```gitattributes
-* text=auto eol=lf
-*.sh text eol=lf
-*.png binary
-```
+| Pattern | Matches |
+|---------|---------|
+| `.env` | File named `.env` in any directory |
+| `*.tfstate` | Terraform state files |
+| `!.env.example` | Negation — track example env |
+| `/dist/` | Only root-level `dist/` |
 
-### Key concepts
-
-| Area | Practical note |
-|------|----------------|
-| `.git/objects` | Content-addressed store — do not hand-edit |
-| `.git/refs` | Branch and tag pointers |
-| Ignore vs untrack | Ignore only affects untracked files |
-| Attributes | Normalise text; mark binaries |
-
-
-For Infrastructure as Code (IaC) repositories, ignore rules are a security control as much as a cleanliness tip. Reviewers should reject pull requests that suddenly track state files or credential paths. When onboarding a language or tool, copy ignore patterns from a trusted organisational template rather than inventing them under deadline pressure.
+| Attribute | Effect |
+|-----------|--------|
+| `text=auto` | Git detects text; normalise line endings |
+| `eol=lf` | Store and checkout LF |
+| `-diff` | Binary-like — skip textual diff |
+| `merge=union` | Custom merge for specific files |
 
 ### Common pitfalls
 
-- Adding `.env` to ignore *after* committing it — secret remains in history  
-- Ignoring `*.tf` by accident with an overly broad pattern  
-- Fighting line endings without a committed `.gitattributes`  
-- Committing `.terraform/` or provider plugins and bloating clones
+- Adding `.env` to ignore after it was already committed — it remains tracked until `git rm --cached`.
+- Copy-pasting ignore templates without `-lock.hcl` / `.terraform/` for Terraform.
+- Relying on `core.autocrlf` alone instead of committed `.gitattributes`.
+- Negation patterns (`!`) that do not match because a parent directory is ignored.
 
 ## Hands-on Lab
 
-
-
 ### Objective
 
-Complete a real Git workflow for **Working with Repositories — gitignore and gitattributes** with commits you can inspect and recover.
+Bootstrap an IaC-style repo where secrets and state are ignored, shell scripts use LF, and verification scripts prove Git never tracks forbidden files.
 
 ### Prerequisites
 
-- Git 2.x installed
+- Git 2.x
 
 ### Lab environment
 
 Workspace: `~/rebash-git/module-04`
 
-Local Git repository only (no required remote).
-
 ```bash
 mkdir -p ~/rebash-git/module-04 && cd ~/rebash-git/module-04
+set -euo pipefail
 ```
 
 ### Real-world scenario
 
-A delivery team is standardising **Working with Repositories — gitignore and gitattributes**. You prototype the workflow in a throwaway repo and capture log evidence for the playbook.
+Your team onboards a Terraform module repo. Security requires `.env` and `*.tfstate` never enter Git; platform requires LF line endings for all shell and HCL files consumed by Linux CI.
 
 ### Step-by-step tasks
 
-#### Task 1 – Initialise a repository and first commit
+#### Task 1 – Create repo with .gitignore for secrets and state
 
-Every production change starts as a commit with clear identity config.
+Write ignore rules and verify untracked secrets stay invisible to `git add .`.
+
+Create `.gitignore`:
+
+```gitignore
+.env
+*.tfstate
+*.tfstate.*
+.terraform/
+dist/
+```
+
+Bootstrap the repo and verify ignores:
 
 ```bash
+cd ~/rebash-git/module-04
+set -euo pipefail
+rm -rf iac-repo
+mkdir iac-repo && cd iac-repo
 git init -b main
 git config user.email 'lab@rebash.local'
 git config user.name 'REBASH Lab'
-echo '# lab' > README.md
-git add README.md
-git commit -m 'Initial commit'
-git log --oneline | tee log.txt
+printf 'variable "region" { default = "eu-west-1" }\n' > main.tf
+printf 'SECRET=changeme\n' > .env
+printf '{"version":4}' > terraform.tfstate
+mkdir -p dist && echo 'built' > dist/out.bin
+git add .
+git status --short | tee ../ignore-status.txt
+grep -q 'main.tf' ../ignore-status.txt
+grep -qv '.env' ../ignore-status.txt || test ! $(grep -c '.env' ../ignore-status.txt) -gt 0
+! grep -q '.env' ../ignore-status.txt
+! grep -q 'tfstate' ../ignore-status.txt
+git commit -m 'chore: add Terraform stub and gitignore'
+cd ..
 ```
 
-**Expected output:** log.txt shows the initial commit on `main`.
+**Expected output:** Only `main.tf` and `.gitignore` staged; `.env`, state, and `dist/` absent from status.
 
-#### Task 2 – Inspect status and diff discipline
+#### Task 2 – Add .gitattributes for LF normalisation
 
-Clean working trees prevent accidental commits of secrets.
+Enforce LF on text IaC files.
+
+Create `.gitattributes`:
+
+```gitattributes
+* text=auto eol=lf
+*.sh text eol=lf
+*.tf text eol=lf
+*.yaml text eol=lf
+dist/** -diff
+```
+
+Create `deploy.sh`:
 
 ```bash
-echo 'work' > work.txt
-git status
-git add work.txt
-git commit -m 'Add work.txt'
-git show --stat HEAD | tee show.txt
+#!/bin/sh
+echo ok
 ```
 
-**Expected output:** show.txt lists work.txt in the commit.
+Commit and verify attributes:
+
+```bash
+cd ~/rebash-git/module-04/iac-repo
+set -euo pipefail
+git add .gitattributes deploy.sh
+git commit -m 'chore: enforce LF via gitattributes'
+git check-attr eol deploy.sh | tee ../attr-eol.txt
+grep -q 'deploy.sh: eol: lf' ../attr-eol.txt
+git check-attr diff dist/out.bin 2>/dev/null | tee ../attr-diff.txt || true
+cd ..
+```
+
+**Expected output:** `check-attr` reports `eol: lf` for `deploy.sh`.
+
+#### Task 3 – Simulate tracked secret removal and evidence pack
+
+If a secret was tracked, remove from index without deleting locally.
+
+```bash
+cd ~/rebash-git/module-04/iac-repo
+set -euo pipefail
+# Simulate mistake: force-add then fix
+git add -f .env 2>/dev/null || true
+if git ls-files --error-unmatch .env >/dev/null 2>&1; then
+  git rm --cached .env
+  git commit -m 'fix: stop tracking .env secret file'
+fi
+git ls-files | tee ../tracked-files.txt
+! grep -q '^\.env$' ../tracked-files.txt
+git check-ignore -v .env | tee ../ignore-rule.txt
+grep -q '.gitignore' ../ignore-rule.txt
+tar -czf ../module-04-ignore-evidence.tgz -C .. \
+  ignore-status.txt attr-eol.txt tracked-files.txt ignore-rule.txt
+ls -l ../module-04-ignore-evidence.tgz | tee ../ignore-evidence.txt
+cd ..
+```
+
+**Expected output:** `.env` not in tracked list; `check-ignore` cites `.gitignore` rule.
 
 ### Validation steps
 
-- [ ] Repository has at least two commits or a merge as designed
-- [ ] log/graph evidence files exist
+- [ ] `.env` and `*.tfstate` never committed
+- [ ] `deploy.sh` has `eol: lf` attribute
+- [ ] Evidence tarball created
+- [ ] `git ls-files` lists no secret paths
 
 ### Common errors and fixes
 
 | Error | Cause | Fix |
 |-------|-------|-----|
-| Author identity unknown | Missing user.name/email | Set local `git config user.*` as in Task 1 |
-| merge conflict | Overlapping edits | Edit file, `git add`, complete merge |
-| detached HEAD | Checked out a raw SHA | `git switch -c` a branch before committing |
+| Secret still in history | Committed before ignore | `git rm --cached`; rotate secret; consider BFG |
+| Ignore rule ignored | Wrong pattern | Test with `git check-ignore -v path` |
+| CRLF in CI | Missing attributes | Add `.gitattributes`; renormalise |
+| `git add .` still adds file | Negated or forced | Remove `-f`; fix pattern order |
 
 ### Challenge exercise
 
-Use `git reflog` to recover a commit after a hard reset on a private branch.
+Add `!.env.example` with safe placeholder values, track it, and prove `git check-ignore` does not match `.env.example` while still matching `.env`.
 
 ### Learning outcomes
 
-- Performed real Git operations
-- Left auditable history
-- Understood recovery basics
+- Protected Terraform state and env files from tracking
+- Enforced LF for shell and HCL
+- Recovered from accidental staging with `git rm --cached`
 
 ### Cleanup
 
 ```bash
-# Safe local repo — delete the lab directory when finished:
-# rm -rf "$(pwd)"
+ls ~/rebash-git/module-04/
 ```
 
 ## Validation
 
-
-
-
-
-
-- [ ] Lab commands run under `~/rebash-git/module-04/`
-- [ ] You can explain each Theory section in your own words
-- [ ] You used modern tooling where it applies to this topic
-- [ ] You can describe one production failure mode for this topic
+- [ ] Lab under `~/rebash-git/module-04`
+- [ ] Can explain ignore vs untrack
+- [ ] Can read `git check-attr` output
+- [ ] Can name one secret that must never be in Git
 
 ## Code Walkthrough
 
-
-
-
-
-
-Production practice for **Working with Repositories — gitignore and gitattributes** always combines:
-
-1. Inspect before you change (status, plan, logs, dry-run)
-2. Prefer reversible, documented changes (Git, IaC, drop-ins, version pins)
-3. Capture evidence (command output, pipeline logs) for handovers
-4. Prefer current tools and APIs over legacy shortcuts
-5. Least privilege — escalate credentials only when required
-
-Keep runbooks short enough to follow under pressure. Automate checks; keep humans for judgement.
+1. **Ignore first** — add `.gitignore` before first commit in new repos.
+2. **Template from org** — reuse approved DevSecOps ignore snippets.
+3. **Attributes in repo** — not only local `core.autocrlf`.
+4. **Verify with check-ignore** — automate in pre-commit hooks.
+5. **Renormalise once** — `git add --renormalize .` after attribute policy changes.
 
 ## Security Considerations
 
-
-
-
-
-
-- Treat credentials and tokens for git as privileged — never commit them
-- Prefer short-lived auth (OIDC, roles, SSO) over long-lived keys
-- Validate blast radius before apply/deploy/delete operations
-- Restrict who can approve production changes
-- Collect audit logs; limit who can read sensitive traces
+- Never commit `.env`, kubeconfig, `id_rsa`, or cloud credential JSON.
+- Terraform state contains secrets — use remote backend; ignore local state files.
+- Ignore files do not remove history — rotate leaked secrets immediately.
+- Review `.gitignore` in security audits alongside CODEOWNERS.
+- Enable secret scanning on GitHub even with good ignores.
 
 ## Common Mistakes
 
+!!! warning "Ignoring after commit"
+    `.gitignore` does not untrack files. **Fix:** `git rm --cached <file>` and commit; rotate secrets.
 
+!!! warning "Checking in .terraform/"
+    Provider binaries bloat repo and hide supply-chain risk. **Fix:** Ignore `.terraform/`; use lock file `.terraform.lock.hcl` tracked intentionally.
 
-
-
-
-!!! warning "Adding `.env` to ignore *after* committing it — secret remains in history  "
-    Validate assumptions against the Theory section and official docs before changing production.
-
-!!! warning "Ignoring `*.tf` by accident with an overly broad pattern  "
-    Lab shortcuts (open security groups, admin roles, skip approvals) must not ship unchanged.
-
-!!! warning "Changing production without a rollback path"
-    Always know how to revert (previous artefact, prior release, state rollback, DNS failback).
+!!! warning "CRLF on Linux shebang scripts"
+    `#!/bin/sh\r` breaks execution. **Fix:** `eol=lf` in `.gitattributes` for `*.sh`.
 
 ## Best Practices
 
-
-
-
-
-
-- Encode Working with Repositories — gitignore and gitattributes changes as code and review them in pull requests
-- Pin versions (images, modules, actions, provider plugins)
-- Separate environments with clear promotion gates
-- Alert on symptoms with runbooks attached
-- Destroy lab resources; tag everything with owner and expiry where possible
+- Commit `.env.example` with dummy values only
+- Track `.terraform.lock.hcl` for reproducible provider versions
+- Use global ignore for editor swap files (`~/.config/git/ignore`)
+- Document required env vars in README, not in `.env`
+- Run `git secrets` or org scanners in CI
 
 ## Troubleshooting
 
-
-
-
-
-
 | Symptom | Likely cause | Fix |
 |---------|--------------|-----|
-| Auth / permission denied | Wrong identity, policy, or scope | Check caller identity, roles, and least-privilege policies |
-| Timeout / no route | Network, DNS, security group, or endpoint | Trace path, DNS, and allow-lists before retrying |
-| Drift / unexpected plan | Manual change or wrong state/workspace | Reconcile desired vs actual; avoid click-ops on managed resources |
-| Pipeline/job red | Flaky step, cache, or missing secret | Read failing step logs; bisect recent workflow/config changes |
-| Cost spike | Idle load balancer, NAT, oversized compute | Inventory billable resources; stop/delete labs promptly |
+| File still shows modified | Line-ending normalisation | `git add --renormalize` |
+| Pattern does not match | Path relative to file location | Test with `check-ignore -v` |
+| Binary diff noise | Missing `-diff` attribute | Add to `.gitattributes` |
+| Submodule not ignored | Submodule rules differ | See submodules tutorial |
 
 ## Summary
 
-
-
-
-
-
-**Working with Repositories — gitignore and gitattributes** is essential for Cloud and DevOps engineers working with git. Practise the lab until the inspection and change path is muscle memory, then continue the track.
+You configured repository hygiene: ignores for secrets and Terraform state, attributes for consistent LF text. Next: [Branching Fundamentals](branching-fundamentals.md) for parallel delivery work.
 
 ## Interview Questions
 
+**1. Does .gitignore affect already-tracked files?**
 
+??? success "Reveal answer"
+    No. Ignore rules only prevent untracked files from being added. Tracked files need `git rm --cached` and a commit to stop tracking while keeping the local copy.
 
+**2. Why ignore *.tfstate?**
 
-1. How do you ignore a file already tracked?
-2. What is .gitattributes useful for in cross-platform teams?
-3. Why ignore Terraform state?
-4. How do you verify ignore rules?
-5. Can ignore rules protect secrets by themselves?
+??? success "Reveal answer"
+    State files contain resource IDs, sometimes secrets, and are environment-specific. Teams use remote backends (S3, GCS, Terraform Cloud) with locking instead of sharing state via Git.
 
-!!! tip "Sample answer — question 2"
-    Use git check-ignore -v and git status --ignored. Untrack with git rm --cached if needed.
+**3. What does text=auto eol=lf do?**
 
-!!! tip "Sample answer — question 4"
-    Ignore rules are not security controls — use secret scanning and rotate if leaked.
+??? success "Reveal answer"
+    Git treats files as text when detected, normalises line endings to LF in the repository, and checks out LF — keeping Linux CI and containers consistent regardless of developer OS.
+
+**4. How do you debug why a file is ignored?**
+
+??? success "Reveal answer"
+    Run `git check-ignore -v <path>` — it prints the matching pattern and which ignore file defined it.
+
+**5. Difference between global and repo gitignore?**
+
+??? success "Reveal answer"
+    Global (`core.excludesfile`) applies to all repos on a machine (editor cruft). Repo `.gitignore` is shared with the team and versioned — required for IaC policy.
+
+**6. When would you use -diff in gitattributes?**
+
+??? success "Reveal answer"
+    For generated binaries or large artefacts still stored in Git but not useful in textual diffs — reduces noise in pull requests and blame.
+
+**7. What if .env was pushed to GitHub?**
+
+??? success "Reveal answer"
+    Rotate all secrets immediately, remove from history with approved tooling if policy requires, enable secret scanning, and fix process with pre-commit hooks — ignore alone is insufficient.
+
+**8. Should you commit .terraform.lock.hcl?**
+
+??? success "Reveal answer"
+    Yes for provider version pinning — it is not secret state. It ensures CI and teammates resolve the same provider checksums.
 
 ## Related Tutorials
 
-
-
-
-
-
-- [Course overview](index.md)
-- [Branching Fundamentals](branching-fundamentals.md)
+- [Viewing History and Diffs](viewing-history-and-diffs.md)
+- [Signed Commits and Git Security](signed-commits-and-git-security.md)
+- [Git for Infrastructure as Code](git-for-infrastructure-as-code.md)
+- [Course index](index.md)
 
 ## References
 
-
-
-
-
-
-- [gitignore](https://git-scm.com/docs/gitignore) · [gitattributes](https://git-scm.com/docs/gitattributes)
+- [gitignore documentation](https://git-scm.com/docs/gitignore)
+- [gitattributes documentation](https://git-scm.com/docs/gitattributes)
+- [GitHub gitignore templates](https://github.com/github/gitignore)

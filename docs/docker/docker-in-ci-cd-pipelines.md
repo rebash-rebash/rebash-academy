@@ -32,7 +32,7 @@ tags:
   - cicd
   - buildx
 author: Shaik Basha
-last_updated: "2026-07-31"
+last_updated: "2026-08-03"
 comments: false
 ---
 
@@ -118,7 +118,7 @@ On pull request, build (and optionally scan) without necessarily pushing product
 | Push | Registry |
 | Promote | Retag digest to staging/prod |
 
-In workflow docs, escape expressions such as {% raw %}`${{ github.sha }}`{% endraw %} when embedding examples in MkDocs.
+In workflow docs, wrap GitHub Actions expressions in raw Jinja blocks when embedding examples in MkDocs so macros do not parse them.
 
 ### Key concepts
 
@@ -139,87 +139,150 @@ Keep pipeline YAML next to the Dockerfile so reviewers see build and gate change
 
 ## Hands-on Lab
 
-
-
 ### Objective
 
-Build or run a real Docker solution for **Docker in CI/CD Pipelines** and prove it with inspect/logs/HTTP.
+Create a GitHub Actions workflow stub for Docker CI, a local `build-ci.sh` that mimics the pipeline build step, and validate YAML with Python before building the image.
 
 ### Prerequisites
 
 - Docker Engine or Docker Desktop
-- Permission to run containers
+- `python3` with PyYAML (`pip install pyyaml`)
+- Git optional (workflow file is validated locally)
 
 ### Lab environment
 
-Workspace: `~/rebash-docker/module-15/.github/workflows`
-
-Local Docker daemon. Clean up containers/images after the lab.
+Workspace: `~/rebash-docker/module-15`
 
 ```bash
-mkdir -p ~/rebash-docker/module-15/.github/workflows && cd ~/rebash-docker/module-15/.github/workflows
+mkdir -p ~/rebash-docker/module-15/.github/workflows && cd ~/rebash-docker/module-15
 ```
 
 ### Real-world scenario
 
-You are validating **Docker in CI/CD Pipelines** before it lands in CI. The change must be reproducible with copy-paste commands and leave no orphan containers.
+Your team wants Docker builds gated in CI before merge. You add a workflow that builds on pull requests, mirror the build locally with a shell script, and prove the YAML parses and the image builds with a pinned tag.
 
 ### Step-by-step tasks
 
-#### Task 1 – Run and inspect a container
+#### Task 1 – Create application Dockerfile
 
-Start from a known image, publish a port, and verify HTTP.
+Create `Dockerfile`:
 
-```bash
-docker run -d --name rebash-lab -p 18080:80 nginx:alpine
-docker ps --filter name=rebash-lab
-curl -sI http://127.0.0.1:18080 | head -n 5 | tee headers.txt
-docker logs rebash-lab 2>&1 | head -n 10 | tee logs.txt
+```dockerfile
+FROM alpine:3.20
+ARG APP_VERSION=dev
+RUN echo "rebash-cicd-lab ${APP_VERSION}" > /version.txt
+CMD ["cat", "/version.txt"]
 ```
 
-**Expected output:** Container Up; HTTP 200 in headers.txt.
+Create `.github/workflows/docker-ci.yml`:
 
-#### Task 2 – Inspect runtime config
+{% raw %}
+```yaml
+name: Docker CI
+on:
+  pull_request:
+    paths:
+      - 'Dockerfile'
+      - '.github/workflows/docker-ci.yml'
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build image
+        run: docker build --build-arg APP_VERSION=${{ github.sha }} -t rebash-cicd-lab:ci .
+      - name: Smoke test
+        run: docker run --rm rebash-cicd-lab:ci
+```
+{% endraw %}
 
-Use inspect for status — production debugging rarely starts with guesswork.
+Validate YAML locally:
 
 ```bash
-docker inspect rebash-lab --format '{{ "{{" }}.State.Status{{ "}}" }} {{ "{{" }}.Config.Image{{ "}}" }}' | tee inspect.txt
-test -s inspect.txt
+cd ~/rebash-docker/module-15
+python3 -c "import yaml, pathlib; yaml.safe_load(pathlib.Path('.github/workflows/docker-ci.yml').read_text()); print('yaml_ok')" | tee yaml-check.txt
+grep -q yaml_ok yaml-check.txt
 ```
 
-**Expected output:** inspect.txt shows `running` and the nginx image.
+**Expected output:** `yaml-check.txt` contains `yaml_ok`.
+
+#### Task 2 – Local CI build script
+
+Create `build-ci.sh`:
+
+```bash
+#!/usr/bin/env bash
+set -euo pipefail
+ROOT="$(cd "$(dirname "$0")" && pwd)"
+cd "$ROOT"
+VERSION="${1:-local}"
+docker build --build-arg "APP_VERSION=${VERSION}" -t rebash-cicd-lab:"${VERSION}" .
+docker run --rm rebash-cicd-lab:"${VERSION}" | tee build-output.txt
+grep -q 'rebash-cicd-lab' build-output.txt
+echo "build-ci ok"
+```
+
+Run the local pipeline:
+
+```bash
+cd ~/rebash-docker/module-15
+chmod +x build-ci.sh
+./build-ci.sh pr-local | tee ci-local.txt
+grep -q 'build-ci ok' ci-local.txt
+```
+
+**Expected output:** `ci-local.txt` ends with `build-ci ok`; `build-output.txt` shows the version string.
+
+#### Task 3 – Tag and inspect build artefact
+
+Prove the image exists with expected metadata:
+
+{% raw %}
+```bash
+cd ~/rebash-docker/module-15
+docker images rebash-cicd-lab --format '{{ "{{" }}.Repository{{ "}}" }}:{{ "{{" }}.Tag{{ "}}" }} {{ "{{" }}.ID{{ "}}" }}' | tee ci-images.txt
+grep -q 'rebash-cicd-lab:pr-local' ci-images.txt
+docker inspect rebash-cicd-lab:pr-local --format 'Id={{ "{{" }}.Id{{ "}}" }}' | tee ci-id.txt
+test -s ci-id.txt
+```
+{% endraw %}
+
+**Expected output:** `ci-images.txt` lists `rebash-cicd-lab:pr-local`; `ci-id.txt` contains `Id=sha256:…`.
 
 ### Validation steps
 
-- [ ] Container or image behaves as Expected output describes
-- [ ] Ports respond or command output matches
-- [ ] Cleanup removes lab resources
+- [ ] Workflow YAML parses with Python
+- [ ] `build-ci.sh` builds and smoke-tests the image
+- [ ] Image tag `rebash-cicd-lab:pr-local` exists
+- [ ] Cleanup removes images and evidence files
 
 ### Common errors and fixes
 
 | Error | Cause | Fix |
 |-------|-------|-----|
-| port is already allocated | Previous lab left a container | `docker rm -f` the old name or change port |
-| permission denied | User not in docker group | Use rootless Docker or fix group membership |
-| manifest unknown | Bad tag | Pin a real tag such as `nginx:alpine` |
+| `ModuleNotFoundError: yaml` | PyYAML missing | `pip install pyyaml` |
+| MkDocs build breaks on Actions expressions | Macro collision | Keep workflow YAML inside raw Jinja blocks in the tutorial only |
+| Build arg empty | Script called without version | Pass `pr-local` as shown |
+| Docker permission denied | User not in docker group | Use sudo or add user to `docker` group |
 
 ### Challenge exercise
 
-Add a non-root USER (or Compose healthcheck) and prove it with inspect.
+Extend `build-ci.sh` to run Trivy when installed and fail on CRITICAL findings before tagging `release`.
 
 ### Learning outcomes
 
-- Executed a real Docker workflow
-- Captured evidence files
-- Removed disposable resources
+- Authored a minimal GitHub Actions Docker build workflow
+- Mirrored CI build steps locally with a shell script
+- Validated workflow YAML before pushing
+- Tagged and inspected the resulting image artefact
 
 ### Cleanup
 
 ```bash
-docker rm -f rebash-lab 2>/dev/null || true
-docker rmi rebash-lab:local 2>/dev/null || true
-docker compose down -v 2>/dev/null || true
+cd ~/rebash-docker/module-15
+docker rmi rebash-cicd-lab:pr-local rebash-cicd-lab:ci 2>/dev/null || true
+rm -f *.txt build-ci.sh Dockerfile
+rm -rf .github
 ```
 
 ## Validation

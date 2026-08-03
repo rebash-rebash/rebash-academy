@@ -34,7 +34,7 @@ tags:
   - production
   - multi-cluster
 author: Shaik Basha
-last_updated: "2026-07-31"
+last_updated: "2026-08-03"
 comments: false
 ---
 
@@ -143,23 +143,20 @@ Review the checklist regularly; excellence decays without ownership.
 
 ## Hands-on Lab
 
-
-
 ### Objective
 
-Build and verify a working Kubernetes solution for **Production Kubernetes Excellence** that you can inspect, prove, and tear down safely.
+Apply a production baseline in namespace `rebash-excellence-lab`: ResourceQuota, NetworkPolicy, PodDisruptionBudget, and a Deployment with probes and resource limits — then package an evidence tarball.
 
 ### Prerequisites
 
-- kubectl configured against a lab cluster (kind/minikube preferred)
-- Cluster-admin or namespace-create rights in the lab cluster
+- kubectl configured against **kind** or **minikube**
+- CNI that supports NetworkPolicy (kind default CNI supports it)
+- Namespace-create rights on the lab cluster
 - Writable workspace at `~/rebash-k8s/module-20`
 
 ### Lab environment
 
 Workspace: `~/rebash-k8s/module-20`
-
-Local kind/minikube or a dedicated sandbox cluster. Never target a shared production API server.
 
 ```bash
 mkdir -p ~/rebash-k8s/module-20 && cd ~/rebash-k8s/module-20
@@ -167,63 +164,229 @@ mkdir -p ~/rebash-k8s/module-20 && cd ~/rebash-k8s/module-20
 
 ### Real-world scenario
 
-Your platform team is rolling out **Production Kubernetes Excellence** for a new microservice. You must apply the change in an isolated namespace, prove it works with kubectl, and leave evidence for the on-call handover.
+Before go-live, platform review requires a tenant namespace with quota guardrails, default-deny networking with explicit ingress, a PDB for drain safety, and a Deployment that declares requests, limits, and probes. You author the manifests, apply them to an isolated namespace, and submit an evidence pack for sign-off.
 
 ### Step-by-step tasks
 
-#### Task 1 – Apply a topic workload
+#### Task 1 – Create namespace and ResourceQuota
 
-Create a namespace and a small Deployment to practise **What it is** against a live API.
+Create `namespace.yaml`:
 
-```bash
-kubectl create namespace rebash-lab --dry-run=client -o yaml | kubectl apply -f -
-kubectl create deployment topic --image=nginx:1.27-alpine -n rebash-lab
-kubectl rollout status deployment/topic -n rebash-lab
-kubectl get all -n rebash-lab
+```yaml
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: rebash-excellence-lab
+  labels:
+    app.kubernetes.io/managed-by: rebash-lab
+    pod-security.kubernetes.io/enforce: restricted
 ```
 
-**Expected output:** Deployment Ready; Pods listed under the namespace.
+Create `resourcequota.yaml`:
 
-#### Task 2 – Inspect and gather evidence
-
-Production changes always leave an audit trail of describe/Events.
-
-```bash
-kubectl describe deploy topic -n rebash-lab | tee describe.txt
-kubectl get events -n rebash-lab --sort-by=.lastTimestamp | tail -n 15 | tee events.txt
+```yaml
+apiVersion: v1
+kind: ResourceQuota
+metadata:
+  name: tenant-quota
+  namespace: rebash-excellence-lab
+spec:
+  hard:
+    pods: "10"
+    requests.cpu: "2"
+    requests.memory: 2Gi
+    limits.cpu: "4"
+    limits.memory: 4Gi
 ```
 
-**Expected output:** describe.txt and events.txt capture healthy Objects/Events.
+Apply and verify:
+
+```bash
+cd ~/rebash-k8s/module-20
+kubectl apply -f namespace.yaml
+kubectl apply -f resourcequota.yaml
+kubectl get resourcequota tenant-quota -n rebash-excellence-lab
+```
+
+**Expected output:** Quota `tenant-quota` listed with hard limits.
+
+#### Task 2 – Create production Deployment with probes and PDB
+
+Create `deployment.yaml`:
+
+```yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: api
+  namespace: rebash-excellence-lab
+  labels:
+    app: api
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: api
+  template:
+    metadata:
+      labels:
+        app: api
+    spec:
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 101
+        seccompProfile:
+          type: RuntimeDefault
+      containers:
+        - name: api
+          image: nginx:1.27-alpine
+          ports:
+            - containerPort: 80
+          readinessProbe:
+            httpGet:
+              path: /
+              port: 80
+            initialDelaySeconds: 2
+            periodSeconds: 5
+          livenessProbe:
+            httpGet:
+              path: /
+              port: 80
+            initialDelaySeconds: 10
+            periodSeconds: 10
+          resources:
+            requests:
+              cpu: 100m
+              memory: 128Mi
+            limits:
+              cpu: 500m
+              memory: 256Mi
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop:
+                - ALL
+```
+
+Create `pdb.yaml`:
+
+```yaml
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: api-pdb
+  namespace: rebash-excellence-lab
+spec:
+  minAvailable: 1
+  selector:
+    matchLabels:
+      app: api
+```
+
+Apply and wait for Ready:
+
+```bash
+cd ~/rebash-k8s/module-20
+kubectl apply -f deployment.yaml
+kubectl apply -f pdb.yaml
+kubectl rollout status deployment/api -n rebash-excellence-lab --timeout=120s
+kubectl get pdb api-pdb -n rebash-excellence-lab
+```
+
+**Expected output:** Deployment Available; PDB shows `ALLOWED DISRUPTIONS` ≥ 1.
+
+#### Task 3 – Add default-deny NetworkPolicy with explicit ingress
+
+Create `networkpolicy.yaml`:
+
+```yaml
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: default-deny-ingress
+  namespace: rebash-excellence-lab
+spec:
+  podSelector: {}
+  policyTypes:
+    - Ingress
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-api-ingress
+  namespace: rebash-excellence-lab
+spec:
+  podSelector:
+    matchLabels:
+      app: api
+  policyTypes:
+    - Ingress
+  ingress:
+    - from:
+        - podSelector:
+            matchLabels:
+              role: probe-runner
+      ports:
+        - protocol: TCP
+          port: 80
+```
+
+Apply and list policies:
+
+```bash
+cd ~/rebash-k8s/module-20
+kubectl apply -f networkpolicy.yaml
+kubectl get networkpolicy -n rebash-excellence-lab | tee netpol-evidence.txt
+```
+
+**Expected output:** Two NetworkPolicies in `rebash-excellence-lab`.
+
+#### Task 4 – Package excellence evidence tarball
+
+```bash
+cd ~/rebash-k8s/module-20
+kubectl get all,pdb,resourcequota,networkpolicy -n rebash-excellence-lab | tee excellence-status.txt
+kubectl describe deploy api -n rebash-excellence-lab | tee excellence-describe.txt
+tar -czf module-20-excellence-evidence.tgz namespace.yaml resourcequota.yaml deployment.yaml pdb.yaml networkpolicy.yaml excellence-status.txt excellence-describe.txt netpol-evidence.txt
+ls -l module-20-excellence-evidence.tgz
+```
+
+**Expected output:** Tarball contains all baseline manifests and live status output.
 
 ### Validation steps
 
-- [ ] Namespace `rebash-lab` contains the expected Ready objects
-- [ ] You can explain each Task command from the Theory section
-- [ ] Cleanup deletes the namespace without leftover workloads
+- [ ] ResourceQuota applied with CPU/memory/pod limits
+- [ ] Deployment runs 2 replicas with probes and resource requests
+- [ ] PDB protects at least one available Pod during disruption
+- [ ] NetworkPolicy default-deny plus explicit allow rule present
+- [ ] Evidence tarball lists manifests and cluster status
 
 ### Common errors and fixes
 
 | Error | Cause | Fix |
 |-------|-------|-----|
-| ImagePullBackOff | Wrong tag or registry auth | Fix image reference; check pull secrets |
-| Pending Pod | Scheduling / quota / PVC | `kubectl describe pod` and read Events |
-| Empty Endpoints | Selector or readiness mismatch | Compare Service selector to Pod labels and Ready |
+| Pods fail restricted PSA | Missing securityContext | Add `runAsNonRoot`, drop capabilities |
+| Probe failures | nginx listens on port 80 | Align `containerPort` and probe `port` to 80 |
+| PDB not found | Wrong apiVersion | Use `policy/v1` on Kubernetes 1.21+ |
+| NetworkPolicy ignored | CNI lacks support | Use kind default; verify with `kubectl get netpol` |
+| Quota exceeded | Too many lab objects | Delete test resources; stay within hard limits |
 
 ### Challenge exercise
 
-Add a readinessProbe and a ResourceQuota to the namespace, then show that over-quota creates are rejected.
+Add a `LimitRange` default for containers (128Mi memory request) and prove a Pod without explicit requests inherits the default with `kubectl get pod -o yaml`.
 
 ### Learning outcomes
 
-- Applied a real cluster change for Production Kubernetes Excellence
-- Used describe/Events for verification
-- Destroyed lab resources cleanly
+- Applied production guardrails: quota, PDB, and NetworkPolicy together
+- Deployed a hardened workload with probes and resource declarations
+- Verified policy objects with kubectl status output
+- Packaged a review-ready evidence tarball
 
 ### Cleanup
 
 ```bash
-kubectl delete namespace rebash-lab --ignore-not-found
-# Keep ~/rebash-kubernetes/ for later tutorials
+kubectl delete namespace rebash-excellence-lab --ignore-not-found --wait=true
+rm -f ~/rebash-k8s/module-20/*.txt ~/rebash-k8s/module-20/module-20-excellence-evidence.tgz
 ```
 
 ## Validation

@@ -1,346 +1,345 @@
 ---
 title: "Merging and Merge Conflicts"
-description: "Perform fast-forward and three-way merges, resolve conflicts safely, and choose merge strategies for DevOps repositories."
+description: "Perform fast-forward and three-way merges, resolve real conflicts in IaC files, and complete merges with evidence."
 difficulty: intermediate
-estimated_time: "45–60 min"
+estimated_time: "50–65 min"
 technology: git
 category: git
 module: "Module 6 · Merging"
 career_paths:
-  - beginner
   - devops-engineer
+  - cloud-engineer
   - platform-engineer
+  - software-engineer
 skills:
   - git
   - merge
-  - conflicts
+  - conflict-resolution
 prerequisites:
   - git/branching-fundamentals
 next:
   - git/rebasing-and-interactive-rebase
 related:
-  - git/pull-requests-and-code-review
   - git/git-troubleshooting
-labs: []
-projects: []
-interview: interview/git
-certifications:
-  - GitHub Foundations
+  - git/pull-requests-and-code-review
 tags:
   - git
   - merge
   - conflicts
 author: Shaik Basha
-last_updated: "2026-07-31"
+last_updated: "2026-08-03"
 comments: false
 ---
-
 
 # Merging and Merge Conflicts
 
 ## Overview
 
+Merging integrates branch history so combined work ships together. **Fast-forward** merges move a pointer when no divergent commits exist; **three-way merges** create a merge commit when both branches advanced. Conflicts occur when Git cannot pick a single line — common in Terraform, YAML, and Helm values — and must be resolved deliberately.
 
-
-
-
-
-Merge branches with fast-forward and three-way merges, resolve a conflict deliberately, and abort cleanly when needed.
-
-Merges integrate history. Conflicts are normal — resolve with intent, test, then commit.
-
-This is a core tutorial in **Module 6 · Merging** of the REBASH Academy **Git for Cloud & DevOps Engineers** series — written for Cloud, DevOps, Platform, and SRE engineers.
+This is **Tutorial 1** in **Module 6: Merging** of the REBASH Academy **Git & GitHub for Cloud & DevOps Engineers** series — written for Cloud, DevOps, Platform, and SRE engineers. You will perform both merge types and resolve a realistic manifest conflict.
 
 ## Prerequisites
 
-
-
-
-
-
 - [Branching Fundamentals](branching-fundamentals.md)
+- Git 2.x
+- Text editor for conflict markers
 
 ## Learning Objectives
 
-
-
-
-
-
 By the end of this tutorial, you will be able to:
 
-- [ ] Fast-forward vs three-way merge  
-- [ ] Resolve conflict markers  
-- [ ] Use `merge --abort`  
-- [ ] Prefer PR merges in teams
+- [ ] Distinguish fast-forward from three-way merges
+- [ ] Merge feature branches into `main` locally
+- [ ] Read and resolve conflict markers in YAML
+- [ ] Complete merges with `git add` and `git commit`
+- [ ] Capture merge evidence under `~/rebash-git/module-06`
 
 ## Architecture
 
+Git finds the merge base, compares trees from both tips, and either advances the branch pointer (FF) or creates a merge commit linking two parents.
 
-
-
-
-
-This topic’s control points and relationships are shown below.
-
-![Merge process](../assets/excalidraw/git-merge-process.svg)
+![Git merge process](../assets/excalidraw/git-merge-process.svg)
 
 ## Theory
 
+### What it is
 
+**Merging** combines histories by integrating changes from one branch into another. A **fast-forward (FF)** merge happens when the target branch tip is an ancestor of the source — Git moves the pointer forward. A **three-way merge** uses the common ancestor (merge base) plus both branch tips to build a new snapshot; if the same lines changed differently, Git marks **conflicts** for human resolution.
 
+### Why it matters
 
-
-
-### What
-
-**Merging** joins histories. A **fast-forward** move happens when your branch tip is a direct ancestor of the other — Git simply advances the pointer. When histories **diverged**, Git performs a **three-way merge** using the merge base and may create a merge commit. Overlapping edits produce **conflicts** you must resolve in the working tree.
-
-### Why
-
-Teams need a controlled way to integrate feature work into `main`. Understanding fast-forward versus merge commits explains why pull request settings matter (merge commit, squash, or rebase-and-merge). Conflict literacy is mandatory for Infrastructure as Code (IaC), where the same YAML keys often change on parallel branches.
+Pull requests on GitHub ultimately perform merges (or rebase merges). Locally you must merge `main` into your feature branch to test integration before CI. IaC conflicts are not syntax errors until apply — wrong resolution can deploy duplicate resources or wrong replica counts.
 
 ### How it works
 
-Git finds the best common ancestor (merge base), compares both tips to that base, and applies combined changes. Non-overlapping hunks auto-merge. Conflicting regions are marked with conflict markers; you edit, `git add`, then `git merge --continue` (or commit). Abort with `git merge --abort` if needed. Default strategy on modern Git is `ort`; ours/theirs strategies exist but are easy to misuse on whole-tree “wins”.
+1. Checkout target branch (`main`).
+2. `git merge feature` finds merge base.
+3. If FF possible and allowed, tip moves; else merge commit or conflict.
+4. Conflicts write `<<<<<<<`, `=======`, `>>>>>>>` markers in files.
+5. Edit to final content, `git add`, `git commit` (or `git merge --continue`).
 
-| Outcome | Meaning |
-|---------|---------|
-| Fast-forward | Pointer moves; no merge commit |
-| Merge commit | Two parents; histories joined |
-| Squash merge | Hosting UI folds commits into one on target |
-| Conflict | Manual resolution required |
+### Key concepts and comparisons
 
-### Key concepts
+| Scenario | Result |
+|----------|--------|
+| Main unchanged since branch | Fast-forward |
+| Both branches have new commits | Three-way merge commit |
+| Same line edited differently | Conflict |
+| `git merge --ff-only` | Fail if FF impossible |
 
-- **Merge base** — shared ancestor used for three-way merge  
-- **Conflict markers** — `<<<<<<<`, `=======`, `>>>>>>>`  
-- **Ours/theirs** — depend on merge vs rebase direction; verify before trusting  
-- **CI after merge** — green on the branch is not always green on `main`  
+| Strategy | When |
+|----------|------|
+| Merge commit | Preserve branch topology |
+| Squash merge (on GitHub) | Single commit on main |
+| Rebase merge | Linear history (see rebase tutorial) |
 
 ### Common pitfalls
 
-- Resolving conflicts by blindly taking “theirs” on Terraform without reading  
-- Leaving conflict markers in committed files  
-- Merging broken WIP into `main` to “deal with it later”  
-- Using ours/theirs strategies to hide real design disagreements
+- Accepting "theirs" or "ours" blindly in IaC without reading both sides.
+- Leaving conflict markers in files — CI may still pass syntax but deploy wrong config.
+- Merging without running `terraform validate` or `kubectl apply --dry-run=client`.
+- Using wrong parent for "ours" during feature-branch conflict (ours = current branch checked out).
 
 ## Hands-on Lab
 
-
-
 ### Objective
 
-Complete a real Git workflow for **Merging and Merge Conflicts** with commits you can inspect and recover.
+Demonstrate fast-forward merge, then create a divergent three-way merge with a deliberate YAML conflict, resolve it, and verify final manifest content.
 
 ### Prerequisites
 
-- Git 2.x installed
+- Git 2.x
 
 ### Lab environment
 
 Workspace: `~/rebash-git/module-06`
 
-Local Git repository only (no required remote).
-
 ```bash
 mkdir -p ~/rebash-git/module-06 && cd ~/rebash-git/module-06
+set -euo pipefail
 ```
 
 ### Real-world scenario
 
-A delivery team is standardising **Merging and Merge Conflicts**. You prototype the workflow in a throwaway repo and capture log evidence for the playbook.
+Two engineers change the same `replicas` key in a deployment manifest on different branches. Release manager merges both; you resolve the conflict to the agreed value (3 replicas).
 
 ### Step-by-step tasks
 
-#### Task 1 – Initialise a repository and first commit
+#### Task 1 – Fast-forward merge
 
-Every production change starts as a commit with clear identity config.
+Merge a branch with no divergence.
 
 ```bash
+cd ~/rebash-git/module-06
+set -euo pipefail
+rm -rf merge-lab
+mkdir merge-lab && cd merge-lab
 git init -b main
 git config user.email 'lab@rebash.local'
 git config user.name 'REBASH Lab'
-echo '# lab' > README.md
-git add README.md
-git commit -m 'Initial commit'
-git log --oneline | tee log.txt
+printf 'replicas: 1\n' > deploy.yaml
+git add deploy.yaml && git commit -m 'chore: baseline deploy'
+git switch -c feature/ff-bump
+printf 'replicas: 2\n' > deploy.yaml
+git commit -am 'feat: scale to 2'
+git switch main
+git merge feature/ff-bump --ff-only
+grep -q 'replicas: 2' deploy.yaml
+git log --oneline --graph | tee ../ff-graph.txt
+grep -q 'scale to 2' ../ff-graph.txt
+cd ..
 ```
 
-**Expected output:** log.txt shows the initial commit on `main`.
+**Expected output:** Linear history; no merge commit; replicas: 2 on main.
 
-#### Task 2 – Branch, change, and integrate
+#### Task 2 – Create divergent branches with conflicting edits
 
-Practise the integration path your team uses in pull requests.
+Both `main` and `feature/scale` change replicas differently.
 
 ```bash
-git switch -c feature/lab
-echo feature > note.txt
-git add note.txt && git commit -m 'Add note'
+cd ~/rebash-git/module-06/merge-lab
+set -euo pipefail
+git switch -c feature/scale
+printf 'replicas: 5\n' > deploy.yaml
+git commit -am 'feat: scale to 5 for campaign'
 git switch main
-git merge feature/lab
-git log --oneline --graph --all | tee graph.txt
+printf 'replicas: 3\n' > deploy.yaml
+git commit -am 'fix: scale to 3 for stability'
+git merge feature/scale || true
+grep -q '<<<<<<<' deploy.yaml
+git status | tee ../conflict-status.txt
+grep -q 'both modified' ../conflict-status.txt
+cd ..
 ```
 
-**Expected output:** graph.txt shows the merge/commit topology.
+**Expected output:** Merge stops with conflict markers in `deploy.yaml`.
+
+#### Task 3 – Resolve conflict and complete merge
+
+Choose agreed value 3, complete merge, archive evidence.
+
+Create `deploy.yaml` with the agreed replica count:
+
+```text
+replicas: 3
+```
+
+Complete the merge:
+
+```bash
+cd ~/rebash-git/module-06/merge-lab
+set -euo pipefail
+git add deploy.yaml
+git commit -m 'merge: resolve replica conflict keeping stable value 3'
+grep -q 'replicas: 3' deploy.yaml
+! grep -q '<<<<<<<' deploy.yaml
+git log --oneline --graph --decorate | tee ../merge-graph.txt
+grep -q 'merge: resolve' ../merge-graph.txt
+tar -czf ../module-06-merge-evidence.tgz -C .. ff-graph.txt merge-graph.txt conflict-status.txt
+ls -l ../module-06-merge-evidence.tgz | tee ../merge-evidence.txt
+cd ..
+```
+
+**Expected output:** Merge commit exists; file clean; graph shows merge node.
 
 ### Validation steps
 
-- [ ] Repository has at least two commits or a merge as designed
-- [ ] log/graph evidence files exist
+- [ ] FF merge succeeded with `--ff-only`
+- [ ] Conflict reproduced and resolved
+- [ ] No conflict markers remain
+- [ ] Evidence tarball created
 
 ### Common errors and fixes
 
 | Error | Cause | Fix |
 |-------|-------|-----|
-| Author identity unknown | Missing user.name/email | Set local `git config user.*` as in Task 1 |
-| merge conflict | Overlapping edits | Edit file, `git add`, complete merge |
-| detached HEAD | Checked out a raw SHA | `git switch -c` a branch before committing |
+| `not something we can merge` | Wrong ref | Check branch name |
+| Merge abort needed | Wrong resolution | `git merge --abort` |
+| Still unmerged paths | Forgot git add | Stage resolved files |
+| Wrong replica kept | Misread ours/theirs | Re-read both sides |
 
 ### Challenge exercise
 
-Use `git reflog` to recover a commit after a hard reset on a private branch.
+`merge=union` is rarely safe for YAML. Instead, add `merge-review.yaml` with three required boolean keys (`desired_prod_value_confirmed`, `tested_in_staging`, `rollback_plan_ready`) and a one-line shell assert that fails unless all three are `true`. Use that gate before you would approve an IaC conflict resolution.
 
 ### Learning outcomes
 
-- Performed real Git operations
-- Left auditable history
-- Understood recovery basics
+- Performed FF and three-way merges
+- Resolved line conflict in manifest
+- Verified history with merge graph
 
 ### Cleanup
 
 ```bash
-# Safe local repo — delete the lab directory when finished:
-# rm -rf "$(pwd)"
+ls ~/rebash-git/module-06/merge-lab
 ```
 
 ## Validation
 
-
-
-
-
-
-- [ ] Lab commands run under `~/rebash-git/module-06/`
-- [ ] You can explain each Theory section in your own words
-- [ ] You used modern tooling where it applies to this topic
-- [ ] You can describe one production failure mode for this topic
+- [ ] Lab under `~/rebash-git/module-06`
+- [ ] Can explain merge base
+- [ ] Can interpret conflict markers
+- [ ] Can describe FF vs merge commit trade-off
 
 ## Code Walkthrough
 
-
-
-
-
-
-Production practice for **Merging and Merge Conflicts** always combines:
-
-1. Inspect before you change (status, plan, logs, dry-run)
-2. Prefer reversible, documented changes (Git, IaC, drop-ins, version pins)
-3. Capture evidence (command output, pipeline logs) for handovers
-4. Prefer current tools and APIs over legacy shortcuts
-5. Least privilege — escalate credentials only when required
-
-Keep runbooks short enough to follow under pressure. Automate checks; keep humans for judgement.
+1. **Merge main into feature often** — reduces PR surprise.
+2. **Read both sides** — `git show :2:file` and `:3:file` in advanced cases.
+3. **Validate IaC after resolve** — terraform/kubectl dry-run.
+4. **One conflict commit message** — state human decision.
+5. **Abort if unsure** — `git merge --abort` restores pre-merge state.
 
 ## Security Considerations
 
-
-
-
-
-
-- Treat credentials and tokens for git as privileged — never commit them
-- Prefer short-lived auth (OIDC, roles, SSO) over long-lived keys
-- Validate blast radius before apply/deploy/delete operations
-- Restrict who can approve production changes
-- Collect audit logs; limit who can read sensitive traces
+- Conflicts in auth or network policy files need security review, not only dev review.
+- Do not merge if either side reintroduces ignored secrets.
+- Protect `main` with required reviews for conflict-prone paths.
+- Log merge commits in change management for regulated environments.
+- Verify signed commits after merge if policy requires.
 
 ## Common Mistakes
 
+!!! warning "Blind git checkout --theirs"
+    You may deploy wrong environment values. **Fix:** Manually compose correct YAML/HCL.
 
+!!! warning "Committing conflict markers"
+    Markers break parsers unpredictably. **Fix:** Search repo for `<<<<<<<` before push.
 
-
-
-
-!!! warning "Resolving conflicts by blindly taking “theirs” on Terraform without reading  "
-    Validate assumptions against the Theory section and official docs before changing production.
-
-!!! warning "Leaving conflict markers in committed files  "
-    Lab shortcuts (open security groups, admin roles, skip approvals) must not ship unchanged.
-
-!!! warning "Changing production without a rollback path"
-    Always know how to revert (previous artefact, prior release, state rollback, DNS failback).
+!!! warning "Merging without testing integrated result"
+    Each side passed CI separately. **Fix:** Run integration CI on merge result locally or on PR branch.
 
 ## Best Practices
 
-
-
-
-
-
-- Encode Merging and Merge Conflicts changes as code and review them in pull requests
-- Pin versions (images, modules, actions, provider plugins)
-- Separate environments with clear promotion gates
-- Alert on symptoms with runbooks attached
-- Destroy lab resources; tag everything with owner and expiry where possible
+- Prefer small PRs to reduce conflict surface
+- Use CODEOWNERS on critical paths
+- Document resolution rationale in commit message
+- Keep `main` mergeable — integrate daily
+- Use `--no-ff` only when policy wants explicit merge commits
 
 ## Troubleshooting
 
-
-
-
-
-
 | Symptom | Likely cause | Fix |
 |---------|--------------|-----|
-| Auth / permission denied | Wrong identity, policy, or scope | Check caller identity, roles, and least-privilege policies |
-| Timeout / no route | Network, DNS, security group, or endpoint | Trace path, DNS, and allow-lists before retrying |
-| Drift / unexpected plan | Manual change or wrong state/workspace | Reconcile desired vs actual; avoid click-ops on managed resources |
-| Pipeline/job red | Flaky step, cache, or missing secret | Read failing step logs; bisect recent workflow/config changes |
-| Cost spike | Idle load balancer, NAT, oversized compute | Inventory billable resources; stop/delete labs promptly |
+| Endless conflicts on re-merge | Same lines churn | Coordinate; split files |
+| Empty merge commit | Trivial merge | Normal for three-way |
+| Lost changes after resolve | Overwrote wrong | `git reflog`; redo merge |
+| merge HEAD detached | Interrupted merge | `git status`; continue or abort |
 
 ## Summary
 
-
-
-
-
-
-**Merging and Merge Conflicts** is essential for Cloud and DevOps engineers working with git. Practise the lab until the inspection and change path is muscle memory, then continue the track.
+You merged branches with fast-forward and three-way strategies and resolved a realistic conflict. Next: [Rebasing and Interactive Rebase](rebasing-and-interactive-rebase.md) for linear history techniques.
 
 ## Interview Questions
 
+**1. When does Git fast-forward?**
 
+??? success "Reveal answer"
+    When the target branch tip is a direct ancestor of the source branch tip — no divergent commits on target — Git moves the pointer without a merge commit.
 
+**2. What is a three-way merge?**
 
-1. Fast-forward versus merge commit — when each?
-2. Walk through resolving a conflict responsibly.
-3. Why might you abort a merge?
-4. How do CODEOWNERS interact with contested files?
-5. What merge strategies appear in DevOps repos?
+??? success "Reveal answer"
+    Git combines changes from two branches using their common ancestor (merge base) as reference, producing a new commit with two parents when both sides diverged.
 
-!!! tip "Sample answer — question 2"
-    Run git status to list unmerged paths, choose the correct result, git add, then commit. Do not mark conflicts resolved without understanding both sides.
+**3. What do conflict markers mean?**
 
-!!! tip "Sample answer — question 4"
-    Never bypass required reviews to force a conflicted production path.
+??? success "Reveal answer"
+    `<<<<<<< HEAD` is current branch version, `=======` separates sides, `>>>>>>> branch` is incoming — you edit to the intended final content and remove markers.
+
+**4. Ours vs theirs during merge on feature branch checked out?**
+
+??? success "Reveal answer"
+    "Ours" is the branch you have checked out (target of merge into), "theirs" is the branch being merged — easy to confuse; always read file content, not labels alone.
+
+**5. git merge --abort?**
+
+??? success "Reveal answer"
+    Cancels an in-progress merge, restoring HEAD and working tree to pre-merge state — use when resolution went wrong.
+
+**6. Merge vs rebase for integrating main?**
+
+??? success "Reveal answer"
+    Merge preserves exact history and merge commits; rebase replays feature commits on top of main for linear history — rebase rewrites commits and is risky on shared branches.
+
+**7. Why squash merge on GitHub?**
+
+??? success "Reveal answer"
+    Collapses feature commits into one on main for cleaner history — loses granular commits on main but keeps review in PR.
+
+**8. How prevent IaC merge disasters?**
+
+??? success "Reveal answer"
+    Small PRs, mandatory review on infra paths, automated validate/plan in CI, and explicit conflict checklists — never merge unresolved ambiguity in production values.
 
 ## Related Tutorials
 
-
-
-
-
-
-- [Course overview](index.md)
+- [Branching Fundamentals](branching-fundamentals.md)
 - [Rebasing and Interactive Rebase](rebasing-and-interactive-rebase.md)
+- [Git Troubleshooting](git-troubleshooting.md)
+- [Course index](index.md)
 
 ## References
 
-
-
-
-
-
-- [Pro Git — Basic Merging](https://git-scm.com/book/en/v2/Git-Branching-Basic-Branching-and-Merging)
+- [git-merge](https://git-scm.com/docs/git-merge)
+- [How conflicts are presented](https://git-scm.com/book/en/v2/Git-Branching-Basic-Branching-and-Merging)

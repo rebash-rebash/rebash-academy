@@ -192,8 +192,11 @@ wait "$(cat http-server.pid)" 2>/dev/null || true
 ```bash
 cd ~/rebash-networking/lab12
 set -euo pipefail
+```
 
-cat > http-evidence.sh << 'EOF'
+Create `http-evidence.sh`:
+
+```bash
 #!/usr/bin/env bash
 set -euo pipefail
 echo "=== HTTPS example.com status ==="
@@ -204,7 +207,9 @@ if [ -f curl-example.tls.txt ]; then
 else
   curl -vI https://example.com 2>&1 | grep -Ei 'SSL connection using|TLS' | head -n 10
 fi
-EOF
+```
+
+```bash
 chmod +x http-evidence.sh
 ./http-evidence.sh | tee http-evidence-run.txt
 

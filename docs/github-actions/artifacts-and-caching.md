@@ -1,8 +1,8 @@
 ---
 title: "Artifacts and Caching"
-description: "Upload and download workflow artefacts, cache dependencies, choose cache keys, and avoid common correctness pitfalls."
+description: "Upload and download workflow artefacts, implement actions/cache dependency patterns with stable keys, and validate pipeline YAML offline."
 difficulty: intermediate
-estimated_time: "40–55 min"
+estimated_time: "50–60 min"
 technology: github-actions
 category: github-actions
 module: "Module 6 · Artifacts & Caching"
@@ -10,8 +10,6 @@ career_paths:
   - devops-engineer
   - cloud-engineer
   - platform-engineer
-  - site-reliability-engineer
-  - devsecops-engineer
 skills:
   - github-actions
   - artifacts
@@ -22,182 +20,197 @@ next:
   - github-actions/docker-pipelines-with-github-actions
 related:
   - github-actions/testing-in-github-actions
-  - github-actions/docker-pipelines-with-github-actions
-labs: []
-projects: []
-interview: interview/github-actions
-certifications:
-  - GitHub Actions
 tags:
   - github-actions
   - artifacts
   - cache
 author: Shaik Basha
-last_updated: "2026-07-31"
+last_updated: "2026-08-03"
 comments: false
 ---
-
 
 # Artifacts and Caching
 
 ## Overview
 
+CI pipelines produce **artefacts** — build outputs, test reports, binaries, container image tarballs — that downstream jobs or humans need after the runner disappears. **Caching** restores expensive dependencies (npm, pip, Maven, Gradle) from a previous run instead of downloading the internet on every commit.
 
+GitHub Actions provides `actions/upload-artifact` and `actions/download-artifact` for artefacts, and `actions/cache` for dependency stores keyed by lockfiles and operating system. Used well, they cut minutes and cost; used poorly, they serve stale dependencies or leak data between jobs.
 
-
-
-
-
-
-Configure artefact upload/download so a build job produces a shareable package a test job consumes, and add a lockfile-keyed dependency cache without treating cache as a correctness guarantee.
-
-**Artefacts** (GitHub spelling in the product UI: *artifacts*) are job outputs GitHub stores for download, retention, and sharing across jobs in a workflow run — packages, binaries, test reports, and logs. **Caching** restores dependency directories between runs to cut install time; cache is **best-effort** and must never replace pinned lockfiles. Confusing the two causes flaky pipelines and bloated storage bills.
-
-This is a core tutorial in **Module 6 · Artifacts & Caching** of the REBASH Academy **GitHub Actions for Cloud & DevOps Engineers** series — written for Cloud, DevOps, Platform, and SRE engineers.
+This is **Tutorial 6** in **Module 6: Artifacts & Caching** of the REBASH Academy **GitHub Actions for Cloud & DevOps Engineers** series.
 
 ## Prerequisites
 
-
-
-
-
-
-
-
 - [Secrets, Variables, and OIDC](secrets-variables-and-oidc.md)
+- [GitHub Actions Basics](github-actions-basics-workflows-jobs-steps.md)
+- Python 3 with PyYAML
 
 ## Learning Objectives
 
-
-
-
-
-
-
-
 By the end of this tutorial, you will be able to:
 
-- [ ] Upload artefacts with `actions/upload-artifact` and retention  
-- [ ] Download artefacts in a later job with `actions/download-artifact`  
-- [ ] Configure `actions/cache` (or setup-* cache) with a lockfile key  
-- [ ] Distinguish artefact vs cache vs container registry image  
-- [ ] List pitfalls that cause stale or missing caches
+- [ ] Upload and download artefacts between jobs in a workflow
+- [ ] Design cache keys from lockfiles and runner OS
+- [ ] Choose restore-keys fallbacks for partial cache hits
+- [ ] Avoid caching secrets or stale build outputs incorrectly
+- [ ] Validate artefact and cache workflow YAML offline
 
 ## Architecture
 
+Build jobs produce artefacts uploaded to GitHub storage; cache actions restore dependency directories keyed by hashes; deploy jobs consume artefacts.
 
-
-
-
-
-
-
-This topic’s control points and relationships are shown below.
-
-![Artifacts and caching](../assets/excalidraw/gha-artifacts-cache.svg)
+![GitHub Actions artefacts and caching](../assets/excalidraw/gha-artifacts-cache.svg)
 
 ## Theory
 
-
-
-
-
-
-
-
 ### What it is
 
-GitHub Actions separates **what you ship between jobs** from **what you hope to reuse for speed**:
+**Artefacts** persist files from a workflow run beyond the job lifetime. Typical uses:
 
-| Mechanism | Purpose | Guaranteed? |
-|-----------|---------|-------------|
-| Artefacts | Persist outputs for later jobs / humans | Yes (within retention) |
-| Cache | Speed dependency or build dirs across runs | No — miss, evict, or empty |
-| Package / container registry | Immutable release distribution | Via your registry policy |
+- Pass compiled binaries from `build` job to `deploy` job
+- Store test reports and coverage HTML for review
+- Retain plan files (Terraform, Kubernetes manifests) for approval gates
 
-**Upload artefact** actions package paths from the runner and store them against the workflow run. Downstream jobs **download** by name (and optional pattern). Retention defaults apply; set shorter retention for intermediate builds and keep release artefacts on tags or push immutable images to GHCR / another registry.
-
-**Cache** stores a keyed blob (for example `~/.npm` or `~/.cache/pip`). Keys usually hash `package-lock.json`, `poetry.lock`, or `go.sum` so installs invalidate when dependencies change. Restore keys allow partial matches (same OS, older lockfile hash) as a softer fallback. Official setup actions (`actions/setup-node`, `setup-python`, …) often wrap caching for you.
+**Caching** stores a directory (for example `~/.npm`, `~/.cache/pip`) in GitHub-managed cache storage. Keys identify the cache entry; matching keys restore before steps run.
 
 ### Why it matters
 
-Slow pipelines waste runner minutes and delay review feedback. Wrong cache design causes “works on my branch” builds when a stale cache hides a missing lockfile or native binary mismatch. Artefacts make builds auditable: the same tarball that passed tests can be promoted or attached to a release. Platform teams set retention and size policies so Actions storage does not become an unbounded object store. In regulated environments, knowing *which artefact SHA* was deployed matters as much as the Git commit.
+Without artefacts, deploy jobs must rebuild — slower and non-deterministic. Without caching, every pull request re-downloads gigabytes of dependencies — burning hosted runner minutes and slowing feedback.
+
+Platform teams publish standard cache snippets per language so product repos hit cache on the second run consistently. SRE teams retain artefacts for incident reproduction — the exact binary that shipped.
 
 ### How it works
 
-1. A **build** job writes files under a path (for example `dist/`) and uploads them with a stable artefact name.  
-2. A **test** job declares `needs: [build]`, downloads that artefact, and runs checks against the exact bits.  
-3. An optional **cache** step restores a dependency directory using a key derived from the lockfile; the job still runs install if the cache is cold.  
-4. Failed jobs can still upload (`if-no-files-found`, `if: always()`) when you need logs or reports.  
-5. Expired artefacts disappear; caches may be evicted — never assume either is permanent storage.
+**Upload and download (v4 pattern):**
 
-Prefer short retention for intermediate binaries; publish releases to a registry or GitHub Releases rather than relying on 90-day artefact downloads.
+{% raw %}
+```yaml
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: mkdir -p dist && echo "v1.0.0" > dist/version.txt
+      - uses: actions/upload-artifact@v4
+        with:
+          name: build-output
+          path: dist/
+          retention-days: 7
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: build-output
+          path: dist/
+      - run: cat dist/version.txt
+```
+{% endraw %}
+
+**Cache pattern:**
+
+{% raw %}
+```yaml
+- uses: actions/cache@v4
+  id: cache-pip
+  with:
+    path: ~/.cache/pip
+    key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements.txt') }}
+    restore-keys: |
+      ${{ runner.os }}-pip-
+```
+{% endraw %}
+
+| Field | Purpose |
+|-------|---------|
+| `path` | Directory to save or restore |
+| `key` | Exact match identifier — include lockfile hash |
+| `restore-keys` | Prefix fallbacks when exact key misses |
+
+Cache scope is branch-aware — feature branches can read default branch caches via `restore-keys` prefixes.
 
 ### Key concepts and comparisons
 
-| Concern | Artefacts | Cache |
-|---------|-----------|-------|
-| Correctness | Part of the pipeline contract | Optimisation only |
-| Scope | Same workflow run (primarily) | Cross-run within repo/branch scope rules |
-| UI | Downloadable from the run | Opaque speed-up |
-| Security | Can contain secrets — scope carefully | Same if you cache credentials |
+| Mechanism | Lifetime | Cross-job | Typical content |
+|-----------|----------|-----------|-----------------|
+| Artefact | Configurable retention (days) | Yes, via download | Binaries, reports |
+| Cache | Evicted after 7 days inactive | Same repo | Dependencies |
+| Workspace | Job only | Same job steps | Checkout tree |
 
-| Strategy | Key idea |
-|----------|----------|
-| Exact lockfile key | Invalidate on dependency change |
-| Restore-keys prefix | Warm partial hit when exact misses |
-| Per-OS in key | Avoid Linux cache on macOS runners |
-| Segment by job | Prevent test caches poisoning build caches |
+| Cache key ingredient | Why include |
+|---------------------|-------------|
+| `runner.os` | Linux vs Windows paths differ |
+| Lockfile hash | Invalidate when dependencies change |
+| Tool version | Node/Python version changes deps |
 
 ### Common pitfalls
 
-- Treating cache as a substitute for committing lockfiles.  
-- Caching the entire workspace including `.env` or cloud credentials.  
-- Omitting retention and filling storage with huge `node_modules` artefacts (artefacts are the wrong tool for that — use cache or registry).  
-- Expecting downloads without `needs:` ordering or mismatched artefact names.  
-- Sharing mutable caches across privileged and untrusted jobs without isolation.  
-- Confusing job artefacts with images in GitHub Container Registry (GHCR).
+- Caching `node_modules` without lockfile hash — stale packages after dependency updates.
+- Uploading secrets or `.env` files as artefacts — persistent exposure.
+- Huge artefacts without retention limits — storage costs and slow downloads.
+- Assuming cache always hits — first run and eviction always miss; pipeline must work without cache.
+- Same artefact name overwritten concurrently — use matrix-specific names.
 
 ## Hands-on Lab
 
-
-
 ### Objective
 
-Author a GitHub Actions workflow that implements **Artifacts and Caching** and validate YAML structure locally.
+Build a two-job workflow that uploads a build artefact, downloads it in a deploy job, and adds a pip cache step — all validated offline under `~/rebash-github-actions/module-06`.
 
 ### Prerequisites
 
+- Modules 1–5
 - Python 3 with PyYAML
-- Optional: GitHub repo to run the workflow
 
 ### Lab environment
 
-Workspace: `~/rebash-github-actions/module-06/.github/workflows`
-
-Workflows under `.github/workflows/`. In docs, wrap GitHub Actions expressions in Jinja raw blocks so MkDocs macros do not parse them; use heredocs in the lab.
-
 ```bash
-mkdir -p ~/rebash-github-actions/module-06/.github/workflows && cd ~/rebash-github-actions/module-06/.github/workflows
+mkdir -p ~/rebash-github-actions/module-06/{demo-app/dist,.github/workflows} && cd ~/rebash-github-actions/module-06
+set -euo pipefail
 ```
 
 ### Real-world scenario
 
-Platform engineering wants **Artifacts and Caching** as a reusable workflow pattern. You prototype YAML that passes review and runs on `ubuntu-latest`.
+Release engineering requires build once, deploy many: the compile job uploads a versioned tarball; staging deploy downloads it; pip dependencies cache between runs to cut CI time from eight minutes to three.
 
 ### Step-by-step tasks
 
-#### Task 1 – Create workflow file
-
-Jobs and steps must be explicit; pin mainstream actions.
+#### Task 1 – Create build output and requirements file
 
 ```bash
-mkdir -p .github/workflows
-cat > .github/workflows/lab.yml << 'EOF'
-name: lab
+cd ~/rebash-github-actions/module-06
+set -euo pipefail
+echo "app-version=2.4.1" > demo-app/dist/version.txt
+```
+
+Create `demo-app/requirements.txt`:
+
+```text
+# Stub requirements for cache key lab
+requests==2.32.3
+```
+
+Validate offline:
+
+```bash
+cd ~/rebash-github-actions/module-06
+set -euo pipefail
+test -s demo-app/dist/version.txt
+grep -q 'requests' demo-app/requirements.txt
+python3 -c "import hashlib; h=hashlib.sha256(open('demo-app/requirements.txt','rb').read()).hexdigest()[:12]; open('req-hash.txt','w').write(h); print('hash', h)"
+```
+
+**Expected output:** Prints `hash` followed by 12 hex characters.
+
+#### Task 2 – Write build and deploy workflow with artefacts
+
+Create `.github/workflows/build-deploy-artifacts.yml`:
+
+```yaml
+name: Build and deploy with artifacts
 on:
   workflow_dispatch:
-  push:
 permissions:
   contents: read
 jobs:
@@ -205,205 +218,250 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Prove workspace
+      - name: Produce build output
         run: |
-          mkdir -p out
-          echo ok > out/marker.txt
-          test -s out/marker.txt
-EOF
-python3 -c "import yaml; yaml.safe_load(open('.github/workflows/lab.yml')); print('workflow OK')"
+          set -euo pipefail
+          mkdir -p demo-app/dist
+          echo "app-version=2.4.1" > demo-app/dist/version.txt
+          test -s demo-app/dist/version.txt
+      - uses: actions/upload-artifact@v4
+        with:
+          name: build-output
+          path: demo-app/dist/
+          retention-days: 7
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: build-output
+          path: received/
+      - name: Verify artefact
+        run: |
+          set -euo pipefail
+          test -f received/version.txt
+          grep -q 'app-version=' received/version.txt
 ```
 
-**Expected output:** `workflow OK` printed; file exists under `.github/workflows/`.
-
-#### Task 2 – Dry-run the shell steps locally
-
-The `run:` block should work in a normal shell before CI.
+Validate offline:
 
 ```bash
-mkdir -p out && echo ok > out/marker.txt
-test -s out/marker.txt && cat out/marker.txt
+cd ~/rebash-github-actions/module-06
+set -euo pipefail
+grep -q 'upload-artifact@v4' .github/workflows/build-deploy-artifacts.yml
+grep -q 'download-artifact@v4' .github/workflows/build-deploy-artifacts.yml
+grep -q 'needs: build' .github/workflows/build-deploy-artifacts.yml
+python3 -c "import yaml; d=yaml.safe_load(open('.github/workflows/build-deploy-artifacts.yml')); assert 'deploy' in d['jobs'] and d['jobs']['deploy']['needs']=='build'; print('artifact workflow OK')"
 ```
 
-**Expected output:** Prints `ok`.
+**Expected output:** `artifact workflow OK`
+
+#### Task 3 – Add cache workflow stub
+
+Create `.github/workflows/cache-pip.yml` (replace `REQ_HASH` with the value from `req-hash.txt` when you create the file locally):
+
+{% raw %}
+```yaml
+name: Cache pip dependencies
+on:
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/cache@v4
+        id: cache-pip
+        with:
+          path: ~/.cache/pip
+          key: ${{ runner.os }}-pip-REQ_HASH
+          restore-keys: |
+            ${{ runner.os }}-pip-
+      - name: Simulate install
+        run: |
+          set -euo pipefail
+          mkdir -p ~/.cache/pip
+          echo "cached-REQ_HASH" > ~/.cache/pip/marker.txt
+          test -s ~/.cache/pip/marker.txt
+```
+{% endraw %}
+
+Validate offline (substitute your hash from `req-hash.txt` into the workflow file before parsing):
+
+```bash
+cd ~/rebash-github-actions/module-06
+set -euo pipefail
+REQ_HASH=$(cat req-hash.txt)
+sed "s/REQ_HASH/${REQ_HASH}/g" .github/workflows/cache-pip.yml > .github/workflows/cache-pip.resolved.yml
+grep -q 'actions/cache@v4' .github/workflows/cache-pip.resolved.yml
+grep -q 'restore-keys' .github/workflows/cache-pip.resolved.yml
+python3 -c "import yaml; yaml.safe_load(open('.github/workflows/cache-pip.resolved.yml')); print('cache workflow OK')"
+```
+
+**Expected output:** `cache workflow OK`
+
+#### Task 4 – Simulate artefact handoff locally
+
+```bash
+cd ~/rebash-github-actions/module-06
+set -euo pipefail
+
+rm -rf received && mkdir -p received
+cp demo-app/dist/version.txt received/version.txt
+test -f received/version.txt
+grep -q 'app-version=2.4.1' received/version.txt
+
+mkdir -p ~/.cache/pip
+REQ_HASH=$(cat req-hash.txt)
+echo "cached-${REQ_HASH}" > ~/.cache/pip/marker.txt
+grep -q "cached-${REQ_HASH}" ~/.cache/pip/marker.txt
+
+tar -czf module-06-evidence.tgz .github/workflows/ demo-app/ received/ req-hash.txt
+ls -l module-06-evidence.tgz | tee evidence.txt
+echo "local artefact simulation OK"
+```
+
+**Expected output:** `local artefact simulation OK`
 
 ### Validation steps
 
-- [ ] Workflow YAML parses
-- [ ] Local run steps succeed
+- [ ] Build job uploads `build-output` artefact path
+- [ ] Deploy job downloads to `received/` and verifies content
+- [ ] Cache workflow includes `key` with requirements hash and `restore-keys`
+- [ ] Local simulation copies version file successfully
+- [ ] All YAML files parse with Python
 
 ### Common errors and fixes
 
 | Error | Cause | Fix |
 |-------|-------|-----|
-| Invalid workflow file | YAML/indent | Validate with PyYAML / actionlint |
-| Action not found | Bad uses ref | Pin `actions/checkout@v4` |
-| Permission denied | Missing permissions/OIDC | Set least-privilege `permissions:` |
+| Deploy job missing file | Wrong artefact name or path | Match `name:` exactly between upload and download |
+| Cache never hits | Key changes every run | Stabilise key — hash lockfile, not timestamp |
+| Stale dependencies | Cache hit after lockfile change | Include `hashFiles('**/requirements.txt')` in key |
+| Artefact too large | Uploading entire repo | Narrow `path:` to `dist/` or specific files |
 
 ### Challenge exercise
 
-Add a second job with `needs: build` that uploads `out/` as an artefact (YAML only is fine offline).
+Add a matrix job that uploads artefacts named `build-output-{% raw %}${{ matrix.os }}{% endraw %}` and a consolidation job that downloads all matrix artefacts. Extend Python validation to detect matrix-specific artefact names in YAML text.
 
 ### Learning outcomes
 
-- Created a real workflow file
-- Validated structure before push
+- Chained build and deploy jobs with upload/download artefacts
+- Designed pip cache keys from requirements hash
+- Simulated artefact handoff without GitHub push
+- Understood retention and cache eviction constraints
 
 ### Cleanup
 
 ```bash
-# Keep workflow stubs under ~/rebash-github-actions/
+# rm -rf ~/rebash-github-actions/module-06/received  # optional
 ```
 
 ## Validation
 
-
-
-
-
-
-
-
-- [ ] Lab commands run under `~/rebash-github-actions/module-06/.github/workflows/`
-- [ ] You can explain each Theory section in your own words
-- [ ] You used modern tooling where it applies to this topic
-- [ ] You can describe one production failure mode for this topic
+- [ ] Lab completed under `~/rebash-github-actions/module-06/`
+- [ ] You can explain artefact versus cache use cases
+- [ ] You can design a cache key for npm using `package-lock.json`
+- [ ] You can describe cache eviction behaviour
 
 ## Code Walkthrough
 
-
-
-
-
-
-
-
-Production practice for **Artifacts and Caching** always combines:
-
-1. Inspect before you change (status, plan, logs, dry-run)
-2. Prefer reversible, documented changes (Git, IaC, drop-ins, version pins)
-3. Capture evidence (command output, pipeline logs) for handovers
-4. Prefer current tools and APIs over legacy shortcuts
-5. Least privilege — escalate credentials only when required
-
-Keep runbooks short enough to follow under pressure. Automate checks; keep humans for judgement.
+1. **Build once** — compile in one job; upload immutable artefact with version in filename or metadata.
+2. **Name artefacts clearly** — include version or matrix axis in `name:`.
+3. **Hash lockfiles** — cache keys must invalidate when dependencies change.
+4. **Set retention** — `retention-days` prevents unbounded storage growth.
+5. **Verify after download** — `test -f` and checksum before deploy.
 
 ## Security Considerations
 
-
-
-
-
-
-
-
-- Treat credentials and tokens for github-actions as privileged — never commit them
-- Prefer short-lived auth (OIDC, roles, SSO) over long-lived keys
-- Validate blast radius before apply/deploy/delete operations
-- Restrict who can approve production changes
-- Collect audit logs; limit who can read sensitive traces
+- Never upload `.env`, kubeconfig, or private keys as artefacts — they persist beyond the job.
+- Scope artefact download to trusted jobs in the same workflow or org policies.
+- Do not cache directories containing credentials or session tokens.
+- Review artefact contents before sharing externally — may include source maps with embedded secrets.
+- Use minimum retention days required for compliance and debugging.
 
 ## Common Mistakes
 
+!!! warning "Caching dependencies without lockfile in key"
+    Updates do not invalidate cache — mysterious test failures. **Fix:** Always `hashFiles('**/package-lock.json')` or equivalent in `key`.
 
+!!! warning "Uploading entire workspace as artefact"
+    Includes `.git`, secrets in local files, huge uploads. **Fix:** Upload explicit `path:` directories only.
 
-
-
-
-
-
-!!! warning "Treating cache as a substitute for committing lockfiles.  "
-    Validate assumptions against the Theory section and official docs before changing production.
-
-!!! warning "Caching the entire workspace including `.env` or cloud credentials.  "
-    Lab shortcuts (open security groups, admin roles, skip approvals) must not ship unchanged.
-
-!!! warning "Changing production without a rollback path"
-    Always know how to revert (previous artefact, prior release, state rollback, DNS failback).
+!!! warning "Assuming cache hit on first run"
+    CI must install dependencies fully when cache misses. **Fix:** Write install steps to succeed with empty cache; treat cache as optimisation only.
 
 ## Best Practices
 
-
-
-
-
-
-
-
-- Encode Artifacts and Caching changes as code and review them in pull requests
-- Pin versions (images, modules, actions, provider plugins)
-- Separate environments with clear promotion gates
-- Alert on symptoms with runbooks attached
-- Destroy lab resources; tag everything with owner and expiry where possible
+- Include `runner.os` and tool version in every cache key.
+- Use `restore-keys` prefix for warm caches on new branches.
+- Pin `actions/upload-artifact@v4` and `actions/cache@v4`.
+- Compress large artefacts before upload when appropriate.
+- Log cache hit/miss via `steps.cache-pip.outputs.cache-hit` for metrics.
 
 ## Troubleshooting
 
-
-
-
-
-
-
-
 | Symptom | Likely cause | Fix |
 |---------|--------------|-----|
-| Auth / permission denied | Wrong identity, policy, or scope | Check caller identity, roles, and least-privilege policies |
-| Timeout / no route | Network, DNS, security group, or endpoint | Trace path, DNS, and allow-lists before retrying |
-| Drift / unexpected plan | Manual change or wrong state/workspace | Reconcile desired vs actual; avoid click-ops on managed resources |
-| Pipeline/job red | Flaky step, cache, or missing secret | Read failing step logs; bisect recent workflow/config changes |
-| Cost spike | Idle load balancer, NAT, oversized compute | Inventory billable resources; stop/delete labs promptly |
+| `download-artifact` not found | Name mismatch or expired retention | Verify `name:`; check retention-days |
+| Cache always misses | Key includes volatile value | Remove timestamps from keys |
+| Slow cache restore | Huge cache path | Cache minimal directories (`~/.npm` not whole repo) |
+| Parallel matrix overwrite | Same artefact name | Use matrix variable in `name:` |
+| Out of cache quota | Org limit reached | Delete old caches; reduce path size |
 
 ## Summary
 
-
-
-
-
-
-
-
-**Artifacts and Caching** is essential for Cloud and DevOps engineers working with github-actions. Practise the lab until the inspection and change path is muscle memory, then continue the track.
+**Artefacts** pass build outputs between jobs; **caching** accelerates dependency installation with stable hashed keys. Module 6’s lab validates both patterns offline. Next: [Docker Pipelines with GitHub Actions](docker-pipelines-with-github-actions.md).
 
 ## Interview Questions
 
+**1. When do you use artefacts versus caching?**
 
+??? success "Reveal answer"
+    **Artefacts** store unique build outputs you deploy or inspect — binaries, packages, reports — and pass them explicitly between jobs. **Caching** stores reusable dependency directories to speed up installs across runs. Artefacts are content-addressed deliverables; caches are disposable performance optimisations.
 
+**2. How do you invalidate a dependency cache when lockfiles change?**
 
+??? success "Reveal answer"
+    Include `hashFiles('**/package-lock.json')` (or pip, Gradle equivalent) in the cache `key`. When the lockfile changes, the hash changes, the exact key misses, and a fresh cache populates. Use `restore-keys` prefix only for partial hits on the same OS.
 
+**3. What happens to caches after seven days of no access?**
 
-1. Cache vs artifact — which is authoritative for build outputs?
-2. Cache restores but builds still slow — what else matters?
-3. How do you pass files from job A to job B reliably?
-4. What security caution applies to caches?
-5. When should artifact retention be short?
+??? success "Reveal answer"
+    GitHub evicts cache entries not accessed within approximately seven days (policy subject to change). Pipelines must not depend on indefinite cache persistence — always handle cache miss with full install.
 
-!!! tip "Sample answer — question 2"
-    Confirm upload/download names match and the producer job succeeded. Caches are best-effort acceleration, not a contract between jobs.
+**4. How do you pass artefacts from a matrix build job to a single deploy job?**
 
-!!! tip "Sample answer — question 4"
-    Do not cache secrets or writable shared directories across untrusted branches without careful keying.
+??? success "Reveal answer"
+    Upload with matrix-specific names (`build-{% raw %}${{ matrix.os }}{% endraw %}`), then use a downstream job with `needs: build` and either download each artefact in separate steps or use `actions/download-artifact` merge patterns / a consolidation job that downloads all required names before deploy.
+
+**5. Why set retention-days on upload-artifact?**
+
+??? success "Reveal answer"
+    Limits storage duration and cost. Test reports may need 7–30 days; large binaries for release might need longer. Match retention to compliance and debugging needs — not infinite by default.
+
+**6. Can fork PR workflows access cache from the base repository?**
+
+??? success "Reveal answer"
+    Fork workflows have restricted cache access — they typically cannot read or write the base repo cache to prevent cache poisoning attacks. Expect cache misses on external contributor PRs.
+
+**7. What is cache poisoning and how do you mitigate it?**
+
+??? success "Reveal answer"
+    An attacker injects malicious content into a shared cache key that other branches restore. Mitigate with lockfile hashes in keys, restricted cache scope on forks, and avoiding caches keyed only on branch name without content hash.
 
 ## Related Tutorials
 
-
-
-
-
-
-
-
-- [Course overview](index.md)
+- [Secrets, Variables, and OIDC](secrets-variables-and-oidc.md)
 - [Docker Pipelines with GitHub Actions](docker-pipelines-with-github-actions.md)
+- [Testing in GitHub Actions](testing-in-github-actions.md)
 
 ## References
 
-
-
-
-
-
-
-
-- [Storing workflow data as artifacts](https://docs.github.com/en/actions/using-workflows/storing-workflow-data-as-artifacts)  
-- [Caching dependencies to speed up workflows](https://docs.github.com/en/actions/using-workflows/caching-dependencies-to-speed-up-workflows)  
-- [upload-artifact](https://github.com/actions/upload-artifact) · [cache](https://github.com/actions/cache)
+- [Storing workflow data as artifacts](https://docs.github.com/en/actions/using-workflows/storing-workflow-data-as-artifacts)
+- [actions/upload-artifact](https://github.com/actions/upload-artifact)
+- [actions/cache](https://github.com/actions/cache)
+- [Dependency caching](https://docs.github.com/en/actions/using-workflows/caching-dependencies-to-speed-up-workflows)

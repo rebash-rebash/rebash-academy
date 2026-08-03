@@ -94,8 +94,11 @@ Your job is to discover both through evidence.
 ```bash
 mkdir -p ~/rebash-lab-net
 cd ~/rebash-lab-net
+```
 
-cat > server.py <<'EOF'
+Create `server.py`:
+
+```python
 #!/usr/bin/env python3
 from http.server import BaseHTTPRequestHandler, HTTPServer
 
@@ -116,8 +119,9 @@ class Handler(BaseHTTPRequestHandler):
         return
 
 HTTPServer(("127.0.0.1", 18080), Handler).serve_forever()
-EOF
+```
 
+```bash
 chmod +x server.py
 python3 server.py >/tmp/rebash-status.log 2>&1 &
 echo $! > /tmp/rebash-status.pid

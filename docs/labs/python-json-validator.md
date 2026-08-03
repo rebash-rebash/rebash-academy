@@ -67,13 +67,21 @@ python3 -m venv .venv && source .venv/bin/activate
 
 ## Initial State
 
-```bash
-cat > ok/service.json << 'EOF'
+Create `ok/service.json`:
+
+```json
 {"name": "checkout", "port": 8080, "replicas": 2}
-EOF
-cat > bad/service.json << 'EOF'
+```
+
+Create `bad/service.json`:
+
+```json
 {"name": "", "port": 99999, "replicas": 0}
-EOF
+```
+
+Prepare remaining files:
+
+```bash
 echo 'not-json' > bad/broken.json
 ```
 

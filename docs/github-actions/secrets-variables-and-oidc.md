@@ -1,8 +1,8 @@
 ---
 title: "Secrets, Variables, and OIDC"
-description: "Manage repository, environment, and organisation secrets and variables, and authenticate to cloud with OpenID Connect (OIDC)."
+description: "Configure repository, environment, and organisation secrets; use variables for non-sensitive config; sketch OIDC trust policies for cloud authentication without long-lived keys."
 difficulty: intermediate
-estimated_time: "45–60 min"
+estimated_time: "55–65 min"
 technology: github-actions
 category: github-actions
 module: "Module 5 · Secrets & Variables"
@@ -10,404 +10,495 @@ career_paths:
   - devops-engineer
   - cloud-engineer
   - platform-engineer
-  - site-reliability-engineer
   - devsecops-engineer
 skills:
   - github-actions
   - secrets
   - oidc
+  - security
 prerequisites:
   - github-actions/workflow-syntax-matrix-and-reusable
 next:
   - github-actions/artifacts-and-caching
 related:
+  - github-actions/multi-cloud-deployments-with-github-actions
   - github-actions/security-scanning-and-supply-chain
-  - terraform/terraform-security-and-secrets
-labs: []
-projects: []
-interview: interview/github-actions
-certifications:
-  - GitHub Actions
 tags:
   - github-actions
   - secrets
   - oidc
   - variables
 author: Shaik Basha
-last_updated: "2026-07-31"
+last_updated: "2026-08-03"
 comments: false
 ---
-
 
 # Secrets, Variables, and OIDC
 
 ## Overview
 
+Pipelines need credentials — registry passwords, API tokens, cloud role assumptions. Storing them in workflow YAML is an instant incident. GitHub provides **secrets** (encrypted, masked in logs) and **variables** (non-sensitive configuration). **OpenID Connect (OIDC)** goes further: workflows exchange a short-lived token with AWS, Azure, or Google Cloud — no static access keys in GitHub at all.
 
+This module maps the secrets hierarchy (repository → environment → organisation), shows safe reference patterns in workflows, and sketches an OIDC trust policy you can validate offline.
 
-
-
-
-
-
-Place non-secret configuration in variables, scope secrets correctly (repository, environment, organisation), and outline OpenID Connect (OIDC) so jobs obtain short-lived cloud credentials without long-lived access keys.
-
-Pipelines need configuration and credentials. GitHub provides **configuration variables** (`vars.*`) and **secrets** (`secrets.*`) at repository, organisation, and **environment** scopes. Production Cloud and DevOps teams prefer **OIDC federation** to AWS, Azure, or Google Cloud: GitHub mints a JWT for the job; the cloud trusts that JWT and returns temporary credentials. That removes static keys from the Actions UI.
-
-This is a core tutorial in **Module 5 · Secrets & Variables** of the REBASH Academy **GitHub Actions for Cloud & DevOps Engineers** series — written for Cloud, DevOps, Platform, and SRE engineers.
+This is **Tutorial 5** in **Module 5: Secrets & Variables** of the REBASH Academy **GitHub Actions for Cloud & DevOps Engineers** series.
 
 ## Prerequisites
 
-
-
-
-
-
-
-
 - [Workflow Syntax: Matrix and Reusable Workflows](workflow-syntax-matrix-and-reusable.md)
-- Optional: an AWS, Azure, or Google Cloud sandbox for a live OIDC exchange later
+- Basic cloud Identity and Access Management (IAM) concepts
+- Python 3 with PyYAML
 
 ## Learning Objectives
 
-
-
-
-
-
-
-
 By the end of this tutorial, you will be able to:
 
-- [ ] Choose `vars` vs `secrets` vs YAML `env` for a setting  
-- [ ] Scope secrets to repository, organisation, and environments  
-- [ ] Restrict deploy jobs with `environment:` and protection rules  
-- [ ] Describe OIDC trust (issuer, subject, audience) to a cloud role  
-- [ ] Request `id-token: write` only when federating
+- [ ] Choose repository, environment, and organisation secrets appropriately
+- [ ] Use `vars` for non-sensitive configuration in workflows
+- [ ] Reference secrets in jobs without leaking them in logs
+- [ ] Sketch an OIDC trust relationship between GitHub and a cloud provider
+- [ ] Validate workflow permission blocks required for OIDC (`id-token: write`)
 
 ## Architecture
 
+Secrets and variables flow from GitHub settings into job environments; OIDC exchanges a JWT for cloud credentials at runtime.
 
-
-
-
-
-
-
-This topic’s control points and relationships are shown below.
-
-![Secrets and OIDC](../assets/excalidraw/gha-secrets-oidc.svg)
+![GitHub Actions secrets, variables, and OIDC](../assets/excalidraw/gha-secrets-oidc.svg)
 
 ## Theory
 
-
-
-
-
-
-
-
 ### What it is
 
-**Variables** are non-secret key/value pairs you set in the GitHub UI (or via API) and read as {% raw %}`${{ vars.NAME }}`{% endraw %}. They suit regions, image names, and feature flags you are willing to show in logs. **Secrets** are encrypted values injected as {% raw %}`${{ secrets.NAME }}`{% endraw %} (and often mapped into `env:` for tools that expect environment variables). GitHub redacts secret values that appear in logs when they match known secret strings — redaction is **log hygiene**, not a security boundary against a malicious workflow.
+**Secrets** store sensitive values — API keys, passwords, private tokens. GitHub encrypts them at rest and masks known secret values in logs when possible. Reference in workflows:
 
-Scopes:
+{% raw %}
+```yaml
+env:
+  REGISTRY_TOKEN: ${{ secrets.GHCR_TOKEN }}
+```
+{% endraw %}
 
-| Scope | Typical use |
-|-------|-------------|
-| Repository | App-specific tokens for that repo |
-| Organisation | Shared non-prod tooling credentials (limit carefully) |
-| Environment (`environment: production`) | Deploy secrets + required reviewers / wait timers |
+**Variables** store non-sensitive configuration — region names, account IDs, feature toggles:
 
-**Environments** attach protection rules: required reviewers, wait timers, and branch restrictions. A job that declares `environment: production` only receives that environment’s secrets after gates pass.
+{% raw %}
+```yaml
+env:
+  AWS_REGION: ${{ vars.AWS_REGION }}
+```
+{% endraw %}
 
-**OIDC** (OpenID Connect) replaces long-lived cloud keys. You grant `permissions: id-token: write`, the job requests a JWT, and a cloud-specific action (for example `aws-actions/configure-aws-credentials`) exchanges it for temporary credentials. Trust policies bind claims such as `sub` (repository, ref, environment) so a feature-branch job cannot assume the production role.
+**Hierarchy (most specific wins where applicable):**
+
+| Level | Scope | Typical content |
+|-------|-------|-----------------|
+| Repository secret | One repo | Repo-specific deploy token |
+| Environment secret | Repo + named environment | Production kubeconfig reference |
+| Organisation secret | Many repos | Shared read-only package token |
+| Repository / org variable | Same scopes | Region, cluster name, URL |
+
+**Environments** (`production`, `staging`) add optional protection rules — required reviewers, wait timers, deployment branches — and environment-scoped secrets.
+
+**OIDC** lets GitHub Actions mint a short-lived JSON Web Token (JWT) identifying the repository, ref, and environment. Cloud providers trust GitHub as an identity provider and exchange the JWT for temporary credentials.
 
 ### Why it matters
 
-Leaked long-lived keys in CI are a top breach path. Feature-branch jobs that see production database passwords violate least privilege. Organisation-wide secrets amplify blast radius when any repo can run arbitrary workflow code. OIDC plus environment-scoped secrets is the modern baseline for DevSecOps: non-secrets in `vars` or YAML, secrets narrowly scoped, cloud access via short-lived tokens tied to `repo:ref:environment` claims. Auditors can reason about *who could have deployed* from workflow history and cloud CloudTrail / Activity logs together.
+Long-lived cloud access keys in GitHub Secrets rotate poorly and leak through logs, forks, and compromised actions. OIDC binds credentials to a **specific workflow run** — the cloud session expires quickly and includes auditable claims (`sub`, `repository`, `ref`).
+
+Regulated environments require evidence that production credentials cannot be used from feature branches. Environment protection plus OIDC condition keys (`StringEquals` on `sub` or `aud`) enforce that policy in cloud IAM — not just in YAML comments.
 
 ### How it works
 
-1. Prefer YAML `env:` and `vars.*` for non-secret config (`AWS_REGION`, chart name).
-2. Store secrets in the UI at the narrowest scope that works; prefer environment secrets for production deploys.
-3. Mark production jobs with `environment:` and enable protection rules on that environment.
-4. For cloud API access: create an identity provider trust for `token.actions.githubusercontent.com`, map subject conditions, and grant the job `id-token: write` with minimal other permissions.
-5. Exchange the JWT at job start; use credentials; never `echo` them; rely on token expiry.
+**Referencing secrets safely:**
 
-You can author the workflow without a live cloud account — the OIDC job demonstrates permissions and structure. Wire the cloud role when you have a sandbox.
+{% raw %}
+```yaml
+permissions:
+  contents: read
+jobs:
+  deploy:
+    environment: production
+    runs-on: ubuntu-latest
+    steps:
+      - name: Use secret (never echo)
+        env:
+          TOKEN: ${{ secrets.DEPLOY_TOKEN }}
+        run: |
+          set -euo pipefail
+          # Use $TOKEN via tool flags — never print
+          curl -sf -H "Authorization: Bearer ${TOKEN}" "$URL/status" > /dev/null
+```
+{% endraw %}
+
+**OIDC to AWS (conceptual flow):**
+
+1. Workflow sets `permissions: id-token: write`.
+2. Step uses `aws-actions/configure-aws-credentials` with `role-to-assume` — no access key inputs.
+3. GitHub issues OIDC JWT; AWS Security Token Service (STS) validates trust policy; returns temporary credentials.
+
+**AWS trust policy sketch (offline — no real account IDs required in lab):**
+
+```json
+{
+  "Version": "2012-10-17",
+  "Statement": [{
+    "Effect": "Allow",
+    "Principal": { "Federated": "arn:aws:iam::ACCOUNT_ID:oidc-provider/token.actions.githubusercontent.com" },
+    "Action": "sts:AssumeRoleWithWebIdentity",
+    "Condition": {
+      "StringEquals": {
+        "token.actions.githubusercontent.com:aud": "sts.amazonaws.com"
+      },
+      "StringLike": {
+        "token.actions.githubusercontent.com:sub": "repo:ORG/REPO:ref:refs/heads/main"
+      }
+    }
+  }]
+}
+```
+
+Replace `ORG/REPO` and tighten `sub` for environment-based deploys (`environment:production` in subject).
 
 ### Key concepts and comparisons
 
-| Mechanism | Good for | Limit |
-|-----------|----------|--------|
-| YAML `env` | Defaults in Git | Visible to all readers |
-| `vars.*` | Non-secret ops knobs | Not for passwords |
-| Repo secret | Simple integrations | Available to all workflows in repo |
-| Environment secret | Production deploys | Needs `environment:` on the job |
-| Org secret | Shared platform tooling | Broad blast radius if overused |
-| OIDC to cloud | Temporary cloud API access | Needs cloud IdP + claim conditions |
+| Store | Sensitive? | Masked in logs? | Rotation |
+|-------|------------|-----------------|----------|
+| Secret | Yes | Attempted | Manual or automation |
+| Variable | No | No | Edit in Settings |
+| OIDC role | N/A (temporary) | N/A | Automatic expiry |
 
-| Anti-pattern | Prefer |
-|--------------|--------|
-| `AWS_ACCESS_KEY_ID` in repo secrets forever | OIDC role assumption |
-| Same production secret on all branches | Environment + protected branches |
-| {% raw %}`echo ${{ secrets.X }}`{% endraw %} for debugging | Masked logs; temporary elevated support access |
+| Auth method | Risk profile |
+|-------------|--------------|
+| Long-lived access key in secret | High — broad blast radius |
+| OIDC role assumption | Lower — scoped, short-lived |
+| Environment secret + approval | Medium — gated human review |
 
 ### Common pitfalls
 
-- Believing redaction means secrets cannot leave the job — malicious steps can still exfiltrate over the network.
-- Forgetting `id-token: write` (and overly broad `permissions: write-all` as a “fix”).
-- Trusting `pull_request_target` with secrets — a separate, dangerous pattern; avoid until you study it carefully.
-- Organisation secrets available to all repositories including forks of public templates without review.
-- Storing entire `.env` files as one secret with no rotation owner.
+- Printing secrets — base64 encoding or JSON wrapping does not bypass masking reliably; exfiltration still possible.
+- Fork pull requests receiving secrets — default deny for forks; never use `pull_request_target` to “fix” without security review.
+- Missing `id-token: write` — OIDC steps fail silently or with opaque errors.
+- Over-broad trust policy (`repo:*/*`) — any repository in the org assumes production role.
+- Storing non-sensitive data as secrets — makes debugging harder; use variables.
 
 ## Hands-on Lab
 
-
-
 ### Objective
 
-Author a GitHub Actions workflow that implements **Secrets, Variables, and OIDC** and validate YAML structure locally.
+Encode the secrets hierarchy as YAML, write workflows referencing secrets and variables safely, and produce an OIDC trust policy sketch validated offline under `~/rebash-github-actions/module-05`.
 
 ### Prerequisites
 
+- Modules 1–4
 - Python 3 with PyYAML
-- Optional: GitHub repo to run the workflow
 
 ### Lab environment
 
-Workspace: `~/rebash-github-actions/module-05/.github/workflows`
-
-Workflows under `.github/workflows/`. In docs, wrap GitHub Actions expressions in Jinja raw blocks so MkDocs macros do not parse them; use heredocs in the lab.
-
 ```bash
-mkdir -p ~/rebash-github-actions/module-05/.github/workflows && cd ~/rebash-github-actions/module-05/.github/workflows
+mkdir -p ~/rebash-github-actions/module-05/.github/workflows ~/rebash-github-actions/module-05/oidc && cd ~/rebash-github-actions/module-05
+set -euo pipefail
 ```
 
 ### Real-world scenario
 
-Platform engineering wants **Secrets, Variables, and OIDC** as a reusable workflow pattern. You prototype YAML that passes review and runs on `ubuntu-latest`.
+Security review blocked deploy workflows until you encode where secrets live, prove logs will not echo tokens, and show an OIDC trust policy scoped to `main` — no long-lived AWS keys in GitHub.
 
 ### Step-by-step tasks
 
-#### Task 1 – Create workflow file
+#### Task 1 – Encode secrets hierarchy
 
-Jobs and steps must be explicit; pin mainstream actions.
+Create `secrets-hierarchy.yaml`:
+
+```yaml
+# Secrets and variables hierarchy
+levels:
+  - scope: repository_secret
+    example: SLACK_WEBHOOK
+    use_case: Repo-specific notifications
+  - scope: environment_secret
+    example: KUBE_CONFIG_PROD
+    use_case: Production deploy only
+  - scope: organisation_secret
+    example: SHARED_READ_TOKEN
+    use_case: Read packages across repos
+  - scope: repository_variable
+    example: AWS_REGION
+    use_case: Non-sensitive region config
+  - scope: organisation_variable
+    example: COMPANY_DOMAIN
+    use_case: Shared DNS suffix
+rules:
+  - id: no-commit
+    rule: Never commit secrets — use Settings or sealed automation
+  - id: no-echo
+    rule: Never echo secrets in run steps or artefact names
+  - id: env-prod
+    rule: Production secrets live in environment production only
+  - id: prefer-oidc
+    rule: Prefer OIDC over static cloud keys for AWS, Azure, and GCP
+```
+
+Validate offline:
 
 ```bash
-mkdir -p .github/workflows
-cat > .github/workflows/lab.yml << 'EOF'
-name: lab
+cd ~/rebash-github-actions/module-05
+set -euo pipefail
+python3 -c "
+import yaml
+with open('secrets-hierarchy.yaml') as f:
+    doc = yaml.safe_load(f)
+scopes = {l['scope'] for l in doc['levels']}
+assert 'environment_secret' in scopes
+assert any('OIDC' in r['rule'] for r in doc['rules'])
+print('secrets-hierarchy.yaml OK')
+"
+```
+
+**Expected output:** `secrets-hierarchy.yaml OK`
+
+#### Task 2 – Workflow with vars and secret references (stub values)
+
+Create `.github/workflows/deploy-with-secrets.yml`:
+
+{% raw %}
+```yaml
+name: Deploy with secrets stub
 on:
   workflow_dispatch:
-  push:
 permissions:
   contents: read
+  id-token: write
 jobs:
-  build:
+  deploy:
     runs-on: ubuntu-latest
+    environment: staging
+    env:
+      AWS_REGION: ${{ vars.AWS_REGION }}
     steps:
       - uses: actions/checkout@v4
-      - name: Prove workspace
+      - name: Validate config without printing secrets
+        env:
+          DEPLOY_TOKEN: ${{ secrets.DEPLOY_TOKEN }}
         run: |
-          mkdir -p out
-          echo ok > out/marker.txt
-          test -s out/marker.txt
-EOF
-python3 -c "import yaml; yaml.safe_load(open('.github/workflows/lab.yml')); print('workflow OK')"
+          set -euo pipefail
+          test -n "${AWS_REGION:-us-east-1}" || AWS_REGION=us-east-1
+          echo "region=${AWS_REGION}" > config.txt
+          test -n "${DEPLOY_TOKEN:-stub-token-for-offline-lab}" 
+          echo "token-present=yes" >> config.txt
+          grep -q 'token-present=yes' config.txt
+          # NEVER: echo "$DEPLOY_TOKEN"
 ```
+{% endraw %}
 
-**Expected output:** `workflow OK` printed; file exists under `.github/workflows/`.
-
-#### Task 2 – Dry-run the shell steps locally
-
-The `run:` block should work in a normal shell before CI.
+Validate offline:
 
 ```bash
-mkdir -p out && echo ok > out/marker.txt
-test -s out/marker.txt && cat out/marker.txt
+cd ~/rebash-github-actions/module-05
+set -euo pipefail
+grep -q 'vars.AWS_REGION' .github/workflows/deploy-with-secrets.yml
+grep -q 'secrets.DEPLOY_TOKEN' .github/workflows/deploy-with-secrets.yml
+grep -q 'id-token: write' .github/workflows/deploy-with-secrets.yml
+python3 -c "import yaml; d=yaml.safe_load(open('.github/workflows/deploy-with-secrets.yml')); assert d['permissions']['id-token']=='write'; print('secrets workflow OK')"
 ```
 
-**Expected output:** Prints `ok`.
+**Expected output:** `secrets workflow OK`
+
+#### Task 3 – OIDC trust policy sketch
+
+Create `oidc/aws-trust-policy.json`:
+
+```json
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Sid": "GitHubActionsOIDC",
+      "Effect": "Allow",
+      "Principal": {
+        "Federated": "arn:aws:iam::123456789012:oidc-provider/token.actions.githubusercontent.com"
+      },
+      "Action": "sts:AssumeRoleWithWebIdentity",
+      "Condition": {
+        "StringEquals": {
+          "token.actions.githubusercontent.com:aud": "sts.amazonaws.com"
+        },
+        "StringLike": {
+          "token.actions.githubusercontent.com:sub": "repo:rebash-academy/demo-app:ref:refs/heads/main"
+        }
+      }
+    }
+  ]
+}
+```
+
+Validate offline:
+
+```bash
+cd ~/rebash-github-actions/module-05
+set -euo pipefail
+python3 -c "import json; d=json.load(open('oidc/aws-trust-policy.json')); assert d['Statement'][0]['Action']=='sts:AssumeRoleWithWebIdentity'; print('trust policy JSON OK')"
+grep -q 'token.actions.githubusercontent.com' oidc/aws-trust-policy.json
+```
+
+**Expected output:** `trust policy JSON OK`
+
+#### Task 4 – Simulate offline deploy check and archive
+
+```bash
+cd ~/rebash-github-actions/module-05
+set -euo pipefail
+
+AWS_REGION=us-east-1
+echo "region=${AWS_REGION}" > config.txt
+echo "token-present=yes" >> config.txt
+grep -q 'token-present=yes' config.txt
+grep -q 'region=us-east-1' config.txt
+
+tar -czf module-05-evidence.tgz secrets-hierarchy.yaml .github/workflows/deploy-with-secrets.yml oidc/aws-trust-policy.json config.txt
+ls -l module-05-evidence.tgz | tee evidence.txt
+```
+
+**Expected output:** Tarball created.
+
+**Optional — configure OIDC on AWS:**
+
+Use [GitHub docs](https://docs.github.com/en/actions/deployment/security-hardening-your-deployments/configuring-openid-connect-in-amazon-web-services) and `aws-actions/configure-aws-credentials@v4` with your role ARN — no access keys stored.
 
 ### Validation steps
 
-- [ ] Workflow YAML parses
-- [ ] Local run steps succeed
+- [ ] `secrets-hierarchy.yaml` covers repo, environment, and org levels and parses with Python
+- [ ] Workflow sets `id-token: write` for OIDC readiness
+- [ ] Workflow references `vars.*` and `secrets.*` without echo
+- [ ] Trust policy JSON parses and scopes `sub` to a repository ref
+- [ ] Offline simulation writes `config.txt` evidence
 
 ### Common errors and fixes
 
 | Error | Cause | Fix |
 |-------|-------|-----|
-| Invalid workflow file | YAML/indent | Validate with PyYAML / actionlint |
-| Action not found | Bad uses ref | Pin `actions/checkout@v4` |
-| Permission denied | Missing permissions/OIDC | Set least-privilege `permissions:` |
+| OIDC step fails | Missing `id-token: write` | Add under `permissions:` |
+| Secret empty in fork PR | Expected security behaviour | Use environments + internal PRs only |
+| Trust policy too broad | Wildcard `sub` | Restrict to `repo:ORG/REPO:environment:production` |
+| Variable not found | Not defined in Settings | Provide default in lab shell; define in repo for live runs |
 
 ### Challenge exercise
 
-Add a second job with `needs: build` that uploads `out/` as an artefact (YAML only is fine offline).
+Add an `environments/production.yaml` stub listing three required reviewers and a workflow job that only runs when `github.ref == 'refs/heads/main'` **and** `environment: production`. Validate YAML parses.
 
 ### Learning outcomes
 
-- Created a real workflow file
-- Validated structure before push
+- Mapped secrets versus variables across hierarchy levels
+- Wrote workflow referencing secrets without log exposure
+- Produced OIDC trust policy sketch scoped to repository and branch
+- Confirmed `id-token: write` permission requirement
 
 ### Cleanup
 
 ```bash
-# Keep workflow stubs under ~/rebash-github-actions/
+# Retain module-05 — remove stub tokens from shell history if any
 ```
 
 ## Validation
 
-
-
-
-
-
-
-
-- [ ] Lab commands run under `~/rebash-github-actions/module-05/.github/workflows/`
-- [ ] You can explain each Theory section in your own words
-- [ ] You used modern tooling where it applies to this topic
-- [ ] You can describe one production failure mode for this topic
+- [ ] Lab completed under `~/rebash-github-actions/module-05/`
+- [ ] You can explain why OIDC beats long-lived access keys
+- [ ] You can name three places secrets can be stored in GitHub
+- [ ] You can describe fork PR secret isolation
 
 ## Code Walkthrough
 
-
-
-
-
-
-
-
-Production practice for **Secrets, Variables, and OIDC** always combines:
-
-1. Inspect before you change (status, plan, logs, dry-run)
-2. Prefer reversible, documented changes (Git, IaC, drop-ins, version pins)
-3. Capture evidence (command output, pipeline logs) for handovers
-4. Prefer current tools and APIs over legacy shortcuts
-5. Least privilege — escalate credentials only when required
-
-Keep runbooks short enough to follow under pressure. Automate checks; keep humans for judgement.
+1. **Classify data** — secret versus variable before storing.
+2. **Scope narrowly** — environment secrets for production; org secrets only when truly shared.
+3. **OIDC first** — cloud modules assume role, not key.
+4. **Permissions** — `id-token: write` only on jobs that need federation.
+5. **Audit** — log who deployed via cloud trail; GitHub environments record approvals.
 
 ## Security Considerations
 
-
-
-
-
-
-
-
-- Treat credentials and tokens for github-actions as privileged — never commit them
-- Prefer short-lived auth (OIDC, roles, SSO) over long-lived keys
-- Validate blast radius before apply/deploy/delete operations
-- Restrict who can approve production changes
-- Collect audit logs; limit who can read sensitive traces
+- Never print secrets; avoid passing secrets as command-line args visible in `ps`.
+- Restrict OIDC trust `sub` to specific repositories, refs, or environments.
+- Rotate compromised secrets immediately; prefer OIDC to reduce rotation toil.
+- Use environment protection rules for production — required reviewers and branch limits.
+- Audit organisation secret visibility — which repositories can read each secret.
 
 ## Common Mistakes
 
+!!! warning "Echoing secrets in debug output"
+    `echo "$TOKEN"` or `set -x` exposes credentials. **Fix:** Use masked env vars; disable xtrace; pass via stdin or secret files.
 
+!!! warning "Trust policy allowing any repository"
+    `"sub": "repo:*/*:*"` lets any repo in the org assume the role. **Fix:** Pin `repo:ORG/REPO:ref:refs/heads/main` or environment-specific subjects.
 
-
-
-
-
-
-!!! warning "Believing redaction means secrets cannot leave the job — malicious steps can still exfiltr"
-    Validate assumptions against the Theory section and official docs before changing production.
-
-!!! warning "Forgetting `id-token: write` (and overly broad `permissions: write-all` as a “fix”)."
-    Lab shortcuts (open security groups, admin roles, skip approvals) must not ship unchanged.
-
-!!! warning "Changing production without a rollback path"
-    Always know how to revert (previous artefact, prior release, state rollback, DNS failback).
+!!! warning "Using pull_request_target to expose secrets to forks"
+    Runs in base repo context with secrets — dangerous with untrusted code. **Fix:** Avoid unless maintainers fully control checkout ref and commands.
 
 ## Best Practices
 
-
-
-
-
-
-
-
-- Encode Secrets, Variables, and OIDC changes as code and review them in pull requests
-- Pin versions (images, modules, actions, provider plugins)
-- Separate environments with clear promotion gates
-- Alert on symptoms with runbooks attached
-- Destroy lab resources; tag everything with owner and expiry where possible
+- Separate staging and production secrets by environment name.
+- Use organisation variables for shared non-sensitive defaults (region, domain).
+- Document OIDC role mapping in a central security runbook.
+- Automate secret rotation with External Secrets Operator where possible.
+- Test trust policies in a sandbox account before production IAM update.
 
 ## Troubleshooting
 
-
-
-
-
-
-
-
 | Symptom | Likely cause | Fix |
 |---------|--------------|-----|
-| Auth / permission denied | Wrong identity, policy, or scope | Check caller identity, roles, and least-privilege policies |
-| Timeout / no route | Network, DNS, security group, or endpoint | Trace path, DNS, and allow-lists before retrying |
-| Drift / unexpected plan | Manual change or wrong state/workspace | Reconcile desired vs actual; avoid click-ops on managed resources |
-| Pipeline/job red | Flaky step, cache, or missing secret | Read failing step logs; bisect recent workflow/config changes |
-| Cost spike | Idle load balancer, NAT, oversized compute | Inventory billable resources; stop/delete labs promptly |
+| `Not authorized to perform sts:AssumeRoleWithWebIdentity` | Trust policy mismatch | Align `sub`, `aud`, and provider ARN |
+| Secret shows empty | Wrong scope or fork PR | Check environment; verify secret name spelling |
+| Variable not substituted | Name typo or org vs repo level | Confirm `vars.NAME` exists at expected level |
+| OIDC token missing | Permissions or old action version | Add `id-token: write`; update credential action |
+| Masked secret still leaked | Encoded or split across outputs | Never transform secrets into logs or artefacts |
 
 ## Summary
 
-
-
-
-
-
-
-
-**Secrets, Variables, and OIDC** is essential for Cloud and DevOps engineers working with github-actions. Practise the lab until the inspection and change path is muscle memory, then continue the track.
+**Secrets** and **variables** separate sensitive credentials from configuration; **environments** gate production access; **OIDC** eliminates long-lived cloud keys. Module 5’s lab documents hierarchy and trust policy sketches you can refine in cloud modules. Next: [Artifacts and Caching](artifacts-and-caching.md).
 
 ## Interview Questions
 
+**1. What is the difference between a repository secret and an environment secret?**
 
+??? success "Reveal answer"
+    A **repository secret** is available to workflows in that repository (subject to branch and fork rules). An **environment secret** is scoped to a named environment (`staging`, `production`) and only exposed when a job declares `environment: production`, enabling protection rules and separate credential pools per stage.
 
+**2. Why prefer OIDC over storing AWS access keys in GitHub Secrets?**
 
+??? success "Reveal answer"
+    OIDC provides **short-lived** credentials tied to a specific workflow run with auditable claims. Access keys are long-lived, rotate manually, and grant broad access if leaked. OIDC trust policies restrict which repositories and refs can assume a role — shrinking blast radius.
 
+**3. What permission does a job need to request an OIDC token?**
 
-1. Difference between vars and secrets?
-2. OIDC cloud login fails — which trust settings do you inspect?
-3. Why use environments for production secrets?
-4. What does id-token write enable?
-5. Why avoid pull_request_target with secrets?
+??? success "Reveal answer"
+    `permissions: id-token: write` at workflow or job level. Without it, GitHub does not mint the JWT for federation steps such as `aws-actions/configure-aws-credentials` or `google-github-actions/auth`.
 
-!!! tip "Sample answer — question 2"
-    Validate GitHub OIDC subject claims against the cloud IAM trust policy. Missing id-token write or wrong audience is frequent.
+**4. How should you reference a secret in a shell step without leaking it?**
 
-!!! tip "Sample answer — question 4"
-    Prefer OIDC short-lived roles over long-lived cloud keys in repository secrets.
+??? success "Reveal answer"
+    Map to an environment variable via `env: TOKEN: {% raw %}${{ secrets.NAME }}{% endraw %}` and use the variable in tool flags or stdin — never `echo`, `printf`, or artefact upload of the value. Avoid `set -x` while the secret is in scope.
+
+**5. When would you use an organisation secret versus a repository secret?**
+
+??? success "Reveal answer"
+    Organisation secrets when many repositories need the same credential (read-only package registry, shared Slack webhook) and InfoSec approves shared access. Repository secrets when blast radius must stay isolated to one service. Environment secrets when only production deploy jobs should access production credentials.
+
+**6. Explain a trust policy condition on token.actions.githubusercontent.com:sub.**
+
+??? success "Reveal answer"
+    The `sub` claim identifies the GitHub subject — typically `repo:ORG/REPO:ref:refs/heads/main` or `repo:ORG/REPO:environment:production`. IAM `StringLike` or `StringEquals` conditions ensure only matching workflow runs can assume the cloud role — preventing feature-branch workflows from gaining production access.
+
+**7. Why are secrets not available to workflows from fork pull requests?**
+
+??? success "Reveal answer"
+    External contributors could exfiltrate secrets through malicious workflow code. GitHub withholds secrets on fork PR workflows by default. Maintainers must use manual approval workflows or run CI without secrets for untrusted forks.
 
 ## Related Tutorials
 
-
-
-
-
-
-
-
-- [Course overview](index.md)
+- [Workflow Syntax: Matrix and Reusable Workflows](workflow-syntax-matrix-and-reusable.md)
 - [Artifacts and Caching](artifacts-and-caching.md)
+- [Multi-Cloud Deployments with GitHub Actions](multi-cloud-deployments-with-github-actions.md)
 
 ## References
 
-
-
-
-
-
-
-
-- [Using secrets in GitHub Actions](https://docs.github.com/en/actions/security-guides/using-secrets-in-github-actions)  
-- [Variables](https://docs.github.com/en/actions/learn-github-actions/variables)  
-- [About security hardening with OpenID Connect](https://docs.github.com/en/actions/deployment/security-hardening-your-deployments/about-security-hardening-with-openid-connect)
+- [Using secrets in GitHub Actions](https://docs.github.com/en/actions/security-guides/using-secrets-in-github-actions)
+- [Variables](https://docs.github.com/en/actions/learn-github-actions/variables)
+- [OpenID Connect](https://docs.github.com/en/actions/deployment/security-hardening-your-deployments/about-security-hardening-with-openid-connect)
+- [Configuring OIDC in AWS](https://docs.github.com/en/actions/deployment/security-hardening-your-deployments/configuring-openid-connect-in-amazon-web-services)

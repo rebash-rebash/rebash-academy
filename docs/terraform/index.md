@@ -1,10 +1,10 @@
 ---
 title: Overview
-description: "Terraform for Cloud & DevOps Engineers — 20 modules covering IaC, HCL, state, modules, security, CI/CD, multi-cloud, and production patterns."
+description: "Terraform for Cloud & DevOps Engineers — 20 modules from IaC fundamentals through HCL, state, modules, security, CI/CD, multi-cloud, Kubernetes, and production operations."
 difficulty: intermediate
 estimated_time: "8–10 weeks"
 author: Shaik Basha
-last_updated: "2026-07-31"
+last_updated: "2026-08-03"
 category: terraform
 tags:
   - terraform
@@ -19,16 +19,16 @@ comments: false
 **Duration:** 8–10 weeks · **Difficulty:** Intermediate → Advanced
 { .ra-facts }
 
-Production Infrastructure as Code (IaC) with Terraform — design, plan, apply, secure, and operate cloud infrastructure for Cloud, DevOps, Platform, and SRE roles.
+Production Infrastructure as Code (IaC) with [Terraform](https://developer.hashicorp.com/terraform/docs) — versioned HCL, reviewable plans, remote state, reusable modules, and CI/CD gates for Cloud, DevOps, Platform, and SRE roles.
 
 !!! tip "Course status"
-    Curriculum follows the REBASH Terraform technology prompt (**20 modules**). Tutorials use the academy standard with **Excalidraw** diagrams under `docs/assets/excalidraw/` (not D2). Regenerate with `python3 scripts/generate-excalidraw-svg.py`. Start with [Introduction to Terraform and IaC](introduction-to-terraform-and-iac.md).
+    **Ready** — 20 modules with production-grade labs: Docker provider stacks locally, **kind** for Kubernetes, LocalStack or AWS sandbox for cloud APIs, and real `terraform apply` with operational proof. Curriculum follows [HashiCorp Terraform documentation](https://developer.hashicorp.com/terraform/docs). Start with [Introduction to Terraform and IaC](introduction-to-terraform-and-iac.md).
 
 ## 1. Course overview
 
 ### Purpose
 
-Treat infrastructure like software: versioned HCL, reviewable plans, remote state, reusable modules, and CI/CD gates — from first `terraform apply` to multi-cloud and Kubernetes platforms.
+Treat infrastructure like software: declarative configuration, peer-reviewed plans, encrypted remote state, composable modules, and automated validation — from first `terraform apply` through multi-cloud platforms and production troubleshooting.
 
 ### Target roles
 
@@ -39,10 +39,23 @@ Cloud Engineer · DevOps · Platform · SRE · Infrastructure · DevSecOps
 - [Linux](../linux/index.md) · [Networking](../networking/index.md)
 - [Git](../git/index.md) · [Docker](../docker/index.md)
 - Basic cloud knowledge (AWS, Azure, or Google Cloud)
+- [GitHub Actions](../github-actions/index.md) or [GitLab CI](../gitlab/index.md) before Module 16
+
+### Learning arc
+
+| Phase | Modules | Level |
+|-------|---------|-------|
+| Foundations | 1–4 | Beginner |
+| Core HCL & providers | 5–8 | Intermediate |
+| Modules & expressions | 9–11 | Intermediate |
+| Workspaces & platform | 12–14 | Advanced |
+| Security & automation | 15–16 | Advanced |
+| Multi-cloud & Kubernetes | 17–18 | Advanced |
+| Production & ops | 19–20 | Advanced |
 
 ### Capstone outcomes
 
-Reusable modules · remote state · secure secrets · CI/CD plans · multi-cloud roots · Kubernetes platform wiring · production repo layout · troubleshooting
+Reusable modules · remote state · pinned providers · CI plan gates · multi-cloud roots · Kubernetes platform wiring · production repo layout · structured troubleshooting
 
 ## 2. Modules
 
@@ -73,16 +86,10 @@ Reusable modules · remote state · secure secrets · CI/CD plans · multi-cloud
 
 - [Labs](../labs/index.md) · [Projects](projects/index.md) · [Quizzes](quizzes/index.md)
 - [Cheat sheets](cheatsheets/index.md) · [Interview](interview/index.md) · [Capstone](capstone/index.md)
-- [Roadmap](roadmap.md) · [FAQ](faq.md) · [Certifications](certifications/index.md)
-
-## Diagrams
-
-```bash
-python3 scripts/generate-excalidraw-svg.py
-```
+- [Learning roadmap](roadmap.md) · [FAQ](faq.md) · [Certifications](certifications/index.md)
 
 ## Related
 
 - [AWS](../aws/index.md) · [Azure](../azure/index.md) · [GCP](../gcp/index.md)
-- [Kubernetes](../kubernetes/index.md) · [Helm](../helm/index.md) · [Git](../git/index.md)
+- [Kubernetes](../kubernetes/index.md) · [Helm](../helm/index.md) · [Ansible](../ansible/index.md)
 - [DevOps Engineer path](../career-paths/devops-engineer/index.md)

@@ -38,7 +38,7 @@ tags:
   - helm
   - gitops
 author: Shaik Basha
-last_updated: "2026-07-31"
+last_updated: "2026-08-03"
 comments: false
 ---
 
@@ -153,96 +153,199 @@ Keep production behind protected environments and manual or approval gates.
 
 ## Hands-on Lab
 
-
-
 ### Objective
 
-Author a valid `.gitlab-ci.yml` that models **Kubernetes Deploys and GitLab Agent** and validate it locally before pushing.
+Create Kubernetes manifests under `manifests/`, author a deploy job stub for the GitLab Agent or kubeconfig placeholder, and validate all YAML offline.
 
 ### Prerequisites
 
 - Python 3 with PyYAML (`pip install pyyaml`)
-- Optional: GitLab project to run the pipeline
+- Optional: kind or minikube cluster for live `kubectl apply`
+- Optional: GitLab Agent connected to a cluster
 
 ### Lab environment
 
-Workspace: `~/rebash-gitlab/module-09/manifests`
+Workspace: `~/rebash-gitlab/module-09` with manifests in `manifests/`
 
-File-first lab. Push to GitLab only when you want a runner to execute jobs.
+File-first lab. YAML validates without a cluster; apply steps are optional.
 
 ```bash
-mkdir -p ~/rebash-gitlab/module-09/manifests && cd ~/rebash-gitlab/module-09/manifests
+mkdir -p ~/rebash-gitlab/module-09/manifests && cd ~/rebash-gitlab/module-09
 ```
 
 ### Real-world scenario
 
-Your squad is encoding **Kubernetes Deploys and GitLab Agent** as CI. Reviewers reject YAML that does not parse or that skips artefacts/needs incorrectly.
+Your platform team deploys microservices with the GitLab Agent for Kubernetes instead of long-lived kubeconfig secrets in CI variables. You add Deployment and Service manifests plus a deploy job stub that references the agent context — validated locally before any cluster access.
 
 ### Step-by-step tasks
 
-#### Task 1 – Write pipeline YAML
+#### Task 1 – Create Kubernetes manifests
 
-Stages and jobs must be explicit so MR pipelines are predictable.
+Create `manifests/deployment.yaml`:
 
-```bash
-mkdir -p src && echo 'print("ok")' > src/app.py
-cat > .gitlab-ci.yml << 'EOF'
-stages: [lint, test]
-lint:
-  stage: lint
-  image: python:3.12-alpine
-  script:
-    - python -m py_compile src/app.py
-test:
-  stage: test
-  image: python:3.12-alpine
-  needs: [lint]
-  script:
-    - python src/app.py
-EOF
-python3 -c "import yaml; d=yaml.safe_load(open('.gitlab-ci.yml')); assert d['stages']==['lint','test']; print('OK', list(d))"
+```yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: rebash-gitlab-lab
+  labels:
+    app: rebash-gitlab-lab
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: rebash-gitlab-lab
+  template:
+    metadata:
+      labels:
+        app: rebash-gitlab-lab
+    spec:
+      containers:
+        - name: app
+          image: python:3.12-alpine
+          command: ["python", "-c", "print('k8s deploy ok')"]
 ```
 
-**Expected output:** Prints `OK` and job names; no YAML exception.
+Create `manifests/service.yaml`:
 
-#### Task 2 – Simulate the scripts locally
-
-Prove the job script works before burning runner minutes.
-
-```bash
-python3 -m py_compile src/app.py
-python3 src/app.py | tee out.txt
-test "$(cat out.txt)" = 'ok'
+```yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: rebash-gitlab-lab
+spec:
+  selector:
+    app: rebash-gitlab-lab
+  ports:
+    - port: 80
+      targetPort: 8080
+  type: ClusterIP
 ```
 
-**Expected output:** Compile succeeds; out.txt is `ok`.
+Validate manifests:
+
+```bash
+cd ~/rebash-gitlab/module-09
+python3 -c "
+import yaml, pathlib
+for f in ['manifests/deployment.yaml', 'manifests/service.yaml']:
+    d = yaml.safe_load(pathlib.Path(f).read_text())
+    print('OK', f, d['kind'])
+"
+```
+
+**Expected output:** Two lines: `OK manifests/deployment.yaml Deployment` and `OK manifests/service.yaml Service`.
+
+#### Task 2 – Create deploy pipeline stub
+
+Create `.gitlab-ci.yml`:
+
+```yaml
+stages:
+  - validate
+  - deploy
+
+variables:
+  KUBE_NAMESPACE: rebash-gitlab-lab
+  MANIFEST_DIR: manifests
+
+validate_manifests:
+  stage: validate
+  image: python:3.12-alpine
+  script:
+    - python -c "import yaml, pathlib; [yaml.safe_load(p.read_text()) for p in pathlib.Path('manifests').glob('*.yaml')]"
+    - echo "Manifests valid"
+
+deploy_staging:
+  stage: deploy
+  image:
+    name: bitnami/kubectl:1.30.2
+    entrypoint: [""]
+  environment:
+    name: staging
+    kubernetes:
+      namespace: rebash-gitlab-lab
+      agent: my-group/rebash-cluster:rebash-agent
+  rules:
+    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
+  script:
+    - kubectl apply -f "$MANIFEST_DIR/" --dry-run=client
+    - echo "Agent deploy stub — replace agent path with your GitLab Agent record"
+  # Alternative without agent: mount KUBECONFIG from protected CI variable (avoid in production)
+```
+
+Validate offline:
+
+```bash
+cd ~/rebash-gitlab/module-09
+python3 -c "
+import yaml
+d = yaml.safe_load(open('.gitlab-ci.yml'))
+assert d['deploy_staging']['environment']['kubernetes']['agent']
+assert d['variables']['MANIFEST_DIR'] == 'manifests'
+print('OK k8s deploy stub')
+"
+```
+
+**Expected output:** Prints `OK k8s deploy stub`.
+
+#### Task 3 – Optional cluster dry-run or offline manifest check
+
+If `kubectl` is available:
+
+```bash
+cd ~/rebash-gitlab/module-09
+kubectl apply -f manifests/ --dry-run=client | tee k8s-dryrun.txt
+grep -q 'deployment.apps/rebash-gitlab-lab' k8s-dryrun.txt
+```
+
+If no cluster is available:
+
+```bash
+cd ~/rebash-gitlab/module-09
+python3 -c "
+import yaml, pathlib
+kinds = [yaml.safe_load(p.read_text())['kind'] for p in pathlib.Path('manifests').glob('*.yaml')]
+assert kinds == ['Deployment', 'Service']
+print('offline manifest check ok')
+" | tee k8s-dryrun.txt
+```
+
+**Expected output:** Dry-run output lists the Deployment, or `k8s-dryrun.txt` contains `offline manifest check ok`.
 
 ### Validation steps
 
-- [ ] `.gitlab-ci.yml` parses
-- [ ] Local script path matches job intent
+- [ ] Deployment and Service manifests parse with PyYAML
+- [ ] Deploy job references GitLab Agent path under `environment.kubernetes.agent`
+- [ ] `validate_manifests` job checks all files in `manifests/`
+- [ ] `kubectl apply --dry-run=client` succeeds or offline check passes
+- [ ] No kubeconfig content committed to Git
 
 ### Common errors and fixes
 
 | Error | Cause | Fix |
 |-------|-------|-----|
-| yaml.scanner.ScannerError | Indentation | Use 2-space indent; re-validate with PyYAML |
-| job stuck pending | No runner / tags | Check runner tags match job tags |
-| needs not found | Typo in job name | Align `needs` with actual job keys |
+| Agent deploy fails | Wrong agent path | Copy exact agent record from GitLab **Infrastructure > Kubernetes** |
+| `kubectl` cannot reach cluster | Agent not installed | Install GitLab Agent in cluster first |
+| Namespace mismatch | `KUBE_NAMESPACE` differs from manifest | Align namespace in environment block and manifests |
+| Dry-run fails validation | Invalid manifest schema | Re-validate YAML keys and indentation |
 
 ### Challenge exercise
 
-Add an `artifacts:` path from lint to test and document expire_in.
+Add `manifests/kustomization.yaml` listing both resources and change the deploy script to `kubectl apply -k manifests/ --dry-run=client`. Validate the kustomization file with PyYAML.
 
 ### Learning outcomes
 
-- Produced reviewable GitLab CI YAML
-- Validated structure and scripts locally
+- Authored Deployment and Service manifests for a sample workload
+- Modelled GitLab Agent-based deploy jobs without committing kubeconfig
+- Validated Kubernetes and CI YAML offline
+- Used client-side dry-run before applying to a cluster
 
 ### Cleanup
 
 ```bash
-# File-only lab — keep YAML for the next tutorial
+rm -f ~/rebash-gitlab/module-09/k8s-dryrun.txt
+# Keep manifests/ and .gitlab-ci.yml for later modules
 ```
 
 ## Validation
@@ -254,7 +357,7 @@ Add an `artifacts:` path from lint to test and document expire_in.
 
 
 
-- [ ] Lab commands run under `~/rebash-gitlab/module-09/manifests/`
+- [ ] Lab commands run under `~/rebash-gitlab/module-09/`
 - [ ] You can explain each Theory section in your own words
 - [ ] You used modern tooling where it applies to this topic
 - [ ] You can describe one production failure mode for this topic

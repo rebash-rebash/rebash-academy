@@ -36,7 +36,7 @@ tags:
   - semver
   - tags
 author: Shaik Basha
-last_updated: "2026-07-31"
+last_updated: "2026-08-03"
 comments: false
 ---
 
@@ -164,184 +164,203 @@ Prefer **annotated tags** over lightweight tags for release history. Keep change
 
 ### Objective
 
-Author a valid `.gitlab-ci.yml` that models **Release Management and Versioning** and validate it locally before pushing.
+Practise Semantic Versioning (SemVer) with a `VERSION` file, author a GitLab **release** job triggered by tags, and generate a changelog stub — all validated offline.
 
 ### Prerequisites
 
 - Python 3 with PyYAML (`pip install pyyaml`)
-- Optional: GitLab project to run the pipeline
+- Git (optional, for local tag practice)
+- Optional: GitLab project with release permissions
 
 ### Lab environment
 
 Workspace: `~/rebash-gitlab/module-14`
 
-File-first lab. Push to GitLab only when you want a runner to execute jobs.
+File-first lab. Release jobs execute on GitLab when tags are pushed.
 
 ```bash
 mkdir -p ~/rebash-gitlab/module-14 && cd ~/rebash-gitlab/module-14
+set -euo pipefail
 ```
 
 ### Real-world scenario
 
-Your squad is encoding **Release Management and Versioning** as CI. Reviewers reject YAML that does not parse or that skips artefacts/needs incorrectly.
+Release managers require every production cut to be an immutable SemVer tag with a GitLab Release, changelog evidence, and attached artefacts — only after tests pass. You deliver version files and pipeline YAML for review.
 
 ### Step-by-step tasks
 
-#### Task 1 – Write pipeline YAML
+#### Task 1 – Version and changelog files
 
-Stages and jobs must be explicit so MR pipelines are predictable.
+Create `VERSION`:
+
+```text
+0.1.0
+```
+
+Create `CHANGELOG.md`:
+
+```markdown
+# Changelog
+
+## Unreleased
+
+- Module 14 lab release scaffolding
+
+## 0.1.0
+
+- Initial lab release
+```
+
+Verify locally:
 
 ```bash
-mkdir -p src && echo 'print("ok")' > src/app.py
-cat > .gitlab-ci.yml << 'EOF'
-stages: [lint, test]
-lint:
-  stage: lint
-  image: python:3.12-alpine
-  script:
-    - python -m py_compile src/app.py
-test:
+cd ~/rebash-gitlab/module-14
+set -euo pipefail
+grep -E '^[0-9]+\.[0-9]+\.[0-9]+$' VERSION | tee version-check.txt
+test -s CHANGELOG.md
+head -5 CHANGELOG.md
+```
+
+**Expected output:** `0.1.0` in `version-check.txt`; changelog headings visible.
+
+#### Task 2 – Changelog generator script
+
+Create `generate-changelog.sh`:
+
+```bash
+#!/usr/bin/env bash
+set -euo pipefail
+version="$(tr -d '[:space:]' < VERSION)"
+out="${1:-RELEASE_NOTES.md}"
+{
+  echo "# Release ${version}"
+  echo
+  sed -n '/^## Unreleased/,$p' CHANGELOG.md | tail -n +3
+} > "${out}"
+echo "wrote ${out} for v${version}"
+```
+
+Run it:
+
+```bash
+cd ~/rebash-gitlab/module-14
+set -euo pipefail
+chmod +x generate-changelog.sh
+./generate-changelog.sh RELEASE_NOTES.md | tee changelog-gen.txt
+test -s RELEASE_NOTES.md
+grep -q '0.1.0' RELEASE_NOTES.md
+```
+
+**Expected output:** `wrote RELEASE_NOTES.md for v0.1.0`
+
+#### Task 3 – GitLab release pipeline
+
+Create `.gitlab-ci.yml`:
+
+{% raw %}
+```yaml
+stages:
+  - test
+  - release
+
+test-gate:
   stage: test
-  image: python:3.12-alpine
-  needs: [lint]
+  image: alpine:3.20
   script:
-    - python src/app.py
-EOF
-python3 -c "import yaml; d=yaml.safe_load(open('.gitlab-ci.yml')); assert d['stages']==['lint','test']; print('OK', list(d))"
+    - test -f VERSION
+    - test -f CHANGELOG.md
+    - grep -E '^[0-9]+\.[0-9]+\.[0-9]+$' VERSION
+  rules:
+    - if: $CI_COMMIT_TAG
+
+release:
+  stage: release
+  image: registry.gitlab.com/gitlab-org/release-cli:latest
+  needs: [test-gate]
+  script:
+    - ./generate-changelog.sh RELEASE_NOTES.md
+    - mkdir -p dist
+    - cp VERSION CHANGELOG.md RELEASE_NOTES.md dist/
+    - echo "${CI_COMMIT_TAG}" > dist/TAG.txt
+  artifacts:
+    paths:
+      - dist/
+    expire_in: 30 days
+  release:
+    tag_name: $CI_COMMIT_TAG
+    description: "Release $CI_COMMIT_TAG — see RELEASE_NOTES.md"
+  rules:
+    - if: $CI_COMMIT_TAG
 ```
+{% endraw %}
 
-**Expected output:** Prints `OK` and job names; no YAML exception.
-
-#### Task 2 – Simulate the scripts locally
-
-Prove the job script works before burning runner minutes.
+Validate offline:
 
 ```bash
-python3 -m py_compile src/app.py
-python3 src/app.py | tee out.txt
-test "$(cat out.txt)" = 'ok'
+cd ~/rebash-gitlab/module-14
+set -euo pipefail
+python3 -c "
+import yaml
+d = yaml.safe_load(open('.gitlab-ci.yml'))
+assert d['release']['needs'] == ['test-gate']
+assert 'release' in d['release']
+assert 'CI_COMMIT_TAG' in d['release']['rules'][0]['if']
+print('gitlab-ci OK')
+"
+grep -q 'release-cli:latest' .gitlab-ci.yml
+grep -q 'generate-changelog.sh' .gitlab-ci.yml
 ```
 
-**Expected output:** Compile succeeds; out.txt is `ok`.
+**Expected output:** `gitlab-ci OK`; release-cli image and changelog script referenced.
+
+#### Task 4 – Simulate tag metadata locally
+
+```bash
+cd ~/rebash-gitlab/module-14
+set -euo pipefail
+echo 'v0.1.0-lab' > TAG.sim
+grep -E 'CI_COMMIT_TAG|release:' .gitlab-ci.yml | tee tag-rules.txt
+./generate-changelog.sh dist-notes.md
+test -f dist-notes.md
+echo 'module-14 release lab passed' | tee validation.txt
+```
+
+**Expected output:** Tag rules listed; `module-14 release lab passed`
 
 ### Validation steps
 
-- [ ] `.gitlab-ci.yml` parses
-- [ ] Local script path matches job intent
+- [ ] `VERSION` holds valid SemVer (`0.1.0`)
+- [ ] Release job `needs: test-gate` and triggers on `$CI_COMMIT_TAG`
+- [ ] Changelog generator produces non-empty release notes
+- [ ] Pinned images: `alpine:3.20`, `release-cli:latest`
+- [ ] Dist artefacts include VERSION, CHANGELOG, and notes
 
 ### Common errors and fixes
 
 | Error | Cause | Fix |
 |-------|-------|-----|
-| yaml.scanner.ScannerError | Indentation | Use 2-space indent; re-validate with PyYAML |
-| job stuck pending | No runner / tags | Check runner tags match job tags |
-| needs not found | Typo in job name | Align `needs` with actual job keys |
+| Release without tests | Missing gate job | Keep `needs: [test-gate]` |
+| Empty release notes | Blank CHANGELOG | Populate Unreleased section before tag |
+| Retagging published version | Immutable tag violated | Cut new patch version instead |
+| Release job skipped | Not a tag pipeline | Push annotated tag `v0.1.0` |
+| Wrong asset paths | Typo in `artifacts.paths` | Verify `dist/` contents in job log |
 
 ### Challenge exercise
 
-Add an `artifacts:` path from lint to test and document expire_in.
+Add a `workflow: rules` block so release pipelines run only on tags matching `/^v\d+\.\d+\.\d+$/`. Document how protected tags enforce this in GitLab project settings.
 
 ### Learning outcomes
 
-- Produced reviewable GitLab CI YAML
-- Validated structure and scripts locally
+- Maintained SemVer in a committed `VERSION` file
+- Authored a gated GitLab Release job with artefact bundle
+- Generated release notes from changelog offline
+- Understood tag-triggered pipelines vs branch pipelines
 
 ### Cleanup
 
 ```bash
-# File-only lab — keep YAML for the next tutorial
-```
-
-## Unreleased
-
-
-
-
-- Lab release scaffolding
-EOF
-cat > .gitlab-ci.yml << 'EOF'
-stages: [release]
-release_notes:
-  stage: release
-  image: alpine:3.20
-  rules:
-    - if: $CI_COMMIT_TAG
-  script:
-    - echo "Releasing $CI_COMMIT_TAG"
-    - mkdir -p dist && cp CHANGELOG.md dist/ && echo "$CI_COMMIT_TAG" > dist/VERSION
-  artifacts: {paths: [dist/]}
-  release:
-    tag_name: $CI_COMMIT_TAG
-    description: "Release $CI_COMMIT_TAG"
-EOF
-```
-
-### Step 2 – Simulate tag metadata
-
-```bash
-echo "v0.1.0-lab" > VERSION.sim
-grep -E 'CI_COMMIT_TAG|release:' .gitlab-ci.yml
-test -f CHANGELOG.md
-```
-
-### Final step – Cleanup note
-
-```bash
-# Keep ~/rebash-gitlab/ for later tutorials
-```
-
-## 0.1.0
-
-
-
-
-
-
-- Lab release' > CHANGELOG.md
-cat > .gitlab-ci.yml << 'EOF'
-release:
-  stage: deploy
-  image: registry.gitlab.com/gitlab-org/release-cli:latest
-  script:
-    - echo "Create GitLab Release for $CI_COMMIT_TAG"
-  rules:
-    - if: $CI_COMMIT_TAG
-EOF
-cat CHANGELOG.md
-python3 -c "import yaml; yaml.safe_load(open('.gitlab-ci.yml')); print('OK')"
-```
-
-### Final step – Cleanup note
-
-```bash
-# File-only
-```
-
-## 0.1.0
-
-
-
-
-
-
-- Lab release' > CHANGELOG.md
-cat > .gitlab-ci.yml << 'EOF'
-release:
-  stage: deploy
-  image: registry.gitlab.com/gitlab-org/release-cli:latest
-  script:
-    - echo "Create GitLab Release for $CI_COMMIT_TAG"
-  rules:
-    - if: $CI_COMMIT_TAG
-EOF
-cat CHANGELOG.md
-python3 -c "import yaml; yaml.safe_load(open('.gitlab-ci.yml')); print('OK')"
-```
-
-### Final step – Cleanup note
-
-```bash
-# File-only
+rm -f ~/rebash-gitlab/module-14/TAG.sim ~/rebash-gitlab/module-14/dist-notes.md 2>/dev/null || true
+ls ~/rebash-gitlab/module-14
 ```
 
 ## Validation

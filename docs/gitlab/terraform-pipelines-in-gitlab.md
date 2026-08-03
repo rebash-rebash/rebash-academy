@@ -36,7 +36,7 @@ tags:
   - iac
   - plan
 author: Shaik Basha
-last_updated: "2026-07-31"
+last_updated: "2026-08-03"
 comments: false
 ---
 
@@ -148,12 +148,14 @@ Prefer apply-of-saved-plan for production.
 
 ### Objective
 
-Author a valid `.gitlab-ci.yml` that models **Terraform Pipelines in GitLab** and validate it locally before pushing.
+Author a Docker-backed Terraform module, run **init → plan → apply → destroy** locally against the Docker provider, and wire a GitLab CI pipeline with **fmt**, **validate**, and **plan** jobs plus plan artefacts for merge request review.
 
 ### Prerequisites
 
+- Docker Engine running (`docker info`)
+- Terraform CLI 1.5+ (`terraform version`)
 - Python 3 with PyYAML (`pip install pyyaml`)
-- Optional: GitLab project to run the pipeline
+- Optional: GitLab project with a runner to execute jobs (local simulation proves the module first)
 
 ### Lab environment
 
@@ -163,77 +165,225 @@ File-first lab. Push to GitLab only when you want a runner to execute jobs.
 
 ```bash
 mkdir -p ~/rebash-gitlab/module-10 && cd ~/rebash-gitlab/module-10
+set -euo pipefail
 ```
 
 ### Real-world scenario
 
-Your squad is encoding **Terraform Pipelines in GitLab** as CI. Reviewers reject YAML that does not parse or that skips artefacts/needs incorrectly.
+Platform engineering requires every Infrastructure as Code (IaC) merge request to show a reviewed Terraform plan artefact before anyone can apply on the default branch. You deliver the module and pipeline YAML for review before cloud credentials are wired.
 
 ### Step-by-step tasks
 
-#### Task 1 – Write pipeline YAML
+#### Task 1 – Docker-backed Terraform module
 
-Stages and jobs must be explicit so MR pipelines are predictable.
+Create `main.tf`:
+
+{% raw %}
+```hcl
+terraform {
+  required_version = ">= 1.5.0"
+  required_providers {
+    docker = {
+      source  = "kreuzwerker/docker"
+      version = "~> 3.0"
+    }
+  }
+}
+
+provider "docker" {}
+
+resource "docker_image" "nginx" {
+  name         = "nginx:1.25-alpine"
+  keep_locally = false
+}
+
+resource "docker_container" "rebash_lab" {
+  name  = "rebash-gitlab-tf-lab"
+  image = docker_image.nginx.image_id
+
+  ports {
+    internal = 80
+    external = 8080
+  }
+}
+
+output "container_id" {
+  value = docker_container.rebash_lab.id
+}
+
+output "url" {
+  value = "http://127.0.0.1:8080"
+}
+```
+{% endraw %}
+
+Init, validate, and plan against the Docker provider:
 
 ```bash
-mkdir -p src && echo 'print("ok")' > src/app.py
-cat > .gitlab-ci.yml << 'EOF'
-stages: [lint, test]
-lint:
-  stage: lint
-  image: python:3.12-alpine
-  script:
-    - python -m py_compile src/app.py
-test:
-  stage: test
-  image: python:3.12-alpine
-  needs: [lint]
-  script:
-    - python src/app.py
-EOF
-python3 -c "import yaml; d=yaml.safe_load(open('.gitlab-ci.yml')); assert d['stages']==['lint','test']; print('OK', list(d))"
+cd ~/rebash-gitlab/module-10
+set -euo pipefail
+docker info >/dev/null
+terraform init | tee init.txt
+terraform fmt -check -recursive | tee fmt.txt
+terraform validate | tee validate.txt
+terraform plan -out=tfplan -input=false | tee plan.txt
+test -f tfplan
+grep -q 'docker_container.rebash_lab' plan.txt
 ```
 
-**Expected output:** Prints `OK` and job names; no YAML exception.
+**Expected output:** `plan.txt` shows `docker_container.rebash_lab` will be created; `tfplan` exists.
 
-#### Task 2 – Simulate the scripts locally
+#### Task 2 – GitLab CI pipeline (fmt / validate / plan)
 
-Prove the job script works before burning runner minutes.
+Create `.gitlab-ci.yml`:
+
+{% raw %}
+```yaml
+stages:
+  - fmt
+  - validate
+  - plan
+
+variables:
+  TF_IN_AUTOMATION: "true"
+  TF_ROOT: "${CI_PROJECT_DIR}"
+
+.terraform_base:
+  image:
+    name: hashicorp/terraform:1.5.7
+    entrypoint: [""]
+  before_script:
+    - cd "${TF_ROOT}"
+    - terraform --version
+
+terraform-fmt:
+  extends: .terraform_base
+  stage: fmt
+  script:
+    - terraform fmt -check -recursive -diff
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
+
+terraform-validate:
+  extends: .terraform_base
+  stage: validate
+  needs: [terraform-fmt]
+  script:
+    - terraform init -input=false
+    - terraform validate
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
+
+terraform-plan:
+  extends: .terraform_base
+  stage: plan
+  needs: [terraform-validate]
+  script:
+    - terraform plan -input=false -out=tfplan
+    - terraform show -no-color tfplan > plan.txt
+  artifacts:
+    paths:
+      - tfplan
+      - plan.txt
+    expire_in: 7 days
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
+```
+{% endraw %}
+
+Validate offline:
 
 ```bash
-python3 -m py_compile src/app.py
-python3 src/app.py | tee out.txt
-test "$(cat out.txt)" = 'ok'
+cd ~/rebash-gitlab/module-10
+set -euo pipefail
+python3 -c "
+import yaml
+d = yaml.safe_load(open('.gitlab-ci.yml'))
+assert d['stages'] == ['fmt', 'validate', 'plan']
+assert 'terraform-plan' in d
+assert d['terraform-plan']['artifacts']['paths'] == ['tfplan', 'plan.txt']
+print('gitlab-ci OK', list(d))
+"
+grep -q 'hashicorp/terraform:1.5.7' .gitlab-ci.yml
 ```
 
-**Expected output:** Compile succeeds; out.txt is `ok`.
+**Expected output:** `gitlab-ci OK` with job keys; pinned Terraform image present.
+
+#### Task 3 – Apply, prove the container, and destroy locally
+
+Create `pipeline-simulate.sh`:
+
+{% raw %}
+```bash
+#!/usr/bin/env bash
+set -euo pipefail
+python3 -c "import yaml; yaml.safe_load(open('.gitlab-ci.yml'))"
+grep -q 'TF_IN_AUTOMATION' .gitlab-ci.yml
+docker info >/dev/null
+terraform init -input=false
+terraform validate
+terraform plan -input=false -out=tfplan
+terraform show -no-color tfplan > plan.txt
+terraform apply -input=false -auto-approve tfplan
+docker ps --filter name=rebash-gitlab-tf-lab --format '{{.Names}} {{.Status}}' | tee container-proof.txt
+grep -q 'rebash-gitlab-tf-lab' container-proof.txt
+curl -sf http://127.0.0.1:8080 >/dev/null
+terraform destroy -input=false -auto-approve
+echo 'module-10 terraform lab passed'
+```
+{% endraw %}
+
+Run it:
+
+```bash
+cd ~/rebash-gitlab/module-10
+set -euo pipefail
+chmod +x pipeline-simulate.sh
+./pipeline-simulate.sh | tee validation.txt
+```
+
+**Expected output:** `container-proof.txt` shows `rebash-gitlab-tf-lab` running; script ends with `module-10 terraform lab passed`.
 
 ### Validation steps
 
-- [ ] `.gitlab-ci.yml` parses
-- [ ] Local script path matches job intent
+- [ ] `main.tf` uses the Docker provider (no cloud credentials)
+- [ ] `pipeline-simulate.sh` applies, curls port 8080, and destroys the container
+- [ ] `.gitlab-ci.yml` parses; stages are fmt → validate → plan
+- [ ] Plan job uploads `tfplan` and `plan.txt` artefacts with `expire_in: 7 days`
+- [ ] Pinned image `hashicorp/terraform:1.5.7` present
 
 ### Common errors and fixes
 
 | Error | Cause | Fix |
 |-------|-------|-----|
-| yaml.scanner.ScannerError | Indentation | Use 2-space indent; re-validate with PyYAML |
-| job stuck pending | No runner / tags | Check runner tags match job tags |
-| needs not found | Typo in job name | Align `needs` with actual job keys |
+| `terraform init` fails offline | Provider download blocked | Run locally with network once, or validate YAML only |
+| fmt job red | Unformatted `.tf` files | Run `terraform fmt -recursive` before push |
+| Empty plan artefact | Plan job skipped by `rules` | Confirm MR or default-branch pipeline |
+| Apply without reviewed plan | Missing apply gate | Add manual apply job consuming the same `tfplan` artefact |
+| State on runner disk | No remote backend | Configure S3/GCS/Azure backend before production |
 
 ### Challenge exercise
 
-Add an `artifacts:` path from lint to test and document expire_in.
+Add a manual `terraform-apply` job on the default branch that downloads the plan artefact from the same pipeline and runs `terraform apply -input=false tfplan`. Gate it with a protected `production` environment.
 
 ### Learning outcomes
 
-- Produced reviewable GitLab CI YAML
-- Validated structure and scripts locally
+- Authored a Docker-provider Terraform module with real apply/destroy proof
+- Mapped Terraform phases to GitLab CI stages with `needs`
+- Attached plan artefacts for merge request review
+- Simulated the full plan → apply → destroy loop locally before pushing pipeline YAML
 
 ### Cleanup
 
 ```bash
-# File-only lab — keep YAML for the next tutorial
+cd ~/rebash-gitlab/module-10
+terraform destroy -input=false -auto-approve 2>/dev/null || true
+docker rm -f rebash-gitlab-tf-lab 2>/dev/null || true
+rm -rf .terraform terraform.tfstate terraform.tfstate.backup tfplan plan.txt container-proof.txt 2>/dev/null || true
+ls ~/rebash-gitlab/module-10
 ```
 
 ## Validation

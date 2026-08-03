@@ -1,3 +1,40 @@
 title: Ansible
+icon: material/ansible
 nav:
-  - Overview: index.md
+  - index.md
+  - Module 1 · Configuration Management:
+    - introduction-to-configuration-management-and-ansible.md
+  - Module 2 · Installing Ansible:
+    - installing-ansible-and-configuration.md
+  - Module 3 · Inventory:
+    - ansible-inventory.md
+  - Module 4 · Ad-Hoc Commands:
+    - ansible-ad-hoc-commands.md
+  - Module 5 · Playbooks:
+    - ansible-playbooks.md
+  - Module 6 · Variables:
+    - ansible-variables-and-facts.md
+  - Module 7 · Conditionals & Loops:
+    - ansible-conditionals-and-loops.md
+  - Module 8 · Roles:
+    - ansible-roles.md
+  - Module 9 · Templates:
+    - ansible-jinja2-templates.md
+  - Module 10 · Collections:
+    - ansible-collections-and-galaxy.md
+  - Module 11 · Secrets:
+    - ansible-vault-and-secrets.md
+  - Module 12 · Cloud Automation:
+    - ansible-cloud-automation.md
+  - Module 13 · Kubernetes Automation:
+    - ansible-kubernetes-automation.md
+  - Module 14 · CI/CD Integration:
+    - ansible-ci-cd-integration.md
+  - Module 15 · AWX & Automation Platform:
+    - awx-and-ansible-automation-platform.md
+  - Module 16 · Production Automation:
+    - production-ansible-practices.md
+  - Module 17 · Troubleshooting:
+    - troubleshooting-ansible.md
+  - roadmap.md
+  - faq.md

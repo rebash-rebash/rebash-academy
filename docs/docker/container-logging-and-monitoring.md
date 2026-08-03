@@ -31,7 +31,7 @@ tags:
   - logging
   - healthcheck
 author: Shaik Basha
-last_updated: "2026-07-31"
+last_updated: "2026-08-03"
 comments: false
 ---
 
@@ -134,22 +134,18 @@ Define a minimum dashboard per service: restart rate, CPU/memory against limits,
 
 ## Hands-on Lab
 
-
-
 ### Objective
 
-Build or run a real Docker solution for **Container Logging and Monitoring** and prove it with inspect/logs/HTTP.
+Deploy a service with a Dockerfile `HEALTHCHECK`, collect logs with `docker logs`, capture one-shot metrics with `docker stats --no-stream`, and prove health status via inspect.
 
 ### Prerequisites
 
 - Docker Engine or Docker Desktop
-- Permission to run containers
+- `curl` for HTTP checks
 
 ### Lab environment
 
 Workspace: `~/rebash-docker/module-13`
-
-Local Docker daemon. Clean up containers/images after the lab.
 
 ```bash
 mkdir -p ~/rebash-docker/module-13 && cd ~/rebash-docker/module-13
@@ -157,64 +153,127 @@ mkdir -p ~/rebash-docker/module-13 && cd ~/rebash-docker/module-13
 
 ### Real-world scenario
 
-You are validating **Container Logging and Monitoring** before it lands in CI. The change must be reproducible with copy-paste commands and leave no orphan containers.
+On-call needs evidence that a container is healthy, emitting structured logs, and within resource expectations. You add a health probe, start the service, capture logs and stats, and file proof for the incident ticket.
 
 ### Step-by-step tasks
 
-#### Task 1 – Run and inspect a container
+#### Task 1 – Create image with HEALTHCHECK
 
-Start from a known image, publish a port, and verify HTTP.
+Create `Dockerfile`:
 
-```bash
-docker run -d --name rebash-lab -p 18080:80 nginx:alpine
-docker ps --filter name=rebash-lab
-curl -sI http://127.0.0.1:18080 | head -n 5 | tee headers.txt
-docker logs rebash-lab 2>&1 | head -n 10 | tee logs.txt
+```dockerfile
+FROM python:3.12-alpine
+WORKDIR /app
+COPY app.py .
+HEALTHCHECK --interval=10s --timeout=3s --retries=3 \
+  CMD python -c "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8080/healthz')"
+EXPOSE 8080
+CMD ["python", "app.py"]
 ```
 
-**Expected output:** Container Up; HTTP 200 in headers.txt.
+Create `app.py`:
 
-#### Task 2 – Inspect runtime config
+```python
+from http.server import BaseHTTPRequestHandler, HTTPServer
+import logging
+import sys
 
-Use inspect for status — production debugging rarely starts with guesswork.
+logging.basicConfig(stream=sys.stdout, level=logging.INFO, format="%(message)s")
+log = logging.getLogger("rebash-log-lab")
 
-```bash
-docker inspect rebash-lab --format '{{ "{{" }}.State.Status{{ "}}" }} {{ "{{" }}.Config.Image{{ "}}" }}' | tee inspect.txt
-test -s inspect.txt
+class H(BaseHTTPRequestHandler):
+    def do_GET(self):
+        if self.path == "/healthz":
+            log.info("healthcheck_ok service=rebash-log-lab")
+            self.send_response(200)
+            self.end_headers()
+            self.wfile.write(b"ok\n")
+            return
+        self.send_error(404)
+    def log_message(self, *args):
+        return
+
+log.info("startup service=rebash-log-lab")
+HTTPServer(("0.0.0.0", 8080), H).serve_forever()
 ```
 
-**Expected output:** inspect.txt shows `running` and the nginx image.
+Build and run:
+
+```bash
+cd ~/rebash-docker/module-13
+docker build -t rebash-log-lab:1.0.0 .
+docker run -d --name rebash-log-18130 -p 18130:8080 rebash-log-lab:1.0.0
+sleep 15
+curl -sS http://127.0.0.1:18130/healthz | tee curl-healthz.txt
+grep -q ok curl-healthz.txt
+```
+
+**Expected output:** `curl-healthz.txt` contains `ok`.
+
+#### Task 2 – Collect logs and stats evidence
+
+Collect stdout logs and one-shot resource snapshot:
+
+{% raw %}
+```bash
+cd ~/rebash-docker/module-13
+docker logs rebash-log-18130 2>&1 | tee container-logs.txt
+grep -q 'startup service=rebash-log-lab' container-logs.txt
+docker stats rebash-log-18130 --no-stream --format 'table {{ "{{" }}.Name{{ "}}" }}\t{{ "{{" }}.CPUPerc{{ "}}" }}\t{{ "{{" }}.MemUsage{{ "}}" }}' | tee stats-snapshot.txt
+test -s stats-snapshot.txt
+```
+{% endraw %}
+
+**Expected output:** `container-logs.txt` shows startup and health log lines; `stats-snapshot.txt` lists CPU and memory for the container.
+
+#### Task 3 – Prove health status via inspect
+
+Wait for the health probe to report healthy:
+
+{% raw %}
+```bash
+cd ~/rebash-docker/module-13
+docker inspect rebash-log-18130 --format 'Health={{ "{{" }}.State.Health.Status{{ "}}" }} Status={{ "{{" }}.State.Status{{ "}}" }}' | tee health-inspect.txt
+grep -E 'Health=healthy|Health=starting' health-inspect.txt
+```
+{% endraw %}
+
+**Expected output:** `health-inspect.txt` shows `Health=healthy` (or `starting` if probes have not finished — wait and re-run).
 
 ### Validation steps
 
-- [ ] Container or image behaves as Expected output describes
-- [ ] Ports respond or command output matches
-- [ ] Cleanup removes lab resources
+- [ ] Dockerfile defines `HEALTHCHECK` against `/healthz`
+- [ ] `docker logs` shows structured startup and health lines
+- [ ] `docker stats --no-stream` produces a snapshot
+- [ ] Inspect reports health status
+- [ ] Cleanup removes container and image
 
 ### Common errors and fixes
 
 | Error | Cause | Fix |
 |-------|-------|-----|
-| port is already allocated | Previous lab left a container | `docker rm -f` the old name or change port |
-| permission denied | User not in docker group | Use rootless Docker or fix group membership |
-| manifest unknown | Bad tag | Pin a real tag such as `nginx:alpine` |
+| Health stays `starting` | Probe interval not elapsed | Wait 30s; check `docker inspect` Log array |
+| Empty logs | App logs to stderr only | Use stdout (as in `app.py`) or `docker logs` without redirect filter |
+| `connection refused` on curl | Container not ready | `docker ps`; check `docker logs` for Python errors |
+| Stats shows 0B memory | Race on brand-new container | Re-run stats after a few seconds |
 
 ### Challenge exercise
 
-Add a non-root USER (or Compose healthcheck) and prove it with inspect.
+Add a Compose file with `logging` driver options (`max-size`, `max-file`) and prove rotation settings via `docker inspect` on the container LogConfig.
 
 ### Learning outcomes
 
-- Executed a real Docker workflow
-- Captured evidence files
-- Removed disposable resources
+- Embedded a Dockerfile health check aligned with the app endpoint
+- Collected operational logs from a running container
+- Captured point-in-time CPU/memory with `docker stats`
+- Verified health state through inspect, not guesswork
 
 ### Cleanup
 
 ```bash
-docker rm -f rebash-lab 2>/dev/null || true
-docker rmi rebash-lab:local 2>/dev/null || true
-docker compose down -v 2>/dev/null || true
+docker rm -f rebash-log-18130 2>/dev/null || true
+docker rmi rebash-log-lab:1.0.0 2>/dev/null || true
+rm -f ~/rebash-docker/module-13/*.txt
 ```
 
 ## Validation

@@ -5,7 +5,7 @@ difficulty: intermediate
 estimated_time: "55 min"
 category: labs
 author: Shaik Basha
-last_updated: "2026-07-28"
+last_updated: "2026-08-03"
 tags:
   - labs
   - docker
@@ -77,20 +77,25 @@ You will create a **broken** Compose project on purpose, then triage it.
 
 ### Task 1 — Create the broken lab project
 
-**Objective:** Materialise the failing staging stack.
+**Objective:** Materialise the failing staging stack using create-file steps (no shell heredocs).
 
 ```bash
 mkdir -p ~/rebash-lab-compose/{api,web} && cd ~/rebash-lab-compose
+```
 
-cat > api/Dockerfile <<'EOF'
+Create `api/Dockerfile`:
+
+```dockerfile
 FROM python:3.12-alpine
 WORKDIR /app
 COPY server.py .
 EXPOSE 8080
 CMD ["python", "server.py"]
-EOF
+```
 
-cat > api/server.py <<'EOF'
+Create `api/server.py`:
+
+```python
 from http.server import BaseHTTPRequestHandler, HTTPServer
 import os
 
@@ -122,17 +127,21 @@ class H(BaseHTTPRequestHandler):
         return
 
 HTTPServer(("0.0.0.0", 8080), H).serve_forever()
-EOF
+```
 
-cat > web/Dockerfile <<'EOF'
+Create `web/Dockerfile`:
+
+```dockerfile
 FROM python:3.12-alpine
 WORKDIR /app
 COPY proxy.py .
 EXPOSE 8000
 CMD ["python", "proxy.py"]
-EOF
+```
 
-cat > web/proxy.py <<'EOF'
+Create `web/proxy.py`:
+
+```python
 from http.server import BaseHTTPRequestHandler, HTTPServer
 from urllib.request import Request, urlopen
 import os
@@ -170,17 +179,18 @@ class H(BaseHTTPRequestHandler):
         return
 
 HTTPServer(("0.0.0.0", 8000), H).serve_forever()
-EOF
+```
 
-# INTENTIONAL BUGS: wrong published port, wrong API_URL host, missing token on web
-cat > compose.yaml <<'EOF'
+Create `compose.yaml` with **intentional bugs** (wrong hostname, missing token on web):
+
+```yaml
 services:
   api:
     build: ./api
     environment:
       API_TOKEN: "lab-secret"
     healthcheck:
-      test: ["CMD", "wget", "-qO-", "http://127.0.0.1:8080/healthz"]
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8080/healthz')"]
       interval: 5s
       timeout: 3s
       retries: 5
@@ -192,11 +202,10 @@ services:
       - "18080:8000"
     environment:
       API_URL: "http://api.internal:8080"
-      # API_TOKEN intentionally omitted
     depends_on:
       - api
     healthcheck:
-      test: ["CMD", "wget", "-qO-", "http://127.0.0.1:8000/healthz"]
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/healthz')"]
       interval: 5s
       timeout: 3s
       retries: 5
@@ -204,15 +213,12 @@ services:
 
 networks:
   rebash-net:
-EOF
 ```
-
-**Alpine note:** `wget` may be missing — if healthchecks fail for that reason, install it in Dockerfiles (`RUN apk add --no-cache wget`) as part of your fix, or switch healthchecks to `python -c ...`.
 
 **Validation:**
 
 ```bash
-test -f compose.yaml && echo "project ready"
+test -f compose.yaml && test -f api/server.py && echo "project ready" | tee task1-ready.txt
 ```
 
 ### Task 2 — Bring the stack up and observe failure
@@ -247,10 +253,11 @@ docker compose exec web getent hosts api || docker compose exec web nslookup api
 
 ### Task 4 — Repair compose and recreate
 
-**Objective:** Minimal fix: correct `API_URL`, pass `API_TOKEN`, keep port mapping intentional.
+**Objective:** Minimal fix: correct `API_URL`, pass `API_TOKEN`, gate on API health.
 
-```bash
-cat > compose.yaml <<'EOF'
+Replace `compose.yaml` with:
+
+```yaml
 services:
   api:
     build: ./api
@@ -282,10 +289,14 @@ services:
 
 networks:
   rebash-net:
-EOF
+```
 
+Recreate the stack:
+
+```bash
+cd ~/rebash-lab-compose
 docker compose up -d --build
-docker compose ps
+docker compose ps | tee compose-fixed-ps.txt
 ```
 
 **Expected output:** Both services healthy/running.
@@ -293,21 +304,38 @@ docker compose ps
 **Validation:**
 
 ```bash
-curl -sS http://127.0.0.1:18080/healthz
-curl -sS http://127.0.0.1:18080/
+curl -sS http://127.0.0.1:18080/healthz | tee web-health-fixed.txt
+curl -sS http://127.0.0.1:18080/ | tee web-root-fixed.txt
+grep -q rebash-status web-root-fixed.txt
 ```
 
-### Task 5 — Harden and document
+### Task 5 — Harden env file pattern
 
-**Objective:** Remove secrets from plaintext defaults for the write-up (still a lab).
+**Objective:** Move the token out of inline compose defaults (lab-safe pattern).
+
+Create `.env.example`:
 
 ```bash
-# Demonstrate env file pattern (optional)
-printf 'API_TOKEN=lab-secret\n' > .env
-grep -n API_TOKEN compose.yaml
+API_TOKEN=replace-me-locally
 ```
 
-In your notes: root cause (wrong hostname + missing token) and the verification curls.
+Create local `.env` (do not commit):
+
+```bash
+API_TOKEN=lab-secret
+```
+
+Update `compose.yaml` to use `env_file: [.env]` on both services instead of inline `API_TOKEN`, then recreate and capture proof:
+
+```bash
+cd ~/rebash-lab-compose
+docker compose up -d --build
+curl -sS -o /dev/null -w "%{http_code}\n" http://127.0.0.1:18080/ | tee recovery-http-code.txt
+grep -q 200 recovery-http-code.txt
+echo "root_cause=api.internal hostname + missing web token" | tee root-cause.txt
+tar czf recovery-evidence.tar.gz compose-fixed-ps.txt web-root-fixed.txt root-cause.txt recovery-http-code.txt
+test -s recovery-evidence.tar.gz
+```
 
 ## Validation
 

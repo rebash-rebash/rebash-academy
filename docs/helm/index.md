@@ -4,7 +4,7 @@ description: "Helm for Kubernetes Engineers — 12 modules covering charts, temp
 difficulty: intermediate
 estimated_time: "3–4 weeks"
 author: Shaik Basha
-last_updated: "2026-07-31"
+last_updated: "2026-08-03"
 category: helm
 tags:
   - helm

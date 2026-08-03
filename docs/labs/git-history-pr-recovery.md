@@ -99,17 +99,25 @@ git clone origin.git maintainer
 cd maintainer
 git config user.email 'maintainer@rebash.lab'
 git config user.name 'Maintainer'
+```
 
-cat > README.md <<'EOF'
+Create `README.md`:
+
+```markdown
 # Status Banner
 
 Internal banner text for the status page.
-EOF
+```
 
-cat > banner.txt <<'EOF'
+Create `banner.txt`:
+
+```text
 banner=All systems nominal
-EOF
+```
 
+Seed `main`:
+
+```bash
 git add README.md banner.txt
 git commit -m "Initial status banner config"
 git push -u origin main
@@ -137,10 +145,17 @@ git config user.email 'dev@rebash.lab'
 git config user.name 'Contributor'
 
 git checkout -b feature/banner-maintenance
-cat > banner.txt <<'EOF'
-banner=Scheduled maintenance window — expect brief blips
-EOF
+```
 
+Create `banner.txt`:
+
+```text
+banner=Scheduled maintenance window — expect brief blips
+```
+
+Commit and push the feature branch:
+
+```bash
 git add banner.txt
 git commit -m "Announce maintenance banner"
 git push -u origin feature/banner-maintenance
@@ -158,12 +173,18 @@ cd ..
 ```bash
 cd ~/rebash-lab-git/maintainer
 git pull origin main
+```
 
-cat > banner.txt <<'EOF'
+Create `banner.txt`:
+
+```text
 banner=All systems nominal
 owner=platform
-EOF
+```
 
+Publish the metadata change:
+
+```bash
 git add banner.txt
 git commit -m "Add banner owner metadata"
 git push origin main
@@ -192,13 +213,18 @@ Git should stop on `banner.txt`. Resolve deliberately:
 # Inspect
 git status
 cat banner.txt
+```
 
-# Keep maintenance message AND owner metadata
-cat > banner.txt <<'EOF'
+Create `banner.txt` with both lines preserved:
+
+```text
 banner=Scheduled maintenance window — expect brief blips
 owner=platform
-EOF
+```
 
+Continue the rebase:
+
+```bash
 git add banner.txt
 git rebase --continue
 ```
@@ -227,11 +253,17 @@ You should see exactly one feature commit ahead of `main`, with both lines prese
 
 ```bash
 cd ~/rebash-lab-git/contributor
+```
 
-cat > .env.local <<'EOF'
+Create `.env.local` (lab-only secret — never push this in real work):
+
+```text
 API_TOKEN=lab-demo-token-do-not-ship
-EOF
+```
 
+Stage the mistake commit:
+
+```bash
 git add .env.local
 git commit -m "WIP local env"
 

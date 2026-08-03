@@ -63,8 +63,9 @@ pip install 'PyYAML>=6.0,<7' pytest
 
 ## Initial State
 
-```bash
-cat > pipeline.yaml << 'EOF'
+Create `pipeline.yaml`:
+
+```yaml
 name: local-ci
 fail_fast: true
 steps:
@@ -72,13 +73,19 @@ steps:
     run: ["pytest", "-q"]
   - name: version-check
     run: ["python", "-c", "import sys; assert sys.version_info >= (3, 10)"]
-EOF
+```
 
-mkdir -p tests
-cat > tests/test_sanity.py << 'EOF'
+Create `tests/test_sanity.py`:
+
+```python
 def test_ok():
     assert 1 + 1 == 2
-EOF
+```
+
+Prepare remaining files:
+
+```bash
+mkdir -p tests
 ```
 
 ## Task

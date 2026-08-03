@@ -198,24 +198,30 @@ Map `app.rebash.lab` with `HOSTALIASES` (file under the lab root). Point the cli
 ```bash
 cd ~/rebash-networking/lab27
 set -euo pipefail
+```
 
-# glibc HOSTALIASES: alias → canonical name (then normal resolution)
-cat > hostaliases <<'EOF'
+Create `hostaliases`:
+
+```text
 app.rebash.lab localhost
-EOF
+```
 
-# Broken client: correct name via HOSTALIASES, wrong port (nothing listens)
-cat > client-broken.env <<'EOF'
+Create `client-broken.env`:
+
+```bash
 export HOSTALIASES="$HOME/rebash-networking/lab27/hostaliases"
 export APP_URL="http://app.rebash.lab:18781/"
-EOF
+```
 
-# Known-good client (for later fix / challenge)
-cat > client-good.env <<'EOF'
+Create `client-good.env`:
+
+```bash
 export HOSTALIASES="$HOME/rebash-networking/lab27/hostaliases"
 export APP_URL="http://app.rebash.lab:18780/"
-EOF
+```
 
+```bash
+# glibc HOSTALIASES: alias → canonical name (then normal resolution)
 set -a
 # shellcheck disable=SC1091
 source ./client-broken.env
@@ -242,8 +248,11 @@ Run a triage script that writes one evidence file per layer and a final `fault.t
 ```bash
 cd ~/rebash-networking/lab27
 set -euo pipefail
+```
 
-cat > triage-l1-l7.sh <<'EOF'
+Create `triage-l1-l7.sh`:
+
+```bash
 #!/usr/bin/env bash
 set -euo pipefail
 ROOT="${1:-$HOME/rebash-networking/lab27}"
@@ -317,8 +326,9 @@ echo "curl_exit=$rc" | tee "$EV/l7-curl-rc.txt"
 
 grep -q 'ROOT_CAUSE=client_port_mismatch' "$EV/fault.txt"
 echo "triage_ok"
-EOF
+```
 
+```bash
 chmod +x triage-l1-l7.sh
 ./triage-l1-l7.sh "$HOME/rebash-networking/lab27" | tee evidence/triage-run.txt
 grep -q 'ROOT_CAUSE=client_port_mismatch' evidence/fault.txt

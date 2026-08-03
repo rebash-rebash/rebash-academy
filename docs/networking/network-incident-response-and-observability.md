@@ -213,8 +213,11 @@ Create `bin/collect-incident.sh` that writes a timeline and copies probe outputs
 ```bash
 cd ~/rebash-networking/lab29
 set -euo pipefail
+```
 
-cat > bin/collect-incident.sh <<'EOF'
+Create `bin/collect-incident.sh`:
+
+```bash
 #!/usr/bin/env bash
 set -euo pipefail
 ROOT="${1:-$HOME/rebash-networking/lab29}"
@@ -266,8 +269,9 @@ cp -f "$EV/operator.txt" "$BUNDLE/meta/operator.txt" 2>/dev/null || true
 echo "- $(ts) collector_end" >> "$BUNDLE/timeline.txt"
 echo "$STAMP" > "$BUNDLE/meta/collected-at-utc.txt"
 echo "bundle_ready=$BUNDLE"
-EOF
+```
 
+```bash
 chmod +x bin/collect-incident.sh
 ./bin/collect-incident.sh "$HOME/rebash-networking/lab29" | tee evidence/collect-run.txt
 test -s bundle/timeline.txt
@@ -284,8 +288,11 @@ Classify severity from probe exit codes and write both JSON and text; pack the b
 ```bash
 cd ~/rebash-networking/lab29
 set -euo pipefail
+```
 
-cat > bin/classify-severity.py <<'PY'
+Create `bin/classify-severity.py`:
+
+```python
 #!/usr/bin/env python3
 """Classify a simple lab incident from probe return codes and ss listeners."""
 from __future__ import annotations
@@ -348,8 +355,9 @@ if sev not in {"SEV-1", "SEV-2", "SEV-3", "SEV-4"}:
     raise SystemExit("invalid severity")
 if dep_rc != 0 and ctl_rc == 0 and sev != "SEV-2":
     raise SystemExit("expected SEV-2 for dep-down control-up lab")
-PY
+```
 
+```bash
 chmod +x bin/classify-severity.py
 python3 bin/classify-severity.py "$HOME/rebash-networking/lab29" | tee evidence/classify-run.txt
 grep -q '"severity": "SEV-2"' bundle/severity.json

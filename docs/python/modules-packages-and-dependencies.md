@@ -162,14 +162,19 @@ set -euo pipefail
 source .venv/bin/activate
 
 mkdir -p mypkg
+```
 
-cat > mypkg/__init__.py << 'PY'
+Create `mypkg/__init__.py`:
+
+```python
 """Small REBASH lab package for Module 6."""
 
 __all__ = ["greet"]
-PY
+```
 
-cat > mypkg/greet.py << 'PY'
+Create `mypkg/greet.py`:
+
+```python
 """Greeting helpers shared by lab scripts."""
 from __future__ import annotations
 
@@ -182,9 +187,11 @@ def hello(name: str) -> str:
 def banner(name: str, *, shout: bool = False) -> str:
     text = hello(name)
     return text.upper() if shout else text
-PY
+```
 
-cat > run_greet.py << 'PY'
+Create `run_greet.py`:
+
+```python
 """Runner that imports the local mypkg package."""
 from __future__ import annotations
 
@@ -202,8 +209,11 @@ def main(argv: list[str]) -> int:
 
 if __name__ == "__main__":
     raise SystemExit(main(sys.argv))
-PY
+```
 
+Run:
+
+```bash
 # PYTHONPATH makes the project root importable without install
 export PYTHONPATH=.
 python -c "from mypkg.greet import hello; assert hello('lab') == 'hello lab'"
@@ -221,8 +231,11 @@ cd ~/rebash-python/lab06
 set -euo pipefail
 # shellcheck disable=SC1091
 source .venv/bin/activate
+```
 
-cat > pyproject.toml << 'EOF'
+Create `pyproject.toml`:
+
+```toml
 [build-system]
 requires = ["setuptools>=68"]
 build-backend = "setuptools.build_meta"
@@ -238,8 +251,11 @@ dependencies = [
 
 [tool.setuptools.packages.find]
 include = ["mypkg*"]
-EOF
+```
 
+Run:
+
+```bash
 python -m pip install --upgrade pip
 python -m pip install -e .
 python -c "import mypkg, rich; from mypkg.greet import hello; print(hello('editable')); print('rich-ok', rich.__name__)" | tee editable-run.txt
@@ -261,12 +277,18 @@ cd ~/rebash-python/lab06
 set -euo pipefail
 # shellcheck disable=SC1091
 source .venv/bin/activate
+```
 
-python -m pip freeze | tee requirements-full.txt
-# Hand-maintained pin file for teammates (direct deps)
-cat > requirements.txt << 'EOF'
+Create `requirements.txt`:
+
+```text
 rich==13.9.4
-EOF
+```
+
+Run:
+
+```bash
+python -m pip freeze | tee requirements-full.txt
 grep -E '^rich==' requirements.txt
 
 # Optional: show package is importable as proof for tickets

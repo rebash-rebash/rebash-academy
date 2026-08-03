@@ -168,8 +168,11 @@ cd ~/rebash-python/lab05
 set -euo pipefail
 # shellcheck disable=SC1091
 source .venv/bin/activate
+```
 
-cat > app.log << 'EOF'
+Create `app.log`:
+
+```text
 2026-08-02T10:00:01Z INFO web-01 ready
 2026-08-02T10:00:02Z ERROR web-01 upstream timeout
 2026-08-02T10:00:03Z INFO web-02 ready
@@ -177,21 +180,11 @@ cat > app.log << 'EOF'
 2026-08-02T10:00:05Z ERROR api-01 db connection reset
 2026-08-02T10:00:06Z INFO web-01 healthy
 2026-08-02T10:00:07Z ERROR web-01 upstream timeout
-EOF
+```
 
-# Build a larger stream file for the generator demo (still small enough for lab)
-python - << 'PY'
-from pathlib import Path
-lines = Path("app.log").read_text(encoding="utf-8").splitlines()
-out = Path("app-large.log")
-with out.open("w", encoding="utf-8") as fh:
-    for i in range(1000):
-        for line in lines:
-            fh.write(f"{line} batch={i}\n")
-print(f"wrote {out} lines={1000 * len(lines)}")
-PY
+Create `log_stats.py`:
 
-cat > log_stats.py << 'PY'
+```python
 """Comprehensions + generator for log summaries."""
 from __future__ import annotations
 
@@ -255,7 +248,25 @@ def main() -> int:
 
 if __name__ == "__main__":
     raise SystemExit(main())
+```
+
+Run:
+
+```bash
+# Build a larger stream file for the generator demo (still small enough for lab)
+python - << 'PY'
+from pathlib import Path
+lines = Path("app.log").read_text(encoding="utf-8").splitlines()
+out = Path("app-large.log")
+with out.open("w", encoding="utf-8") as fh:
+    for i in range(1000):
+        for line in lines:
+            fh.write(f"{line} batch={i}\n")
+print(f"wrote {out} lines={1000 * len(lines)}")
 PY
+test -f app.log
+test -f log_stats.py
+test -f app-large.log
 ```
 
 **Expected output:** `app.log`, `app-large.log`, and `log_stats.py` created; large file line count printed.

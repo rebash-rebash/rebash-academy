@@ -33,7 +33,7 @@ tags:
   - tls
   - gateway-api
 author: Shaik Basha
-last_updated: "2026-07-31"
+last_updated: "2026-08-03"
 comments: false
 ---
 
@@ -153,23 +153,20 @@ On kind, install ingress-nginx (or similar). Managed clouds often provide a cont
 
 ## Hands-on Lab
 
-
-
 ### Objective
 
-Build and verify a working Kubernetes solution for **Ingress and Gateway API** that you can inspect, prove, and tear down safely.
+Create Deployment, Service, and Ingress manifests; validate them with dry-run; expose via NodePort if no Ingress controller is installed; capture routing evidence.
 
 ### Prerequisites
 
-- kubectl configured against a lab cluster (kind/minikube preferred)
-- Cluster-admin or namespace-create rights in the lab cluster
+- A working Kubernetes cluster (**kind**, **minikube**, or any lab cluster)
+- **kubectl** with namespace-create rights
+- Optional: **kind** with [ingress-ready](https://kind.sigs.k8s.io/docs/user/ingress/) or minikube ingress addon
 - Writable workspace at `~/rebash-k8s/module-06`
 
 ### Lab environment
 
 Workspace: `~/rebash-k8s/module-06`
-
-Local kind/minikube or a dedicated sandbox cluster. Never target a shared production API server.
 
 ```bash
 mkdir -p ~/rebash-k8s/module-06 && cd ~/rebash-k8s/module-06
@@ -177,63 +174,170 @@ mkdir -p ~/rebash-k8s/module-06 && cd ~/rebash-k8s/module-06
 
 ### Real-world scenario
 
-Your platform team is rolling out **Ingress and Gateway API** for a new microservice. You must apply the change in an isolated namespace, prove it works with kubectl, and leave evidence for the on-call handover.
+You must publish an internal demo app at `/` on host `demo.lab.local`. Production uses an Ingress controller; your lab cluster might not have one yet. You still commit valid manifests, dry-run them against the API, and prove traffic with NodePort or port-forward if Ingress has no ADDRESS.
 
 ### Step-by-step tasks
 
-#### Task 1 – Apply a topic workload
+#### Task 1 – Backend Deployment and Service
 
-Create a namespace and a small Deployment to practise **What it is** against a live API.
+Create `namespace.yaml`:
 
-```bash
-kubectl create namespace rebash-lab --dry-run=client -o yaml | kubectl apply -f -
-kubectl create deployment topic --image=nginx:1.27-alpine -n rebash-lab
-kubectl rollout status deployment/topic -n rebash-lab
-kubectl get all -n rebash-lab
+```yaml
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: rebash-m06
 ```
 
-**Expected output:** Deployment Ready; Pods listed under the namespace.
+Create `web-backend.yaml`:
 
-#### Task 2 – Inspect and gather evidence
-
-Production changes always leave an audit trail of describe/Events.
-
-```bash
-kubectl describe deploy topic -n rebash-lab | tee describe.txt
-kubectl get events -n rebash-lab --sort-by=.lastTimestamp | tail -n 15 | tee events.txt
+```yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: web
+  namespace: rebash-m06
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: web
+  template:
+    metadata:
+      labels:
+        app: web
+    spec:
+      containers:
+        - name: nginx
+          image: nginx:1.27-alpine
+          ports:
+            - containerPort: 80
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: web
+  namespace: rebash-m06
+spec:
+  selector:
+    app: web
+  ports:
+    - port: 80
+      targetPort: 80
 ```
 
-**Expected output:** describe.txt and events.txt capture healthy Objects/Events.
+Apply and verify:
+
+```bash
+cd ~/rebash-k8s/module-06
+kubectl apply -f namespace.yaml
+kubectl apply -f web-backend.yaml
+kubectl rollout status deployment/web -n rebash-m06 --timeout=120s
+kubectl get svc web -n rebash-m06 | tee svc.txt
+```
+
+**Expected output:** Service `web` exists with ClusterIP assigned.
+
+#### Task 2 – Ingress manifest and validation
+
+Create `ingress.yaml`:
+
+```yaml
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: web
+  namespace: rebash-m06
+spec:
+  ingressClassName: nginx
+  rules:
+    - host: demo.lab.local
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: web
+                port:
+                  number: 80
+```
+
+Validate before or after apply:
+
+```bash
+cd ~/rebash-k8s/module-06
+kubectl apply --dry-run=client -f ingress.yaml | tee ingress-dry-run.txt
+kubectl apply -f ingress.yaml
+kubectl get ingress web -n rebash-m06 | tee ingress-status.txt
+kubectl describe ingress web -n rebash-m06 | tee ingress-describe.txt
+```
+
+**Expected output:** Ingress object created; `ingress-status.txt` shows NAME and CLASS (ADDRESS may be empty without a controller).
+
+#### Task 3 – NodePort fallback proof
+
+Create `web-nodeport.yaml` (Service only—adds external access path when Ingress has no ADDRESS):
+
+```yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: web-nodeport
+  namespace: rebash-m06
+spec:
+  type: NodePort
+  selector:
+    app: web
+  ports:
+    - port: 80
+      targetPort: 80
+      nodePort: 30080
+```
+
+Apply and test (kind maps node ports to localhost):
+
+```bash
+cd ~/rebash-k8s/module-06
+kubectl apply -f web-nodeport.yaml
+kubectl get svc web-nodeport -n rebash-m06 -o wide | tee nodeport.txt
+NODE_PORT=$(kubectl get svc web-nodeport -n rebash-m06 -o jsonpath='{.spec.ports[0].nodePort}')
+curl -sS -o /dev/null -w '%{http_code}\n' "http://127.0.0.1:${NODE_PORT}/" | tee nodeport-curl.txt
+grep -q 200 nodeport-curl.txt
+```
+
+**Expected output:** HTTP `200` via NodePort on kind/minikube (if port reachable). If Ingress controller is installed, also test `demo.lab.local` via `/etc/hosts` and document ADDRESS in `ingress-status.txt`.
 
 ### Validation steps
 
-- [ ] Namespace `rebash-lab` contains the expected Ready objects
-- [ ] You can explain each Task command from the Theory section
-- [ ] Cleanup deletes the namespace without leftover workloads
+- [ ] Deployment and ClusterIP Service Ready
+- [ ] Ingress YAML passes client dry-run and applies
+- [ ] NodePort curl returns 200 OR Ingress ADDRESS documented with controller installed
+- [ ] You can explain what still runs if Ingress has no controller
 
 ### Common errors and fixes
 
 | Error | Cause | Fix |
 |-------|-------|-----|
-| ImagePullBackOff | Wrong tag or registry auth | Fix image reference; check pull secrets |
-| Pending Pod | Scheduling / quota / PVC | `kubectl describe pod` and read Events |
-| Empty Endpoints | Selector or readiness mismatch | Compare Service selector to Pod labels and Ready |
+| Ingress no ADDRESS | No controller | Use NodePort Task 3; install ingress-nginx on kind |
+| nodePort already allocated | Port clash | Change `nodePort` to 30180 |
+| 404 via Ingress | Wrong pathType/host | Match host header; check `pathType: Prefix` |
+| Invalid ingress class | Class not installed | Set `ingressClassName` matching your controller |
 
 ### Challenge exercise
 
-Add a readinessProbe and a ResourceQuota to the namespace, then show that over-quota creates are rejected.
+Install ingress-nginx on kind, re-apply `ingress.yaml`, add `127.0.0.1 demo.lab.local` to `/etc/hosts`, and curl `http://demo.lab.local/` without NodePort.
 
 ### Learning outcomes
 
-- Applied a real cluster change for Ingress and Gateway API
-- Used describe/Events for verification
-- Destroyed lab resources cleanly
+- Declared HTTP routing with Ingress YAML
+- Validated manifests with dry-run before apply
+- Proved external access via NodePort when Ingress controller is absent
 
 ### Cleanup
 
 ```bash
-kubectl delete namespace rebash-lab --ignore-not-found
-# Keep ~/rebash-kubernetes/ for later tutorials
+kubectl delete namespace rebash-m06 --ignore-not-found --wait=true
 ```
 
 ## Validation

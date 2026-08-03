@@ -1,8 +1,8 @@
 ---
 title: "Troubleshooting and Upgrades"
-description: "Troubleshoot failed builds and agents, use Pipeline replay, manage plugin issues, and plan Jenkins LTS upgrades."
+description: "Troubleshoot failed builds and agents, use Pipeline Replay and console logs, manage plugin issues and performance symptoms, and plan Jenkins LTS upgrades with safe restart and rollback."
 difficulty: advanced
-estimated_time: "45–60 min"
+estimated_time: "50–70 min"
 technology: jenkins
 category: jenkins
 module: "Module 16 · Troubleshooting and Upgrades"
@@ -19,293 +19,476 @@ skills:
 prerequisites:
   - jenkins/jcasc-scaling-and-operations
 next: []
+related:
+  - jenkins/managing-jenkins-plugins-tools-and-cli
+  - jenkins/agents-nodes-and-executors
 tags:
   - jenkins
   - troubleshooting
   - lts
   - upgrades
 author: Shaik Basha
-last_updated: "2026-07-31"
+last_updated: "2026-08-03"
 comments: false
 ---
-
 
 # Troubleshooting and Upgrades
 
 ## Overview
 
+When CI is red, guesswork wastes hours. This tutorial builds a repeatable path through **failed builds**, **agent issues**, **Pipeline Replay**, **console logs**, **plugin problems**, and **performance symptoms** — then plans **Jenkins LTS upgrades** with **safe restart** and **rollback** using backups from Module 15.
 
-
-Diagnose production Jenkins: failed builds, agent issues, Pipeline **replay**, plugin problems, performance symptoms, **LTS upgrade** guides, safe restart, and rollback.
-
-Upgrades are operational procedures — not surprise Friday clicks.
-
-This is a core tutorial in **Module 16 · Troubleshooting and Upgrades** of the REBASH Academy **Jenkins for Cloud & DevOps Engineers** series — written for Cloud, DevOps, Platform, and SRE engineers.
+This is **Tutorial 16** in **Module 16: Troubleshooting and Upgrades** of the REBASH Academy **Jenkins for Cloud & DevOps Engineers** series — written for Cloud, DevOps, Platform, and Site Reliability Engineering (SRE) engineers. Keep the [LTS upgrade guides](https://www.jenkins.io/doc/upgrade-guide/) open when you change production.
 
 ## Prerequisites
 
-
-
-- Completed prior modules in this track where linked in frontmatter
-- [Git](../git/index.md) and [Docker](../docker/index.md) for lab workflows
-- Running Jenkins LTS from [Installing Jenkins LTS](installing-jenkins-lts.md) when a live controller is required
+- [JCasC, Scaling, and Operations](jcasc-scaling-and-operations.md) — backups before upgrades
+- A lab controller with at least one Pipeline job
+- Comfort reading Stage View and console output
 
 ## Learning Objectives
 
-
-
 By the end of this tutorial, you will be able to:
 
-- [ ] Triage a failed build from console logs and stage views
-- [ ] Use Pipeline replay appropriately (and know its limits)
-- [ ] Outline a plugin regression bisect approach
-- [ ] Plan an LTS upgrade with backup and rollback
+- [ ] Triage a failed build using Stage View → console → agent context
+- [ ] Use Pipeline Replay safely on a lab job
+- [ ] Recognise common plugin and performance failure patterns
+- [ ] Draft an LTS upgrade checklist with staging and rollback
+- [ ] Choose safe restart versus emergency restart
 
 ## Architecture
 
+Incidents flow from symptom → build evidence → agent/controller health → fix or rollback; upgrades follow backup → stage → production → verify.
 
-
-This topic’s control points and relationships are shown below.
-
-![Troubleshooting and upgrades](../assets/excalidraw/jenkins-troubleshooting.svg)
+![Jenkins troubleshooting and upgrades](../assets/excalidraw/jenkins-troubleshooting.svg)
 
 ## Theory
 
-
-
 ### What it is
 
-**Console logs** are the first artefact; **Pipeline Steps** and stage views narrow the failing step. **Replay** re-runs with edited script (admin capability — audit it). Agent issues show as “offline”, “launch failed”, or queue stuck. Plugin problems often appear after updates — binary search disable/update. **LTS upgrades** follow published upgrade guides; backup `JENKINS_HOME`, upgrade test, then production, with a restore rollback path.
+**Build triage:** identify which stage failed, read the first ERROR in console, check whether the agent was offline or mislabelled, then fix Jenkinsfile, credentials, or infra.
+
+**Pipeline Replay:** re-run a build with an edited in-memory script (permissions required). Excellent for labs; dangerous on production without change control — prefer Git commits.
+
+**Plugin issues:** boot failures, classloading errors, UI blanks after updates. Mitigation: staging controller, plugin pins, disable plugin via rescue patterns.
+
+**Performance:** long queue times, GC pressure on controller, disk full from artefacts, slow Git checkouts. Fix capacity and retention, not “bigger JVM forever.”
+
+**LTS upgrades:** read the upgrade guide for your jump, upgrade plugins as required, backup, upgrade staging, then production, then verify Pipelines.
 
 ### Why it matters
 
-Mean time to recovery depends on disciplined triage. Unplanned upgrades couple plugin binaries to controller core. SRE-owned runbooks beat heroics.
+Unstructured troubleshooting leads to `safeRestart` superstition and Friday plugin updates. A written path reduces mean time to recovery (MTTR) and prevents compounding outages during upgrades.
 
 ### How it works
 
-1. Capture build URL, Git SHA, agent label, and failing step.
-2. Reproduce on a non-prod controller when possible.
-3. Check agent connectivity and executor availability.
-4. For regressions, identify last good plugin/core versions.
-5. Upgrade along LTS: read [LTS upgrade guides](https://www.jenkins.io/doc/upgrade-guide/), snapshot, change window, smoke tests.
+**Failed build path:**
 
-System admin topics: [Troubleshooting](https://www.jenkins.io/doc/book/system-administration/) style handbook pages.
+1. Open red build → Stage View.
+2. Console Output → first fatal error (not only the last line).
+3. Confirm agent/label (`NODE_NAME`, node page).
+4. Reproduce with Replay on lab or fix in Git.
+5. Capture evidence for the incident channel.
+
+**Upgrade path:**
+
+1. Inventory core + plugins (`list-plugins`).
+2. Backup/restore proof current.
+3. Read LTS upgrade guide.
+4. Upgrade staging; run canary Pipelines.
+5. Production change window; safe restart; verify; rollback via volume restore if needed.
 
 ### Key concepts and comparisons
 
-| Symptom | First checks |
-|---------|--------------|
-| Queue forever | Agents online? labels? executors? |
-| Git checkout fail | Credentials, SSH host keys |
-| Groovy CPS errors | Script security, library versions |
-| Slow UI | Heap, plugins, build records retention |
+| Tool | Use |
+|------|-----|
+| Console Output | Ground truth |
+| Replay | Temporary script edit |
+| System log | Controller/plugin errors |
+| Node log | Agent connectivity |
+| `support` bundle (if available) | Deeper vendor/community debug |
 
-| Upgrade step | Why |
-|--------------|-----|
-| Backup | Rollback reality |
-| Test controller | Plugin surprise |
-| Smoke Pipelines | Real validation |
-| Safe restart | Clean load |
+| Restart | When |
+|---------|------|
+| Safe restart | Drain builds; plugin needs restart |
+| Container recreate | Labs after Compose change |
+| Restore volume | Bad upgrade / corruption |
 
 ### Common pitfalls
 
-- Replaying production with ad-hoc scripts and never committing the fix.
-- Upgrading core and 50 plugins simultaneously with no notes.
-- Deleting `JENKINS_HOME` backups after “successful” upgrade day-of.
-- Ignoring agent clock skew and disk-full errors.
+- Reading only the last console line.
+- Replaying production without committing the fix.
+- Upgrading production before staging.
+- Ignoring disk-full warnings until writes fail.
+- Rolling forward blindly when rollback is faster.
 
 ## Hands-on Lab
 
-
-
 ### Objective
 
-Configure a real Jenkins-facing artefact for **Troubleshooting and Upgrades** (Compose controller and/or Jenkinsfile) you can run or import.
+Run a deliberate failing Pipeline, triage it with shell checks, practise Replay on lab, and complete an LTS upgrade plan as validated YAML (no requirement to upgrade production).
 
 ### Prerequisites
 
-- Docker Engine for controller labs
-- Text editor / shell
+- Lab Jenkins with a Pipeline job you can break
+- Backup runbook from Module 15 (`backup-restore.sh`)
 
 ### Lab environment
 
 Workspace: `~/rebash-jenkins/module-16`
 
-Local Docker Compose Jenkins LTS where a live UI is needed; file-only Jenkinsfile labs otherwise.
-
 ```bash
 mkdir -p ~/rebash-jenkins/module-16 && cd ~/rebash-jenkins/module-16
+set -euo pipefail
 ```
 
 ### Real-world scenario
 
-Your organisation is standardising **Troubleshooting and Upgrades**. You prototype on a lab controller, keep everything as files, and avoid building on the built-in node in production designs.
+Pager: “CI red across payments.” You need a triage checklist and an upgrade calendar before the next LTS jump.
 
 ### Step-by-step tasks
 
-#### Task 1 – Capture controller/agent mental model files
+#### Task 1 – Deliberate failure and triage script
 
-Document how this topic shows up on a real controller.
+Run:
 
 ```bash
-tee scenario.md << 'EOF'
-Topic: Troubleshooting and Upgrades
-- Controller owns config and orchestration
-- Agents execute untrusted build steps
-- Prefer Jenkinsfile in SCM over click-ops jobs
-EOF
-cat scenario.md
-mkdir -p jobs && echo 'pipelineJob stub' > jobs/README.txt
+cd ~/rebash-jenkins/module-16
+set -euo pipefail
 ```
 
-**Expected output:** scenario.md and jobs/README.txt exist.
+Create `broken.Jenkinsfile`:
 
-#### Task 2 – Write a minimal Declarative stub
-
-Even management topics should leave a Pipeline artefact.
-
-```bash
-cat > Jenkinsfile << 'EOF'
+```groovy
 pipeline {
   agent any
-  stages { stage('OK') { steps { echo 'lab' } } }
+  stages {
+    stage('Boom') {
+      steps {
+        sh 'echo about_to_fail'
+        sh 'false'
+      }
+    }
+  }
+  post {
+    failure {
+      echo 'expected failure for Module 16 triage'
+    }
+  }
 }
-EOF
-grep -n agent Jenkinsfile
 ```
 
-**Expected output:** Jenkinsfile present with an agent directive.
+Create `triage-checks.sh`:
+
+```bash
+#!/usr/bin/env bash
+set -euo pipefail
+LOG="${1:-console.log}"
+grep -q about_to_fail "$LOG"
+grep -qE 'ERROR|Finished: FAILURE' "$LOG"
+grep -q 'expected failure for Module 16 triage' "$LOG"
+echo triage_checks_ok
+```
+
+Verify:
+
+```bash
+chmod +x triage-checks.sh
+```
+
+Create `expected-failure-markers.txt`:
+
+```text
+about_to_fail
+expected failure for Module 16 triage
+```
+
+Verify:
+
+```bash
+grep -q "sh 'false'" broken.Jenkinsfile
+```
+
+Create/run a lab job with `broken.Jenkinsfile`, paste Console Output to `console.log`, then run `./triage-checks.sh console.log | tee triage-result.txt`.
+
+**Expected output:** Triage script identifies `sh 'false'` as the cause.
+
+#### Task 2 – Pipeline Replay drill (lab only)
+
+1. Open the failed build → **Replay**.
+2. Change `sh 'false'` to `sh 'true'`.
+3. Run Replay → confirm success.
+4. Note that the job definition may still be broken until you save/commit the fix.
+
+Run:
+
+```bash
+cd ~/rebash-jenkins/module-16
+set -euo pipefail
+```
+
+Create `fixed.Jenkinsfile`:
+
+```groovy
+pipeline {
+  agent any
+  stages {
+    stage('Boom') {
+      steps {
+        sh 'echo about_to_fail'
+        sh 'true'
+      }
+    }
+  }
+}
+```
+
+Verify:
+
+```bash
+diff -u broken.Jenkinsfile fixed.Jenkinsfile | tee replay-fix.diff
+grep -q "sh 'true'" fixed.Jenkinsfile
+printf 'replay_lesson=commit_fix_to_git_not_replay_only\n' | tee replay-lesson.txt
+```
+
+**Expected output:** Diff shows the one-line fix; Replay lesson captured in `replay-lesson.txt`.
+
+#### Task 3 – Agent and performance symptom sheet
+
+Run:
+
+```bash
+cd ~/rebash-jenkins/module-16
+set -euo pipefail
+```
+
+Create `symptoms.yaml`:
+
+```yaml
+symptoms:
+  - symptom: queued_forever
+    likely_cause: no_matching_agent_or_executors_zero
+    first_check: nodes_and_labels
+  - symptom: agent_offline
+    likely_cause: network_or_secret
+    first_check: node_log_and_relaunch
+  - symptom: checkout_fail
+    likely_cause: credentials_or_url
+    first_check: credential_id_and_git_ls_remote
+  - symptom: slow_controller_ui
+    likely_cause: disk_cpu_plugins
+    first_check: df_and_disable_heavy_plugins_on_staging
+  - symptom: boot_loop_after_plugin_update
+    likely_cause: bad_plugin
+    first_check: disable_plugin_restore_backup
+  - symptom: oomkilled_container
+    likely_cause: heap_meta_space
+    first_check: compose_mem_limits_and_heap_flags
+```
+
+Validate and archive:
+
+```bash
+python3 -c "
+import yaml
+with open('symptoms.yaml') as f:
+    d = yaml.safe_load(f)
+assert len(d['symptoms']) >= 5
+print('symptoms.yaml OK')
+" | tee symptoms-validate.txt
+```
+
+**Expected output:** Symptom YAML validates.
+
+#### Task 4 – LTS upgrade plan YAML
+
+Run:
+
+```bash
+cd ~/rebash-jenkins/module-16
+set -euo pipefail
+```
+
+Create `lts-upgrade-plan.yaml`:
+
+```yaml
+current:
+  core_version: fill_from_ui
+  image_tag: lts-jdk17
+  backup_last_tested: fill_from_module_15
+target:
+  lts_version: fill_from_jenkins_io
+  upgrade_guide_read: false
+  plugins_requiring_updates: []
+stages:
+  - backup_volume_and_list_plugins
+  - upgrade_staging_controller
+  - canary_pipelines: []
+  - production_window: fill
+  - verification: fill
+  - rollback: restore_volume_or_previous_image_tag
+safe_restart:
+  drain_or_prepare_shutdown: fill
+```
+
+Validate and archive:
+
+```bash
+python3 -c "
+import yaml
+with open('lts-upgrade-plan.yaml') as f:
+    d = yaml.safe_load(f)
+assert 'rollback' in d['stages'][-1]
+print('lts-upgrade-plan.yaml OK')
+" | tee lts-plan-validate.txt
+
+tar -czf module-16-evidence.tgz broken.Jenkinsfile fixed.Jenkinsfile triage-checks.sh symptoms.yaml lts-upgrade-plan.yaml replay-fix.diff replay-lesson.txt *.txt
+ls -l module-16-evidence.tgz | tee evidence.txt
+```
+
+**Expected output:** Upgrade plan YAML validates; evidence archived.
 
 ### Validation steps
 
-- [ ] Artefacts from tasks exist
-- [ ] No secrets committed
-- [ ] Compose stack stopped if started
+- [ ] Failed build triaged with `triage-checks.sh`
+- [ ] Replay practised on lab; fix captured in `fixed.Jenkinsfile`
+- [ ] `symptoms.yaml` validates
+- [ ] `lts-upgrade-plan.yaml` filled for your versions
 
 ### Common errors and fixes
 
 | Error | Cause | Fix |
 |-------|-------|-----|
-| port 8080 in use | Another Jenkins/lab | Change host port or stop the other container |
-| permission denied on volume | Podman/rootless path | Fix volume ownership or use named volumes |
-| agent any hangs | No executors | Attach an agent or enable a lab executor carefully |
+| Replay button missing | Permissions / Pipeline type | Need Replay permission; Pipeline job |
+| Still red after Replay | Different root cause | Re-read first ERROR |
+| Upgrade boot fail | Plugin incompatibility | Restore backup; stage plugins |
+| Disk full mid-upgrade | History/artefacts | Free space before upgrade |
 
 ### Challenge exercise
 
-Disable builds on the built-in node in your notes and document the agent label you would require instead.
+Capture `java -jar jenkins-cli.jar … list-plugins` output into `plugins-before.txt` (with token in env only) as the baseline artefact you would attach to an upgrade ticket.
 
 ### Learning outcomes
 
-- Produced runnable Jenkins artefacts
-- Practised safe lab controller hygiene
+- Used a structured triage path
+- Separated Replay experiments from durable Git fixes
+- Planned LTS upgrades with rollback
 
 ### Cleanup
 
 ```bash
-# Keep lab notes under ~/rebash-jenkins/
+# Fix or delete the deliberately broken lab job
+ls ~/rebash-jenkins/module-16
 ```
 
 ## Validation
 
-
-
-- [ ] Lab commands run under `~/rebash-jenkins/module-16/`
-- [ ] You can explain each Theory section in your own words
-- [ ] You used current Jenkins LTS / Pipeline practices where they apply
-- [ ] You can describe one production failure mode for this topic
+- [ ] Lab completed under `~/rebash-jenkins/module-16/`
+- [ ] You can narrate Stage View → console → agent
+- [ ] You know when to restore versus roll forward
+- [ ] You will not upgrade production without staging
 
 ## Code Walkthrough
 
-
-
-Production practice for **Troubleshooting and Upgrades** always combines:
-
-1. Inspect before you change (status, plan, logs, dry-run)
-2. Prefer reversible, documented changes (Git, Jenkinsfile, JCasC)
-3. Capture evidence (console logs, plan artefacts) for handovers
-4. Prefer current LTS and supported plugins over legacy shortcuts
-5. Least privilege — escalate credentials only when required
-
-Keep runbooks short enough to follow under pressure. Automate checks; keep humans for judgement.
+1. **First error wins** — read from the top of the failure.
+2. **Confirm the agent** — many “Pipeline bugs” are infra.
+3. **Replay to learn; Git to fix** — durable changes in SCM.
+4. **Backup before upgrade** — Module 15 is not optional.
+5. **Stage then produce** — LTS guides are mandatory reading.
 
 ## Security Considerations
 
-
-
-- Treat Jenkins credentials and cloud tokens as privileged — never commit them
-- Keep builds off the built-in node; isolate untrusted pull requests
-- Prefer short-lived auth (OIDC-style patterns, scoped RBAC) over long-lived keys
-- Validate blast radius before apply/deploy/delete operations
-- Collect audit logs; limit who can administer the controller
+- Replay can run modified scripts — restrict permissions.
+- Support bundles and console logs may contain secrets — redact.
+- Upgrade windows need authenticated operators only.
+- Do not disable security to “fix” upgrades.
+- Rollback images/volumes carefully to avoid reintroducing known CVEs without a plan.
 
 ## Common Mistakes
 
+!!! warning "Upgrading production on Friday without staging"
+    Weekend outage. **Fix:** staging canaries; Monday-friendly windows.
 
+!!! warning "Fixing only via Replay"
+    Next build is red again. **Fix:** commit Jenkinsfile/config.
 
-!!! warning "Fix only via Replay"
-    Commit Jenkinsfile/library fixes; replay is for diagnosis, not configuration management.
+!!! warning "Ignoring disk warnings"
+    Upgrades fail writing plugins. **Fix:** free space; retention policies.
 
-!!! warning "Big-bang upgrades"
-    Split core and plugin changes; use a test controller.
-
-!!! warning "No rollback path"
-    A backup you have never restored is a hope, not a plan.
+!!! warning "Blaming Pipeline for offline agents"
+    Wrong layer. **Fix:** node connectivity first.
 
 ## Best Practices
 
-
-
-- Encode **Troubleshooting and Upgrades** changes as code and review them in pull requests
-- Prefer Jenkins LTS and pinned agent/tool versions
-- Keep builds off the controller; use labelled agents
-- Least privilege for credentials and cluster/cloud access
-- Destroy or stop lab resources; keep `~/rebash-jenkins/` notes for the track
+- Keep a living triage checklist in the platform repo.
+- Pin images/tags for controllers.
+- Maintain a canary job suite for post-upgrade verify.
+- Record plugin inventory before/after.
+- Prefer safe restart; communicate drain.
 
 ## Troubleshooting
 
-
-
 | Symptom | Likely cause | Fix |
 |---------|--------------|-----|
-| Job stuck in queue | No matching agent/label or executors busy | Check nodes, labels, and executor counts |
-| Checkout / SCM failure | Credentials, URL, or permissions | Verify credential ID and repository access |
-| Pipeline CPS / script error | Syntax, sandbox, or library mismatch | Read error line; validate Jenkinsfile; pin library version |
-| Plugin / UI broken after update | Incompatible plugin set | Restore backup; disable suspect plugin on test controller |
-| Disk full on agent/controller | Workspaces or old builds | Clean workspaces; trim build retention |
+| `channel` / remoting errors | Agent network | Fix WebSocket/JNLP path |
+| `RejectedAccessException` | Script security | Approve carefully on staging only |
+| UI theme broken | Plugin/CSS conflict | Disable recent UI plugins |
+| Builds stuck “after restart” | Queue/executor confusion | Check nodes; clear stale in-progress |
 
 ## Summary
 
-
-
-**Troubleshooting and Upgrades** is essential for Cloud and DevOps engineers operating Jenkins. Practise the lab until the inspection and change path is muscle memory, then continue the track.
+Troubleshoot with evidence: stages, console, agents. Upgrade LTS with backups, staging, and an explicit rollback. You have completed the core Jenkins tutorial track — return to the [course overview](index.md) for capstone and interview practice.
 
 ## Interview Questions
 
+**1. What is your first move when a Pipeline turns red?**
 
+??? success "Reveal answer"
+    Open the failing build’s Stage View to find the red stage, then read Console Output from the first ERROR, and confirm which agent/label ran the build before changing code.
 
-1. How do you triage a red Pipeline build?
-2. When is Pipeline replay appropriate?
-3. How do you isolate a bad plugin update?
-4. What is your LTS upgrade checklist?
-5. Agent offline — what do you check first?
+**2. What is Pipeline Replay and when is it inappropriate?**
 
-!!! tip "Sample answer — question 2"
-    Use replay to test a hypothesis quickly, then commit the real fix to SCM; control who has replay permission.
+??? success "Reveal answer"
+    Replay re-runs a build with an edited script in Jenkins. It is useful for labs and quick experiments. It is inappropriate as the only production fix because the durable definition in Git/UI may remain broken.
 
-!!! tip "Sample answer — question 4"
-    Read the upgrade guide, backup, upgrade test, smoke, production change window, smoke again, keep rollback snapshots.
+**3. How do you approach a Jenkins controller that will not boot after a plugin update?**
+
+??? success "Reveal answer"
+    Restore from backup or disable the offending plugin using known rescue procedures on a staging copy first; avoid random plugin deletion on the only production volume without a restore path.
+
+**4. Name two performance symptoms that point to agent capacity issues.**
+
+??? success "Reveal answer"
+    Long queue wait times and many pending builds waiting for labels while existing agents are busy or offline.
+
+**5. What should you read before an LTS upgrade?**
+
+??? success "Reveal answer"
+    The official LTS upgrade guide for the versions you are jumping, plus plugin compatibility notes — after taking a tested backup.
+
+**6. Safe restart versus killing the container — which do you prefer?**
+
+??? success "Reveal answer"
+    Prefer safe restart / prepare-for-shutdown so builds can drain and configuration writes finish. Hard kills are emergency measures that risk corruption.
+
+**7. How do backups participate in upgrade rollback?**
+
+??? success "Reveal answer"
+    If the upgraded controller misbehaves, you restore the pre-upgrade `JENKINS_HOME` volume/snapshot and/or previous image tag to return to a known good state.
+
+**8. Why might checkout fail only on one agent label?**
+
+??? success "Reveal answer"
+    That agent pool may lack Git, network egress to the SCM host, or the correct credentials mounted — issues that would not appear on other labels.
 
 ## Related Tutorials
 
-
-
-- [Course overview](index.md)
 - [JCasC, Scaling, and Operations](jcasc-scaling-and-operations.md)
+- [Managing Jenkins — Plugins, Tools, and CLI](managing-jenkins-plugins-tools-and-cli.md)
+- [Course overview](index.md)
 
 ## References
 
-
-
 - [LTS upgrade guides](https://www.jenkins.io/doc/upgrade-guide/)
-- [System administration](https://www.jenkins.io/doc/book/system-administration/)
-- [Troubleshooting](https://www.jenkins.io/doc/book/troubleshooting/)
+- [Troubleshooting Jenkins](https://www.jenkins.io/doc/book/system-administration/troubleshooting/)
+- [Pipeline development tools (Replay)](https://www.jenkins.io/doc/book/pipeline/development/)

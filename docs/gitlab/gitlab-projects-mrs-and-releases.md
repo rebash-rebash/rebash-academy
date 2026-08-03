@@ -33,7 +33,7 @@ tags:
   - merge-requests
   - releases
 author: Shaik Basha
-last_updated: "2026-07-31"
+last_updated: "2026-08-03"
 comments: false
 ---
 
@@ -151,22 +151,21 @@ Predefined variables such as `$CI_MERGE_REQUEST_IID`, `$CI_COMMIT_BRANCH`, `$CI_
 
 ## Hands-on Lab
 
-
-
 ### Objective
 
-Author a valid `.gitlab-ci.yml` that models **GitLab Projects, Merge Requests, and Releases** and validate it locally before pushing.
+Create an MR policy checklist, a project README, and a `.gitlab-ci.yml` with `workflow:rules` that runs different jobs on merge requests versus the default branch — all validated offline.
 
 ### Prerequisites
 
 - Python 3 with PyYAML (`pip install pyyaml`)
-- Optional: GitLab project to run the pipeline
+- Completed [GitLab CI/CD Fundamentals](gitlab-ci-fundamentals.md) lab files (optional starting point)
+- Optional: GitLab project with protected `main` branch
 
 ### Lab environment
 
 Workspace: `~/rebash-gitlab/module-02`
 
-File-first lab. Push to GitLab only when you want a runner to execute jobs.
+File-first lab. Push to GitLab only when you want MR and branch pipelines on a runner.
 
 ```bash
 mkdir -p ~/rebash-gitlab/module-02 && cd ~/rebash-gitlab/module-02
@@ -174,127 +173,184 @@ mkdir -p ~/rebash-gitlab/module-02 && cd ~/rebash-gitlab/module-02
 
 ### Real-world scenario
 
-Your squad is encoding **GitLab Projects, Merge Requests, and Releases** as CI. Reviewers reject YAML that does not parse or that skips artefacts/needs incorrectly.
+Your platform team requires every service repo to document MR expectations and encode branch-aware CI. Feature branches must run fast lint checks on merge requests; the default branch runs an additional compliance job after merge. You ship reviewable YAML and a machine-readable MR policy before opening the first merge request.
 
 ### Step-by-step tasks
 
-#### Task 1 – Write pipeline YAML
+#### Task 1 – Create the project README
 
-Stages and jobs must be explicit so MR pipelines are predictable.
+Create `README.md`:
+
+```markdown
+# rebash-gitlab-module-02
+
+Sample service for GitLab projects, merge requests, and releases.
+
+## Branch policy
+
+- Feature work lands via merge request into `main`
+- `main` is protected; direct pushes are blocked
+- Tags matching `v*.*.*` trigger release pipelines
+```
+
+Verify the file exists:
 
 ```bash
-mkdir -p src && echo 'print("ok")' > src/app.py
-cat > .gitlab-ci.yml << 'EOF'
-stages: [lint, test]
-lint:
-  stage: lint
+cd ~/rebash-gitlab/module-02
+test -s README.md
+head -3 README.md | tee readme-head.txt
+```
+
+**Expected output:** `readme-head.txt` shows the project title and description lines.
+
+#### Task 2 – Define the MR checklist policy
+
+Create `mr-policy.yaml` — a machine-readable checklist reviewers use before approving:
+
+```yaml
+version: 1
+merge_request:
+  required_checks:
+    - pipeline_must_pass
+    - at_least_one_approval
+    - no_wip_title_prefix
+  blocked_if:
+    - target_branch_unprotected
+  notes:
+    - "MR pipelines run on merge_request_event only"
+    - "Release tags require protected tag rules in GitLab UI"
+branch_protection:
+  default_branch: main
+  allow_force_push: false
+  require_ci_pass_before_merge: true
+```
+
+Validate:
+
+```bash
+cd ~/rebash-gitlab/module-02
+python3 -c "
+import yaml
+p = yaml.safe_load(open('mr-policy.yaml'))
+assert p['merge_request']['required_checks'][0] == 'pipeline_must_pass'
+assert p['branch_protection']['default_branch'] == 'main'
+print('OK mr-policy', p['version'])
+"
+```
+
+**Expected output:** Prints `OK mr-policy 1`.
+
+#### Task 3 – Author branch-aware CI with workflow rules
+
+Create `src/app.py`:
+
+```python
+print("module-02 ok")
+```
+
+Create `.gitlab-ci.yml`:
+
+```yaml
+workflow:
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
+
+stages:
+  - validate
+  - release
+
+mr_lint:
+  stage: validate
   image: python:3.12-alpine
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
   script:
     - python -m py_compile src/app.py
-test:
-  stage: test
+    - echo "MR pipeline for branch $CI_COMMIT_REF_NAME"
+
+main_compliance:
+  stage: validate
   image: python:3.12-alpine
-  needs: [lint]
+  rules:
+    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
   script:
     - python src/app.py
-EOF
-python3 -c "import yaml; d=yaml.safe_load(open('.gitlab-ci.yml')); assert d['stages']==['lint','test']; print('OK', list(d))"
+    - test -f README.md
+    - test -f mr-policy.yaml
+
+release_job:
+  stage: release
+  image: registry.gitlab.com/gitlab-org/release-cli:latest
+  rules:
+    - if: $CI_COMMIT_TAG
+  script:
+    - echo "Would create GitLab Release for tag $CI_COMMIT_TAG"
 ```
 
-**Expected output:** Prints `OK` and job names; no YAML exception.
-
-#### Task 2 – Simulate the scripts locally
-
-Prove the job script works before burning runner minutes.
+Validate offline:
 
 ```bash
-python3 -m py_compile src/app.py
-python3 src/app.py | tee out.txt
-test "$(cat out.txt)" = 'ok'
+cd ~/rebash-gitlab/module-02
+python3 -c "
+import yaml
+d = yaml.safe_load(open('.gitlab-ci.yml'))
+assert 'workflow' in d
+jobs = [k for k in d if k not in ('workflow', 'stages')]
+assert set(jobs) == {'mr_lint', 'main_compliance', 'release_job'}
+print('OK', jobs)
+"
 ```
 
-**Expected output:** Compile succeeds; out.txt is `ok`.
+**Expected output:** Prints `OK` with the three job names.
+
+#### Task 4 – Simulate default-branch scripts locally
+
+Prove the compliance job logic without a runner:
+
+```bash
+cd ~/rebash-gitlab/module-02
+python3 -m py_compile src/app.py
+python3 src/app.py | tee branch-out.txt
+test -f README.md && test -f mr-policy.yaml
+grep -q 'module-02 ok' branch-out.txt
+```
+
+**Expected output:** Compile succeeds; `branch-out.txt` contains `module-02 ok`; policy files exist.
 
 ### Validation steps
 
-- [ ] `.gitlab-ci.yml` parses
-- [ ] Local script path matches job intent
+- [ ] `README.md` documents branch and tag policy
+- [ ] `mr-policy.yaml` parses and lists required MR checks
+- [ ] `.gitlab-ci.yml` defines `workflow:rules` for MR and default branch
+- [ ] `release_job` runs only when `$CI_COMMIT_TAG` is set
+- [ ] Local simulation passes compile, run, and file checks
 
 ### Common errors and fixes
 
 | Error | Cause | Fix |
 |-------|-------|-----|
-| yaml.scanner.ScannerError | Indentation | Use 2-space indent; re-validate with PyYAML |
-| job stuck pending | No runner / tags | Check runner tags match job tags |
-| needs not found | Typo in job name | Align `needs` with actual job keys |
+| Duplicate pipelines on MR push | Missing `workflow:rules` | Add MR-only and default-branch rules as shown |
+| `release_job` runs on every branch | `rules` omitted on release job | Gate with `- if: $CI_COMMIT_TAG` |
+| MR pipeline never starts | Push without opening MR | Open a merge request or simulate with `merge_request_event` on GitLab |
+| Compliance job fails on feature branch | Wrong `rules` on `main_compliance` | Restrict to `$CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH` |
 
 ### Challenge exercise
 
-Add an `artifacts:` path from lint to test and document expire_in.
+Add `CHANGELOG.md` with a `## 0.1.0` section and extend `release_job` to `cat CHANGELOG.md` in its script. Validate YAML still parses.
 
 ### Learning outcomes
 
-- Produced reviewable GitLab CI YAML
-- Validated structure and scripts locally
+- Documented MR expectations in a reviewable README and YAML policy file
+- Separated MR pipelines from default-branch pipelines with `workflow:rules`
+- Modelled tag-triggered release jobs without running them on every push
+- Validated all project YAML offline before pushing
 
 ### Cleanup
 
 ```bash
-# File-only lab — keep YAML for the next tutorial
-```
-
-## 0.1.0
-
-
-
-
-
-
-- Lab release' > CHANGELOG.md
-cat > .gitlab-ci.yml << 'EOF'
-release:
-  stage: deploy
-  image: registry.gitlab.com/gitlab-org/release-cli:latest
-  script:
-    - echo "Create GitLab Release for $CI_COMMIT_TAG"
-  rules:
-    - if: $CI_COMMIT_TAG
-EOF
-cat CHANGELOG.md
-python3 -c "import yaml; yaml.safe_load(open('.gitlab-ci.yml')); print('OK')"
-```
-
-### Final step – Cleanup note
-
-```bash
-# File-only
-```
-
-## 0.1.0
-
-
-
-
-
-
-- Lab release' > CHANGELOG.md
-cat > .gitlab-ci.yml << 'EOF'
-release:
-  stage: deploy
-  image: registry.gitlab.com/gitlab-org/release-cli:latest
-  script:
-    - echo "Create GitLab Release for $CI_COMMIT_TAG"
-  rules:
-    - if: $CI_COMMIT_TAG
-EOF
-cat CHANGELOG.md
-python3 -c "import yaml; yaml.safe_load(open('.gitlab-ci.yml')); print('OK')"
-```
-
-### Final step – Cleanup note
-
-```bash
-# File-only
+rm -f ~/rebash-gitlab/module-02/readme-head.txt ~/rebash-gitlab/module-02/branch-out.txt
+# Keep project files for module 03
 ```
 
 ## Validation

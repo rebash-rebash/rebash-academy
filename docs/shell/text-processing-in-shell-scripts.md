@@ -151,11 +151,9 @@ After a deploy, on-call wants a one-page summary from the app log: count of `ERR
 
 #### Task 1 – Create fixture logs
 
-```bash
-cd ~/rebash-shell/lab10
-set -euo pipefail
+Create `fixtures/app.log`:
 
-cat > fixtures/app.log << 'EOF'
+```text
 2026-08-02T10:00:01Z INFO billing payment ok
 2026-08-02T10:00:02Z WARN catalog cache miss
 2026-08-02T10:00:03Z ERROR billing db timeout
@@ -164,21 +162,26 @@ cat > fixtures/app.log << 'EOF'
 2026-08-02T10:00:06Z WARN billing retry scheduled
 2026-08-02T10:00:07Z ERROR catalog upstream 503
 2026-08-02T10:00:08Z INFO catalog refresh ok
-EOF
-
-wc -l fixtures/app.log | tee out/fixture-wc.txt
-test "$(wc -l <fixtures/app.log | tr -d ' ')" -eq 8
 ```
 
-**Expected output:** `out/fixture-wc.txt` shows 8 lines.
-
-#### Task 2 – `grep` + `sed` + `awk` report script with asserts
+Run:
 
 ```bash
 cd ~/rebash-shell/lab10
 set -euo pipefail
 
-cat > report.sh << 'EOF'
+wc -l fixtures/app.log | tee out/fixture-wc.txt
+test "$(wc -l <fixtures/app.log | tr -d ' ')" -eq 8
+```
+
+
+**Expected output:** `out/fixture-wc.txt` shows 8 lines.
+
+#### Task 2 – `grep` + `sed` + `awk` report script with asserts
+
+Create `report.sh`:
+
+```bash
 #!/usr/bin/env bash
 set -euo pipefail
 
@@ -212,10 +215,18 @@ grep -qx 'catalog' out/error-services.txt
 test "$(wc -l <out/error-services.txt | tr -d ' ')" -eq 3
 
 printf 'report_ok=1\n' | tee out/report-ok.txt
-EOF
+```
+
+Run:
+
+```bash
+cd ~/rebash-shell/lab10
+set -euo pipefail
+
 chmod +x report.sh
 ./report.sh fixtures/app.log
 ```
+
 
 **Expected output:** `severity-counts.txt` has `ERROR 3` and `WARN 2`; `error-services.txt` lists `auth`, `billing`, `catalog`; `report-ok=1`.
 

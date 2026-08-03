@@ -31,7 +31,7 @@ tags:
   - configmap
   - secrets
 author: Shaik Basha
-last_updated: "2026-07-31"
+last_updated: "2026-08-03"
 comments: false
 ---
 
@@ -153,23 +153,19 @@ Prefer external secret managers (cloud SM, Vault, ESO) for production credential
 
 ## Hands-on Lab
 
-
-
 ### Objective
 
-Build and verify a working Kubernetes solution for **ConfigMaps and Secrets** that you can inspect, prove, and tear down safely.
+Create ConfigMap and Secret objects, run a Pod that consumes them via `envFrom` and volume mounts, and prove configuration is visible without exposing Secret values in your evidence files.
 
 ### Prerequisites
 
-- kubectl configured against a lab cluster (kind/minikube preferred)
-- Cluster-admin or namespace-create rights in the lab cluster
+- kubectl configured against a lab cluster (kind or minikube)
+- Rights to create namespaces and apply workloads
 - Writable workspace at `~/rebash-k8s/module-08`
 
 ### Lab environment
 
-Workspace: `~/rebash-k8s/module-08`
-
-Local kind/minikube or a dedicated sandbox cluster. Never target a shared production API server.
+Workspace: `~/rebash-k8s/module-08` on a disposable kind or minikube cluster. Do not use a shared production API server.
 
 ```bash
 mkdir -p ~/rebash-k8s/module-08 && cd ~/rebash-k8s/module-08
@@ -177,63 +173,159 @@ mkdir -p ~/rebash-k8s/module-08 && cd ~/rebash-k8s/module-08
 
 ### Real-world scenario
 
-Your platform team is rolling out **ConfigMaps and Secrets** for a new microservice. You must apply the change in an isolated namespace, prove it works with kubectl, and leave evidence for the on-call handover.
+Platform engineering is onboarding **billing-api** into a new namespace. Non-sensitive settings live in a ConfigMap; an API token lives in a Secret. You must wire both into the Pod, prove the app sees the config file and environment variables, and document evidence for a change ticket — without copying Secret values into logs or tickets.
 
 ### Step-by-step tasks
 
-#### Task 1 – Apply a topic workload
+#### Task 1 – Namespace, ConfigMap, and Secret
 
-Create a namespace and a small Deployment to practise **What it is** against a live API.
+Create `namespace.yaml`:
 
-```bash
-kubectl create namespace rebash-lab --dry-run=client -o yaml | kubectl apply -f -
-kubectl create deployment topic --image=nginx:1.27-alpine -n rebash-lab
-kubectl rollout status deployment/topic -n rebash-lab
-kubectl get all -n rebash-lab
+```yaml
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: rebash-m08
+  labels:
+    app.kubernetes.io/part-of: rebash-lab
 ```
 
-**Expected output:** Deployment Ready; Pods listed under the namespace.
+Create `configmap.yaml`:
 
-#### Task 2 – Inspect and gather evidence
-
-Production changes always leave an audit trail of describe/Events.
-
-```bash
-kubectl describe deploy topic -n rebash-lab | tee describe.txt
-kubectl get events -n rebash-lab --sort-by=.lastTimestamp | tail -n 15 | tee events.txt
+```yaml
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: billing-config
+  namespace: rebash-m08
+data:
+  APP_ENV: staging
+  log_level: info
+  welcome.message: "Billing API ready"
 ```
 
-**Expected output:** describe.txt and events.txt capture healthy Objects/Events.
+Create `secret.yaml` (lab-only dummy token — never commit real credentials):
+
+```yaml
+apiVersion: v1
+kind: Secret
+metadata:
+  name: billing-secret
+  namespace: rebash-m08
+type: Opaque
+stringData:
+  api-token: lab-only-not-a-real-token
+```
+
+Apply and list objects:
+
+```bash
+cd ~/rebash-k8s/module-08
+kubectl apply -f namespace.yaml -f configmap.yaml -f secret.yaml
+kubectl get configmap,secret -n rebash-m08 | tee objects-m08.txt
+```
+
+**Expected output:** `objects-m08.txt` lists `billing-config` and `billing-secret`.
+
+#### Task 2 – Pod consuming envFrom and volumes
+
+Create `pod.yaml`:
+
+```yaml
+apiVersion: v1
+kind: Pod
+metadata:
+  name: billing-consumer
+  namespace: rebash-m08
+  labels:
+    app: billing-consumer
+spec:
+  containers:
+    - name: app
+      image: busybox:1.36.1
+      command:
+        - sh
+        - -c
+        - |
+          echo "APP_ENV=$APP_ENV log_level=$LOG_LEVEL"
+          cat /etc/config/welcome.message
+          sleep 3600
+      envFrom:
+        - configMapRef:
+            name: billing-config
+      volumeMounts:
+        - name: config-files
+          mountPath: /etc/config
+          readOnly: true
+        - name: secret-files
+          mountPath: /etc/secret
+          readOnly: true
+  volumes:
+    - name: config-files
+      configMap:
+        name: billing-config
+    - name: secret-files
+      secret:
+        secretName: billing-secret
+```
+
+Apply and wait for Ready:
+
+```bash
+cd ~/rebash-k8s/module-08
+kubectl apply -f pod.yaml
+kubectl wait --for=condition=Ready pod/billing-consumer -n rebash-m08 --timeout=120s
+kubectl get pod billing-consumer -n rebash-m08 | tee pod-m08.txt
+```
+
+**Expected output:** `pod-m08.txt` shows `billing-consumer` in `Running` with `1/1` Ready.
+
+#### Task 3 – Prove config without leaking Secret values
+
+Show ConfigMap data inside the Pod and list Secret **keys only** from the API — do not `kubectl get secret -o yaml` or `echo` token values into evidence.
+
+```bash
+cd ~/rebash-k8s/module-08
+kubectl exec -n rebash-m08 billing-consumer -- sh -c 'echo APP_ENV=$APP_ENV; cat /etc/config/welcome.message' | tee config-evidence.txt
+kubectl get secret billing-secret -n rebash-m08 -o jsonpath='{range $k,$v := .data}{ $k }{"\n"}{end}' | tee secret-keys-only.txt
+test -s config-evidence.txt
+grep -q 'Billing API ready' config-evidence.txt
+grep -q 'api-token' secret-keys-only.txt
+```
+
+**Expected output:** `config-evidence.txt` contains `APP_ENV=staging` and `Billing API ready`. `secret-keys-only.txt` lists `api-token` without decoded values.
 
 ### Validation steps
 
-- [ ] Namespace `rebash-lab` contains the expected Ready objects
-- [ ] You can explain each Task command from the Theory section
-- [ ] Cleanup deletes the namespace without leftover workloads
+- [ ] Namespace `rebash-m08` exists with ConfigMap, Secret, and Ready Pod
+- [ ] Pod logs or exec output show non-sensitive ConfigMap values
+- [ ] Evidence files omit decoded Secret values
+- [ ] You can explain env vs volume injection trade-offs from Theory
 
 ### Common errors and fixes
 
 | Error | Cause | Fix |
 |-------|-------|-----|
-| ImagePullBackOff | Wrong tag or registry auth | Fix image reference; check pull secrets |
-| Pending Pod | Scheduling / quota / PVC | `kubectl describe pod` and read Events |
-| Empty Endpoints | Selector or readiness mismatch | Compare Service selector to Pod labels and Ready |
+| `CreateContainerConfigError` | ConfigMap/Secret name typo | Match names in Pod spec to applied objects |
+| Pod Pending | Image pull or quota | `kubectl describe pod billing-consumer -n rebash-m08` |
+| Secret not mounted | Wrong `secretName` or volume name | Align `volumes[].secret.secretName` with Secret metadata |
+| ConfigMap key missing in env | Key not present in ConfigMap | `kubectl describe configmap billing-config -n rebash-m08` |
 
 ### Challenge exercise
 
-Add a readinessProbe and a ResourceQuota to the namespace, then show that over-quota creates are rejected.
+Add a Downward API env var for the Pod name: extend `pod.yaml` with `env.valueFrom.fieldRef.fieldPath: metadata.name`, re-apply, and capture `kubectl exec … env | grep POD_NAME` into `downward-api.txt`.
 
 ### Learning outcomes
 
-- Applied a real cluster change for ConfigMaps and Secrets
-- Used describe/Events for verification
-- Destroyed lab resources cleanly
+- Created ConfigMap and Secret manifests and applied them in an isolated namespace
+- Injected configuration via `envFrom` and read-only volume mounts
+- Gathered audit evidence without exposing Secret plaintext
+- Understood when to restart Pods after config changes
 
 ### Cleanup
 
 ```bash
-kubectl delete namespace rebash-lab --ignore-not-found
-# Keep ~/rebash-kubernetes/ for later tutorials
+kubectl delete namespace rebash-m08 --ignore-not-found
 ```
 
 ## Validation

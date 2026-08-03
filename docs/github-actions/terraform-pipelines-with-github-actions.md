@@ -2,7 +2,7 @@
 title: "Terraform Pipelines with GitHub Actions"
 description: "Run Terraform init, validate, plan on pull requests, and gated apply on main with remote state and plan artefacts in GitHub Actions."
 difficulty: advanced
-estimated_time: "50–65 min"
+estimated_time: "55–75 min"
 technology: github-actions
 category: github-actions
 module: "Module 9 · Terraform Pipelines"
@@ -21,14 +21,9 @@ prerequisites:
 next:
   - github-actions/multi-cloud-deployments-with-github-actions
 related:
-  - terraform/terraform-in-ci-cd-pipelines
+  - terraform/terraform-workflow-init-plan-apply
   - terraform/remote-state-and-backends
   - github-actions/secrets-variables-and-oidc
-labs: []
-projects: []
-interview: interview/github-actions
-certifications:
-  - GitHub Actions
 tags:
   - github-actions
   - terraform
@@ -36,363 +31,485 @@ tags:
   - plan
   - remote-state
 author: Shaik Basha
-last_updated: "2026-07-31"
+last_updated: "2026-08-03"
 comments: false
 ---
-
 
 # Terraform Pipelines with GitHub Actions
 
 ## Overview
 
+Running `terraform apply` from a laptop does not scale. GitHub Actions should run **init → validate → plan** on every pull request, upload the **plan artefact**, and only **apply** on protected branches after human approval — using **remote state** with locking and short-lived cloud roles (OpenID Connect (OIDC)) instead of long-lived access keys. Labs must also practise **destroy** discipline so sandbox resources do not leak cost.
 
-
-
-
-
-
-
-Design a GitHub Actions pipeline that runs `init` → `validate` → `plan` on pull requests (with a plan artefact) and a protected `apply` on `main` — with remote state outside the runner workspace and clear notes on destroy.
-
-Terraform in Actions automates Infrastructure as Code (IaC): every change is planned in review, then applied under gates. Store **remote state** with locking (for example Amazon Simple Storage Service (S3) + DynamoDB, Azure Storage, or Google Cloud Storage). Upload the binary **plan** as a workflow artefact so apply executes what reviewers saw. Never leave state only on the runner disk. Prefer OpenID Connect (OIDC) cloud roles (Modules 5 and 10) over static access keys.
-
-This is a core tutorial in **Module 9 · Terraform Pipelines** of the REBASH Academy **GitHub Actions for Cloud & DevOps Engineers** series — written for Cloud, DevOps, Platform, and SRE engineers.
+This is **Tutorial 9** in **Module 9: Terraform Pipelines** of the REBASH Academy **GitHub Actions for Cloud & DevOps Engineers** series — written for Cloud, DevOps, Platform, and Site Reliability Engineering (SRE) engineers.
 
 ## Prerequisites
 
-
-
-
-
-
-
-
 - [Kubernetes Deployments with GitHub Actions](kubernetes-deployments-with-github-actions.md)
+- [Terraform workflow — init, plan, apply](../terraform/terraform-workflow-init-plan-apply.md)
+- Terraform CLI 1.5+ (or Docker image `hashicorp/terraform`)
+- Optional cloud account — the lab uses a local/null backend mock
 
 ## Learning Objectives
 
-
-
-
-
-
-
-
 By the end of this tutorial, you will be able to:
 
-- [ ] Sequence init, validate, plan, apply, and optional destroy  
-- [ ] Store plan output as a GitHub Actions artefact for PR review  
-- [ ] Gate apply with a protected environment  
-- [ ] Explain remote state + locking in CI  
-- [ ] Use `TF_IN_AUTOMATION` and non-interactive flags
+- [ ] Structure a GitHub Actions workflow for Terraform init/validate/plan/apply
+- [ ] Explain remote state and locking in CI
+- [ ] Gate production apply behind environment protection — never auto-apply without approval
+- [ ] Upload and consume plan files as workflow artefacts
+- [ ] Document destroy rules for lab environments
 
 ## Architecture
 
+Pull requests plan only; apply on `main` consumes the saved plan after environment approval.
 
-
-
-
-
-
-
-This topic’s control points and relationships are shown below.
-
-![Terraform pipeline](../assets/excalidraw/gha-terraform-pipeline.svg)
+![Terraform pipeline with GitHub Actions](../assets/excalidraw/gha-terraform-pipeline.svg)
 
 ## Theory
 
-
-
-
-
-
-
-
 ### What it is
 
-A **Terraform pipeline** maps CLI phases onto workflow jobs: `fmt`/`validate` and `plan -out=` on every pull request (read-only / plan privilege); reviewed **apply** of the saved plan on the default branch behind a protected environment; rare, heavily gated **destroy**. State lives in a **remote backend** with locking. Set `TF_IN_AUTOMATION=true` and `-input=false` so jobs never prompt. Pin the Terraform CLI version (`hashicorp/setup-terraform`) so plan and apply use the same binary.
+| Stage | Command intent |
+|-------|----------------|
+| Init | `terraform init` — backends and providers |
+| Validate | `terraform validate` |
+| Plan | `terraform plan -out=tfplan` |
+| Apply | `terraform apply tfplan` |
+| Destroy | `terraform destroy` (labs / teardown workflows) |
 
-| Concern | Good practice | Risk |
-|---------|---------------|------|
-| State | Remote + lock | Local state on runner |
-| Plan | Artefact tied to commit SHA | Fresh plan at apply with drift |
-| Apply | Protected environment + reviewers | Auto-apply on every push |
-| Secrets | OIDC / environment secrets | Static admin keys in repository secrets |
+**Remote state** (Amazon Simple Storage Service (S3) + DynamoDB, Azure Storage, Google Cloud Storage with locking) is the production default so every runner shares one state file. The lab uses local state with clear warnings.
+
+**Credentials:** inject cloud roles via OIDC federation (Modules 5 and 10) where possible. Static access keys in repository secrets work but need rotation and least privilege.
+
+**Approvals:** GitHub **Environments** with required reviewers, or a separate `workflow_dispatch` apply job, or GitOps-style promotion. **Never auto-apply** random pull request plans to production.
 
 ### Why it matters
 
-Laptop apply bypasses review and uses personal cloud keys. Pull-request plans give reviewers a concrete diff; protected apply prevents unreviewed infrastructure changes. Plan artefacts stop “plan on Tuesday, apply Thursday’s different config.” State locking prevents two workflows from corrupting the same workspace. Destroy without dual control can erase production in minutes.
+Unreviewed apply from a feature branch can delete databases. Plan artefacts prove what was approved. State locking prevents two workflow runs from corrupting state. Destroy workflows prevent abandoned lab Virtual Private Clouds (VPCs) from billing indefinitely.
 
 ### How it works
 
-1. On pull request: pin Terraform → `init` → `validate` → `plan -out=tfplan` → upload artefact (short retention).  
-2. Post a human-readable summary (`terraform show` or a plan comment action) for reviewers.  
-3. On merge to `main` (after environment approval): download the same artefact → `apply -input=false tfplan`.  
-4. **Destroy** jobs are `workflow_dispatch` only, environment-protected, and ideally dual-controlled.  
-5. Backend config comes from OIDC cloud roles or environment variables — no secrets in Git.
-
-Prefer apply-of-saved-plan for production. If you must re-plan at apply time, document why and still gate on the new plan.
+1. Checkout the Terraform root module.
+2. `init` with backend config (often injected via `-backend-config` or environment variables).
+3. `validate` + `plan -out=tfplan`.
+4. `actions/upload-artifact` the binary `tfplan` (and human-readable `plan.txt` from `terraform show`).
+5. On `main` (or after environment approval): `terraform apply -auto-approve tfplan` using **the same plan file**.
+6. Tear down labs with a dedicated destroy workflow and guardrails.
 
 ### Key concepts and comparisons
 
-| Phase | Trigger | Privilege |
-|-------|---------|-----------|
-| validate / plan | Pull request + `main` | Read / plan role |
-| apply | `main` + environment | Write role, scoped |
-| destroy | Manual dispatch | Break-glass, dual control |
+| Anti-pattern | Better |
+|--------------|--------|
+| `apply` without plan file | Apply saved `tfplan` |
+| Auto-apply all branches | `if: github.ref == 'refs/heads/main'` + environment |
+| State on runner disk only | Remote backend + lock |
+| Admin cloud keys on pull request CI | Narrow roles; no apply on pull requests |
 
 ### Common pitfalls
 
-- Committing `.terraform/` or `terraform.tfstate` to Git.  
-- Applying without the reviewed plan artefact.  
-- Logging plans that include secret attribute values.  
-- One shared state key for all environments.  
-- Fork pull requests with write-level cloud roles (use `pull_request_target` carefully — prefer OIDC subject conditions that exclude forks).
+- Applying a stale plan after newer commits merged.
+- Different backend config between plan and apply jobs.
+- Printing secret variable values in plan logs.
+- No locking → concurrent applies corrupt state.
+- Forgetting destroy for ephemeral labs.
 
 ## Hands-on Lab
 
-
-
 ### Objective
 
-Author a GitHub Actions workflow that implements **Terraform Pipelines with GitHub Actions** and validate YAML structure locally.
+Create a Docker-backed Terraform module, run init/plan/apply/destroy locally, author GitHub Actions workflows with plan artefact upload and gated apply, and enforce destroy discipline with a shell script.
 
 ### Prerequisites
 
-- Python 3 with PyYAML
-- Optional: GitHub repo to run the workflow
+- Docker Engine running (`docker info`)
+- Terraform CLI 1.5+ (`terraform version`)
+- Python 3 with PyYAML for offline YAML validation
+- Optional: test GitHub repository to push workflows
 
 ### Lab environment
 
-Workspace: `~/rebash-github-actions/module-09/.github/workflows`
-
-Workflows under `.github/workflows/`. In docs, wrap GitHub Actions expressions in Jinja raw blocks so MkDocs macros do not parse them; use heredocs in the lab.
+Workspace: `~/rebash-github-actions/module-09`
 
 ```bash
-mkdir -p ~/rebash-github-actions/module-09/.github/workflows && cd ~/rebash-github-actions/module-09/.github/workflows
+mkdir -p ~/rebash-github-actions/module-09/{.github/workflows,tf-demo} && cd ~/rebash-github-actions/module-09
+set -euo pipefail
+docker info | tee docker-info.txt
+terraform version | tee terraform-version.txt
 ```
 
 ### Real-world scenario
 
-Platform engineering wants **Terraform Pipelines with GitHub Actions** as a reusable workflow pattern. You prototype YAML that passes review and runs on `ubuntu-latest`.
+Platform requires every infrastructure change to show a stored plan before apply. Production apply is manual-approved on `main` only through a protected `production` environment. Labs must destroy resources within 24 hours.
 
 ### Step-by-step tasks
 
-#### Task 1 – Create workflow file
+#### Task 1 – Docker-backed Terraform module
 
-Jobs and steps must be explicit; pin mainstream actions.
+Create `tf-demo/main.tf`:
+
+{% raw %}
+```hcl
+terraform {
+  required_version = ">= 1.5.0"
+  required_providers {
+    docker = {
+      source  = "kreuzwerker/docker"
+      version = "~> 3.0"
+    }
+  }
+}
+
+provider "docker" {}
+
+resource "docker_image" "nginx" {
+  name         = "nginx:1.25-alpine"
+  keep_locally = false
+}
+
+resource "docker_container" "rebash" {
+  name  = "rebash-gha-tf-lab"
+  image = docker_image.nginx.image_id
+
+  ports {
+    internal = 80
+    external = 8080
+  }
+}
+
+output "container_id" {
+  value = docker_container.rebash.id
+}
+
+output "url" {
+  value = "http://127.0.0.1:8080"
+}
+```
+{% endraw %}
+
+Validate and plan locally:
 
 ```bash
-mkdir -p .github/workflows
-cat > .github/workflows/lab.yml << 'EOF'
-name: lab
+cd ~/rebash-github-actions/module-09/tf-demo
+set -euo pipefail
+docker info >/dev/null
+terraform init | tee ../init.txt
+terraform validate | tee ../validate.txt
+terraform plan -out=tfplan -input=false | tee ../plan.txt
+terraform show -no-color tfplan > ../plan-show.txt
+test -f tfplan
+grep -q 'docker_container.rebash' ../plan.txt
+cd ..
+```
+
+**Expected output:** `plan.txt` shows `docker_container.rebash` will be created; `tfplan` exists.
+
+#### Task 2 – Plan workflow (pull requests plan only)
+
+Create `.github/workflows/terraform-plan.yml`:
+
+{% raw %}
+```yaml
+name: Terraform Plan
 on:
+  pull_request:
+    paths:
+      - 'tf-demo/**'
   workflow_dispatch:
-  push:
+
 permissions:
   contents: read
+  pull-requests: write
+
 jobs:
-  build:
+  plan:
     runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: tf-demo
     steps:
       - uses: actions/checkout@v4
-      - name: Prove workspace
+      - uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: 1.5.7
+      - name: Terraform Init
+        run: terraform init -input=false
+      - name: Terraform Validate
+        run: terraform validate
+      - name: Terraform Plan
         run: |
-          mkdir -p out
-          echo ok > out/marker.txt
-          test -s out/marker.txt
-EOF
-python3 -c "import yaml; yaml.safe_load(open('.github/workflows/lab.yml')); print('workflow OK')"
+          terraform plan -input=false -out=tfplan
+          terraform show -no-color tfplan > plan.txt
+      - name: Upload plan artefact
+        uses: actions/upload-artifact@v4
+        with:
+          name: tfplan-${{ github.event.pull_request.number || github.run_id }}
+          path: |
+            tf-demo/tfplan
+            tf-demo/plan.txt
+          retention-days: 7
 ```
+{% endraw %}
 
-**Expected output:** `workflow OK` printed; file exists under `.github/workflows/`.
-
-#### Task 2 – Dry-run the shell steps locally
-
-The `run:` block should work in a normal shell before CI.
+Validate offline:
 
 ```bash
-mkdir -p out && echo ok > out/marker.txt
-test -s out/marker.txt && cat out/marker.txt
+cd ~/rebash-github-actions/module-09
+set -euo pipefail
+python3 -c "import yaml; yaml.safe_load(open('.github/workflows/terraform-plan.yml')); print('plan workflow OK')"
+grep -q 'upload-artifact' .github/workflows/terraform-plan.yml
 ```
 
-**Expected output:** Prints `ok`.
+**Expected output:** `plan workflow OK`; artefact upload step present.
+
+#### Task 3 – Gated apply workflow (main + environment)
+
+Create `.github/workflows/terraform-apply.yml`:
+
+{% raw %}
+```yaml
+name: Terraform Apply
+on:
+  workflow_dispatch:
+    inputs:
+      plan_run_id:
+        description: 'Run ID of plan workflow that produced tfplan'
+        required: true
+        type: string
+
+permissions:
+  contents: read
+
+jobs:
+  apply:
+    runs-on: ubuntu-latest
+    environment: production
+    defaults:
+      run:
+        working-directory: tf-demo
+    steps:
+      - uses: actions/checkout@v4
+      - uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: 1.5.7
+      - name: Download plan artefact
+        uses: actions/download-artifact@v4
+        with:
+          name: tfplan-${{ inputs.plan_run_id }}
+          path: tf-demo
+      - name: Terraform Init
+        run: terraform init -input=false
+      - name: Terraform Apply saved plan
+        run: terraform apply -input=false -auto-approve tfplan
+```
+{% endraw %}
+
+Validate offline:
+
+```bash
+cd ~/rebash-github-actions/module-09
+set -euo pipefail
+python3 -c "import yaml; yaml.safe_load(open('.github/workflows/terraform-apply.yml')); print('apply workflow OK')"
+grep -q 'environment: production' .github/workflows/terraform-apply.yml
+grep -q 'terraform apply' .github/workflows/terraform-apply.yml
+```
+
+**Expected output:** `apply workflow OK`; environment protection hook present.
+
+#### Task 4 – Apply, prove, destroy, and record policy
+
+Create `destroy-checks.sh`:
+
+{% raw %}
+```bash
+#!/usr/bin/env bash
+set -euo pipefail
+LAB_TTL_HOURS=24
+echo "lab_ttl_hours=${LAB_TTL_HOURS}" | tee destroy-policy.txt
+echo "backend=local-docker-provider" >> destroy-policy.txt
+echo "production_backend=S3/GCS/Azure-with-locking" >> destroy-policy.txt
+echo "pull_request=plan-only-no-apply-credentials" >> destroy-policy.txt
+echo "production_destroy=separate-workflow-dual-approval" >> destroy-policy.txt
+grep -q 'plan-only' destroy-policy.txt
+docker info >/dev/null
+cd tf-demo
+terraform init -input=false
+terraform validate
+terraform plan -input=false -out=tfplan
+terraform apply -input=false -auto-approve tfplan
+docker ps --filter name=rebash-gha-tf-lab --format '{{.Names}} {{.Status}}' | tee ../container-proof.txt
+grep -q 'rebash-gha-tf-lab' ../container-proof.txt
+curl -sf http://127.0.0.1:8080 >/dev/null
+terraform destroy -input=false -auto-approve
+cd ..
+echo "destroy_attempted=yes" >> destroy-policy.txt
+echo 'destroy-checks passed'
+```
+{% endraw %}
+
+Run and archive:
+
+```bash
+cd ~/rebash-github-actions/module-09
+set -euo pipefail
+chmod +x destroy-checks.sh
+./destroy-checks.sh | tee destroy-checks-output.txt
+
+tar -czf module-09-evidence.tgz tf-demo/main.tf .github/workflows/*.yml destroy-policy.txt container-proof.txt *.txt tf-demo/tfplan 2>/dev/null || \
+tar -czf module-09-evidence.tgz tf-demo/main.tf .github/workflows/*.yml destroy-policy.txt container-proof.txt *.txt
+ls -l module-09-evidence.tgz | tee evidence.txt
+```
+
+**Expected output:** `destroy-checks passed`; `container-proof.txt` shows the lab container; evidence archive created.
 
 ### Validation steps
 
-- [ ] Workflow YAML parses
-- [ ] Local run steps succeed
+- [ ] Docker module plans and applies locally via `destroy-checks.sh`
+- [ ] Plan workflow uploads `tfplan` artefact
+- [ ] Apply workflow uses `environment: production` and saved plan
+- [ ] `container-proof.txt` shows the lab container before destroy
 
 ### Common errors and fixes
 
 | Error | Cause | Fix |
 |-------|-------|-----|
-| Invalid workflow file | YAML/indent | Validate with PyYAML / actionlint |
-| Action not found | Bad uses ref | Pin `actions/checkout@v4` |
-| Permission denied | Missing permissions/OIDC | Set least-privilege `permissions:` |
+| `Cannot connect to the Docker daemon` | Docker not running | Start Docker Desktop or `sudo systemctl start docker` |
+| Backend changed between plan/apply | Different env vars | Pin backend config in both workflows |
+| Stale plan | New commits after plan | Re-plan before apply |
+| State locked | Parallel workflow runs | Use concurrency group; investigate lock holder |
+| Secrets in plan output | Misconfigured providers | Mark sensitive; restrict log access |
+| Fork pull request exfiltration | Over-broad OIDC trust | Restrict `sub` claim; no secrets on forks |
 
 ### Challenge exercise
 
-Add a second job with `needs: build` that uploads `out/` as an artefact (YAML only is fine offline).
+Add a `concurrency:` group keyed on {% raw %}`terraform-${{ github.ref }}`{% endraw %} to both workflows so only one Terraform run executes per branch. Extend `destroy-checks.sh` to grep both workflow files for the concurrency key.
 
 ### Learning outcomes
 
-- Created a real workflow file
-- Validated structure before push
+- Ran Terraform plan/apply/destroy against real Docker resources
+- Gated apply with environment protection and `workflow_dispatch`
+- Proved the container with `docker ps` and `curl` before destroy
+- Separated lab destroy policy from production practice via executable script
 
 ### Cleanup
 
 ```bash
-# Keep workflow stubs under ~/rebash-github-actions/
+cd ~/rebash-github-actions/module-09/tf-demo
+terraform destroy -auto-approve 2>/dev/null || true
+docker rm -f rebash-gha-tf-lab 2>/dev/null || true
+ls ~/rebash-github-actions/module-09
 ```
 
 ## Validation
 
-
-
-
-
-
-
-
-- [ ] Lab commands run under `~/rebash-github-actions/module-09/.github/workflows/`
-- [ ] You can explain each Theory section in your own words
-- [ ] You used modern tooling where it applies to this topic
-- [ ] You can describe one production failure mode for this topic
+- [ ] Lab completed under `~/rebash-github-actions/module-09/`
+- [ ] You can explain why apply uses a saved plan file
+- [ ] You can refuse auto-apply on pull request branches
+- [ ] You can describe state locking's purpose
 
 ## Code Walkthrough
 
-
-
-
-
-
-
-
-Production practice for **Terraform Pipelines with GitHub Actions** always combines:
-
-1. Inspect before you change (status, plan, logs, dry-run)
-2. Prefer reversible, documented changes (Git, IaC, drop-ins, version pins)
-3. Capture evidence (command output, pipeline logs) for handovers
-4. Prefer current tools and APIs over legacy shortcuts
-5. Least privilege — escalate credentials only when required
-
-Keep runbooks short enough to follow under pressure. Automate checks; keep humans for judgement.
+1. **Plan always, apply rarely** — artefacts plus environment approvals.
+2. **Identical backend** — plan and apply jobs must agree on backend config.
+3. **Pull request = plan only** — no production roles on untrusted code.
+4. **Upload tfplan** — auditors see what was proposed for that run.
+5. **Destroy labs on a timer** — cost control.
 
 ## Security Considerations
 
-
-
-
-
-
-
-
-- Treat credentials and tokens for github-actions as privileged — never commit them
-- Prefer short-lived auth (OIDC, roles, SSO) over long-lived keys
-- Validate blast radius before apply/deploy/delete operations
-- Restrict who can approve production changes
-- Collect audit logs; limit who can read sensitive traces
+- Cloud credentials in GitHub secrets are production power — scope tightly per environment.
+- Plan logs can reveal sensitive attributes — limit workflow visibility.
+- Environment approvals need authenticated reviewers, not open repositories.
+- Remote state buckets need encryption and strict Identity and Access Management (IAM).
+- Destroy workflows must not be triggerable from fork pull requests.
 
 ## Common Mistakes
 
+!!! warning "Auto-apply on every branch"
+    Feature branches mutate production. **Fix:** restrict apply to `main` or tags plus environment protection.
 
+!!! warning "Apply without `-out` plan file"
+    Drift between reviewed plan and apply. **Fix:** `terraform apply tfplan`.
 
+!!! warning "Long-lived admin keys for pull request CI"
+    Leak equals account takeover. **Fix:** OIDC with narrow roles; plan-only on pull requests.
 
-
-
-
-
-!!! warning "Committing `.terraform/` or `terraform.tfstate` to Git.  "
-    Validate assumptions against the Theory section and official docs before changing production.
-
-!!! warning "Applying without the reviewed plan artefact.  "
-    Lab shortcuts (open security groups, admin roles, skip approvals) must not ship unchanged.
-
-!!! warning "Changing production without a rollback path"
-    Always know how to revert (previous artefact, prior release, state rollback, DNS failback).
+!!! warning "No destroy for labs"
+    Bill shock. **Fix:** TTL plus dedicated destroy workflow.
 
 ## Best Practices
 
-
-
-
-
-
-
-
-- Encode Terraform Pipelines with GitHub Actions changes as code and review them in pull requests
-- Pin versions (images, modules, actions, provider plugins)
-- Separate environments with clear promotion gates
-- Alert on symptoms with runbooks attached
-- Destroy lab resources; tag everything with owner and expiry where possible
+- One root module per workflow path; use workspaces deliberately.
+- Use `concurrency` groups for stateful applies.
+- Run policy-as-code (Open Policy Agent (OPA), tfsec, Checkov) before apply.
+- Tag cloud resources with `managed-by=terraform` and owner.
+- Promote plans across environments with explicit hand-off of artefact run IDs.
 
 ## Troubleshooting
 
-
-
-
-
-
-
-
 | Symptom | Likely cause | Fix |
 |---------|--------------|-----|
-| Auth / permission denied | Wrong identity, policy, or scope | Check caller identity, roles, and least-privilege policies |
-| Timeout / no route | Network, DNS, security group, or endpoint | Trace path, DNS, and allow-lists before retrying |
-| Drift / unexpected plan | Manual change or wrong state/workspace | Reconcile desired vs actual; avoid click-ops on managed resources |
-| Pipeline/job red | Flaky step, cache, or missing secret | Read failing step logs; bisect recent workflow/config changes |
-| Cost spike | Idle load balancer, NAT, oversized compute | Inventory billable resources; stop/delete labs promptly |
+| Provider auth fail | Missing OIDC/secret | Check `permissions: id-token: write` and role trust |
+| Plan empty unexpectedly | Wrong directory | Pin `working-directory` or `-chdir` |
+| Apply forbidden | Branch/environment gates | Expected for pull requests |
+| Corrupt local state | Interrupted apply | Prefer remote state + lock |
+| Artefact not found | Wrong run ID or retention | Re-run plan; check artefact name |
 
 ## Summary
 
-
-
-
-
-
-
-
-**Terraform Pipelines with GitHub Actions** is essential for Cloud and DevOps engineers working with github-actions. Practise the lab until the inspection and change path is muscle memory, then continue the track.
+GitHub Actions makes Terraform reviewable: plan artefacts on pull requests, gated apply through protected environments, remote state awareness, and strict destroy rules for labs. Next: [Multi-Cloud Deployments with GitHub Actions](multi-cloud-deployments-with-github-actions.md).
 
 ## Interview Questions
 
+**1. Why upload `tfplan` as a workflow artefact?**
 
+??? success "Reveal answer"
+    So the exact binary plan that was reviewed is what apply uses, and auditors can retrieve what change set was proposed for that workflow run.
 
+**2. Why should pull requests not auto-apply to production?**
 
+??? success "Reveal answer"
+    Pull request code and untrusted authors (especially from forks) must not mutate production infrastructure. Pull requests should plan with read-only roles; apply stays on protected branches with environment approvals.
 
+**3. What problem does remote state locking solve?**
 
-1. Why apply the exact plan artifact from the same workflow run?
-2. What state backend considerations matter in CI?
-3. When should apply require a GitHub environment approval?
-4. How do you pass cloud credentials to Terraform in Actions?
-5. How do you destroy experimental stacks created in labs?
+??? success "Reveal answer"
+    It prevents two concurrent Terraform runs from corrupting state by serialising writes against the same state file.
 
-!!! tip "Sample answer — question 2"
-    Confirm init backend, matching variables between plan/apply, and that the plan artifact downloaded correctly.
+**4. What is the risk of applying without a saved plan file?**
 
-!!! tip "Sample answer — question 4"
-    Use OIDC-mapped least-privilege roles, protect state, and never commit tfstate. Destroy lab resources in the same session.
+??? success "Reveal answer"
+    The apply may compute a different change set than the one humans reviewed if configuration, variables, or provider versions drifted between plan and apply.
+
+**5. How does OIDC improve on static cloud access keys in Terraform workflows?**
+
+??? success "Reveal answer"
+    GitHub mints a short-lived JSON Web Token (JWT) per job; the cloud trusts it and returns temporary credentials, reducing long-lived secret sprawl and enabling trust policies tied to repository, branch, and environment.
+
+**6. Where should `terraform destroy` live in production workflows?**
+
+??? success "Reveal answer"
+    In tightly controlled workflows with strong approvals and narrow roles — not as a casual checkbox on pull request pipelines. Labs may use destroy flags with clear TTL policies.
+
+**7. Why use workflow concurrency groups for Terraform?**
+
+??? success "Reveal answer"
+    Concurrent applies against one state increase lock contention and human confusion; serialising reduces race risk and makes failures easier to diagnose.
+
+**8. What should a Terraform workflow do when plan fails?**
+
+??? success "Reveal answer"
+    Fail the job, publish logs, do not run apply, and notify owners. Fix the configuration or credentials, then re-plan from a clean run.
 
 ## Related Tutorials
 
-
-
-
-
-
-
-
-- [Course overview](index.md)
+- [Secrets, Variables, and OIDC](secrets-variables-and-oidc.md)
 - [Multi-Cloud Deployments with GitHub Actions](multi-cloud-deployments-with-github-actions.md)
+- [Terraform workflow — init, plan, apply](../terraform/terraform-workflow-init-plan-apply.md)
 
 ## References
 
-
-
-
-
-
-
-
-- [Terraform GitHub Actions](https://developer.hashicorp.com/terraform/tutorials/automation/github-actions) · [setup-terraform](https://github.com/hashicorp/setup-terraform) · [Automating Terraform](https://developer.hashicorp.com/terraform/cli/run/automating-terraform) · [GitHub Environments](https://docs.github.com/en/actions/deployment/targeting-different-environments/using-environments-for-deployment)
+- [Terraform CLI](https://developer.hashicorp.com/terraform/cli)
+- [Remote backends](https://developer.hashicorp.com/terraform/language/settings/backends/configuration)
+- [GitHub Environments](https://docs.github.com/en/actions/deployment/targeting-different-environments/using-environments-for-deployment)
+- [hashicorp/setup-terraform action](https://github.com/hashicorp/setup-terraform)

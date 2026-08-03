@@ -9,6 +9,7 @@ Examples::
 
     python3 scripts/build_course_book.py linux
     python3 scripts/build_course_book.py python --format epub
+    python3 scripts/build_course_book.py linux --kdp
     python3 scripts/build_course_book.py --list-courses
 
 See books/README.md
@@ -24,6 +25,7 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 
 from books.builder import build_course, die, list_courses  # noqa: E402
+from books.styles import list_page_profiles  # noqa: E402
 
 
 def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
@@ -43,12 +45,32 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
         help="Author name on cover, copyright, and about-the-author pages",
     )
     p.add_argument("--subtitle", default=None, help="Cover subtitle override")
+    p.add_argument(
+        "--page-size",
+        default="a4",
+        choices=list_page_profiles(),
+        help="Print page size (default: a4). Use kdp-6x9 for Amazon KDP trim.",
+    )
+    p.add_argument(
+        "--kdp",
+        action="store_true",
+        help=(
+            "Build Amazon KDP 6×9 PDFs: <course>-kdp-6x9.pdf (with cover, preview) "
+            "and <course>-kdp-6x9-interior.pdf (no cover, KDP manuscript). "
+            "Leaves the A4 free-download PDF untouched."
+        ),
+    )
     p.add_argument("--list-courses", action="store_true")
+    p.add_argument("--list-page-sizes", action="store_true")
     return p.parse_args(argv)
 
 
 def main(argv: list[str] | None = None) -> int:
     args = parse_args(argv)
+    if args.list_page_sizes:
+        for name in list_page_profiles():
+            print(name)
+        return 0
     if args.list_courses:
         for c in list_courses():
             print(c)
@@ -59,12 +81,16 @@ def main(argv: list[str] | None = None) -> int:
     unknown = formats - {"epub", "pdf", "html", "md"}
     if unknown:
         die(f"unknown formats: {', '.join(sorted(unknown))}")
+    if args.kdp:
+        formats = {"pdf", "md", "html"}
     build_course(
         args.course,
         formats,
         skip_index=not args.include_index,
         author=args.author,
         subtitle=args.subtitle,
+        page_size=args.page_size,
+        kdp=args.kdp,
     )
     return 0
 

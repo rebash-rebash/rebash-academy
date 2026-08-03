@@ -33,7 +33,7 @@ tags:
   - rbac
   - serviceaccount
 author: Shaik Basha
-last_updated: "2026-07-31"
+last_updated: "2026-08-03"
 comments: false
 ---
 
@@ -142,23 +142,19 @@ Test with `kubectl auth can-i` as the subject before deploying.
 
 ## Hands-on Lab
 
-
-
 ### Objective
 
-Build and verify a working Kubernetes solution for **RBAC and Kubernetes Security Basics** that you can inspect, prove, and tear down safely.
+Create a ServiceAccount, Role, and RoleBinding, then prove allowed and denied API actions with `kubectl auth can-i` as that ServiceAccount.
 
 ### Prerequisites
 
-- kubectl configured against a lab cluster (kind/minikube preferred)
-- Cluster-admin or namespace-create rights in the lab cluster
+- kubectl configured against a lab cluster (kind or minikube)
+- Rights to create RBAC objects in a test namespace
 - Writable workspace at `~/rebash-k8s/module-10`
 
 ### Lab environment
 
-Workspace: `~/rebash-k8s/module-10`
-
-Local kind/minikube or a dedicated sandbox cluster. Never target a shared production API server.
+Workspace: `~/rebash-k8s/module-10` on a disposable lab cluster.
 
 ```bash
 mkdir -p ~/rebash-k8s/module-10 && cd ~/rebash-k8s/module-10
@@ -166,87 +162,151 @@ mkdir -p ~/rebash-k8s/module-10 && cd ~/rebash-k8s/module-10
 
 ### Real-world scenario
 
-Your platform team is rolling out **RBAC and Kubernetes Security Basics** for a new microservice. You must apply the change in an isolated namespace, prove it works with kubectl, and leave evidence for the on-call handover.
+A new **invoice-reader** microservice needs to list Pods in its namespace for health dashboards, but must not delete workloads or read Secrets. You will implement least-privilege RBAC and prove it with `auth can-i` before handing the manifest to GitOps.
 
 ### Step-by-step tasks
 
-#### Task 1 – Create ServiceAccount, Role, RoleBinding
+#### Task 1 – Namespace and ServiceAccount
 
-Least privilege starts with namespaced RBAC objects.
+Create `namespace.yaml`:
+
+```yaml
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: rebash-m10
+  labels:
+    app.kubernetes.io/part-of: rebash-lab
+```
+
+Create `serviceaccount.yaml`:
+
+```yaml
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: invoice-reader
+  namespace: rebash-m10
+```
+
+Apply:
 
 ```bash
-kubectl create namespace rebash-lab --dry-run=client -o yaml | kubectl apply -f -
-kubectl create serviceaccount viewer -n rebash-lab
-cat > rbac.yaml << EOF
+cd ~/rebash-k8s/module-10
+kubectl apply -f namespace.yaml -f serviceaccount.yaml
+kubectl get sa invoice-reader -n rebash-m10 | tee sa-m10.txt
+```
+
+**Expected output:** `sa-m10.txt` lists `invoice-reader` in namespace `rebash-m10`.
+
+#### Task 2 – Role and RoleBinding
+
+Create `role.yaml`:
+
+```yaml
 apiVersion: rbac.authorization.k8s.io/v1
 kind: Role
 metadata:
   name: pod-reader
-  namespace: rebash-lab
+  namespace: rebash-m10
 rules:
   - apiGroups: [""]
     resources: ["pods"]
     verbs: ["get", "list"]
----
+```
+
+Create `rolebinding.yaml`:
+
+```yaml
 apiVersion: rbac.authorization.k8s.io/v1
 kind: RoleBinding
 metadata:
-  name: viewer-pods
-  namespace: rebash-lab
+  name: invoice-reader-pods
+  namespace: rebash-m10
 subjects:
   - kind: ServiceAccount
-    name: viewer
-    namespace: rebash-lab
+    name: invoice-reader
+    namespace: rebash-m10
 roleRef:
+  apiGroup: rbac.authorization.k8s.io
   kind: Role
   name: pod-reader
-  apiGroup: rbac.authorization.k8s.io
-EOF
-kubectl apply -f rbac.yaml
 ```
 
-**Expected output:** Role and RoleBinding created without error.
-
-#### Task 2 – Prove allow and deny with auth can-i
-
-Never guess permissions — ask the API.
+Apply:
 
 ```bash
-kubectl auth can-i list pods -n rebash-lab --as=system:serviceaccount:rebash-lab:viewer
-kubectl auth can-i delete pods -n rebash-lab --as=system:serviceaccount:rebash-lab:viewer || true
+cd ~/rebash-k8s/module-10
+kubectl apply -f role.yaml -f rolebinding.yaml
+kubectl get role,rolebinding -n rebash-m10 | tee rbac-m10.txt
 ```
 
-**Expected output:** `yes` for list; `no` (or non-zero) for delete.
+**Expected output:** `rbac-m10.txt` shows `pod-reader` Role and `invoice-reader-pods` RoleBinding.
+
+#### Task 3 – Prove permissions with auth can-i
+
+Create a sample Pod so `list pods` is meaningful, then test allow and deny:
+
+Create `sample-pod.yaml`:
+
+```yaml
+apiVersion: v1
+kind: Pod
+metadata:
+  name: sample-app
+  namespace: rebash-m10
+spec:
+  containers:
+    - name: app
+      image: busybox:1.36.1
+      command: ["sh", "-c", "sleep 3600"]
+```
+
+```bash
+cd ~/rebash-k8s/module-10
+kubectl apply -f sample-pod.yaml
+SA="system:serviceaccount:rebash-m10:invoice-reader"
+kubectl auth can-i list pods -n rebash-m10 --as="$SA" | tee can-i-list.txt
+kubectl auth can-i delete pods -n rebash-m10 --as="$SA" | tee can-i-delete.txt || true
+kubectl auth can-i get secrets -n rebash-m10 --as="$SA" | tee can-i-secrets.txt || true
+grep -q yes can-i-list.txt
+grep -q no can-i-delete.txt
+grep -q no can-i-secrets.txt
+```
+
+**Expected output:** `yes` for list pods; `no` for delete pods and get secrets.
 
 ### Validation steps
 
-- [ ] Namespace `rebash-lab` contains the expected Ready objects
-- [ ] You can explain each Task command from the Theory section
-- [ ] Cleanup deletes the namespace without leftover workloads
+- [ ] ServiceAccount, Role, and RoleBinding exist in `rebash-m10`
+- [ ] `auth can-i list pods` returns `yes` for the ServiceAccount
+- [ ] `auth can-i delete pods` and `get secrets` return `no`
+- [ ] You can explain Role vs ClusterRole scope from Theory
 
 ### Common errors and fixes
 
 | Error | Cause | Fix |
 |-------|-------|-----|
-| ImagePullBackOff | Wrong tag or registry auth | Fix image reference; check pull secrets |
-| Pending Pod | Scheduling / quota / PVC | `kubectl describe pod` and read Events |
-| Empty Endpoints | Selector or readiness mismatch | Compare Service selector to Pod labels and Ready |
+| Always `no` from can-i | Wrong `--as` subject string | Use `system:serviceaccount:<ns>:<sa-name>` exactly |
+| RoleBinding 403 | Role name mismatch in `roleRef` | Align Role metadata name with RoleBinding |
+| SA can do too much | Bound to cluster-admin elsewhere | `kubectl describe rolebinding -n rebash-m10` |
+| Changes not visible | RBAC cache delay (rare) | Re-run can-i after a few seconds |
 
 ### Challenge exercise
 
-Add a readinessProbe and a ResourceQuota to the namespace, then show that over-quota creates are rejected.
+Add a second Role `event-reader` (`get`, `list` on `events`) and bind it to the same ServiceAccount. Prove with `kubectl auth can-i list events -n rebash-m10 --as=…`.
 
 ### Learning outcomes
 
-- Applied a real cluster change for RBAC and Kubernetes Security Basics
-- Used describe/Events for verification
-- Destroyed lab resources cleanly
+- Created namespaced RBAC objects as separate manifests
+- Bound a ServiceAccount to a least-privilege Role
+- Verified authorisation with `kubectl auth can-i`
+- Distinguished authentication identity from RBAC permissions
 
 ### Cleanup
 
 ```bash
-kubectl delete namespace rebash-lab --ignore-not-found
-# Keep ~/rebash-kubernetes/ for later tutorials
+kubectl delete namespace rebash-m10 --ignore-not-found
 ```
 
 ## Validation

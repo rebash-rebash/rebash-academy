@@ -1,63 +1,79 @@
 ---
-title: "Argo CD"
-description: "Argo CD track on REBASH Academy — curriculum planned."
+title: Overview
+description: "Argo CD for Cloud & DevOps Engineers — 16 modules covering GitOps, Applications, sync, Helm, Kustomize, ApplicationSets, security, and production operations."
+difficulty: intermediate
+estimated_time: "5–7 weeks"
 author: Shaik Basha
+last_updated: "2026-08-03"
 category: argocd
 tags:
   - argocd
+  - gitops
+  - kubernetes
+  - devops
+  - course
+comments: false
 ---
 
-# Argo CD
+# Argo CD for Cloud & DevOps Engineers
 
-This technology track is **planned** in the academy curriculum.
+**Duration:** 5–7 weeks · **Difficulty:** Intermediate → Advanced
+{ .ra-facts }
 
-## Overview
+Declarative GitOps continuous delivery for Kubernetes with [Argo CD](https://github.com/argoproj/argo-cd) — Applications, sync policies, Helm and Kustomize sources, ApplicationSets, multi-cluster, and production operations.
 
-Argo CD will be taught as a production-focused course aligned with REBASH Academy career paths.
+!!! tip "Course status"
+    Curriculum follows the REBASH Argo CD technology prompt (**16 modules**). Labs use create-file style (YAML fences, then `kubectl` / `argocd` verify). Diagrams under `docs/assets/excalidraw/`. Start with [Introduction to GitOps and Argo CD](introduction-to-gitops-and-argo-cd.md). Official docs: [argo-cd.readthedocs.io](https://argo-cd.readthedocs.io/en/stable/).
 
-## Learning objectives
+## 1. Course overview
 
-- Understand core Argo CD concepts used in Cloud and DevOps roles
-- Practise with labs once tutorials ship
-- Connect to related career paths below
+### Purpose
 
-## Prerequisites
+Keep Kubernetes clusters aligned with Git as the source of truth — pull-based delivery that is auditable, reversible, and operable by platform teams.
 
-- Linux fundamentals (recommended)
-- See [Career Paths](../career-paths/index.md) for the recommended order
+### Target roles
 
-## Course modules
+DevOps · Platform · Cloud · SRE · Kubernetes Administrator · DevSecOps
 
-Modules will appear here when the track moves from planned to ready.
+### Prerequisites
 
-## Tutorial roadmap
+- [Kubernetes](../kubernetes/index.md) · [Helm](../helm/index.md) · [Git](../git/index.md)
+- [Docker](../docker/index.md) · CI basics ([GitHub Actions](../github-actions/index.md) or [GitLab CI](../gitlab/index.md))
+- Local kind or minikube for install and sync labs
 
-No published tutorials yet — tracked in the repository curriculum backlog.
+### Capstone outcomes
 
-## Labs roadmap
+GitOps layouts · Applications and AppProjects · auto-sync and self-heal · Helm/Kustomize · ApplicationSets · multi-cluster · RBAC/SSO · CI promotion · troubleshooting drift
 
-Planned alongside the first modules.
+## 2. Modules
 
-## Projects roadmap
+| Module | Focus | Start here |
+|-------:|-------|------------|
+| 1 | GitOps fundamentals | [Introduction](introduction-to-gitops-and-argo-cd.md) |
+| 2 | Architecture | [Components](argo-cd-architecture-and-components.md) |
+| 3 | Installation | [Install Argo CD](installing-argo-cd.md) |
+| 4 | Applications | [Applications and Projects](argo-cd-applications-and-projects.md) |
+| 5 | Repositories | [Repos and credentials](argo-cd-repositories-and-credentials.md) |
+| 6 | Synchronisation | [Sync, options, and hooks](synchronisation-sync-options-and-hooks.md) |
+| 7 | Helm | [Helm with Argo CD](helm-with-argo-cd.md) |
+| 8 | Kustomize | [Kustomize with Argo CD](kustomize-with-argo-cd.md) |
+| 9 | ApplicationSets | [ApplicationSets](applicationsets.md) |
+| 10 | Multi-cluster | [Multi-cluster GitOps](multi-cluster-gitops.md) |
+| 11 | Security | [RBAC and SSO](argo-cd-security-rbac-and-sso.md) |
+| 12 | Notifications | [Notifications](argo-cd-notifications.md) |
+| 13 | Progressive delivery | [Sync windows and delivery](progressive-delivery-and-sync-windows.md) |
+| 14 | CI/CD | [CI/CD integration](ci-cd-integration-with-argo-cd.md) |
+| 15 | Production | [Production GitOps](production-gitops-with-argo-cd.md) |
+| 16 | Troubleshooting | [Troubleshooting](troubleshooting-argo-cd.md) |
 
-See [Projects](../projects/index.md) and [Capstones](../capstones/index.md).
+## 3. Practice
 
-## Cheat sheets
+- [Labs](../labs/index.md) · [Projects](projects/index.md) · [Quizzes](quizzes/index.md)
+- [Cheat sheets](cheatsheets/index.md) · [Interview](interview/index.md) · [Capstone](capstone/index.md)
+- [Learning roadmap](roadmap.md) · [FAQ](faq.md)
 
-Coming with the first tutorials.
+## Related
 
-## Interview preparation
-
-See [Interview Guides](../interview/index.md) when this track ships.
-
-## Certifications
-
-See [Certifications](../certifications/index.md).
-
-## Related technologies
-
-Browse neighbouring tracks under **Technologies** in the site navigation.
-
-## Related career paths
-
-Browse [Career Paths](../career-paths/index.md).
+- [Kubernetes GitOps](../kubernetes/gitops-and-cicd-with-kubernetes.md) · [Helm GitOps](../helm/helm-gitops-integration.md)
+- [Git GitOps fundamentals](../git/gitops-fundamentals.md)
+- [Kubernetes Engineer path](../career-paths/kubernetes-engineer/index.md)

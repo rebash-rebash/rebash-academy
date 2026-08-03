@@ -60,8 +60,9 @@ pip install 'PyYAML>=6.0,<7'
 
 ## Initial State
 
-```bash
-cat > manifests/good.yaml << 'EOF'
+Create `manifests/good.yaml`:
+
+```yaml
 apiVersion: apps/v1
 kind: Deployment
 metadata: {name: api}
@@ -74,9 +75,11 @@ spec:
           image: ghcr.io/acme/api:1.2.3
           readinessProbe: {httpGet: {path: /healthz, port: 8080}}
           resources: {requests: {cpu: "100m", memory: "128Mi"}}
-EOF
+```
 
-cat > manifests/bad.yaml << 'EOF'
+Create `manifests/bad.yaml`:
+
+```yaml
 apiVersion: apps/v1
 kind: Deployment
 metadata: {name: api}
@@ -86,7 +89,6 @@ spec:
       containers:
         - name: api
           image: ghcr.io/acme/api:1.2.3
-EOF
 ```
 
 ## Task

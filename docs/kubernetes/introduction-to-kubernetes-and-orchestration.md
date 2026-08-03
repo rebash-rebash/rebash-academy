@@ -32,7 +32,7 @@ tags:
   - kubernetes
   - orchestration
 author: Shaik Basha
-last_updated: "2026-07-31"
+last_updated: "2026-08-03"
 comments: false
 ---
 
@@ -154,23 +154,22 @@ Desired state is the source of truth. If a Pod dies, a controller recreates it. 
 
 ## Hands-on Lab
 
-
-
 ### Objective
 
-Build and verify a working Kubernetes solution for **Introduction to Kubernetes and Orchestration** that you can inspect, prove, and tear down safely.
+Collect cluster facts with kubectl, write a machine-readable `orchestration-facts.yaml` explaining why orchestration matters, validate it with Python, and run a minimal pause Pod to prove the API accepts workloads.
 
 ### Prerequisites
 
-- kubectl configured against a lab cluster (kind/minikube preferred)
-- Cluster-admin or namespace-create rights in the lab cluster
+- A working Kubernetes cluster (**kind**, **minikube**, or any lab cluster)
+- **kubectl** installed and configured (`kubectl cluster-info` succeeds)
+- **Python 3** on your workstation
 - Writable workspace at `~/rebash-k8s/module-01`
 
 ### Lab environment
 
 Workspace: `~/rebash-k8s/module-01`
 
-Local kind/minikube or a dedicated sandbox cluster. Never target a shared production API server.
+Use a disposable local cluster. Never target a shared production API server.
 
 ```bash
 mkdir -p ~/rebash-k8s/module-01 && cd ~/rebash-k8s/module-01
@@ -178,63 +177,149 @@ mkdir -p ~/rebash-k8s/module-01 && cd ~/rebash-k8s/module-01
 
 ### Real-world scenario
 
-Your platform team is rolling out **Introduction to Kubernetes and Orchestration** for a new microservice. You must apply the change in an isolated namespace, prove it works with kubectl, and leave evidence for the on-call handover.
+You join a platform team onboarding call. Before anyone deploys applications, you must document which cluster you are connected to, prove nodes are Ready, and capture why container orchestration beats manual Docker on single hosts. Your evidence files go into the team runbook.
 
 ### Step-by-step tasks
 
-#### Task 1 – Apply a topic workload
+#### Task 1 – Record cluster facts
 
-Create a namespace and a small Deployment to practise **What it is** against a live API.
-
-```bash
-kubectl create namespace rebash-lab --dry-run=client -o yaml | kubectl apply -f -
-kubectl create deployment topic --image=nginx:1.27-alpine -n rebash-lab
-kubectl rollout status deployment/topic -n rebash-lab
-kubectl get all -n rebash-lab
-```
-
-**Expected output:** Deployment Ready; Pods listed under the namespace.
-
-#### Task 2 – Inspect and gather evidence
-
-Production changes always leave an audit trail of describe/Events.
+Confirm client and server versions, node readiness, and API reachability.
 
 ```bash
-kubectl describe deploy topic -n rebash-lab | tee describe.txt
-kubectl get events -n rebash-lab --sort-by=.lastTimestamp | tail -n 15 | tee events.txt
+cd ~/rebash-k8s/module-01
+kubectl version --output=yaml | tee cluster-version.yaml
+kubectl get nodes -o wide | tee nodes-wide.txt
+kubectl cluster-info | tee cluster-info.txt
+grep -q Ready nodes-wide.txt
 ```
 
-**Expected output:** describe.txt and events.txt capture healthy Objects/Events.
+**Expected output:** `nodes-wide.txt` lists at least one node in `Ready` state; `cluster-info.txt` shows a reachable control plane URL.
+
+#### Task 2 – Write and validate orchestration-facts.yaml
+
+Create `orchestration-facts.yaml`:
+
+```yaml
+cluster_purpose: lab-onboarding
+why_orchestration:
+  - self_healing: controllers recreate failed Pods on healthy nodes
+  - scaling: replica counts change without manual container restarts
+  - service_discovery: stable DNS names while Pod IPs churn
+  - rolling_updates: replace workloads without hard downtime windows
+evidence_files:
+  - cluster-version.yaml
+  - nodes-wide.txt
+  - cluster-info.txt
+validated: false
+```
+
+Create `validate-facts.py`:
+
+```python
+#!/usr/bin/env python3
+from pathlib import Path
+
+text = Path("orchestration-facts.yaml").read_text()
+for key in ("why_orchestration", "cluster_purpose", "evidence_files"):
+    if key not in text:
+        raise SystemExit(f"missing key: {key}")
+if text.count("  - ") < 3:
+    raise SystemExit("need at least three why_orchestration bullets")
+for name in ("cluster-version.yaml", "nodes-wide.txt", "cluster-info.txt"):
+    if not Path(name).is_file():
+        raise SystemExit(f"missing evidence file: {name}")
+print("orchestration-facts.yaml: structure OK")
+```
+
+Run validation:
+
+```bash
+cd ~/rebash-k8s/module-01
+python3 validate-facts.py | tee validate-out.txt
+grep -q 'structure OK' validate-out.txt
+```
+
+**Expected output:** `validate-out.txt` contains `orchestration-facts.yaml: structure OK`.
+
+#### Task 3 – Smoke-test the API with a pause Pod
+
+Create `namespace.yaml`:
+
+```yaml
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: rebash-m01
+```
+
+Create `pause-pod.yaml`:
+
+```yaml
+apiVersion: v1
+kind: Pod
+metadata:
+  name: pause-smoke
+  namespace: rebash-m01
+  labels:
+    app: pause-smoke
+    lab: module-01
+spec:
+  containers:
+    - name: pause
+      image: registry.k8s.io/pause:3.9
+      resources:
+        requests:
+          cpu: 10m
+          memory: 16Mi
+        limits:
+          cpu: 50m
+          memory: 32Mi
+  restartPolicy: Always
+```
+
+Apply and verify:
+
+```bash
+cd ~/rebash-k8s/module-01
+kubectl apply -f namespace.yaml
+kubectl apply -f pause-pod.yaml
+kubectl wait --for=condition=Ready pod/pause-smoke -n rebash-m01 --timeout=120s
+kubectl get pod pause-smoke -n rebash-m01 -o wide | tee pause-evidence.txt
+```
+
+**Expected output:** Pod `pause-smoke` shows `1/1 Ready` with a node name in `pause-evidence.txt`.
 
 ### Validation steps
 
-- [ ] Namespace `rebash-lab` contains the expected Ready objects
-- [ ] You can explain each Task command from the Theory section
-- [ ] Cleanup deletes the namespace without leftover workloads
+- [ ] `kubectl get nodes` shows Ready nodes
+- [ ] `python3 validate-facts.py` succeeds
+- [ ] Pause Pod reaches Ready in namespace `rebash-m01`
+- [ ] Evidence files exist under `~/rebash-k8s/module-01`
 
 ### Common errors and fixes
 
 | Error | Cause | Fix |
 |-------|-------|-----|
-| ImagePullBackOff | Wrong tag or registry auth | Fix image reference; check pull secrets |
-| Pending Pod | Scheduling / quota / PVC | `kubectl describe pod` and read Events |
-| Empty Endpoints | Selector or readiness mismatch | Compare Service selector to Pod labels and Ready |
+| `Unable to connect to the server` | Wrong kubeconfig or cluster stopped | Run `kubectl config current-context`; start kind/minikube |
+| No Ready nodes | Cluster still starting | Wait 60s; run `kubectl get nodes -w` |
+| Python validation fails on evidence | Task 1 not run first | Re-run Task 1 before `validate-facts.py` |
+| Pod stays Pending | Insufficient cluster resources | `kubectl describe pod pause-smoke -n rebash-m01` |
 
 ### Challenge exercise
 
-Add a readinessProbe and a ResourceQuota to the namespace, then show that over-quota creates are rejected.
+Add a fifth bullet to `why_orchestration` describing **declarative desired state** (Git-stored manifests reconciled by controllers). Update `validate-facts.py` to require five bullets, re-run validation, and set `validated: true` in `orchestration-facts.yaml`.
 
 ### Learning outcomes
 
-- Applied a real cluster change for Introduction to Kubernetes and Orchestration
-- Used describe/Events for verification
-- Destroyed lab resources cleanly
+- Inspected cluster version, nodes, and API endpoint with kubectl
+- Documented orchestration benefits in a machine-readable YAML file
+- Validated lab evidence with a small Python script
+- Proved the API accepts a minimal Pod in an isolated namespace
 
 ### Cleanup
 
 ```bash
-kubectl delete namespace rebash-lab --ignore-not-found
-# Keep ~/rebash-kubernetes/ for later tutorials
+kubectl delete namespace rebash-m01 --ignore-not-found --wait=true
 ```
 
 ## Validation

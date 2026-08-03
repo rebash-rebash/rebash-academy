@@ -4,7 +4,7 @@ description: Capstone project — deploy a multi-service voting app with Docker 
 difficulty: advanced
 estimated_time: "50 min"
 author: Shaik Basha
-last_updated: "2026-07-28"
+last_updated: "2026-08-03"
 category: docker
 tags:
   - docker
@@ -181,87 +181,205 @@ Misconfiguration here usually shows up as intermittent outages rather than clean
 
 ## Hands-on Lab
 
-
-
 ### Objective
 
-Build or run a real Docker solution for **Docker Capstone and Next Steps** and prove it with inspect/logs/HTTP.
+Build a multi-service Compose application (API + web) with Dockerfiles, healthchecks, and pinned tags — then bundle evidence into a tarball for handover.
 
 ### Prerequisites
 
-- Docker Engine or Docker Desktop
-- Permission to run containers
+- Docker Engine with Compose v2
+- Ports `18210` (web) and `18211` (api direct) available
 
 ### Lab environment
 
 Workspace: `~/rebash-docker/docker-capstone-and-next-steps`
 
-Local Docker daemon. Clean up containers/images after the lab.
-
 ```bash
-mkdir -p ~/rebash-docker/docker-capstone-and-next-steps && cd ~/rebash-docker/docker-capstone-and-next-steps
+mkdir -p ~/rebash-docker/docker-capstone-and-next-steps/{api,web} && cd ~/rebash-docker/docker-capstone-and-next-steps
 ```
 
 ### Real-world scenario
 
-You are validating **Docker Capstone and Next Steps** before it lands in CI. The change must be reproducible with copy-paste commands and leave no orphan containers.
+You are delivering a minimal status platform to another team. They need Compose manifests, built images, health proof, and an evidence tarball — not slides.
 
 ### Step-by-step tasks
 
-#### Task 1 – Run and inspect a container
+#### Task 1 – Create API service
 
-Start from a known image, publish a port, and verify HTTP.
+Create `api/Dockerfile`:
 
-```bash
-docker run -d --name rebash-lab -p 18080:80 nginx:alpine
-docker ps --filter name=rebash-lab
-curl -sI http://127.0.0.1:18080 | head -n 5 | tee headers.txt
-docker logs rebash-lab 2>&1 | head -n 10 | tee logs.txt
+```dockerfile
+FROM python:3.12-alpine
+WORKDIR /app
+COPY server.py .
+EXPOSE 8080
+HEALTHCHECK CMD python -c "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8080/healthz')"
+CMD ["python", "server.py"]
 ```
 
-**Expected output:** Container Up; HTTP 200 in headers.txt.
+Create `api/server.py`:
 
-#### Task 2 – Inspect runtime config
+```python
+from http.server import BaseHTTPRequestHandler, HTTPServer
+import json
 
-Use inspect for status — production debugging rarely starts with guesswork.
+class H(BaseHTTPRequestHandler):
+    def do_GET(self):
+        if self.path == "/healthz":
+            self.send_response(200)
+            self.end_headers()
+            self.wfile.write(b'{"status":"ok"}\n')
+            return
+        if self.path == "/status":
+            body = json.dumps({"app": "rebash-capstone", "tier": "api"}).encode()
+            self.send_response(200)
+            self.end_headers()
+            self.wfile.write(body)
+            return
+        self.send_error(404)
+    def log_message(self, *args):
+        return
 
-```bash
-docker inspect rebash-lab --format '{{ "{{" }}.State.Status{{ "}}" }} {{ "{{" }}.Config.Image{{ "}}" }}' | tee inspect.txt
-test -s inspect.txt
+HTTPServer(("0.0.0.0", 8080), H).serve_forever()
 ```
 
-**Expected output:** inspect.txt shows `running` and the nginx image.
+#### Task 2 – Create web proxy and Compose stack
+
+Create `web/Dockerfile`:
+
+```dockerfile
+FROM python:3.12-alpine
+WORKDIR /app
+COPY proxy.py .
+EXPOSE 8000
+HEALTHCHECK CMD python -c "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/healthz')"
+CMD ["python", "proxy.py"]
+```
+
+Create `web/proxy.py`:
+
+```python
+from http.server import BaseHTTPRequestHandler, HTTPServer
+from urllib.request import urlopen
+import os
+
+API = os.environ.get("API_URL", "http://api:8080")
+
+class H(BaseHTTPRequestHandler):
+    def do_GET(self):
+        if self.path == "/healthz":
+            self.send_response(200)
+            self.end_headers()
+            self.wfile.write(b'{"status":"ok"}\n')
+            return
+        if self.path == "/":
+            with urlopen(API + "/status", timeout=3) as r:
+                body = r.read()
+            self.send_response(200)
+            self.end_headers()
+            self.wfile.write(body)
+            return
+        self.send_error(404)
+    def log_message(self, *args):
+        return
+
+HTTPServer(("0.0.0.0", 8000), H).serve_forever()
+```
+
+Create `compose.yaml`:
+
+```yaml
+services:
+  api:
+    build: ./api
+    image: rebash-capstone-api:1.0.0
+    ports:
+      - "18211:8080"
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8080/healthz')"]
+      interval: 10s
+      timeout: 3s
+      retries: 3
+
+  web:
+    build: ./web
+    image: rebash-capstone-web:1.0.0
+    ports:
+      - "18210:8000"
+    environment:
+      API_URL: http://api:8080
+    depends_on:
+      api:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/healthz')"]
+      interval: 10s
+      timeout: 3s
+      retries: 3
+```
+
+Deploy:
+
+```bash
+cd ~/rebash-docker/docker-capstone-and-next-steps
+docker compose up -d --build
+sleep 20
+docker compose ps | tee capstone-ps.txt
+grep -q rebash-capstone capstone-ps.txt
+```
+
+**Expected output:** Both services running in `capstone-ps.txt`.
+
+#### Task 3 – End-to-end proof and evidence tarball
+
+```bash
+cd ~/rebash-docker/docker-capstone-and-next-steps
+curl -sS http://127.0.0.1:18210/healthz | tee capstone-web-health.txt
+curl -sS http://127.0.0.1:18210/ | tee capstone-web-root.txt
+grep -q rebash-capstone capstone-web-root.txt
+docker compose logs --no-color --tail=20 | tee capstone-logs.txt
+tar czf capstone-evidence.tar.gz capstone-ps.txt capstone-web-health.txt capstone-web-root.txt capstone-logs.txt compose.yaml api web
+test -s capstone-evidence.tar.gz
+ls -lh capstone-evidence.tar.gz | tee capstone-tar.txt
+```
+
+**Expected output:** JSON status from `/`; `capstone-evidence.tar.gz` is non-empty.
 
 ### Validation steps
 
-- [ ] Container or image behaves as Expected output describes
-- [ ] Ports respond or command output matches
-- [ ] Cleanup removes lab resources
+- [ ] API and web images build with healthchecks
+- [ ] Web waits for healthy API via `depends_on`
+- [ ] HTTP checks pass on port `18210`
+- [ ] Evidence tarball contains ps/logs/compose sources
+- [ ] Cleanup removes stack, images, and tarball
 
 ### Common errors and fixes
 
 | Error | Cause | Fix |
 |-------|-------|-----|
-| port is already allocated | Previous lab left a container | `docker rm -f` the old name or change port |
-| permission denied | User not in docker group | Use rootless Docker or fix group membership |
-| manifest unknown | Bad tag | Pin a real tag such as `nginx:alpine` |
+| Web 502 | API not healthy yet | Wait for health; check `docker compose ps` |
+| Healthcheck fail | Python urllib error | Confirm services listen on 8080/8000 |
+| Port conflict | Previous capstone run | `docker compose down` first |
+| Tarball missing yaml | Wrong paths in tar | Run tar from project root as shown |
 
 ### Challenge exercise
 
-Add a non-root USER (or Compose healthcheck) and prove it with inspect.
+Add a non-root `USER` to both Dockerfiles, rebuild, and prove UID in `docker compose exec api id`.
 
 ### Learning outcomes
 
-- Executed a real Docker workflow
-- Captured evidence files
-- Removed disposable resources
+- Delivered a multi-service Compose stack with health gates
+- Built and pinned service images locally
+- Validated end-to-end HTTP through the web tier
+- Packaged operational evidence for handover
 
 ### Cleanup
 
 ```bash
-docker rm -f rebash-lab 2>/dev/null || true
-docker rmi rebash-lab:local 2>/dev/null || true
-docker compose down -v 2>/dev/null || true
+cd ~/rebash-docker/docker-capstone-and-next-steps
+docker compose down -v --remove-orphans
+docker rmi rebash-capstone-api:1.0.0 rebash-capstone-web:1.0.0 2>/dev/null || true
+rm -f capstone-evidence.tar.gz *.txt
 ```
 
 ## Validation

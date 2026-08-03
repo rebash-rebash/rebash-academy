@@ -31,7 +31,7 @@ tags:
   - deployments
   - rollout
 author: Shaik Basha
-last_updated: "2026-07-31"
+last_updated: "2026-08-03"
 comments: false
 ---
 
@@ -150,23 +150,19 @@ Prefer changing the image via the Deployment (`set image` or edit YAML + apply),
 
 ## Hands-on Lab
 
-
-
 ### Objective
 
-Build and verify a working Kubernetes solution for **Deployments — Managing Replicated Pods** that you can inspect, prove, and tear down safely.
+Create a Deployment from YAML, scale replicas, trigger a rollout restart, inspect rollout status and history, and undo a bad image change.
 
 ### Prerequisites
 
-- kubectl configured against a lab cluster (kind/minikube preferred)
-- Cluster-admin or namespace-create rights in the lab cluster
+- A working Kubernetes cluster (**kind**, **minikube**, or any lab cluster)
+- **kubectl** with namespace-create rights
 - Writable workspace at `~/rebash-k8s/module-04`
 
 ### Lab environment
 
 Workspace: `~/rebash-k8s/module-04`
-
-Local kind/minikube or a dedicated sandbox cluster. Never target a shared production API server.
 
 ```bash
 mkdir -p ~/rebash-k8s/module-04 && cd ~/rebash-k8s/module-04
@@ -174,90 +170,190 @@ mkdir -p ~/rebash-k8s/module-04 && cd ~/rebash-k8s/module-04
 
 ### Real-world scenario
 
-Your platform team is rolling out **Deployments — Managing Replicated Pods** for a new microservice. You must apply the change in an isolated namespace, prove it works with kubectl, and leave evidence for the on-call handover.
+You deploy version 1 of an internal demo API (nginx stand-in). Product asks for three replicas for a load test, then someone pushes a bad image tag during a drill. You scale, restart, read rollout history, and roll back— the standard Deployment operations path.
 
 ### Step-by-step tasks
 
-#### Task 1 – Declare and apply a Pod
+#### Task 1 – Create Deployment
 
-Create an isolated namespace and apply a Pod manifest so the scheduler places a container.
+Create `namespace.yaml`:
 
-```bash
-kubectl create namespace rebash-lab --dry-run=client -o yaml | kubectl apply -f -
-cat > pod.yaml << 'EOF'
+```yaml
 apiVersion: v1
-kind: Pod
+kind: Namespace
+metadata:
+  name: rebash-m04
+```
+
+Create `web-deploy.yaml`:
+
+```yaml
+apiVersion: apps/v1
+kind: Deployment
 metadata:
   name: web
-  namespace: rebash-lab
+  namespace: rebash-m04
   labels:
     app: web
 spec:
-  containers:
-    - name: nginx
-      image: nginx:1.27-alpine
-      ports:
-        - containerPort: 80
-EOF
-kubectl apply -f pod.yaml
-kubectl wait --for=condition=Ready pod/web -n rebash-lab --timeout=120s
-kubectl get pod web -n rebash-lab -o wide
+  replicas: 1
+  selector:
+    matchLabels:
+      app: web
+  template:
+    metadata:
+      labels:
+        app: web
+        version: v1
+    spec:
+      containers:
+        - name: nginx
+          image: nginx:1.27-alpine
+          ports:
+            - containerPort: 80
+          resources:
+            requests:
+              cpu: 50m
+              memory: 64Mi
 ```
 
-**Expected output:** Pod `web` shows Ready 1/1 and a node name.
-
-#### Task 2 – Inspect Events and prove the app answers
-
-Use describe/Events/logs — the same triage path used in production incidents.
+Apply and verify:
 
 ```bash
-kubectl describe pod web -n rebash-lab | tee describe.txt
-kubectl get events -n rebash-lab --sort-by=.lastTimestamp | tail -n 20
-kubectl exec -n rebash-lab web -- wget -qO- http://127.0.0.1/ | head -n 5
+cd ~/rebash-k8s/module-04
+kubectl apply -f namespace.yaml
+kubectl apply -f web-deploy.yaml
+kubectl rollout status deployment/web -n rebash-m04 --timeout=120s
+kubectl get deploy web -n rebash-m04 | tee deploy-v1.txt
 ```
 
-**Expected output:** HTML from nginx appears; describe.txt contains Events without ImagePullBackOff.
+**Expected output:** Deployment Available with `1/1` ready replicas.
 
-#### Task 3 – Capture evidence for handover
+#### Task 2 – Scale and rollout restart
 
-Save a short status snapshot you would attach to a ticket.
+Create `web-deploy-scaled.yaml` (same as `web-deploy.yaml` but `replicas: 3`):
+
+```yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: web
+  namespace: rebash-m04
+  labels:
+    app: web
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: web
+  template:
+    metadata:
+      labels:
+        app: web
+        version: v1
+    spec:
+      containers:
+        - name: nginx
+          image: nginx:1.27-alpine
+          ports:
+            - containerPort: 80
+          resources:
+            requests:
+              cpu: 50m
+              memory: 64Mi
+```
+
+Scale and restart:
 
 ```bash
-kubectl get pod,events -n rebash-lab -o wide | tee evidence.txt
-test -s evidence.txt
+cd ~/rebash-k8s/module-04
+kubectl apply -f web-deploy-scaled.yaml
+kubectl rollout status deployment/web -n rebash-m04 --timeout=180s
+kubectl get pods -n rebash-m04 -l app=web | tee scaled-pods.txt
+grep -c Running scaled-pods.txt | tee running-replicas.txt
+test "$(cat running-replicas.txt)" -ge 3
+kubectl rollout restart deployment/web -n rebash-m04
+kubectl rollout status deployment/web -n rebash-m04 --timeout=180s
 ```
 
-**Expected output:** evidence.txt is non-empty and lists the Pod.
+**Expected output:** Three Running Pods; restart completes with all replicas Ready again.
+
+#### Task 3 – History and undo after bad image
+
+Create `web-deploy-bad.yaml` (intentionally bad tag):
+
+```yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: web
+  namespace: rebash-m04
+  labels:
+    app: web
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: web
+  template:
+    metadata:
+      labels:
+        app: web
+        version: v2-bad
+    spec:
+      containers:
+        - name: nginx
+          image: nginx:this-tag-does-not-exist
+          ports:
+            - containerPort: 80
+```
+
+Apply bad revision, observe failure, undo:
+
+```bash
+cd ~/rebash-k8s/module-04
+kubectl apply -f web-deploy-bad.yaml
+kubectl rollout status deployment/web -n rebash-m04 --timeout=60s || true
+kubectl get pods -n rebash-m04 -l app=web | tee bad-rollout-pods.txt
+kubectl rollout history deployment/web -n rebash-m04 | tee rollout-history.txt
+kubectl rollout undo deployment/web -n rebash-m04
+kubectl rollout status deployment/web -n rebash-m04 --timeout=180s
+kubectl get pods -n rebash-m04 -l app=web -o wide | tee undo-evidence.txt
+grep -c Running undo-evidence.txt
+```
+
+**Expected output:** Bad rollout shows ImagePull errors; after `rollout undo`, Pods return to Running with good image.
 
 ### Validation steps
 
-- [ ] Namespace `rebash-lab` contains the expected Ready objects
-- [ ] You can explain each Task command from the Theory section
-- [ ] Cleanup deletes the namespace without leftover workloads
+- [ ] Deployment scaled to three Ready replicas
+- [ ] `rollout restart` completed successfully
+- [ ] `rollout history` lists revisions
+- [ ] `rollout undo` recovered from bad image tag
 
 ### Common errors and fixes
 
 | Error | Cause | Fix |
 |-------|-------|-----|
-| ImagePullBackOff | Wrong tag or registry auth | Fix image reference; check pull secrets |
-| Pending Pod | Scheduling / quota / PVC | `kubectl describe pod` and read Events |
-| Empty Endpoints | Selector or readiness mismatch | Compare Service selector to Pod labels and Ready |
+| ImagePullBackOff on bad tag | Expected in Task 3 | Run `kubectl rollout undo` |
+| Rollout stuck | Insufficient cluster CPU | Reduce replicas or add nodes |
+| undo picks wrong revision | Multiple rapid changes | `kubectl rollout undo --to-revision=N` |
+| Selector immutable error | Changed matchLabels | Delete Deployment and re-create |
 
 ### Challenge exercise
 
-Add a readinessProbe and a ResourceQuota to the namespace, then show that over-quota creates are rejected.
+After a successful rollout, change pod template label `version` to `v2` and image to `nginx:1.27-alpine` in a new manifest, apply, then use `kubectl rollout undo deployment/web -n rebash-m04 --to-revision=1` explicitly.
 
 ### Learning outcomes
 
-- Applied a real cluster change for Deployments — Managing Replicated Pods
-- Used describe/Events for verification
-- Destroyed lab resources cleanly
+- Managed replica count declaratively
+- Triggered controlled restarts with `rollout restart`
+- Used rollout history and undo for recovery
 
 ### Cleanup
 
 ```bash
-kubectl delete namespace rebash-lab --ignore-not-found
-# Keep ~/rebash-kubernetes/ for later tutorials
+kubectl delete namespace rebash-m04 --ignore-not-found --wait=true
 ```
 
 ## Validation

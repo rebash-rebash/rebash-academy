@@ -30,7 +30,7 @@ tags:
   - cpu
   - memory
 author: Shaik Basha
-last_updated: "2026-07-31"
+last_updated: "2026-08-03"
 comments: false
 ---
 
@@ -134,22 +134,18 @@ Load-test with realistic concurrency before you copy limits from a tutorial. Lan
 
 ## Hands-on Lab
 
-
-
 ### Objective
 
-Build or run a real Docker solution for **Docker Performance and Resource Limits** and prove it with inspect/logs/HTTP.
+Run a CPU/memory hungry container with `--memory` and `--cpus` limits, then prove enforced limits via `docker inspect` and `docker stats --no-stream`.
 
 ### Prerequisites
 
 - Docker Engine or Docker Desktop
-- Permission to run containers
+- ~512 MB RAM available for the lab container
 
 ### Lab environment
 
 Workspace: `~/rebash-docker/module-14`
-
-Local Docker daemon. Clean up containers/images after the lab.
 
 ```bash
 mkdir -p ~/rebash-docker/module-14 && cd ~/rebash-docker/module-14
@@ -157,64 +153,99 @@ mkdir -p ~/rebash-docker/module-14 && cd ~/rebash-docker/module-14
 
 ### Real-world scenario
 
-You are validating **Docker Performance and Resource Limits** before it lands in CI. The change must be reproducible with copy-paste commands and leave no orphan containers.
+A batch worker spikes CPU and RSS during peak load. Platform policy caps it at 256 MB RAM and half a CPU so noisy neighbours on the host stay protected. You deploy with limits and capture inspect/stats proof for the capacity review.
 
 ### Step-by-step tasks
 
-#### Task 1 – Run and inspect a container
+#### Task 1 – Create a stress test image
 
-Start from a known image, publish a port, and verify HTTP.
+Create `Dockerfile`:
 
-```bash
-docker run -d --name rebash-lab -p 18080:80 nginx:alpine
-docker ps --filter name=rebash-lab
-curl -sI http://127.0.0.1:18080 | head -n 5 | tee headers.txt
-docker logs rebash-lab 2>&1 | head -n 10 | tee logs.txt
+```dockerfile
+FROM alpine:3.20
+RUN apk add --no-cache stress-ng
+CMD ["stress-ng", "--vm", "1", "--vm-bytes", "200M", "--cpu", "2", "--timeout", "120s", "--metrics-brief"]
 ```
 
-**Expected output:** Container Up; HTTP 200 in headers.txt.
-
-#### Task 2 – Inspect runtime config
-
-Use inspect for status — production debugging rarely starts with guesswork.
+Build:
 
 ```bash
-docker inspect rebash-lab --format '{{ "{{" }}.State.Status{{ "}}" }} {{ "{{" }}.Config.Image{{ "}}" }}' | tee inspect.txt
-test -s inspect.txt
+cd ~/rebash-docker/module-14
+docker build -t rebash-perf-lab:1.0.0 .
+docker images rebash-perf-lab:1.0.0 | tee perf-build.txt
+grep -q rebash-perf-lab perf-build.txt
 ```
 
-**Expected output:** inspect.txt shows `running` and the nginx image.
+**Expected output:** Image `rebash-perf-lab:1.0.0` listed in `perf-build.txt`.
+
+#### Task 2 – Run with memory and CPU limits
+
+Apply cgroup limits at runtime:
+
+{% raw %}
+```bash
+cd ~/rebash-docker/module-14
+docker run -d --name rebash-perf-18140 \
+  --memory 256m \
+  --cpus 0.5 \
+  rebash-perf-lab:1.0.0
+docker ps --filter name=rebash-perf-18140 --format '{{ "{{" }}.Names{{ "}}" }} {{ "{{" }}.Status{{ "}}" }}' | tee perf-run.txt
+grep -q rebash-perf-18140 perf-run.txt
+```
+{% endraw %}
+
+**Expected output:** Container shows as Up in `perf-run.txt`.
+
+#### Task 3 – Prove limits via inspect and stats
+
+Capture configured limits and live usage:
+
+{% raw %}
+```bash
+cd ~/rebash-docker/module-14
+docker inspect rebash-perf-18140 --format 'Memory={{ "{{" }}.HostConfig.Memory{{ "}}" }} NanoCpus={{ "{{" }}.HostConfig.NanoCpus{{ "}}" }}' | tee limits-inspect.txt
+grep -q 'Memory=268435456' limits-inspect.txt
+docker stats rebash-perf-18140 --no-stream --format '{{ "{{" }}.MemUsage{{ "}}" }} CPU={{ "{{" }}.CPUPerc{{ "}}" }}' | tee limits-stats.txt
+test -s limits-stats.txt
+docker logs rebash-perf-18140 2>&1 | tail -5 | tee perf-logs.txt
+```
+{% endraw %}
+
+**Expected output:** `limits-inspect.txt` shows `Memory=268435456` (256 MiB) and `NanoCpus=500000000` (0.5 CPU); stats line shows memory at or below ~256 MiB.
 
 ### Validation steps
 
-- [ ] Container or image behaves as Expected output describes
-- [ ] Ports respond or command output matches
-- [ ] Cleanup removes lab resources
+- [ ] Container runs with `--memory 256m` and `--cpus 0.5`
+- [ ] Inspect shows Memory and NanoCpus values
+- [ ] Stats snapshot captured while stress runs
+- [ ] Cleanup removes container and image
 
 ### Common errors and fixes
 
 | Error | Cause | Fix |
 |-------|-------|-----|
-| port is already allocated | Previous lab left a container | `docker rm -f` the old name or change port |
-| permission denied | User not in docker group | Use rootless Docker or fix group membership |
-| manifest unknown | Bad tag | Pin a real tag such as `nginx:alpine` |
+| OOMKilled immediately | Limit too low for stress-ng overhead | Increase to `--memory 256m` as specified or reduce `--vm-bytes` in Dockerfile |
+| `NanoCpus=0` | Limits not applied | Ensure flags on `docker run`, not only Compose |
+| Stats shows host totals | Wrong container name | Filter by `rebash-perf-18140` |
+| stress-ng missing | Build cache skipped apk | Rebuild with `--no-cache` |
 
 ### Challenge exercise
 
-Add a non-root USER (or Compose healthcheck) and prove it with inspect.
+Add `--memory-swap 256m` (disable swap) and compare OOM behaviour; record whether the container restarts in `oom-test.txt`.
 
 ### Learning outcomes
 
-- Executed a real Docker workflow
-- Captured evidence files
-- Removed disposable resources
+- Applied CPU and memory cgroup limits at `docker run`
+- Read limit configuration from inspect fields
+- Correlated live usage with `docker stats --no-stream`
+- Understood why unlimited containers risk host starvation
 
 ### Cleanup
 
 ```bash
-docker rm -f rebash-lab 2>/dev/null || true
-docker rmi rebash-lab:local 2>/dev/null || true
-docker compose down -v 2>/dev/null || true
+docker rm -f rebash-perf-18140 2>/dev/null || true
+docker rmi rebash-perf-lab:1.0.0 2>/dev/null || true
+rm -f ~/rebash-docker/module-14/*.txt
 ```
 
 ## Validation

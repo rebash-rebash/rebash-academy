@@ -155,11 +155,9 @@ After each deploy to a practice VM, CI should confirm the health URL answers wit
 
 #### Task 1 – curl health check with retries and timeouts
 
-```bash
-cd ~/rebash-shell/lab13
-set -euo pipefail
+Create `healthcheck.sh`:
 
-cat > healthcheck.sh << 'EOF'
+```bash
 #!/usr/bin/env bash
 set -euo pipefail
 
@@ -197,12 +195,20 @@ done
 
 echo "health=FAIL url=${URL} last_http_code=${code}" | tee -a "$RESULT_FILE"
 exit 1
-EOF
+```
+
+Run:
+
+```bash
+cd ~/rebash-shell/lab13
+set -euo pipefail
+
 chmod +x healthcheck.sh
 
 RESULT_FILE="$PWD/health-result.txt" URL=https://example.com ./healthcheck.sh
 grep -q 'health=OK' health-result.txt
 ```
+
 
 **Expected output:** `health-result.txt` contains `health=OK` and an HTTP 2xx/3xx code.
 

@@ -69,9 +69,9 @@ pip install 'boto3>=1.34,<2'
 ```
 
 ## Initial State — fixture
+Create `fixtures/ec2.json`:
 
-```bash
-cat > fixtures/ec2.json << 'EOF'
+```json
 {
   "Reservations": [{
     "Instances": [
@@ -82,7 +82,6 @@ cat > fixtures/ec2.json << 'EOF'
     ]
   }]
 }
-EOF
 ```
 
 ## Task

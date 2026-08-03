@@ -30,7 +30,7 @@ tags:
   - quota
   - limitrange
 author: Shaik Basha
-last_updated: "2026-07-31"
+last_updated: "2026-08-03"
 comments: false
 ---
 
@@ -136,23 +136,19 @@ Quotas count **requests** (and sometimes limits, depending on the resource name)
 
 ## Hands-on Lab
 
-
-
 ### Objective
 
-Build and verify a working Kubernetes solution for **Resource Quotas and LimitRanges** that you can inspect, prove, and tear down safely.
+Define a ResourceQuota and LimitRange, run a Pod that fits within both, then prove admission control rejects an over-limit Pod.
 
 ### Prerequisites
 
-- kubectl configured against a lab cluster (kind/minikube preferred)
-- Cluster-admin or namespace-create rights in the lab cluster
+- kubectl configured against a lab cluster (kind or minikube)
+- Rights to create namespaces, quotas, and Pods
 - Writable workspace at `~/rebash-k8s/module-08-quota`
 
 ### Lab environment
 
-Workspace: `~/rebash-k8s/module-08-quota`
-
-Local kind/minikube or a dedicated sandbox cluster. Never target a shared production API server.
+Workspace: `~/rebash-k8s/module-08-quota` on a disposable kind or minikube cluster.
 
 ```bash
 mkdir -p ~/rebash-k8s/module-08-quota && cd ~/rebash-k8s/module-08-quota
@@ -160,63 +156,171 @@ mkdir -p ~/rebash-k8s/module-08-quota && cd ~/rebash-k8s/module-08-quota
 
 ### Real-world scenario
 
-Your platform team is rolling out **Resource Quotas and LimitRanges** for a new microservice. You must apply the change in an isolated namespace, prove it works with kubectl, and leave evidence for the on-call handover.
+A platform team shares one cluster between several product squads. You must cap **team-billing** to two Pods and 300m CPU total, set per-Pod maximums with LimitRange, deploy a workload that fits, and capture proof that a greedy Pod is rejected at admission time.
 
 ### Step-by-step tasks
 
-#### Task 1 – Apply a topic workload
+#### Task 1 – Namespace, ResourceQuota, and LimitRange
 
-Create a namespace and a small Deployment to practise **What it is** against a live API.
+Create `namespace.yaml`:
 
-```bash
-kubectl create namespace rebash-lab --dry-run=client -o yaml | kubectl apply -f -
-kubectl create deployment topic --image=nginx:1.27-alpine -n rebash-lab
-kubectl rollout status deployment/topic -n rebash-lab
-kubectl get all -n rebash-lab
+```yaml
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: rebash-m08-quota
+  labels:
+    team: billing
 ```
 
-**Expected output:** Deployment Ready; Pods listed under the namespace.
+Create `resourcequota.yaml`:
 
-#### Task 2 – Inspect and gather evidence
-
-Production changes always leave an audit trail of describe/Events.
-
-```bash
-kubectl describe deploy topic -n rebash-lab | tee describe.txt
-kubectl get events -n rebash-lab --sort-by=.lastTimestamp | tail -n 15 | tee events.txt
+```yaml
+apiVersion: v1
+kind: ResourceQuota
+metadata:
+  name: billing-quota
+  namespace: rebash-m08-quota
+spec:
+  hard:
+    pods: "2"
+    requests.cpu: "300m"
+    requests.memory: "256Mi"
 ```
 
-**Expected output:** describe.txt and events.txt capture healthy Objects/Events.
+Create `limitrange.yaml`:
+
+```yaml
+apiVersion: v1
+kind: LimitRange
+metadata:
+  name: billing-limits
+  namespace: rebash-m08-quota
+spec:
+  limits:
+    - type: Container
+      defaultRequest:
+        cpu: 50m
+        memory: 64Mi
+      default:
+        cpu: 100m
+        memory: 128Mi
+      max:
+        cpu: 200m
+        memory: 256Mi
+```
+
+Apply and describe the quota:
+
+```bash
+cd ~/rebash-k8s/module-08-quota
+kubectl apply -f namespace.yaml -f resourcequota.yaml -f limitrange.yaml
+kubectl describe resourcequota billing-quota -n rebash-m08-quota | tee quota-describe.txt
+```
+
+**Expected output:** `quota-describe.txt` shows `hard` limits for pods, CPU, and memory.
+
+#### Task 2 – Pod that fits within quota
+
+Create `pod-ok.yaml`:
+
+```yaml
+apiVersion: v1
+kind: Pod
+metadata:
+  name: billing-worker
+  namespace: rebash-m08-quota
+spec:
+  containers:
+    - name: worker
+      image: busybox:1.36.1
+      command: ["sh", "-c", "sleep 3600"]
+      resources:
+        requests:
+          cpu: 100m
+          memory: 64Mi
+        limits:
+          cpu: 100m
+          memory: 128Mi
+```
+
+Apply and verify:
+
+```bash
+cd ~/rebash-k8s/module-08-quota
+kubectl apply -f pod-ok.yaml
+kubectl wait --for=condition=Ready pod/billing-worker -n rebash-m08-quota --timeout=120s
+kubectl describe resourcequota billing-quota -n rebash-m08-quota | tee quota-after-ok.txt
+```
+
+**Expected output:** Pod is `Running`; `quota-after-ok.txt` shows `used` CPU and memory incremented.
+
+#### Task 3 – Rejected over-limit Pod
+
+Create `pod-over.yaml` (CPU request exceeds the LimitRange `max` of 200m):
+
+```yaml
+apiVersion: v1
+kind: Pod
+metadata:
+  name: billing-hog
+  namespace: rebash-m08-quota
+spec:
+  containers:
+    - name: hog
+      image: busybox:1.36.1
+      command: ["sh", "-c", "sleep 3600"]
+      resources:
+        requests:
+          cpu: 250m
+          memory: 64Mi
+        limits:
+          cpu: 250m
+          memory: 128Mi
+```
+
+Attempt to apply and capture the rejection:
+
+```bash
+cd ~/rebash-k8s/module-08-quota
+kubectl apply -f pod-over.yaml 2>&1 | tee quota-reject.txt || true
+kubectl get events -n rebash-m08-quota --field-selector involvedObject.name=billing-hog --sort-by=.lastTimestamp | tail -n 5 | tee quota-events.txt
+grep -Ei 'exceeded quota|limit|forbidden|maximum' quota-reject.txt quota-events.txt
+```
+
+**Expected output:** Apply fails or Pod never becomes Ready; output mentions quota or LimitRange maximum (wording varies by cluster version).
 
 ### Validation steps
 
-- [ ] Namespace `rebash-lab` contains the expected Ready objects
-- [ ] You can explain each Task command from the Theory section
-- [ ] Cleanup deletes the namespace without leftover workloads
+- [ ] ResourceQuota and LimitRange exist in `rebash-m08-quota`
+- [ ] `billing-worker` Pod is Ready and quota `used` counters increased
+- [ ] Over-limit Pod was rejected with a clear admission message
+- [ ] You can explain difference between quota totals and per-Pod LimitRange
 
 ### Common errors and fixes
 
 | Error | Cause | Fix |
 |-------|-------|-----|
-| ImagePullBackOff | Wrong tag or registry auth | Fix image reference; check pull secrets |
-| Pending Pod | Scheduling / quota / PVC | `kubectl describe pod` and read Events |
-| Empty Endpoints | Selector or readiness mismatch | Compare Service selector to Pod labels and Ready |
+| Quota not enforced | Wrong namespace | Confirm objects live in `rebash-m08-quota` |
+| Pod Pending forever | Image pull, not quota | `kubectl describe pod` — quota failures appear in Events at create time |
+| LimitRange ignored | Pod spec missing requests | Set explicit `resources.requests` |
+| All Pods rejected | Quota too small for DaemonSets | Scope quotas to app namespaces, not `kube-system` |
 
 ### Challenge exercise
 
-Add a readinessProbe and a ResourceQuota to the namespace, then show that over-quota creates are rejected.
+Fill the quota with a second fitting Pod (`billing-worker-2` at 100m CPU), then apply a third Pod and capture the **ResourceQuota** rejection (distinct from LimitRange). Save output to `quota-full-reject.txt`.
 
 ### Learning outcomes
 
-- Applied a real cluster change for Resource Quotas and LimitRanges
-- Used describe/Events for verification
-- Destroyed lab resources cleanly
+- Applied ResourceQuota and LimitRange manifests as code
+- Observed quota `used` counters after successful admission
+- Triggered and diagnosed admission rejection for over-limit workloads
+- Understood platform guardrails for multi-tenant namespaces
 
 ### Cleanup
 
 ```bash
-kubectl delete namespace rebash-lab --ignore-not-found
-# Keep ~/rebash-kubernetes/ for later tutorials
+kubectl delete namespace rebash-m08-quota --ignore-not-found
 ```
 
 ## Validation

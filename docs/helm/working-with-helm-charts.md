@@ -28,7 +28,7 @@ tags:
   - helm
   - charts
 author: Shaik Basha
-last_updated: "2026-07-31"
+last_updated: "2026-08-03"
 comments: false
 ---
 
@@ -133,93 +133,241 @@ Think of a chart like a software package: metadata (`Chart.yaml`), configuration
 
 ## Hands-on Lab
 
-
-
 ### Objective
 
-Create, lint, render, install, and uninstall a Helm chart demonstrating **Working with Helm Charts**.
+Build a complete application chart layout — `Chart.yaml`, `values.yaml`, `_helpers.tpl`, Deployment, Service, and `NOTES.txt` — then lint, template, and inventory rendered Kubernetes kinds.
 
 ### Prerequisites
 
-- helm CLI
-- kubectl + lab cluster
-- Ability to create namespaces
+- Helm 3.x (`helm version`)
+- kubectl optional until optional install
+- Writable workspace at `~/rebash-helm/module-03`
 
 ### Lab environment
 
-Workspace: `~/rebash-helm/module-03`
-
-Helm 3 against kind/minikube; release namespace `rebash-helm`.
+Workspace: `~/rebash-helm/module-03` on your workstation.
 
 ```bash
-mkdir -p ~/rebash-helm/module-03 && cd ~/rebash-helm/module-03
+mkdir -p ~/rebash-helm/module-03/rebash-platform/templates && cd ~/rebash-helm/module-03
 ```
 
 ### Real-world scenario
 
-A team wants **Working with Helm Charts** packaged as a chart so GitOps can promote the same artefact across environments.
+Your platform team publishes a standard web chart for product squads. Reviewers expect the full directory layout — metadata, helpers, workload templates, and post-install notes — before the chart enters an internal registry.
 
 ### Step-by-step tasks
 
-#### Task 1 – Create and lint a chart
+#### Task 1 – Chart metadata and defaults
 
-Scaffold a chart and fail the build on lint errors before install.
+Create `rebash-platform/Chart.yaml`:
 
-```bash
-helm version
-helm create labchart
-helm lint ./labchart | tee lint.txt
-helm template labchart ./labchart | egrep '^kind:' | sort | uniq -c | tee kinds.txt
+```yaml
+apiVersion: v2
+name: rebash-platform
+description: REBASH platform web chart with full layout
+type: application
+version: 0.2.0
+appVersion: "1.27"
+maintainers:
+  - name: platform-team
+    email: platform@example.com
 ```
 
-**Expected output:** lint reports no failures; kinds.txt lists Deployment/Service/etc.
+Create `rebash-platform/values.yaml`:
 
-#### Task 2 – Install with values override
-
-Prove values change rendered replicas, then install with wait.
-
-```bash
-kubectl create namespace rebash-helm --dry-run=client -o yaml | kubectl apply -f -
-cat > myvalues.yaml << 'EOF'
-replicaCount: 2
-EOF
-helm template labchart ./labchart -f myvalues.yaml | egrep 'replicas:' | head
-helm upgrade --install labchart ./labchart -n rebash-helm -f myvalues.yaml --wait --timeout 2m
-helm list -n rebash-helm
-kubectl get deploy -n rebash-helm
+```yaml
+replicaCount: 1
+nameOverride: ""
+fullnameOverride: ""
+image:
+  repository: nginxinc/nginx-unprivileged
+  tag: "1.27-alpine"
+  pullPolicy: IfNotPresent
+service:
+  type: ClusterIP
+  port: 8080
+resources: {}
 ```
 
-**Expected output:** Release deployed; Deployment shows 2 replicas (or Ready pods).
+Create `.helmignore`:
+
+```
+# VCS and editor noise
+.git/
+.idea/
+*.swp
+```
+
+#### Task 2 – Helpers and workload templates
+
+Create `rebash-platform/templates/_helpers.tpl`:
+
+{% raw %}
+```
+{{- define "rebash-platform.name" -}}
+{{- default .Chart.Name .Values.nameOverride | trunc 63 | trimSuffix "-" }}
+{{- end }}
+
+{{- define "rebash-platform.fullname" -}}
+{{- if .Values.fullnameOverride }}
+{{- .Values.fullnameOverride | trunc 63 | trimSuffix "-" }}
+{{- else }}
+{{- printf "%s-%s" .Release.Name .Chart.Name | trunc 63 | trimSuffix "-" }}
+{{- end }}
+{{- end }}
+
+{{- define "rebash-platform.labels" -}}
+app.kubernetes.io/name: {{ include "rebash-platform.name" . }}
+app.kubernetes.io/instance: {{ .Release.Name }}
+app.kubernetes.io/version: {{ .Chart.AppVersion | quote }}
+helm.sh/chart: {{ printf "%s-%s" .Chart.Name .Chart.Version | replace "+" "_" }}
+{{- end }}
+```
+{% endraw %}
+
+Create `rebash-platform/templates/deployment.yaml`:
+
+{% raw %}
+```yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "rebash-platform.fullname" . }}
+  labels:
+    {{- include "rebash-platform.labels" . | nindent 4 }}
+spec:
+  replicas: {{ .Values.replicaCount }}
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: {{ include "rebash-platform.name" . }}
+      app.kubernetes.io/instance: {{ .Release.Name }}
+  template:
+    metadata:
+      labels:
+        {{- include "rebash-platform.labels" . | nindent 8 }}
+    spec:
+      containers:
+        - name: web
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          ports:
+            - containerPort: {{ .Values.service.port }}
+          resources:
+            {{- toYaml .Values.resources | nindent 12 }}
+```
+{% endraw %}
+
+Create `rebash-platform/templates/service.yaml`:
+
+{% raw %}
+```yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "rebash-platform.fullname" . }}
+  labels:
+    {{- include "rebash-platform.labels" . | nindent 4 }}
+spec:
+  type: {{ .Values.service.type }}
+  ports:
+    - port: {{ .Values.service.port }}
+      targetPort: {{ .Values.service.port }}
+      protocol: TCP
+      name: http
+  selector:
+    app.kubernetes.io/name: {{ include "rebash-platform.name" . }}
+    app.kubernetes.io/instance: {{ .Release.Name }}
+```
+{% endraw %}
+
+Create `rebash-platform/templates/NOTES.txt`:
+
+{% raw %}
+```
+REBASH platform chart installed.
+
+Release: {{ .Release.Name }}
+Namespace: {{ .Release.Namespace }}
+Service: {{ include "rebash-platform.fullname" . }}:{{ .Values.service.port }}
+
+Check pods:
+  kubectl get pods -n {{ .Release.Namespace }} -l app.kubernetes.io/instance={{ .Release.Name }}
+```
+{% endraw %}
+
+#### Task 3 – Lint, template, and kind inventory
+
+```bash
+cd ~/rebash-helm/module-03
+helm lint rebash-platform | tee lint-m03.txt
+helm template platform-demo rebash-platform --namespace rebash-helm-m03 | tee render-m03.yaml
+grep -E '^kind:' render-m03.yaml | sort | uniq -c | tee kinds-m03.txt
+grep -q 'kind: Deployment' render-m03.yaml
+grep -q 'kind: Service' render-m03.yaml
+helm show chart rebash-platform | tee show-chart-m03.txt
+helm show values rebash-platform | tee show-values-m03.txt
+```
+
+**Expected output:** `lint-m03.txt` reports 0 failures; `kinds-m03.txt` shows exactly one Deployment and one Service.
+
+#### Task 4 – Optional install and NOTES proof
+
+Create `namespace.yaml`:
+
+```yaml
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: rebash-helm-m03
+```
+
+```bash
+cd ~/rebash-helm/module-03
+if command -v helm >/dev/null && kubectl cluster-info >/dev/null 2>&1; then
+  kubectl apply -f namespace.yaml
+  helm upgrade --install platform-demo rebash-platform -n rebash-helm-m03 --wait --timeout 120s | tee install-m03.txt
+  helm get notes platform-demo -n rebash-helm-m03 | tee notes-m03.txt
+  grep -q 'platform-demo' notes-m03.txt
+else
+  echo "Skipping install — cluster unavailable" | tee install-m03.txt
+fi
+```
+
+**Expected output:** `notes-m03.txt` contains release name and kubectl hint from `NOTES.txt`.
 
 ### Validation steps
 
-- [ ] helm lint clean
-- [ ] Release listed in namespace
-- [ ] Uninstall removes the release
+- [ ] Chart includes `Chart.yaml`, `values.yaml`, `_helpers.tpl`, Deployment, Service, and `NOTES.txt`
+- [ ] `helm lint` passes
+- [ ] Kind inventory lists Deployment and Service only
+- [ ] `helm show chart` and `helm show values` captured for review
+- [ ] Optional install runs in `rebash-helm-m03`
 
 ### Common errors and fixes
 
 | Error | Cause | Fix |
 |-------|-------|-----|
-| PENDING_INSTALL | Image pull / probes | `helm status` + `kubectl describe` |
-| lint failed | Template YAML break | Fix templates; re-run helm lint |
-| context deadline | Slow cluster | Increase --timeout or fix readiness |
+| Lint warns on icon | Missing `icon` field | Safe to ignore for lab; add icon URL for production charts |
+| Duplicate kind counts | Extra templates added | Keep lab scope to Deployment + Service |
+| NOTES not shown | Install skipped | Run Task 4 or use `helm template --notes` locally |
+| Invalid YAML after render | Bad `nindent` in helpers | Diff `render-m03.yaml` around labels block |
 
 ### Challenge exercise
 
-Add a ConfigMap template driven by values and prove it with `helm get manifest`.
+Add a `templates/configmap.yaml` driven by `values.yaml` key `configMessage`, re-run lint and kind inventory, and assert a ConfigMap kind appears exactly once.
 
 ### Learning outcomes
 
-- Packaged Kubernetes YAML as a chart
-- Overrode values safely
-- Cleaned up the release
+- Assembled the conventional Helm chart directory layout by hand
+- Centralised labels and names in `_helpers.tpl`
+- Inventoried rendered kinds before any cluster apply
+- Used `NOTES.txt` for operator-facing post-install guidance
 
 ### Cleanup
 
 ```bash
-helm uninstall labchart -n rebash-helm 2>/dev/null || true
-kubectl delete namespace rebash-helm --ignore-not-found
+helm uninstall platform-demo -n rebash-helm-m03 2>/dev/null || true
+kubectl delete namespace rebash-helm-m03 --ignore-not-found
 ```
 
 ## Validation

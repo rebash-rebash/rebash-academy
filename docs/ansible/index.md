@@ -1,63 +1,91 @@
 ---
-title: "Ansible"
-description: "Ansible track on REBASH Academy — curriculum planned."
+title: Overview
+description: "Ansible for Cloud & DevOps Engineers — 17 modules from configuration management through roles, Vault, cloud, Kubernetes, CI/CD, AWX/AAP, and production operations."
+difficulty: beginner
+estimated_time: "6–8 weeks"
 author: Shaik Basha
+last_updated: "2026-08-03"
 category: ansible
 tags:
   - ansible
+  - devops
+  - automation
+  - course
+comments: false
 ---
 
-# Ansible
+# Ansible for Cloud & DevOps Engineers
 
-This technology track is **planned** in the academy curriculum.
+**Duration:** 6–8 weeks · **Difficulty:** Beginner → Advanced
+{ .ra-facts }
 
-## Overview
+Agentless automation with [Ansible](https://docs.ansible.com/) — inventories, idempotent playbooks, roles, Vault, collections, cloud and Kubernetes modules, CI/CD gates, AWX/AAP, and production troubleshooting.
 
-Ansible will be taught as a production-focused course aligned with REBASH Academy career paths.
+!!! tip "Course status"
+    **Ready** — 17 modules with create-file labs. Curriculum follows [docs.ansible.com](https://docs.ansible.com/). Start with [Introduction to Configuration Management and Ansible](introduction-to-configuration-management-and-ansible.md).
 
-## Learning objectives
+## 1. Course overview
 
-- Understand core Ansible concepts used in Cloud and DevOps roles
-- Practise with labs once tutorials ship
-- Connect to related career paths below
+### Purpose
 
-## Prerequisites
+Automate infrastructure and applications declaratively — from first `ansible ping` through enterprise controllers, without agents on managed nodes.
 
-- Linux fundamentals (recommended)
-- See [Career Paths](../career-paths/index.md) for the recommended order
+### Target roles
 
-## Course modules
+DevOps · Cloud · Platform · SRE · Linux Administrator · DevSecOps · Infrastructure Engineer
 
-Modules will appear here when the track moves from planned to ready.
+### Prerequisites
 
-## Tutorial roadmap
+- [Linux](../linux/index.md) fundamentals (SSH, packages, systemd)
+- [Git](../git/index.md) for playbook repositories
+- YAML comfort (or equivalent shell/editor practice)
+- [Kubernetes](../kubernetes/index.md) before Module 13
+- [GitHub Actions](../github-actions/index.md) or [GitLab CI](../gitlab/index.md) before Module 14
 
-No published tutorials yet — tracked in the repository curriculum backlog.
+### Learning arc
 
-## Labs roadmap
+| Phase | Modules | Level |
+|-------|---------|-------|
+| Foundations | 1–4 | Beginner |
+| Playbooks & data | 5–8 | Intermediate |
+| Templates, collections & secrets | 9–11 | Intermediate |
+| Cloud & platform | 12–15 | Advanced |
+| Production & ops | 16–17 | Advanced |
 
-Planned alongside the first modules.
+### Capstone outcomes
 
-## Projects roadmap
+Multi-env repo layout · idempotent roles · Vault secrets · syntax-check in CI · kubernetes.core automation · AWX job templates · forks and fact caching · structured troubleshooting
 
-See [Projects](../projects/index.md) and [Capstones](../capstones/index.md).
+## 2. Modules
 
-## Cheat sheets
+| Module | Focus | Start here |
+|-------:|-------|------------|
+| 1 | Configuration management | [Introduction](introduction-to-configuration-management-and-ansible.md) |
+| 2 | Install & configuration | [Installing Ansible](installing-ansible-and-configuration.md) |
+| 3 | Inventory | [Ansible inventory](ansible-inventory.md) |
+| 4 | Ad-hoc commands | [Ad-hoc commands](ansible-ad-hoc-commands.md) |
+| 5 | Playbooks | [Playbooks](ansible-playbooks.md) |
+| 6 | Variables & facts | [Variables and facts](ansible-variables-and-facts.md) |
+| 7 | Conditionals & loops | [Conditionals and loops](ansible-conditionals-and-loops.md) |
+| 8 | Roles | [Ansible roles](ansible-roles.md) |
+| 9 | Templates | [Jinja2 templates](ansible-jinja2-templates.md) |
+| 10 | Collections | [Collections & Galaxy](ansible-collections-and-galaxy.md) |
+| 11 | Secrets | [Vault and secrets](ansible-vault-and-secrets.md) |
+| 12 | Cloud automation | [Cloud automation](ansible-cloud-automation.md) |
+| 13 | Kubernetes | [Kubernetes automation](ansible-kubernetes-automation.md) |
+| 14 | CI/CD | [CI/CD integration](ansible-ci-cd-integration.md) |
+| 15 | Automation Platform | [AWX & AAP](awx-and-ansible-automation-platform.md) |
+| 16 | Production | [Production practices](production-ansible-practices.md) |
+| 17 | Troubleshooting | [Troubleshooting](troubleshooting-ansible.md) |
 
-Coming with the first tutorials.
+## 3. Practice
 
-## Interview preparation
+- [Labs](../labs/index.md) · [Projects](projects/index.md) · [Quizzes](quizzes/index.md)
+- [Cheat sheets](cheatsheets/index.md) · [Interview](interview/index.md) · [Capstone](capstone/index.md)
+- [Learning roadmap](roadmap.md) · [FAQ](faq.md)
 
-See [Interview Guides](../interview/index.md) when this track ships.
+## Related
 
-## Certifications
-
-See [Certifications](../certifications/index.md).
-
-## Related technologies
-
-Browse neighbouring tracks under **Technologies** in the site navigation.
-
-## Related career paths
-
-Browse [Career Paths](../career-paths/index.md).
+- [Terraform](../terraform/index.md) · [Kubernetes](../kubernetes/index.md) · [Helm](../helm/index.md)
+- [GitOps fundamentals](../git/gitops-fundamentals.md)
+- [DevOps Engineer path](../career-paths/devops-engineer/index.md)

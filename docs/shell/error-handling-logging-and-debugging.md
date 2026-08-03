@@ -159,11 +159,9 @@ Your team runs a nightly “preflight” script before a deploy. Platform asks f
 
 Create `preflight.sh` with `set -euo pipefail`, a log helper, and an EXIT trap that records the final status.
 
-```bash
-cd ~/rebash-shell/lab16
-set -euo pipefail
+Create `preflight.sh`:
 
-cat > preflight.sh << 'EOF'
+```bash
 #!/usr/bin/env bash
 set -euo pipefail
 set -E
@@ -242,7 +240,13 @@ main() {
 }
 
 main "$@"
-EOF
+```
+
+Run:
+
+```bash
+cd ~/rebash-shell/lab16
+set -euo pipefail
 
 chmod +x preflight.sh
 ./preflight.sh | tee success-stdout.txt
@@ -250,6 +254,7 @@ test -f preflight.log
 grep -F 'all checks passed' preflight.log | tee success-log-snip.txt
 grep -F 'final_exit=0' preflight.log
 ```
+
 
 **Expected output:** stdout shows `RESULT=ok`; `preflight.log` contains INFO lines and `final_exit=0`.
 

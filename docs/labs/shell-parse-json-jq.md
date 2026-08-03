@@ -61,10 +61,9 @@ Any host with jq installed.
 
 ## Initial State
 
-```bash
-mkdir -p ~/rebash-lab-shell/json
-cd ~/rebash-lab-shell/json
-cat > status.json << 'EOF'
+Create `status.json`:
+
+```json
 {
   "env": "lab",
   "services": [
@@ -73,8 +72,15 @@ cat > status.json << 'EOF'
     {"name": "db", "status": "ok", "latency_ms": 15}
   ]
 }
-EOF
 ```
+
+Run:
+
+```bash
+mkdir -p ~/rebash-lab-shell/json
+cd ~/rebash-lab-shell/json
+```
+
 
 ## Lab Tasks
 

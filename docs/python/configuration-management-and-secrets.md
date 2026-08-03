@@ -164,33 +164,44 @@ You are building a small inventory API client for a practice environment. Non-se
 cd ~/rebash-python/lab11
 set -euo pipefail
 source .venv/bin/activate
+```
 
-cat > config.yaml << 'EOF'
+Create `config.yaml`:
+
+```yaml
 app_name: rebash-inventory
 base_url: https://api.example.invalid/v1
 timeout_sec: 10
 log_level: INFO
-EOF
+```
 
-cat > .env.example << 'EOF'
+Create `.env.example`:
+
+```text
 # Copy to .env and fill real values. Never commit .env.
 REBASH_API_TOKEN=replace-me
 REBASH_LOG_LEVEL=INFO
-EOF
+```
 
-cat > .gitignore << 'EOF'
+Create `.gitignore`:
+
+```text
 .env
 .venv/
 __pycache__/
 *.pyc
-EOF
+```
 
-# Demonstrate a local .env that is ignored (do not commit)
-cat > .env << 'EOF'
+Create `.env`:
+
+```text
 REBASH_API_TOKEN=lab-only-not-for-git
 REBASH_LOG_LEVEL=DEBUG
-EOF
+```
 
+Run:
+
+```bash
 test -f config.yaml
 test -f .env.example
 grep -qx '.env' .gitignore
@@ -205,8 +216,11 @@ echo "task1 ok" | tee task1-ok.txt
 cd ~/rebash-python/lab11
 set -euo pipefail
 source .venv/bin/activate
+```
 
-cat > load_config.py << 'PY'
+Create `load_config.py`:
+
+```python
 from __future__ import annotations
 
 import os
@@ -264,8 +278,11 @@ if __name__ == "__main__":
     root = Path.home() / "rebash-python" / "lab11"
     cfg = load_config(root)
     print(public_view(cfg))
-PY
+```
 
+Run:
+
+```bash
 python load_config.py | tee task2-success.txt
 grep -q "api_token_set" task2-success.txt
 if grep -q "lab-only-not-for-git" task2-success.txt; then

@@ -99,8 +99,8 @@ Write at GeeksforGeeks clarity: define → show → compare → warn.
 
 Title: `## Hands-on Lab`
 
-Labs must be **practical, production-oriented, and executable end-to-end**.  
-No markdown-only or note-taking exercises. The learner builds or configures a **real working solution** for *this* topic.
+Labs must be **production-grade interview preparation** — practical, production-oriented, and executable end-to-end.  
+No markdown-only, note-taking, toy, or validate-only exercises. The learner **builds, breaks, fixes, and proves** a **real working system** for *this* topic (cloud sandbox, kind, LocalStack, or disposable VM as appropriate — not `null`/`local` stubs as the whole lab).
 
 Required subsections (order fixed):
 
@@ -108,23 +108,41 @@ Required subsections (order fixed):
 2. `### Prerequisites` — tools/accounts for *this* lab  
 3. `### Lab environment` — `~/rebash-<technology>/labNN` (or `module-NN`) + runtime (Ubuntu VM, Docker, kind, local CLI)  
 4. `### Real-world scenario` — 2–4 sentences of production context  
-5. `### Step-by-step tasks` — `#### Task N – …` with copy-paste commands, short why, and **Expected output**  
+5. `### Step-by-step tasks` — `#### Task N – …` with create-file → code → run → **Expected output**  
 6. `### Validation steps` — checkboxes proving the solution works  
 7. `### Common errors and fixes` — table: Error | Cause | Fix  
 8. `### Challenge exercise` — stretch **artefact** (script, unit, ACL, pipeline, rules) — not “write runbook.md”  
 9. `### Learning outcomes` — bullets tied to tasks  
 10. `### Cleanup` — remove disposable resources  
 
+**Task shape (mandatory):**
+
+```text
+Create `<filename>`:
+<language fence with full file contents>
+
+Run / verify:
+<short bash fence>
+
+**Expected output:** …
+```
+
+Do **not** create files with `cat <<EOF`, `echo … > file`, or `printf` redirection. Those look ugly and hide the real file. Show the file in its own fence; use bash only to run and prove.
+
 Rules:
 
-- **2–4 tasks**, each tied to Theory for *this* slug  
-- Paste-safe bash; prefer asserts (`test`, `grep -q`, exit codes)  
-- Observable success (file, Ready pod, plan change, curl 200, YAML parses, service healthy)  
-- Safe defaults; no secrets; escape `${{` / `{%` / Go `{{` for mkdocs-macros  
+- **2–4 tasks**, each tied to Theory for *this* slug and usable in interview storytelling  
+- Short paste-safe bash for run/verify; prefer asserts (`test`, `grep -q`, exit codes) **after** real apply  
+- Observable success on the **system** (Ready pod, cloud resource exists, service healthy, plan applied — not only “validate OK”)  
+- Include at least one failure/drift/fix or production-shaped risk where the topic allows  
+- Safe sandbox defaults + cleanup; no secrets; escape `${{` / `{%` / Go `{{` for mkdocs-macros  
 - **Never** reuse a generic “host baseline + ip/ss” lab with only the title changed  
+- **Never** ship simple / toy / simulate-forever labs as production interview prep  
 
-**Good (users/sudo):** `useradd`, `usermod -aG`, `visudo`, `id`, `sudo -l` with evidence files.  
-**Bad:** only `uname`/`df`/`ip` while the title says Users and sudo.
+**Good (users/sudo):** `useradd`, `usermod -aG`, create sudoers drop-in as a file fence + `visudo -c`, then `id` / `sudo -l` evidence.  
+**Bad:** only `uname`/`df`/`ip` while the title says Users and sudo; or a wall of `cat > file <<EOF` heredocs; or Terraform that only `validate`s with `null_resource`.  
+
+Full lab authoring rules: `.cursor/prompts/tutorials/create_lab.md`.
 
 Apply/refresh generators only when they emit topic-specific labs:
 

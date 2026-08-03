@@ -36,7 +36,7 @@ tags:
   - junit
   - quality-gates
 author: Shaik Basha
-last_updated: "2026-07-31"
+last_updated: "2026-08-03"
 comments: false
 ---
 
@@ -160,92 +160,210 @@ Unit tests prove logic; integration proves wiring; e2e proves the user path. Per
 
 ### Objective
 
-Author a valid `.gitlab-ci.yml` that models **Testing, Reports, and Quality Gates** and validate it locally before pushing.
+Create pytest tests with JUnit XML output, configure GitLab CI to publish test reports as artefacts, and prove the report format locally.
 
 ### Prerequisites
 
-- Python 3 with PyYAML (`pip install pyyaml`)
-- Optional: GitLab project to run the pipeline
+- Python 3 with PyYAML and pytest (`pip install pyyaml pytest`)
+- Optional: GitLab project with a runner
 
 ### Lab environment
 
 Workspace: `~/rebash-gitlab/module-13`
 
-File-first lab. Push to GitLab only when you want a runner to execute jobs.
+File-first lab. Test reports upload on GitLab runners; this lab validates XML and pipeline structure locally.
 
 ```bash
 mkdir -p ~/rebash-gitlab/module-13 && cd ~/rebash-gitlab/module-13
+set -euo pipefail
 ```
 
 ### Real-world scenario
 
-Your squad is encoding **Testing, Reports, and Quality Gates** as CI. Reviewers reject YAML that does not parse or that skips artefacts/needs incorrectly.
+Quality engineering requires unit tests on every merge request with JUnit reports visible in the merge request UI — failed suites must still upload XML for debugging. You deliver tests, sample report XML, and pipeline YAML for review.
 
 ### Step-by-step tasks
 
-#### Task 1 – Write pipeline YAML
+#### Task 1 – Sample tests and requirements
 
-Stages and jobs must be explicit so MR pipelines are predictable.
+Create `app/calc.py`:
+
+```python
+def add(a: int, b: int) -> int:
+    return a + b
+```
+
+Create `tests/test_calc.py`:
+
+```python
+from app.calc import add
+
+def test_add():
+    assert add(2, 3) == 5
+
+def test_add_zero():
+    assert add(0, 0) == 0
+```
+
+Create `requirements-dev.txt`:
+
+```text
+pytest>=8.0
+```
+
+Run tests locally with JUnit output:
 
 ```bash
-mkdir -p src && echo 'print("ok")' > src/app.py
-cat > .gitlab-ci.yml << 'EOF'
-stages: [lint, test]
-lint:
-  stage: lint
-  image: python:3.12-alpine
-  script:
-    - python -m py_compile src/app.py
-test:
+cd ~/rebash-gitlab/module-13
+set -euo pipefail
+python3 -m pip install -q -r requirements-dev.txt
+PYTHONPATH=. pytest tests/ --junitxml=report.xml -q | tee pytest-local.txt
+test -f report.xml
+grep -q 'testsuite' report.xml
+```
+
+**Expected output:** Pytest passes; `report.xml` contains a `testsuite` element.
+
+#### Task 2 – Sample JUnit XML (reference fixture)
+
+Create `fixtures/sample-junit.xml`:
+
+```xml
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuites name="module-13-fixture" tests="2" failures="0" errors="0" time="0.01">
+  <testsuite name="tests.test_calc" tests="2" failures="0" errors="0" skipped="0" time="0.01">
+    <testcase classname="tests.test_calc" name="test_add" time="0.005"/>
+    <testcase classname="tests.test_calc" name="test_add_zero" time="0.005"/>
+  </testsuite>
+</testsuites>
+```
+
+Validate the fixture:
+
+```bash
+cd ~/rebash-gitlab/module-13
+set -euo pipefail
+grep -q 'test_add' fixtures/sample-junit.xml
+python3 -c "
+import xml.etree.ElementTree as ET
+root = ET.parse('fixtures/sample-junit.xml').getroot()
+assert root.tag == 'testsuites'
+assert int(root.attrib['tests']) == 2
+print('sample-junit.xml OK')
+"
+```
+
+**Expected output:** `sample-junit.xml OK`
+
+#### Task 3 – GitLab CI with JUnit report artefacts
+
+Create `.gitlab-ci.yml`:
+
+{% raw %}
+```yaml
+stages:
+  - test
+
+variables:
+  PIP_CACHE_DIR: "${CI_PROJECT_DIR}/.cache/pip"
+
+unit-tests:
   stage: test
   image: python:3.12-alpine
-  needs: [lint]
+  before_script:
+    - pip install -r requirements-dev.txt
   script:
-    - python src/app.py
-EOF
-python3 -c "import yaml; d=yaml.safe_load(open('.gitlab-ci.yml')); assert d['stages']==['lint','test']; print('OK', list(d))"
+    - PYTHONPATH=. pytest tests/ --junitxml=junit-report.xml -q
+  artifacts:
+    when: always
+    reports:
+      junit: junit-report.xml
+    paths:
+      - junit-report.xml
+    expire_in: 7 days
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
 ```
+{% endraw %}
 
-**Expected output:** Prints `OK` and job names; no YAML exception.
-
-#### Task 2 – Simulate the scripts locally
-
-Prove the job script works before burning runner minutes.
+Validate offline:
 
 ```bash
-python3 -m py_compile src/app.py
-python3 src/app.py | tee out.txt
-test "$(cat out.txt)" = 'ok'
+cd ~/rebash-gitlab/module-13
+set -euo pipefail
+python3 -c "
+import yaml
+d = yaml.safe_load(open('.gitlab-ci.yml'))
+j = d['unit-tests']
+assert j['artifacts']['when'] == 'always'
+assert j['artifacts']['reports']['junit'] == 'junit-report.xml'
+print('gitlab-ci OK')
+"
+grep -q 'python:3.12-alpine' .gitlab-ci.yml
 ```
 
-**Expected output:** Compile succeeds; out.txt is `ok`.
+**Expected output:** `gitlab-ci OK`; pinned Python image and `when: always` on artefacts.
+
+#### Task 4 – Local validation script
+
+Create `validate-tests.sh`:
+
+```bash
+#!/usr/bin/env bash
+set -euo pipefail
+PYTHONPATH=. pytest tests/ --junitxml=junit-report.xml -q
+python3 -c "import yaml; yaml.safe_load(open('.gitlab-ci.yml'))"
+grep -q 'reports:' .gitlab-ci.yml
+test -s junit-report.xml
+echo 'module-13 testing lab passed'
+```
+
+Run it:
+
+```bash
+cd ~/rebash-gitlab/module-13
+set -euo pipefail
+chmod +x validate-tests.sh
+./validate-tests.sh | tee validation.txt
+```
+
+**Expected output:** `module-13 testing lab passed`
 
 ### Validation steps
 
-- [ ] `.gitlab-ci.yml` parses
-- [ ] Local script path matches job intent
+- [ ] Pytest generates valid JUnit XML locally
+- [ ] Pipeline publishes `junit-report.xml` with `artifacts.reports.junit`
+- [ ] `when: always` ensures reports upload on failure
+- [ ] Pinned image `python:3.12-alpine` present
+- [ ] Sample fixture XML parses with Python ElementTree
 
 ### Common errors and fixes
 
 | Error | Cause | Fix |
 |-------|-------|-----|
-| yaml.scanner.ScannerError | Indentation | Use 2-space indent; re-validate with PyYAML |
-| job stuck pending | No runner / tags | Check runner tags match job tags |
-| needs not found | Typo in job name | Align `needs` with actual job keys |
+| Empty report in MR UI | Missing `reports: junit` | Add under `artifacts.reports` |
+| No XML on failed job | Missing `when: always` | Set on artefacts block |
+| `ModuleNotFoundError: app` | PYTHONPATH not set | Export `PYTHONPATH=.` in script |
+| Flaky tests block merge | No retry policy | Fix root cause; avoid blind retry |
+| Coverage gate without config | Wrong pytest plugin | Add `pytest-cov` and document threshold |
 
 ### Challenge exercise
 
-Add an `artifacts:` path from lint to test and document expire_in.
+Add an integration test job that `needs: [unit-tests]` and publishes a second JUnit file `integration-junit.xml`. Gate a deploy stub on both jobs succeeding.
 
 ### Learning outcomes
 
-- Produced reviewable GitLab CI YAML
-- Validated structure and scripts locally
+- Generated JUnit XML from pytest locally
+- Configured GitLab CI test report artefacts with `when: always`
+- Validated report structure before pushing to GitLab
+- Understood quality gates tied to test evidence
 
 ### Cleanup
 
 ```bash
-# File-only lab — keep YAML for the next tutorial
+rm -rf ~/rebash-gitlab/module-13/.pytest_cache ~/rebash-gitlab/module-13/**/__pycache__ 2>/dev/null || true
+ls ~/rebash-gitlab/module-13
 ```
 
 ## Validation

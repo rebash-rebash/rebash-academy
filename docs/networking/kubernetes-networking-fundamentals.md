@@ -160,8 +160,11 @@ On-call asks whether a Service has endpoints after a deploy. You either inspect 
 ```bash
 cd ~/rebash-networking/lab18
 set -euo pipefail
+```
 
-cat > deploy-svc.yaml << 'EOF'
+Create `deploy-svc.yaml`:
+
+```yaml
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -197,8 +200,9 @@ spec:
       port: 80
       targetPort: http
   type: ClusterIP
-EOF
+```
 
+```bash
 # Structural validation without apply (works offline)
 python3 - << 'PY' | tee yaml-validate.txt
 import sys
@@ -242,13 +246,19 @@ if [[ "$LIVE" -eq 1 ]]; then
     kubectl -n kube-system get pods | grep -i dns | tee coredns-pods.txt || true
 else
   echo mode=offline-dry-run | tee mode.txt
-  cat > endpoints-story.txt << 'EOF'
+```
+
+Create `endpoints-story.txt`:
+
+```text
 When the Deployment is applied and Pods become Ready:
   kubectl get endpoints rebash-netdemo
 should list Pod IPs:container ports matching the Service selector.
 Empty endpoints ⇒ selector/labels mismatch or Pods not Ready.
 DNS name in-cluster: rebash-netdemo.<namespace>.svc.cluster.local
-EOF
+```
+
+```bash
   cp endpoints-story.txt endpoints.txt
   echo "offline — no cluster destroy performed" | tee safety.txt
 fi
@@ -263,8 +273,11 @@ test -f mode.txt
 ```bash
 cd ~/rebash-networking/lab18
 set -euo pipefail
+```
 
-cat > netpol-sample.yaml << 'EOF'
+Create `netpol-sample.yaml`:
+
+```yaml
 apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
 metadata:
@@ -292,8 +305,9 @@ spec:
           port: 53
         - protocol: TCP
           port: 53
-EOF
+```
 
+```bash
 python3 - << 'PY' | tee netpol-validate.txt
 text = open("netpol-sample.yaml").read()
 assert "kind: NetworkPolicy" in text

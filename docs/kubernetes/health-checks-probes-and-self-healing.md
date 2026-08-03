@@ -4,7 +4,7 @@ description: Configure liveness, readiness, and startup probes so Kubernetes det
 difficulty: intermediate
 estimated_time: "40 min"
 author: Shaik Basha
-last_updated: "2026-07-28"
+last_updated: "2026-08-03"
 category: kubernetes
 tags:
   - kubernetes
@@ -209,87 +209,204 @@ Avoid expensive checks on liveness (full DB query across shards). Keep liveness 
 
 ## Hands-on Lab
 
-
-
 ### Objective
 
-Build and verify a working Kubernetes solution for **Health Checks, Probes, and Self-Healing** that you can inspect, prove, and tear down safely.
+Deploy nginx with liveness and readiness probes on `/`, prove Ready replicas and Service endpoints, then briefly break the readiness path and observe self-healing behaviour.
 
 ### Prerequisites
 
-- kubectl configured against a lab cluster (kind/minikube preferred)
-- Cluster-admin or namespace-create rights in the lab cluster
-- Writable workspace at `~/rebash-kubernetes/health-checks-probes-and-self-healing`
+- A working Kubernetes cluster (**kind**, **minikube**, or any lab cluster)
+- **kubectl** with namespace-create rights
+- Writable workspace at `~/rebash-k8s/module-probes`
 
 ### Lab environment
 
-Workspace: `~/rebash-kubernetes/health-checks-probes-and-self-healing`
-
-Local kind/minikube or a dedicated sandbox cluster. Never target a shared production API server.
+Workspace: `~/rebash-k8s/module-probes`
 
 ```bash
-mkdir -p ~/rebash-kubernetes/health-checks-probes-and-self-healing && cd ~/rebash-kubernetes/health-checks-probes-and-self-healing
+mkdir -p ~/rebash-k8s/module-probes && cd ~/rebash-k8s/module-probes
 ```
 
 ### Real-world scenario
 
-Your platform team is rolling out **Health Checks, Probes, and Self-Healing** for a new microservice. You must apply the change in an isolated namespace, prove it works with kubectl, and leave evidence for the on-call handover.
+Before a production rollout, SRE requires probes on the demo web Deployment. You add HTTP probes on paths nginx actually serves, confirm only Ready Pods receive traffic, then simulate a bad readiness path to see endpoints drop—without using a fake `/healthz` on stock nginx.
 
 ### Step-by-step tasks
 
-#### Task 1 – Apply a topic workload
+#### Task 1 – Deployment with probes and Service
 
-Create a namespace and a small Deployment to practise **Why Probes Exist** against a live API.
+Create `namespace.yaml`:
 
-```bash
-kubectl create namespace rebash-lab --dry-run=client -o yaml | kubectl apply -f -
-kubectl create deployment topic --image=nginx:1.27-alpine -n rebash-lab
-kubectl rollout status deployment/topic -n rebash-lab
-kubectl get all -n rebash-lab
+```yaml
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: rebash-m-probes
 ```
 
-**Expected output:** Deployment Ready; Pods listed under the namespace.
+Create `web-probes.yaml`:
 
-#### Task 2 – Inspect and gather evidence
-
-Production changes always leave an audit trail of describe/Events.
-
-```bash
-kubectl describe deploy topic -n rebash-lab | tee describe.txt
-kubectl get events -n rebash-lab --sort-by=.lastTimestamp | tail -n 15 | tee events.txt
+```yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: web
+  namespace: rebash-m-probes
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: web
+  template:
+    metadata:
+      labels:
+        app: web
+    spec:
+      containers:
+        - name: nginx
+          image: nginx:1.27-alpine
+          ports:
+            - containerPort: 80
+          livenessProbe:
+            httpGet:
+              path: /
+              port: 80
+            initialDelaySeconds: 5
+            periodSeconds: 10
+            failureThreshold: 3
+          readinessProbe:
+            httpGet:
+              path: /
+              port: 80
+            initialDelaySeconds: 2
+            periodSeconds: 5
+            failureThreshold: 2
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: web
+  namespace: rebash-m-probes
+spec:
+  selector:
+    app: web
+  ports:
+    - port: 80
+      targetPort: 80
 ```
 
-**Expected output:** describe.txt and events.txt capture healthy Objects/Events.
+Apply and verify:
+
+```bash
+cd ~/rebash-k8s/module-probes
+kubectl apply -f namespace.yaml
+kubectl apply -f web-probes.yaml
+kubectl rollout status deployment/web -n rebash-m-probes --timeout=180s
+kubectl get pods -n rebash-m-probes -l app=web | tee probes-ready.txt
+grep -c '1/1' probes-ready.txt | tee ready-count.txt
+test "$(cat ready-count.txt)" -ge 2
+kubectl get endpoints web -n rebash-m-probes | tee endpoints-healthy.txt
+```
+
+**Expected output:** Two Pods `1/1 Ready`; Endpoints list two addresses.
+
+#### Task 2 – Exec probe check from Pod
+
+```bash
+cd ~/rebash-k8s/module-probes
+POD=$(kubectl get pod -n rebash-m-probes -l app=web -o jsonpath='{.items[0].metadata.name}')
+kubectl exec -n rebash-m-probes "$POD" -- wget -qO- http://127.0.0.1/ | head -n 2 | tee probe-path-ok.txt
+test -s probe-path-ok.txt
+```
+
+**Expected output:** HTML snippet confirms `/` responds—the same path probes use.
+
+#### Task 3 – Break readiness briefly (bad path manifest)
+
+Create `web-probes-broken.yaml` (readiness points at missing `/healthz`):
+
+```yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: web
+  namespace: rebash-m-probes
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: web
+  template:
+    metadata:
+      labels:
+        app: web
+    spec:
+      containers:
+        - name: nginx
+          image: nginx:1.27-alpine
+          ports:
+            - containerPort: 80
+          livenessProbe:
+            httpGet:
+              path: /
+              port: 80
+            initialDelaySeconds: 5
+            periodSeconds: 10
+          readinessProbe:
+            httpGet:
+              path: /healthz
+              port: 80
+            initialDelaySeconds: 2
+            periodSeconds: 5
+            failureThreshold: 2
+```
+
+Apply broken config, observe NotReady, restore good manifest:
+
+```bash
+cd ~/rebash-k8s/module-probes
+kubectl apply -f web-probes-broken.yaml
+sleep 15
+kubectl get pods -n rebash-m-probes -l app=web | tee probes-notready.txt
+grep -E '0/1|Not Ready' probes-notready.txt || true
+kubectl get endpoints web -n rebash-m-probes | tee endpoints-empty.txt
+kubectl apply -f web-probes.yaml
+kubectl rollout status deployment/web -n rebash-m-probes --timeout=180s
+kubectl get endpoints web -n rebash-m-probes | tee endpoints-recovered.txt
+```
+
+**Expected output:** After broken apply, Pods show NotReady and endpoints shrink; re-applying good manifest restores Ready state.
 
 ### Validation steps
 
-- [ ] Namespace `rebash-lab` contains the expected Ready objects
-- [ ] You can explain each Task command from the Theory section
-- [ ] Cleanup deletes the namespace without leftover workloads
+- [ ] Deployment with liveness and readiness probes reached full Ready
+- [ ] Endpoints populated when probes pass
+- [ ] Bad readiness path removed Pods from Ready/endpoints
+- [ ] Re-applying fixed manifest recovered the rollout
 
 ### Common errors and fixes
 
 | Error | Cause | Fix |
 |-------|-------|-----|
-| ImagePullBackOff | Wrong tag or registry auth | Fix image reference; check pull secrets |
-| Pending Pod | Scheduling / quota / PVC | `kubectl describe pod` and read Events |
-| Empty Endpoints | Selector or readiness mismatch | Compare Service selector to Pod labels and Ready |
+| CrashLoopBackOff | Liveness fails on start | Increase `initialDelaySeconds`; add startupProbe |
+| Never Ready | Wrong probe path | Use `/` for stock nginx, not `/healthz` |
+| Rollout stuck | Readiness never passes | Fix probe; `kubectl describe pod` |
+| Endpoints empty | All Pods NotReady | Fix readiness before debugging Service |
 
 ### Challenge exercise
 
-Add a readinessProbe and a ResourceQuota to the namespace, then show that over-quota creates are rejected.
+Add a `startupProbe` with `failureThreshold: 30` and `periodSeconds: 2` to `web-probes.yaml`, then set liveness `initialDelaySeconds: 1` and prove slow-start Pods are not killed during boot.
 
 ### Learning outcomes
 
-- Applied a real cluster change for Health Checks, Probes, and Self-Healing
-- Used describe/Events for verification
-- Destroyed lab resources cleanly
+- Configured liveness and readiness HTTP probes on a real path
+- Correlated Ready state with Service endpoints
+- Observed traffic gating when readiness fails and recovery after fix
 
 ### Cleanup
 
 ```bash
-kubectl delete namespace rebash-lab --ignore-not-found
-# Keep ~/rebash-kubernetes/ for later tutorials
+kubectl delete namespace rebash-m-probes --ignore-not-found --wait=true
 ```
 
 ## Validation

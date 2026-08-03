@@ -32,7 +32,7 @@ tags:
   - prometheus
   - logging
 author: Shaik Basha
-last_updated: "2026-07-31"
+last_updated: "2026-08-03"
 comments: false
 ---
 
@@ -142,23 +142,18 @@ Control loops still reconcile without Prometheus; observability tells *you* when
 
 ## Hands-on Lab
 
-
-
 ### Objective
 
-Build and verify a working Kubernetes solution for **Monitoring and Logging in Kubernetes** that you can inspect, prove, and tear down safely.
+Deploy a logging workload, collect Events and container logs into evidence files, and attempt `kubectl top` with a documented fallback when Metrics Server is absent.
 
 ### Prerequisites
 
-- kubectl configured against a lab cluster (kind/minikube preferred)
-- Cluster-admin or namespace-create rights in the lab cluster
+- kubectl configured against a lab cluster (kind or minikube)
 - Writable workspace at `~/rebash-k8s/module-12`
 
 ### Lab environment
 
-Workspace: `~/rebash-k8s/module-12`
-
-Local kind/minikube or a dedicated sandbox cluster. Never target a shared production API server.
+Workspace: `~/rebash-k8s/module-12` on a disposable lab cluster.
 
 ```bash
 mkdir -p ~/rebash-k8s/module-12 && cd ~/rebash-k8s/module-12
@@ -166,63 +161,158 @@ mkdir -p ~/rebash-k8s/module-12 && cd ~/rebash-k8s/module-12
 
 ### Real-world scenario
 
-Your platform team is rolling out **Monitoring and Logging in Kubernetes** for a new microservice. You must apply the change in an isolated namespace, prove it works with kubectl, and leave evidence for the on-call handover.
+During a production incident, the first questions are: *What did the Pod log?* and *What did the control plane record?* You will deploy a sample app that emits structured log lines, capture Events and logs, and check whether Metrics Server is installed for resource usage.
 
 ### Step-by-step tasks
 
-#### Task 1 – Apply a topic workload
+#### Task 1 – Namespace and logging Deployment
 
-Create a namespace and a small Deployment to practise **What it is** against a live API.
+Create `namespace.yaml`:
 
-```bash
-kubectl create namespace rebash-lab --dry-run=client -o yaml | kubectl apply -f -
-kubectl create deployment topic --image=nginx:1.27-alpine -n rebash-lab
-kubectl rollout status deployment/topic -n rebash-lab
-kubectl get all -n rebash-lab
+```yaml
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: rebash-m12
 ```
 
-**Expected output:** Deployment Ready; Pods listed under the namespace.
+Create `deployment.yaml`:
 
-#### Task 2 – Inspect and gather evidence
-
-Production changes always leave an audit trail of describe/Events.
-
-```bash
-kubectl describe deploy topic -n rebash-lab | tee describe.txt
-kubectl get events -n rebash-lab --sort-by=.lastTimestamp | tail -n 15 | tee events.txt
+```yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: log-demo
+  namespace: rebash-m12
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: log-demo
+  template:
+    metadata:
+      labels:
+        app: log-demo
+    spec:
+      containers:
+        - name: logger
+          image: busybox:1.36.1
+          command:
+            - sh
+            - -c
+            - |
+              i=0
+              while true; do
+                i=$((i+1))
+                echo "level=info msg=demo-tick count=$i ts=$(date -Iseconds)"
+                sleep 5
+              done
+          resources:
+            requests:
+              cpu: 10m
+              memory: 32Mi
 ```
 
-**Expected output:** describe.txt and events.txt capture healthy Objects/Events.
+Apply:
+
+```bash
+cd ~/rebash-k8s/module-12
+kubectl apply -f namespace.yaml -f deployment.yaml
+kubectl rollout status deployment/log-demo -n rebash-m12 --timeout=120s
+kubectl get pods -n rebash-m12 -l app=log-demo | tee pods-m12.txt
+```
+
+**Expected output:** `log-demo` Pod is Running.
+
+#### Task 2 – Collect Events and logs
+
+Create `collect-evidence.sh`:
+
+```bash
+#!/usr/bin/env bash
+set -euo pipefail
+NS="rebash-m12"
+APP="log-demo"
+OUT="${1:-.}"
+
+kubectl get events -n "$NS" --sort-by=.lastTimestamp | tail -n 20 > "$OUT/events-m12.txt"
+POD="$(kubectl get pod -n "$NS" -l app="$APP" -o jsonpath='{.items[0].metadata.name}')"
+kubectl logs -n "$NS" "$POD" --tail=10 > "$OUT/logs-m12.txt"
+kubectl describe pod -n "$NS" "$POD" > "$OUT/describe-m12.txt"
+echo "wrote evidence to $OUT"
+```
+
+Run the script:
+
+```bash
+cd ~/rebash-k8s/module-12
+chmod +x collect-evidence.sh
+./collect-evidence.sh .
+grep -q 'demo-tick' logs-m12.txt
+grep -q 'log-demo' describe-m12.txt
+```
+
+**Expected output:** `logs-m12.txt` contains `demo-tick` lines; `events-m12.txt` lists recent namespace Events.
+
+#### Task 3 – Metrics Server check with fallback
+
+Create `check-metrics.sh`:
+
+```bash
+#!/usr/bin/env bash
+set -euo pipefail
+if kubectl top nodes >/dev/null 2>&1; then
+  kubectl top nodes | tee metrics-nodes-m12.txt
+  kubectl top pods -n rebash-m12 | tee metrics-pods-m12.txt
+  echo "metrics-server: available"
+else
+  echo "metrics-server: not installed — install metrics-server for HPA and kubectl top" | tee metrics-fallback-m12.txt
+  kubectl get deployment -n kube-system 2>/dev/null | grep -i metrics || true
+fi
+```
+
+Run:
+
+```bash
+cd ~/rebash-k8s/module-12
+chmod +x check-metrics.sh
+./check-metrics.sh
+test -s metrics-nodes-m12.txt || test -s metrics-fallback-m12.txt
+```
+
+**Expected output:** Either node/pod usage tables, or `metrics-fallback-m12.txt` explaining Metrics Server is missing.
 
 ### Validation steps
 
-- [ ] Namespace `rebash-lab` contains the expected Ready objects
-- [ ] You can explain each Task command from the Theory section
-- [ ] Cleanup deletes the namespace without leftover workloads
+- [ ] Deployment Pod is Ready and emitting log lines
+- [ ] `collect-evidence.sh` produced logs, Events, and describe output
+- [ ] Metrics check documented availability or fallback clearly
+- [ ] You can explain difference between logs, Events, and metrics
 
 ### Common errors and fixes
 
 | Error | Cause | Fix |
 |-------|-------|-----|
-| ImagePullBackOff | Wrong tag or registry auth | Fix image reference; check pull secrets |
-| Pending Pod | Scheduling / quota / PVC | `kubectl describe pod` and read Events |
-| Empty Endpoints | Selector or readiness mismatch | Compare Service selector to Pod labels and Ready |
+| Empty logs | Pod not Ready yet | Wait for rollout; re-run script |
+| `error: Metrics API not available` | No metrics-server | Document fallback; install for production |
+| No Events | Very new namespace | Trigger rollout restart and re-fetch |
+| Script permission denied | Missing execute bit | `chmod +x collect-evidence.sh` |
 
 ### Challenge exercise
 
-Add a readinessProbe and a ResourceQuota to the namespace, then show that over-quota creates are rejected.
+Simulate a crash: change the container command to `exit 1`, re-apply, then capture `kubectl logs --previous` into `logs-previous-m12.txt`.
 
 ### Learning outcomes
 
-- Applied a real cluster change for Monitoring and Logging in Kubernetes
-- Used describe/Events for verification
-- Destroyed lab resources cleanly
+- Deployed a workload that produces observable log output
+- Automated collection of logs, Events, and describe evidence
+- Checked Metrics Server availability with an honest fallback path
+- Built an incident triage habit: logs + Events + metrics
 
 ### Cleanup
 
 ```bash
-kubectl delete namespace rebash-lab --ignore-not-found
-# Keep ~/rebash-kubernetes/ for later tutorials
+kubectl delete namespace rebash-m12 --ignore-not-found
 ```
 
 ## Validation

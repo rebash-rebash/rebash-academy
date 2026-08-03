@@ -70,9 +70,9 @@ pip install 'docker>=7.0,<8'
 ```
 
 ## Initial State — fixture (always available)
+Create `fixtures/dangling.json`:
 
-```bash
-cat > fixtures/dangling.json << 'EOF'
+```json
 {
   "images": [
     {"id": "sha256:aaa", "tags": [], "size": 120000000, "dangling": true},
@@ -82,7 +82,6 @@ cat > fixtures/dangling.json << 'EOF'
     {"id": "c1", "status": "exited", "names": ["/old-job"]}
   ]
 }
-EOF
 ```
 
 ## Task

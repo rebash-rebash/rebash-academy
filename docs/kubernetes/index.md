@@ -4,7 +4,7 @@ description: "Kubernetes for Cloud & DevOps Engineers — 20 modules from archit
 difficulty: intermediate
 estimated_time: "10–12 weeks"
 author: Shaik Basha
-last_updated: "2026-07-31"
+last_updated: "2026-08-03"
 category: kubernetes
 tags:
   - kubernetes

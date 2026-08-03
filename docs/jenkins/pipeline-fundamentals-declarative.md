@@ -1,8 +1,8 @@
 ---
 title: "Pipeline Fundamentals (Declarative)"
-description: "Author Declarative Pipelines with agent, stages, steps, and post; contrast Declarative vs Scripted."
+description: "Author Declarative Pipelines with agent, stages, steps, and post; contrast Declarative versus Scripted; use the Pipeline Syntax reference."
 difficulty: intermediate
-estimated_time: "45–60 min"
+estimated_time: "50–70 min"
 technology: jenkins
 category: jenkins
 module: "Module 4 · Pipeline Fundamentals"
@@ -20,309 +20,529 @@ prerequisites:
   - jenkins/using-jenkins-jobs-views-and-folders
 next:
   - jenkins/jenkinsfile-in-scm
+related:
+  - jenkins/jenkinsfile-in-scm
+  - jenkins/docker-with-jenkins-pipeline
 tags:
   - jenkins
   - pipeline
   - declarative
   - jenkinsfile
 author: Shaik Basha
-last_updated: "2026-07-31"
+last_updated: "2026-08-03"
 comments: false
 ---
-
 
 # Pipeline Fundamentals (Declarative)
 
 ## Overview
 
+Click-built automation does not survive team growth. **Pipeline** expresses CI/CD as code: **stages**, **steps**, an **agent**, and **post** actions that always run cleanup or notifications. **Declarative Pipeline** is the structured `pipeline { }` syntax most teams should start with; **Scripted Pipeline** remains available for advanced cases.
 
+This tutorial teaches the core directives, contrasts Declarative versus Scripted, and points you at the official [Pipeline Syntax](https://www.jenkins.io/doc/book/pipeline/syntax/) reference. You will run a real Declarative job on your lab controller and keep the definition under `~/rebash-jenkins/module-04`.
 
-Master **Declarative Pipeline** — the structured `pipeline { }` syntax recommended for most teams.
-
-A Pipeline is a user-defined automation: **agent** chooses where it runs, **stages** group work, **steps** do the work, and **post** handles success, failure, and cleanup. Pipeline-as-code makes delivery reviewable in Git. Scripted Pipeline (`node { }`) remains powerful but is not the default learning path.
-
-This is a core tutorial in **Module 4 · Pipeline Fundamentals** of the REBASH Academy **Jenkins for Cloud & DevOps Engineers** series — written for Cloud, DevOps, Platform, and SRE engineers.
+This is **Tutorial 4** in **Module 4: Pipeline Fundamentals** of the REBASH Academy **Jenkins for Cloud & DevOps Engineers** series — written for Cloud, DevOps, Platform, and Site Reliability Engineering (SRE) engineers.
 
 ## Prerequisites
 
-
-
-- Completed prior modules in this track where linked in frontmatter
-- [Git](../git/index.md) and [Docker](../docker/index.md) for lab workflows
-- Running Jenkins LTS from [Installing Jenkins LTS](installing-jenkins-lts.md) when a live controller is required
+- [Using Jenkins — Jobs, Views, and Folders](using-jenkins-jobs-views-and-folders.md)
+- Running Jenkins LTS with the Pipeline plugins (suggested plugins from Module 2)
+- Comfort editing Groovy-like Pipeline syntax in a text editor
 
 ## Learning Objectives
 
-
-
 By the end of this tutorial, you will be able to:
 
-- [ ] Write a Declarative Pipeline with `agent`, `stages`, `steps`, and `post`
-- [ ] Explain Pipeline, stage, step, and node concepts
-- [ ] Contrast Declarative vs Scripted Pipeline
-- [ ] Use Pipeline Syntax references when discovering steps
+- [ ] Explain Pipeline, node/agent, stage, step, and post
+- [ ] Author a Declarative Pipeline with `agent`, `stages`, `steps`, and `post`
+- [ ] Contrast Declarative versus Scripted and know when Scripted appears
+- [ ] Use Pipeline Syntax / Snippet Generator ideas without memorising every step
+- [ ] Run and debug a Pipeline job from console output
 
 ## Architecture
 
+A Declarative Pipeline selects an agent, runs ordered stages of steps, then executes `post` conditions.
 
-
-This topic’s control points and relationships are shown below.
-
-![Declarative Pipeline lifecycle](../assets/excalidraw/jenkins-pipeline-lifecycle.svg)
+![Jenkins Pipeline lifecycle — agent, stages, steps, post](../assets/excalidraw/jenkins-pipeline-lifecycle.svg)
 
 ## Theory
 
-
-
 ### What it is
 
-**Pipeline** is both a job type and a Groovy Domain-Specific Language (DSL) executed by the Pipeline engine. **Declarative Pipeline** enforces a clear structure: `pipeline { agent …; stages { stage(…) { steps { … } } } post { … } }`. **Scripted Pipeline** uses imperative Groovy inside `node` blocks.
+A **Pipeline** is a user-defined automation in Jenkins, typically checked into source control later as a `Jenkinsfile`. Under the hood Jenkins uses a **Pipeline** job type and the Pipeline plugin family.
 
-Core ideas from the handbook: a **node** (agent) allocates an executor and workspace; a **stage** is a logical phase shown in Blue Ocean historically and in stage views; a **step** is an individual task (`sh`, `echo`, `checkout`).
+Core ideas:
+
+| Concept | Meaning |
+|---------|---------|
+| Agent | Where the Pipeline runs (`any`, label, docker, none, …) |
+| Stage | Named phase shown in Stage View (Build, Test, Deploy) |
+| Step | Smallest action (`echo`, `sh`, `checkout`, …) |
+| Post | Actions after the Pipeline (or stage) based on result |
+| Node | Scripted term for allocating an executor (Declarative uses `agent`) |
+
+**Declarative Pipeline** wraps everything in `pipeline { }` with a fixed structure: `agent`, optional `environment` / `options` / `parameters`, required `stages`, optional `post`. **Scripted Pipeline** is mostly imperative Groovy in `node { }` blocks — powerful, easier to make unreadable, harder for newcomers.
 
 ### Why it matters
 
-Click-configured Freestyle jobs do not review cleanly in pull requests. Declarative Pipeline keeps the happy path readable for platform and product engineers while still allowing `script { }` escapes when needed. Consistent stages (Build, Test, Package) make failure signals obvious in the UI.
+Pipeline-as-code is how changes get reviewed, reused, and recovered. Declarative’s structure gives teams a shared shape: every job has visible stages and predictable `post` cleanup. Scripted still powers some shared libraries and edge cases; you should recognise it, not start there.
+
+Without understanding `agent`, builds land on the built-in node. Without `post`, failures skip cleanup and notifications. Without stages, the UI becomes a single opaque console blob.
 
 ### How it works
 
-1. Create a Pipeline job (or use “Pipeline script” in the job config).
-2. Paste a minimal Declarative script with `agent any` (lab only) or a label.
-3. Add stages with `sh` steps; add `post { always { cleanWs() } }` when the plugin allows.
-4. Run the job; inspect stage view and console log.
-5. Open **Pipeline Syntax** (snippet generator) from the job sidebar to discover step parameters.
+Minimal Declarative shape:
 
-See [Pipeline Syntax](https://www.jenkins.io/doc/book/pipeline/syntax/).
+```groovy
+pipeline {
+  agent any
+  stages {
+    stage('Build') {
+      steps {
+        echo 'compile'
+      }
+    }
+    stage('Test') {
+      steps {
+        echo 'test'
+      }
+    }
+  }
+  post {
+    always {
+      echo "Result: ${currentBuild.currentResult}"
+    }
+    failure {
+      echo 'Notify or collect diagnostics here'
+    }
+  }
+}
+```
+
+Execution model:
+
+1. Jenkins loads the Pipeline definition (UI script or SCM — Module 5).
+2. The top-level `agent` allocates an executor (unless `agent none` and per-stage agents).
+3. Stages run in order (unless `parallel`).
+4. Steps inside each stage run sequentially by default.
+5. `post` conditions run (`always`, `success`, `failure`, `unstable`, `changed`, …).
+
+**Pipeline Syntax** (job → Pipeline Syntax) helps generate step snippets. Prefer reading the [syntax reference](https://www.jenkins.io/doc/book/pipeline/syntax/) over inventing directives.
+
+**Why Pipeline-as-code:** the same file can run for every branch (Multibranch), appear in pull requests, and be tested on a personal controller before production.
 
 ### Key concepts and comparisons
 
-| Directive | Role |
-|-----------|------|
-| `agent` | Where the Pipeline runs |
-| `stages` / `stage` | Ordered phases |
-| `steps` | Commands inside a stage |
-| `post` | `always`, `success`, `failure`, etc. |
-| `environment` | Env vars for the Pipeline |
-| `options` | Timeouts, timestamps, durability |
-
 | Declarative | Scripted |
 |-------------|----------|
-| Structured, validated | Imperative Groovy |
-| Best default | Complex dynamic flows |
-| `script { }` escape hatch | Full control inside `node` |
+| `pipeline { }` | `node { }` / Groovy control flow |
+| Opinionated sections | Fully flexible |
+| Better for most app teams | Useful inside some libraries / complex orchestration |
+| Validation of required sections | Easier to write unstructured scripts |
+
+| Directive | Role |
+|-----------|------|
+| `agent any` | Run on any available executor (labs only — prefer labels in prod) |
+| `agent none` | No global agent; each stage declares its own |
+| `options { timestamps() }` | Common Pipeline options |
+| `environment { … }` | Env vars for the Pipeline |
+| `parameters { … }` | Manual/input parameters (deeper in Module 5) |
+
+| Step family | Examples |
+|-------------|----------|
+| Flow | `echo`, `error`, `timeout` |
+| Shell | `sh`, `bat`, `powershell` |
+| SCM | `checkout`, `git` (plugin-dependent) |
 
 ### Common pitfalls
 
-- Using `agent any` on the controller in production.
-- Huge Scripted blocks when Declarative would suffice.
-- Ignoring `post` cleanup and filling disks with workspaces.
-- Copying steps without checking [Pipeline Steps reference](https://www.jenkins.io/doc/pipeline/steps/).
+- Putting heavy logic in Scripted when Declarative + shared library steps would do.
+- Using `agent any` in production and building on the controller.
+- Forgetting `post { always { } }` for cleanup.
+- Treating Stage View colours as proof without reading console errors.
+- Copy-pasting Scripted samples into a Declarative job without restructuring.
 
 ## Hands-on Lab
 
-
-
 ### Objective
 
-Configure a real Jenkins-facing artefact for **Pipeline Fundamentals (Declarative)** (Compose controller and/or Jenkinsfile) you can run or import.
+Author a multi-stage Declarative Pipeline on disk, load it into a Pipeline job under `rebash-demo`, run it, and capture console evidence.
 
 ### Prerequisites
 
-- Docker Engine for controller labs
-- Text editor / shell
+- Module 2 controller running
+- Folder `rebash-demo` from Module 3 (create it if missing)
+- Pipeline plugins installed
 
 ### Lab environment
 
 Workspace: `~/rebash-jenkins/module-04`
 
-Local Docker Compose Jenkins LTS where a live UI is needed; file-only Jenkinsfile labs otherwise.
-
 ```bash
 mkdir -p ~/rebash-jenkins/module-04 && cd ~/rebash-jenkins/module-04
+set -euo pipefail
+curl -sS -o /dev/null -w "%{http_code}\n" http://127.0.0.1:8080/login | tee controller-login.txt
 ```
+
+**Expected output:** HTTP response code from the controller.
 
 ### Real-world scenario
 
-Your organisation is standardising **Pipeline Fundamentals (Declarative)**. You prototype on a lab controller, keep everything as files, and avoid building on the built-in node in production designs.
+Your squad must replace a Freestyle “build and hope” job with a Declarative Pipeline that shows Build → Test → Package stages and always prints the final result. Platform review will not accept Scripted spaghetti for this service.
 
 ### Step-by-step tasks
 
-#### Task 1 – Author a Declarative Jenkinsfile
+#### Task 1 – Write a Declarative Jenkinsfile on disk
 
-Pipeline-as-code is the production default — Declarative first.
+Run:
 
 ```bash
-cat > Jenkinsfile << 'EOF'
+cd ~/rebash-jenkins/module-04
+set -euo pipefail
+```
+
+Create `Jenkinsfile`:
+
+```groovy
 pipeline {
   agent any
-  options { timestamps() }
+  options {
+    timestamps()
+    disableConcurrentBuilds()
+  }
+  environment {
+    APP_NAME = 'rebash-demo'
+  }
   stages {
     stage('Build') {
       steps {
-        sh 'mkdir -p dist && echo ok > dist/status.txt'
+        echo "Building ${env.APP_NAME}"
+        sh 'mkdir -p dist && echo "artifact" > dist/app.txt && ls -l dist'
       }
     }
     stage('Test') {
       steps {
-        sh 'test -f dist/status.txt && grep -q ok dist/status.txt'
+        echo 'Running unit placeholder'
+        sh 'test -f dist/app.txt'
+        sh 'grep -q artifact dist/app.txt'
+      }
+    }
+    stage('Package') {
+      steps {
+        echo 'Packaging placeholder'
+        sh 'tar -czf dist/app.tgz -C dist app.txt && ls -l dist/app.tgz'
       }
     }
   }
   post {
-    always { archiveArtifacts artifacts: 'dist/**', allowEmptyArchive: true }
+    always {
+      echo "Pipeline finished with ${currentBuild.currentResult}"
+    }
+    success {
+      echo 'All stages green'
+    }
+    failure {
+      echo 'Investigate console output for the red stage'
+    }
   }
 }
-EOF
-test -f Jenkinsfile && grep -n 'pipeline\|stages\|post' Jenkinsfile
 ```
 
-**Expected output:** Jenkinsfile contains pipeline/stages/post blocks.
-
-#### Task 2 – Validate structure locally
-
-Run the shell steps the Pipeline will execute so failures are cheap.
+Verify:
 
 ```bash
-mkdir -p dist && echo ok > dist/status.txt
-test -f dist/status.txt && grep -q ok dist/status.txt
-tar -cf evidence.tar Jenkinsfile dist
-ls -l evidence.tar
+grep -q 'pipeline {' Jenkinsfile
+grep -q 'stage('\''Build'\'')' Jenkinsfile || grep -q 'stage("Build")' Jenkinsfile || grep -q "stage('Build')" Jenkinsfile
+grep -q 'post {' Jenkinsfile
+wc -l Jenkinsfile | tee jenkinsfile-lines.txt
 ```
 
-**Expected output:** Shell checks pass; evidence.tar created for the job upload story.
+**Expected output:** Non-zero line count; structure checks pass.
+
+#### Task 2 – Create or update the Pipeline job
+
+In Jenkins:
+
+1. Open folder **rebash-demo** (create if needed).
+2. **New Item** → `declarative-basics` → **Pipeline** (or configure an existing job).
+3. Definition: **Pipeline script**.
+4. Paste the contents of `~/rebash-jenkins/module-04/Jenkinsfile`.
+5. Save.
+
+Run:
+
+```bash
+cd ~/rebash-jenkins/module-04
+set -euo pipefail
+```
+
+Create `job-config.yaml`:
+
+```yaml
+folder: rebash-demo
+job: declarative-basics
+definition: pipeline_script_ui
+source_of_truth: ~/rebash-jenkins/module-04/Jenkinsfile
+next_module: jenkinsfile-in-scm
+```
+
+Validate and archive:
+
+```bash
+python3 -c "
+import yaml
+with open('job-config.yaml') as f:
+    d = yaml.safe_load(f)
+assert d['job'] == 'declarative-basics'
+print('job-config.yaml OK')
+" | tee job-config-validate.txt
+```
+
+**Expected output:** Job saved; `job-config.yaml` validates.
+
+#### Task 3 – Run the Pipeline and capture console proof
+
+1. **Build Now**.
+2. Open the build → confirm Stage View shows Build, Test, Package.
+3. Open **Console Output**.
+
+Run:
+
+```bash
+cd ~/rebash-jenkins/module-04
+set -euo pipefail
+```
+
+Create `expected-console-markers.txt`:
+
+```text
+Building rebash-demo
+Running unit placeholder
+Packaging placeholder
+Pipeline finished with
+All stages green
+```
+
+Create `assert-console.sh`:
+
+```bash
+#!/usr/bin/env bash
+set -euo pipefail
+LOG="${1:-console.log}"
+test -f "$LOG" || { echo "missing $LOG — paste Console Output first"; exit 1; }
+while IFS= read -r marker; do
+  grep -q "$marker" "$LOG" || { echo "missing marker: $marker"; exit 1; }
+done < expected-console-markers.txt
+echo "console markers OK"
+```
+
+Verify:
+
+```bash
+chmod +x assert-console.sh
+
+# Local syntax sanity (not a Jenkins validator, but catches truncation)
+grep -c 'stage' Jenkinsfile | tee stage-count.txt
+test "$(cat stage-count.txt)" -ge 3
+```
+
+**Expected output:** At least three `stage` occurrences; after a Jenkins run, paste Console Output to `console.log` and run `./assert-console.sh console.log`.
+
+#### Task 4 – Break-fix drill (optional but recommended)
+
+Temporarily change the Test stage to `sh 'false'`, Save, Build Now, observe `failure` post, then restore the good `Jenkinsfile` and rebuild.
+
+Run:
+
+```bash
+cd ~/rebash-jenkins/module-04
+set -euo pipefail
+
+cp Jenkinsfile Jenkinsfile.good
+```
+
+Create `Jenkinsfile.fail`:
+
+```groovy
+pipeline {
+  agent any
+  options { timestamps() }
+  environment { APP_NAME = 'rebash-demo' }
+  stages {
+    stage('Build') {
+      steps {
+        sh 'mkdir -p dist && echo artifact > dist/app.txt'
+      }
+    }
+    stage('Test') {
+      steps {
+        sh 'false'
+      }
+    }
+  }
+  post {
+    failure {
+      echo 'Investigate console output for the red stage'
+    }
+  }
+}
+```
+
+Verify:
+
+```bash
+grep -q "sh 'false'" Jenkinsfile.fail
+grep -q 'Investigate console' Jenkinsfile.fail
+diff -q Jenkinsfile Jenkinsfile.good && echo 'good copy retained' | tee failure-drill.txt
+```
+
+**Expected output:** Failing variant and good copy on disk; swap into the job to observe FAILURE, then restore `Jenkinsfile.good`.
 
 ### Validation steps
 
-- [ ] Artefacts from tasks exist
-- [ ] No secrets committed
-- [ ] Compose stack stopped if started
+- [ ] `Jenkinsfile` contains `agent`, three stages, and `post`
+- [ ] Job `rebash-demo/declarative-basics` ran at least once
+- [ ] You can point to Build / Test / Package in Stage View
+- [ ] You know where Pipeline Syntax lives in the job UI
 
 ### Common errors and fixes
 
 | Error | Cause | Fix |
 |-------|-------|-----|
-| port 8080 in use | Another Jenkins/lab | Change host port or stop the other container |
-| permission denied on volume | Podman/rootless path | Fix volume ownership or use named volumes |
-| agent any hangs | No executors | Attach an agent or enable a lab executor carefully |
+| `Expected a stage` / parse errors | Scripted mixed into Declarative | Follow `pipeline { stages { stage { steps }}}` |
+| Queued forever | No executors | Enable lab executor or add agent |
+| `sh` not found on Windows agent | Wrong agent OS | Use `bat` or a Linux agent |
+| Stages missing in UI | Build failed at parse time | Read console from the top |
 
 ### Challenge exercise
 
-Disable builds on the built-in node in your notes and document the agent label you would require instead.
+Add a `parallel` test block under a `stage('Test')` with two steps `Unit` and `Lint` (each `echo` is enough). Keep Declarative valid per [syntax parallel](https://www.jenkins.io/doc/book/pipeline/syntax/#parallel). Save as `Jenkinsfile.parallel` and run it in a second job `declarative-parallel`.
 
 ### Learning outcomes
 
-- Produced runnable Jenkins artefacts
-- Practised safe lab controller hygiene
+- Wrote and ran a Declarative Pipeline with post conditions
+- Separated Build / Test / Package stages
+- Practised reading console output on failure
+- Prepared the file for SCM checkout in Module 5
 
 ### Cleanup
 
+Keep `declarative-basics` and the Module 2 volume. Remove only experimental failing jobs you no longer need.
+
 ```bash
-rm -f evidence.tar
-# Keep Jenkinsfile for SCM modules
+ls ~/rebash-jenkins/module-04
 ```
 
 ## Validation
 
-
-
-- [ ] Lab commands run under `~/rebash-jenkins/module-04/`
-- [ ] You can explain each Theory section in your own words
-- [ ] You used current Jenkins LTS / Pipeline practices where they apply
-- [ ] You can describe one production failure mode for this topic
+- [ ] Lab completed under `~/rebash-jenkins/module-04/`
+- [ ] You can sketch agent → stages → steps → post from memory
+- [ ] You can explain Declarative versus Scripted in two sentences
+- [ ] You can name one production risk of `agent any`
 
 ## Code Walkthrough
 
-
-
-Production practice for **Pipeline Fundamentals (Declarative)** always combines:
-
-1. Inspect before you change (status, plan, logs, dry-run)
-2. Prefer reversible, documented changes (Git, Jenkinsfile, JCasC)
-3. Capture evidence (console logs, plan artefacts) for handovers
-4. Prefer current LTS and supported plugins over legacy shortcuts
-5. Least privilege — escalate credentials only when required
-
-Keep runbooks short enough to follow under pressure. Automate checks; keep humans for judgement.
+1. **Start Declarative** — `pipeline { }` before free-form Groovy.
+2. **Name stages for humans** — Stage View is an operations tool.
+3. **Assert in `sh`** — `test`/`grep -q` fail the stage loudly.
+4. **Always write `post`** — success paths forget cleanup; `always` does not.
+5. **Move to SCM next** — UI Pipeline script is a stepping stone, not the destination.
 
 ## Security Considerations
 
-
-
-- Treat Jenkins credentials and cloud tokens as privileged — never commit them
-- Keep builds off the built-in node; isolate untrusted pull requests
-- Prefer short-lived auth (OIDC-style patterns, scoped RBAC) over long-lived keys
-- Validate blast radius before apply/deploy/delete operations
-- Collect audit logs; limit who can administer the controller
+- `agent any` may schedule on the built-in node — prefer labels before production.
+- Pipeline scripts can run arbitrary shell — treat untrusted PRs as hostile (Module 7).
+- Do not embed credentials in `environment` as plain text; use credentials bindings later.
+- Console output is visible to anyone with read access to the job — avoid echoing secrets.
+- Limit who can configure Pipeline jobs that deploy.
 
 ## Common Mistakes
 
+!!! warning "Scripted Pipeline as the default teaching path"
+    New teams get lost in Groovy. **Fix:** Declarative first; Scripted when a shared library truly needs it.
 
+!!! warning "One giant stage named Build"
+    Triage becomes guesswork. **Fix:** split Build / Test / Package (or Deploy) stages.
 
-!!! warning "`agent any` on production controllers"
-    Bind Pipelines to labelled agents so build code does not share the controller JVM host.
+!!! warning "No post block"
+    Failed builds skip notifications and workspace cleanup. **Fix:** at least `post { always { … } }`.
 
-!!! warning "Skipping post cleanup"
-    Workspaces and temp files accumulate; use `cleanWs` or agent ephemerality.
-
-!!! warning "Scripted-first for new teams"
-    Start Declarative; add Scripted only where structure blocks you.
+!!! warning "Ignoring Pipeline Syntax reference"
+    Invented directives waste hours. **Fix:** use [Pipeline Syntax](https://www.jenkins.io/doc/book/pipeline/syntax/) and the in-product Snippet Generator.
 
 ## Best Practices
 
-
-
-- Encode **Pipeline Fundamentals (Declarative)** changes as code and review them in pull requests
-- Prefer Jenkins LTS and pinned agent/tool versions
-- Keep builds off the controller; use labelled agents
-- Least privilege for credentials and cluster/cloud access
-- Destroy or stop lab resources; keep `~/rebash-jenkins/` notes for the track
+- Keep Pipelines Declarative and boringly structured.
+- Prefer labelled agents over `any` outside personal labs.
+- Fail fast with simple shell asserts.
+- Use `options { timestamps() }` for readable logs.
+- Check the same `Jenkinsfile` into Git in the next module.
 
 ## Troubleshooting
 
-
-
 | Symptom | Likely cause | Fix |
 |---------|--------------|-----|
-| Job stuck in queue | No matching agent/label or executors busy | Check nodes, labels, and executor counts |
-| Checkout / SCM failure | Credentials, URL, or permissions | Verify credential ID and repository access |
-| Pipeline CPS / script error | Syntax, sandbox, or library mismatch | Read error line; validate Jenkinsfile; pin library version |
-| Plugin / UI broken after update | Incompatible plugin set | Restore backup; disable suspect plugin on test controller |
-| Disk full on agent/controller | Workspaces or old builds | Clean workspaces; trim build retention |
+| `Invalid agent type` | Typo / missing plugin | Check syntax; install Docker Pipeline only when using `agent { docker }` |
+| Stage skipped unexpectedly | `when` conditions (later) | Read stage headers in console |
+| `workspace` issues | Concurrent builds | `disableConcurrentBuilds()` or unique dirs |
+| Groovy `RejectedAccessException` | Script security sandbox | Approve signatures carefully on test controllers only |
+| Post not running | Parse failure before runtime | Fix syntax first |
 
 ## Summary
 
-
-
-**Pipeline Fundamentals (Declarative)** is essential for Cloud and DevOps engineers operating Jenkins. Practise the lab until the inspection and change path is muscle memory, then continue the track.
+Declarative Pipeline gives a clear agent → stages → steps → post model that teams can review and operate. Run it in the UI now; next you will move the same file into Git. Continue with [Jenkinsfile in SCM](jenkinsfile-in-scm.md).
 
 ## Interview Questions
 
+**1. What is the difference between Declarative and Scripted Pipeline?**
 
+??? success "Reveal answer"
+    Declarative uses a structured `pipeline { }` with required sections such as `agent` and `stages`. Scripted is primarily imperative Groovy inside `node` blocks. Declarative is the default for application teams; Scripted appears in advanced libraries and complex control flow.
 
-1. What are the required top-level sections of a Declarative Pipeline?
-2. How does Declarative differ from Scripted Pipeline?
-3. What is the purpose of the `post` block?
-4. Why is Pipeline-as-code preferable to Freestyle for teams?
-5. Where do you look up parameters for a Pipeline step?
+**2. What does the `agent` directive control?**
 
-!!! tip "Sample answer — question 1"
-    At minimum: `pipeline { agent …; stages { … } }`. Most production files also use `options`, `environment`, and `post`.
+??? success "Reveal answer"
+    Where the Pipeline (or stage) executes — which node label, Docker image, or whether no global agent is allocated (`agent none`). It determines isolation and tool availability.
 
-!!! tip "Sample answer — question 5"
-    Use the job’s Pipeline Syntax snippet generator and the online Pipeline Steps reference on jenkins.io.
+**3. Why split work into stages instead of one `sh` script?**
+
+??? success "Reveal answer"
+    Stages appear in Stage View, clarify failure location, allow per-stage agents/options, and make pipelines readable in pull requests. Operators debug by red stage, not by scrolling a monolith.
+
+**4. What is `post { always { } }` for?**
+
+??? success "Reveal answer"
+    It runs regardless of success or failure — ideal for cleanup, archiving, and unconditional logging. `success` / `failure` blocks add result-specific notifications.
+
+**5. Why is `agent any` risky in production?**
+
+??? success "Reveal answer"
+    It can schedule on the built-in controller node if executors exist there, coupling untrusted build steps to the control plane. Production Pipelines should target labelled agents or ephemeral cloud agents.
+
+**6. How does Pipeline-as-code help compared with Freestyle?**
+
+??? success "Reveal answer"
+    The definition is reviewable in Git, reusable across branches, easier to recover after controller loss, and consistent with Multibranch. Freestyle hides logic in UI checkboxes.
+
+**7. Where do you look when a Declarative Pipeline fails?**
+
+??? success "Reveal answer"
+    Open the failing build’s Stage View to see the red stage, then Console Output for the exact step error. Parse errors appear at the top before stages run.
+
+**8. When might you still use Scripted Pipeline?**
+
+??? success "Reveal answer"
+    When implementing complex shared-library orchestration or dynamic stage generation that is awkward in pure Declarative. Even then, keep application Jenkinsfiles Declarative and hide Scripted inside trusted libraries.
 
 ## Related Tutorials
 
-
-
-- [Course overview](index.md)
 - [Using Jenkins — Jobs, Views, and Folders](using-jenkins-jobs-views-and-folders.md)
 - [Jenkinsfile in SCM](jenkinsfile-in-scm.md)
+- [Docker with Jenkins Pipeline](docker-with-jenkins-pipeline.md)
 
 ## References
 
-
-
 - [Pipeline Syntax](https://www.jenkins.io/doc/book/pipeline/syntax/)
-- [Pipeline Steps](https://www.jenkins.io/doc/pipeline/steps/)
-- [Pipeline chapter](https://www.jenkins.io/doc/book/pipeline/)
+- [Pipeline Getting Started](https://www.jenkins.io/doc/pipeline/tour/getting-started/)
+- [Pipeline Steps reference](https://www.jenkins.io/doc/pipeline/steps/)
+- [Jenkins User Documentation](https://www.jenkins.io/doc/)

@@ -27,6 +27,22 @@ Match the *standard* of:
 
 Do **not** plagiarise. Write original REBASH content in British English.
 
+## Lab bar — production-grade interview preparation (mandatory)
+
+**All labs** must be production-grade **interview preparation** tasks — not simple demos.
+
+- Learner builds / changes **real** systems and proves them with operational CLIs  
+- Include diagnose-and-fix where the topic allows  
+- Validation asserts the system state; `validate`/`fmt` alone is **not** a pass  
+- Ban toy `null`/`local`-only labs, forever-optional apply, and happy-path-only click-through  
+- Always cleanup disposable / billable resources  
+
+Details: `.cursor/rules/00-foundation/09-content-quality-standard.mdc` and `.cursor/prompts/tutorials/create_lab.md`.
+
 ## Quick lab test
 
-Before marking a lab done, mentally paste Task 1’s commands into a clean shell on the documented OS. If a step needs “figure it out” for a required flag, rewrite the lab.
+Before marking a lab done:
+
+1. Mentally paste Task 1’s commands into a clean shell on the documented OS. If a step needs “figure it out” for a required flag, rewrite the lab.  
+2. Ask: “Could this story answer a mid-level interview question for this topic?” If no, rewrite.  
+3. Ask: “Did the learner only syntax-check, or did they change a real system?” If only syntax-check, rewrite.

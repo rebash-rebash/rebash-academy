@@ -1,346 +1,397 @@
 ---
 title: "GitHub Fundamentals"
-description: "Navigate GitHub repositories, settings, Issues, Discussions, Wikis, and Releases for Cloud and DevOps collaboration."
+description: "Configure repository settings, Issues, Releases, and team workflows on GitHub for Cloud and DevOps delivery."
 difficulty: beginner
-estimated_time: "35–50 min"
+estimated_time: "45–60 min"
 technology: git
 category: git
 module: "Module 9 · GitHub Fundamentals"
 career_paths:
-  - beginner
   - devops-engineer
+  - cloud-engineer
   - platform-engineer
+  - devsecops-engineer
 skills:
   - github
-  - git
+  - issues
+  - releases
 prerequisites:
   - git/working-with-remotes
 next:
   - git/pull-requests-and-code-review
 related:
-  - git/github-actions-for-devops
   - git/repository-management-and-releases
-labs: []
-projects: []
-interview: interview/git
-certifications:
-  - GitHub Foundations
+  - git/signed-commits-and-git-security
 tags:
   - github
-  - git
+  - issues
+  - releases
+  - repository-settings
 author: Shaik Basha
-last_updated: "2026-07-31"
+last_updated: "2026-08-03"
 comments: false
 ---
-
 
 # GitHub Fundamentals
 
 ## Overview
 
+GitHub extends Git with collaboration features: **Issues** for work tracking, **Releases** for semver artefacts, **Discussions** for design threads, and **repository settings** that enforce visibility, merge methods, and security defaults. DevOps teams treat the GitHub repository as the system of record alongside the Git object database.
 
-
-
-
-
-Use GitHub as the collaboration hub: repos, settings, Issues, Releases — and know where security and Actions settings live.
-
-Git is the tool; **GitHub** (or GitLab) is where teams review, track work, and ship. DevOps owns templates, permissions, and release artefacts.
-
-This is a core tutorial in **Module 9 · GitHub Fundamentals** of the REBASH Academy **Git for Cloud & DevOps Engineers** series — written for Cloud, DevOps, Platform, and SRE engineers.
+This is **Tutorial 1** in **Module 9: GitHub Fundamentals** of the REBASH Academy **Git & GitHub for Cloud & DevOps Engineers** series — written for Cloud, DevOps, Platform, and SRE engineers. The lab works locally with optional `gh` CLI if you have a GitHub account.
 
 ## Prerequisites
 
-
-
-
-
-
 - [Working with Remotes](working-with-remotes.md)
-- GitHub account (free tier OK)
+- GitHub account (optional for lab — local checklist artefact)
+- [GitHub CLI (`gh`)](https://cli.github.com/) optional
 
 ## Learning Objectives
 
-
-
-
-
-
 By the end of this tutorial, you will be able to:
 
-- [ ] Create/configure a repository  
-- [ ] Distinguish Issues vs Discussions  
-- [ ] Find Settings → Branches / Actions / Secrets  
-- [ ] Publish a Release from a tag  
-- [ ] Use Wikis carefully (prefer docs-as-code in-repo)
+- [ ] Navigate repository settings that affect DevOps (visibility, default branch, merge options)
+- [ ] Structure Issues for infrastructure and pipeline work
+- [ ] Create semver tags and draft release notes locally
+- [ ] Produce a repository onboarding settings YAML validated by script
+- [ ] Store evidence under `~/rebash-git/module-09`
 
 ## Architecture
 
+Developers push to GitHub; Issues link to commits and PRs; Releases attach binaries or manifests to tags; settings enforce org policy.
 
-
-
-
-
-This topic’s control points and relationships are shown below.
-
-![PR lifecycle](../assets/excalidraw/git-pr-lifecycle.svg)
+![Repository architecture](../assets/excalidraw/git-repository-architecture.svg)
 
 ## Theory
 
+### What it is
 
+**GitHub** hosts Git remotes with a web UI and API. A **repository** has settings (branch defaults, merge button options, Actions permissions). **Issues** are ticket objects referencing labels, milestones, and assignees. **Releases** bundle a Git tag with notes and optional assets (Helm charts, Terraform modules, binaries).
 
+### Why it matters
 
-
-
-### What
-
-**GitHub** hosts Git repositories and adds collaboration features: issues, pull requests, Discussions, Releases, Actions, Packages, and organisation security controls. For DevOps, a GitHub repository is often the home of application code, Infrastructure as Code (IaC), and workflow definitions together.
-
-### Why
-
-Raw Git has no built-in code review UI, permissions model, or CI. GitHub (or GitLab/Bitbucket) supplies those. Learning the product surface — especially settings for the default branch, Actions, and secret scanning — is part of professional Git practice, not optional polish.
+Change management ties incident tickets to GitHub Issues. Releases trigger CD when tags match `v*`. Misconfigured settings — allow force-push to `main`, missing secret scanning — cause production incidents. Platform engineers onboard repos with a standard checklist.
 
 ### How it works
 
-Repositories live under a user or organisation. The **default branch** (usually `main`) is what clones check out. Issues track work; Releases attach notes and artefacts to Git tags; Settings control collaborators, branch protection, and integrations. Authentication uses SSH keys, personal access tokens (PATs), or GitHub Apps / OIDC for automation. Fine-grained PATs and least-privilege App permissions reduce blast radius compared with classic tokens.
+1. Create repo (empty or import); set default branch `main`.
+2. Enable Issues; define labels (`type:infra`, `priority:high`).
+3. Protect `main` (detailed in PR tutorial).
+4. Tag releases: `git tag v1.0.0 && git push origin v1.0.0`; publish Release on UI or `gh release create`.
+5. Use README, SECURITY.md, and template Issue forms for consistency.
 
-| Feature | Ops use |
-|---------|---------|
-| Repositories | Code + IaC |
-| Issues | Work tracking, incident links |
-| Discussions | Open Q&A (optional) |
-| Releases | Versioned artefacts and notes |
-| Settings | Protection, access, Actions |
+### Key concepts and comparisons
 
-### Key concepts
+| Feature | DevOps use |
+|---------|------------|
+| Issues | Track infra debt, incidents |
+| Releases | Ship versioned modules/charts |
+| Wiki | Legacy; prefer docs in repo |
+| Discussions | RFCs, design Q&A |
+| Settings | Merge strategy, Actions |
 
-- **Organisation vs user repos** — prefer org ownership for production systems  
-- **Visibility** — private by default for internal infra  
-- **Secret scanning / push protection** — enable where available  
-- **Topics and README** — discoverability for platform teams  
+| Setting | Recommendation |
+|---------|----------------|
+| Default branch | main |
+| Allow squash merge | Often yes for linear history |
+| Allow rebase merge | Team preference |
+| Allow merge commit | Optional for audit |
+| Visibility | Private for internal IaC |
 
 ### Common pitfalls
 
-- Personal forks as the only copy of production IaC  
-- Classic PATs with broad `repo` scope checked into CI logs  
-- Leaving Actions enabled on repos that should not run untrusted workflows  
-- Ignoring organisation-required two-factor authentication (2FA)
+- Public repo with Actions secrets reachable from forks — use environments and approval gates.
+- Releases without tags — CD cannot pin versions.
+- Issues without labels — backlog becomes unsearchable.
+- Skipping SECURITY.md and private vulnerability reporting setup.
 
 ## Hands-on Lab
 
-
-
 ### Objective
 
-Complete a real Git workflow for **GitHub Fundamentals** with commits you can inspect and recover.
+Build a local "forge readiness" repo with Issue templates, `repo-settings.yaml` validated by script, and tag-based release notes as `.txt` — simulating GitHub onboarding without requiring push access.
 
 ### Prerequisites
 
-- Git 2.x installed
+- Git 2.x
+- Optional: `gh auth login`
 
 ### Lab environment
 
 Workspace: `~/rebash-git/module-09`
 
-Local Git repository only (no required remote).
-
 ```bash
 mkdir -p ~/rebash-git/module-09 && cd ~/rebash-git/module-09
+set -euo pipefail
 ```
 
 ### Real-world scenario
 
-A delivery team is standardising **GitHub Fundamentals**. You prototype the workflow in a throwaway repo and capture log evidence for the playbook.
+Platform team onboards a new Terraform module repository to GitHub next sprint. You prepare repo settings YAML, sample Issue, and release notes artefact locally for review.
 
 ### Step-by-step tasks
 
-#### Task 1 – Initialise a repository and first commit
+#### Task 1 – Repo skeleton and Issue template
 
-Every production change starts as a commit with clear identity config.
+Create `.github/ISSUE_TEMPLATE/infra-change.md`:
+
+```markdown
+---
+name: Infrastructure change
+about: Request a Terraform or pipeline change
+labels: type:infra
+---
+## Change summary
+
+## Environment
+
+## Rollback plan
+```
+
+Create `README.md`:
+
+```markdown
+# module-vpc
+
+Terraform VPC module — GitHub onboarding pending.
+```
+
+Initialise the repo:
 
 ```bash
+cd ~/rebash-git/module-09
+set -euo pipefail
+rm -rf github-lab
+mkdir -p github-lab/.github/ISSUE_TEMPLATE
+cd github-lab
 git init -b main
 git config user.email 'lab@rebash.local'
 git config user.name 'REBASH Lab'
-echo '# lab' > README.md
-git add README.md
-git commit -m 'Initial commit'
-git log --oneline | tee log.txt
+git add .
+git commit -m 'chore: initial GitHub-ready skeleton'
+test -f .github/ISSUE_TEMPLATE/infra-change.md
+cd ..
 ```
 
-**Expected output:** log.txt shows the initial commit on `main`.
+**Expected output:** Issue template committed in standard `.github` path.
 
-#### Task 2 – Inspect status and diff discipline
+#### Task 2 – Repo settings YAML and validation script
 
-Clean working trees prevent accidental commits of secrets.
+Create `repo-settings.yaml`:
+
+```yaml
+default_branch: main
+branch_protection:
+  main:
+    require_pull_request: true
+    required_reviews: 1
+    require_codeowners: true
+    required_checks:
+      - terraform-validate
+    block_force_push: true
+security:
+  secret_scanning: true
+  dependabot_alerts: true
+merge:
+  allow_squash: true
+  delete_head_branch: true
+visibility: private
+```
+
+Create `validate-settings.sh`:
 
 ```bash
-echo 'work' > work.txt
-git status
-git add work.txt
-git commit -m 'Add work.txt'
-git show --stat HEAD | tee show.txt
+#!/usr/bin/env bash
+set -euo pipefail
+grep -q 'default_branch: main' repo-settings.yaml
+grep -q 'secret_scanning: true' repo-settings.yaml
+grep -q 'block_force_push: true' repo-settings.yaml
+echo 'settings_ok'
 ```
 
-**Expected output:** show.txt lists work.txt in the commit.
+Validate and commit:
+
+```bash
+cd ~/rebash-git/module-09/github-lab
+set -euo pipefail
+chmod +x validate-settings.sh
+./validate-settings.sh | tee ../settings-validate.txt
+grep -q 'settings_ok' ../settings-validate.txt
+git add repo-settings.yaml validate-settings.sh
+git commit -m 'chore: add repo settings YAML and validator'
+cd ..
+```
+
+**Expected output:** Machine-readable settings YAML passes validation script.
+
+#### Task 3 – Tag and release notes (local release simulation)
+
+```bash
+cd ~/rebash-git/module-09/github-lab
+set -euo pipefail
+git tag -a v0.1.0 -m 'Initial lab release — Issue template and repo settings YAML'
+git tag -l 'v*' | tee ../tags.txt
+grep -q 'v0.1.0' ../tags.txt
+{
+  echo '# v0.1.0 release notes'
+  echo
+  echo '## Added'
+  echo '- Issue template for infrastructure changes'
+  echo '- repo-settings.yaml with validation script'
+  echo
+  echo '## Commits since init'
+  git log --oneline
+} > release-notes-v0.1.0.txt
+grep -q 'repo-settings.yaml' release-notes-v0.1.0.txt
+git add release-notes-v0.1.0.txt
+git commit -m 'chore: release notes for v0.1.0'
+# Optional if gh authenticated:
+# gh release create v0.1.0 --notes-file release-notes-v0.1.0.txt
+tar -czf ../module-09-github-evidence.tgz -C .. tags.txt settings-validate.txt release-notes-v0.1.0.txt
+ls -l ../module-09-github-evidence.tgz | tee ../github-evidence.txt
+cd ..
+```
+
+**Expected output:** Annotated tag v0.1.0; `release-notes-v0.1.0.txt` generated from log.
 
 ### Validation steps
 
-- [ ] Repository has at least two commits or a merge as designed
-- [ ] log/graph evidence files exist
+- [ ] Issue template under `.github/ISSUE_TEMPLATE/`
+- [ ] `repo-settings.yaml` passes `validate-settings.sh`
+- [ ] Tag v0.1.0 exists locally
+- [ ] `release-notes-v0.1.0.txt` present
 
 ### Common errors and fixes
 
 | Error | Cause | Fix |
 |-------|-------|-----|
-| Author identity unknown | Missing user.name/email | Set local `git config user.*` as in Task 1 |
-| merge conflict | Overlapping edits | Edit file, `git add`, complete merge |
-| detached HEAD | Checked out a raw SHA | `git switch -c` a branch before committing |
+| gh not found | CLI not installed | Skip optional step; use UI later |
+| tag exists | Re-run lab | `git tag -d v0.1.0` |
+| template not shown on GitHub | Not pushed | Push when remote available |
+| wrong default branch | Old habit | Rename to main on forge |
 
 ### Challenge exercise
 
-Use `git reflog` to recover a commit after a hard reset on a private branch.
+If you have GitHub access: create a private sandbox repo, push this lab, open one Issue from the template, and run `validate-settings.sh` after verifying three settings in the UI — export screenshot paths list to `ONBOARDING_PROOF.txt` (paths only, no secrets).
 
 ### Learning outcomes
 
-- Performed real Git operations
-- Left auditable history
-- Understood recovery basics
+- Prepared standard GitHub repo layout
+- Authored machine-readable repo settings with validation
+- Created tag and release notes workflow locally
 
 ### Cleanup
 
 ```bash
-# Safe local repo — delete the lab directory when finished:
-# rm -rf "$(pwd)"
+ls ~/rebash-git/module-09/github-lab
 ```
 
 ## Validation
 
-
-
-
-
-
-- [ ] Lab commands run under `~/rebash-git/module-09/`
-- [ ] You can explain each Theory section in your own words
-- [ ] You used modern tooling where it applies to this topic
-- [ ] You can describe one production failure mode for this topic
+- [ ] Lab under module-09
+- [ ] Can list five critical repo settings
+- [ ] Can explain Issue vs Discussion
+- [ ] Know tag vs Release relationship
 
 ## Code Walkthrough
 
-
-
-
-
-
-Production practice for **GitHub Fundamentals** always combines:
-
-1. Inspect before you change (status, plan, logs, dry-run)
-2. Prefer reversible, documented changes (Git, IaC, drop-ins, version pins)
-3. Capture evidence (command output, pipeline logs) for handovers
-4. Prefer current tools and APIs over legacy shortcuts
-5. Least privilege — escalate credentials only when required
-
-Keep runbooks short enough to follow under pressure. Automate checks; keep humans for judgement.
+1. **Checklist per new repo** — automate with org templates where available.
+2. **Labels early** — `type:`, `team:`, `priority:` conventions.
+3. **Tag from CI** — semver only after checks pass.
+4. **README badges** — CI status, latest release (when public).
+5. **gh for automation** — script release creation in pipeline.
 
 ## Security Considerations
 
-
-
-
-
-
-- Treat credentials and tokens for git as privileged — never commit them
-- Prefer short-lived auth (OIDC, roles, SSO) over long-lived keys
-- Validate blast radius before apply/deploy/delete operations
-- Restrict who can approve production changes
-- Collect audit logs; limit who can read sensitive traces
+- Enable secret scanning and push protection on org repos.
+- Restrict Actions permissions to least privilege.
+- Private repos for IaC with cloud credentials context.
+- Use GitHub environments for production deployment secrets.
+- Rotate PATs; prefer fine-grained tokens with repo scope.
 
 ## Common Mistakes
 
+!!! warning "Public fork of internal module"
+    Exposes architecture details. **Fix:** Private repos; internal org only.
 
+!!! warning "Releases without changelog"
+    Operators cannot assess upgrade risk. **Fix:** release notes per semver tag (`.txt` or GitHub Release body).
 
-
-
-
-!!! warning "Personal forks as the only copy of production IaC  "
-    Validate assumptions against the Theory section and official docs before changing production.
-
-!!! warning "Classic PATs with broad `repo` scope checked into CI logs  "
-    Lab shortcuts (open security groups, admin roles, skip approvals) must not ship unchanged.
-
-!!! warning "Changing production without a rollback path"
-    Always know how to revert (previous artefact, prior release, state rollback, DNS failback).
+!!! warning "Issues disabled"
+    Work happens in Slack without traceability. **Fix:** Enable Issues; link PRs.
 
 ## Best Practices
 
-
-
-
-
-
-- Encode GitHub Fundamentals changes as code and review them in pull requests
-- Pin versions (images, modules, actions, provider plugins)
-- Separate environments with clear promotion gates
-- Alert on symptoms with runbooks attached
-- Destroy lab resources; tag everything with owner and expiry where possible
+- Org-level repository templates with checklist included
+- Standard labels across platform repos
+- Signed tags for production modules
+- Link Issues to PRs with "Fixes #123"
+- Archive repos instead of deleting for audit
 
 ## Troubleshooting
 
-
-
-
-
-
 | Symptom | Likely cause | Fix |
 |---------|--------------|-----|
-| Auth / permission denied | Wrong identity, policy, or scope | Check caller identity, roles, and least-privilege policies |
-| Timeout / no route | Network, DNS, security group, or endpoint | Trace path, DNS, and allow-lists before retrying |
-| Drift / unexpected plan | Manual change or wrong state/workspace | Reconcile desired vs actual; avoid click-ops on managed resources |
-| Pipeline/job red | Flaky step, cache, or missing secret | Read failing step logs; bisect recent workflow/config changes |
-| Cost spike | Idle load balancer, NAT, oversized compute | Inventory billable resources; stop/delete labs promptly |
+| Cannot push | Auth or branch protection | Check token/SSH; use PR |
+| Release missing tag | Tag not pushed | git push origin v1.0.0 |
+| Template not in UI | Wrong path | .github/ISSUE_TEMPLATE/ |
+| gh 403 | Token scope | Regenerate with repo scope |
 
 ## Summary
 
-
-
-
-
-
-**GitHub Fundamentals** is essential for Cloud and DevOps engineers working with git. Practise the lab until the inspection and change path is muscle memory, then continue the track.
+GitHub adds Issues, Releases, and settings governance on top of Git — prepare repos with templates and checklists before first push. Next: [Pull Requests and Code Review](pull-requests-and-code-review.md).
 
 ## Interview Questions
 
+**1. Difference between Git tag and GitHub Release?**
 
+??? success "Reveal answer"
+    Tag is a Git ref pointing to a commit; GitHub Release is forge metadata wrapping a tag with title, notes, and downloadable assets — often triggers CD webhooks.
 
+**2. Why default branch main?**
 
-1. Fork versus branch in the same remote?
-2. What does origin usually mean after clone?
-3. How do GitHub permissions map to push/merge rights?
-4. SSH versus HTTPS authentication trade-offs?
-5. What is a good first repository hygiene checklist?
+??? success "Reveal answer"
+    Aligns with industry default, branch protection templates, and tooling expectations — reduces friction for CI and new contributors.
 
-!!! tip "Sample answer — question 2"
-    Verify remotes, default branch, and whether you have write access. SSO authorisation on SSH keys is a frequent enterprise gotcha.
+**3. Three repo settings for DevSecOps?**
 
-!!! tip "Sample answer — question 4"
-    Enable branch protection, 2FA, and secret scanning.
+??? success "Reveal answer"
+    Secret scanning, Dependabot alerts, branch protection requiring reviews and status checks — baseline before trusting repo with deploy keys.
+
+**4. When use Issues vs Discussions?**
+
+??? success "Reveal answer"
+    Issues track actionable work with assignees and milestones; Discussions suit open-ended design questions without a single deliverable.
+
+**5. gh release create purpose?**
+
+??? success "Reveal answer"
+    Automates Release publication from CLI/CI — attaches notes, assets, and makes version visible to consumers and deployment pipelines.
+
+**6. Why delete head branch after merge?**
+
+??? success "Reveal answer"
+    Reduces stale branch clutter and mistaken pushes to old feature branches — GitHub setting automates cleanup after PR merge.
+
+**7. Merge options on GitHub — why restrict?**
+
+??? success "Reveal answer"
+    Team may mandate squash-only for linear main history or forbid merge commits — consistency beats per-PR ad hoc choice.
+
+**8. Repository visibility impact on Actions?**
+
+??? success "Reveal answer"
+    Public repos may run untrusted fork PR workflows — require approval for first-time contributors and limit secrets in fork contexts.
 
 ## Related Tutorials
 
-
-
-
-
-
-- [Course overview](index.md)
+- [Working with Remotes](working-with-remotes.md)
 - [Pull Requests and Code Review](pull-requests-and-code-review.md)
+- [Repository Management and Releases](repository-management-and-releases.md)
+- [Course index](index.md)
 
 ## References
 
-
-
-
-
-
 - [GitHub Docs — Repositories](https://docs.github.com/en/repositories)
+- [About releases](https://docs.github.com/en/repositories/releasing-projects-on-github/about-releases)
+- [GitHub CLI manual](https://cli.github.com/manual/)

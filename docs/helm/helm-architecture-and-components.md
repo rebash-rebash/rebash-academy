@@ -28,7 +28,7 @@ tags:
   - helm
   - architecture
 author: Shaik Basha
-last_updated: "2026-07-31"
+last_updated: "2026-08-03"
 comments: false
 ---
 
@@ -138,93 +138,158 @@ Mental model: **CLI → fetch chart → merge values → render templates → ap
 
 ## Hands-on Lab
 
-
-
 ### Objective
 
-Create, lint, render, install, and uninstall a Helm chart demonstrating **Helm Architecture and Components**.
+Inspect the Helm CLI environment, register a chart repository, install a probe release into a **kind** cluster, and prove release metadata is stored in-cluster as labelled Secrets.
 
 ### Prerequisites
 
-- helm CLI
-- kubectl + lab cluster
-- Ability to create namespaces
+- **kind** cluster running (`kubectl cluster-info`)
+- Helm 3.x installed (`helm version`)
+- kubectl configured against the kind context
+- Network access to add a public chart repository (bitnami)
 
 ### Lab environment
 
-Workspace: `~/rebash-helm/module-01-arch`
-
-Helm 3 against kind/minikube; release namespace `rebash-helm`.
+Workspace: `~/rebash-helm/module-01-arch` on your workstation with a disposable **kind** cluster.
 
 ```bash
-mkdir -p ~/rebash-helm/module-01-arch && cd ~/rebash-helm/module-01-arch
+mkdir -p ~/rebash-helm/module-01-arch/probe/templates && cd ~/rebash-helm/module-01-arch
+kubectl cluster-info | tee cluster-info.txt
 ```
 
 ### Real-world scenario
 
-A team wants **Helm Architecture and Components** packaged as a chart so GitOps can promote the same artefact across environments.
+You are onboarding to a platform team that documents Helm architecture for auditors. Before any production chart installs, you verify CLI version, repository configuration, and kubeconfig context — then install a tiny release and inspect where Helm stores revision metadata in the cluster.
 
 ### Step-by-step tasks
 
-#### Task 1 – Create and lint a chart
-
-Scaffold a chart and fail the build on lint errors before install.
+#### Task 1 – Verify CLI and cluster context
 
 ```bash
-helm version
-helm create labchart
-helm lint ./labchart | tee lint.txt
-helm template labchart ./labchart | egrep '^kind:' | sort | uniq -c | tee kinds.txt
+cd ~/rebash-helm/module-01-arch
+helm version | tee helm-version-m01arch.txt
+helm env | tee helm-env-m01arch.txt
+kubectl config current-context | tee kube-context-m01arch.txt
+kubectl get nodes -o wide | tee nodes-wide.txt
+grep -q 'v3' helm-version-m01arch.txt
+grep -q Ready nodes-wide.txt
 ```
 
-**Expected output:** lint reports no failures; kinds.txt lists Deployment/Service/etc.
+**Expected output:** `helm-version-m01arch.txt` shows `version.BuildInfo{Version:"v3.`; all nodes are Ready.
 
-#### Task 2 – Install with values override
-
-Prove values change rendered replicas, then install with wait.
+#### Task 2 – Register a repository and list indexes
 
 ```bash
-kubectl create namespace rebash-helm --dry-run=client -o yaml | kubectl apply -f -
-cat > myvalues.yaml << 'EOF'
-replicaCount: 2
-EOF
-helm template labchart ./labchart -f myvalues.yaml | egrep 'replicas:' | head
-helm upgrade --install labchart ./labchart -n rebash-helm -f myvalues.yaml --wait --timeout 2m
-helm list -n rebash-helm
-kubectl get deploy -n rebash-helm
+cd ~/rebash-helm/module-01-arch
+helm repo add bitnami https://charts.bitnami.com/bitnami
+helm repo update | tee repo-update-m01arch.txt
+helm repo list | tee repo-list-m01arch.txt
+grep -q 'bitnami' repo-list-m01arch.txt
+helm search repo bitnami/nginx --versions | head -5 | tee search-m01arch.txt
 ```
 
-**Expected output:** Release deployed; Deployment shows 2 replicas (or Ready pods).
+**Expected output:** `repo-list-m01arch.txt` includes `bitnami` with URL `https://charts.bitnami.com/bitnami`; search returns versioned nginx charts.
+
+#### Task 3 – Install probe release and inspect release Secrets
+
+Create `namespace.yaml`:
+
+```yaml
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: rebash-helm-m01-arch
+```
+
+Create `probe/Chart.yaml`:
+
+```yaml
+apiVersion: v2
+name: probe
+version: 0.1.0
+type: application
+```
+
+Create `probe/templates/configmap.yaml`:
+
+{% raw %}
+```yaml
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ .Release.Name }}-probe
+data:
+  purpose: architecture-lab
+```
+{% endraw %}
+
+Install and prove release metadata:
+
+```bash
+cd ~/rebash-helm/module-01-arch
+kubectl apply -f namespace.yaml
+helm upgrade --install arch-probe probe -n rebash-helm-m01-arch --wait --timeout 120s | tee probe-install-m01arch.txt
+kubectl get configmap -n rebash-helm-m01-arch | tee probe-configmaps-m01arch.txt
+kubectl get secrets -n rebash-helm-m01-arch -l owner=helm | tee release-secrets-m01arch.txt
+helm list -n rebash-helm-m01-arch | tee helm-list-m01arch.txt
+helm history arch-probe -n rebash-helm-m01-arch | tee helm-history-m01arch.txt
+grep -q 'arch-probe' helm-list-m01arch.txt
+grep -q 'sh.helm.release' release-secrets-m01arch.txt || test -s release-secrets-m01arch.txt
+```
+
+**Expected output:** Release `arch-probe` is deployed; `release-secrets-m01arch.txt` lists Helm release Secrets labelled `owner=helm`.
+
+#### Task 4 – Break and fix a failed upgrade
+
+Simulate a bad values override, observe failure, then recover:
+
+```bash
+cd ~/rebash-helm/module-01-arch
+helm upgrade arch-probe probe -n rebash-helm-m01-arch --set replicaCount=not-a-number 2>helm-upgrade-fail-m01arch.txt || true
+grep -qi 'error\|invalid\|failed' helm-upgrade-fail-m01arch.txt
+helm upgrade --install arch-probe probe -n rebash-helm-m01-arch --wait --timeout 120s | tee helm-recover-m01arch.txt
+helm status arch-probe -n rebash-helm-m01-arch | tee helm-status-m01arch.txt
+grep -q 'deployed' helm-status-m01arch.txt
+```
+
+**Expected output:** Bad upgrade fails with a clear error; recovery leaves release status `deployed`.
 
 ### Validation steps
 
-- [ ] helm lint clean
-- [ ] Release listed in namespace
-- [ ] Uninstall removes the release
+- [ ] `helm version` shows v3.x client
+- [ ] kind cluster nodes are Ready
+- [ ] `helm repo list` includes bitnami
+- [ ] Release `arch-probe` installed in `rebash-helm-m01-arch`
+- [ ] Release Secrets labelled `owner=helm` visible
+- [ ] Failed upgrade recovered to `deployed` status
 
 ### Common errors and fixes
 
 | Error | Cause | Fix |
 |-------|-------|-----|
-| PENDING_INSTALL | Image pull / probes | `helm status` + `kubectl describe` |
-| lint failed | Template YAML break | Fix templates; re-run helm lint |
-| context deadline | Slow cluster | Increase --timeout or fix readiness |
+| `helm repo add` fails | Network or TLS | Check proxy; retry with `helm repo add bitnami https://charts.bitnami.com/bitnami` |
+| `Unable to connect to the server` | kind not running | `kind create cluster --name rebash-helm` |
+| Install fails watch timeout | Image pull or probes | `kubectl describe pod -n rebash-helm-m01-arch` |
+| No release Secrets visible | Wrong namespace | Re-check `-n rebash-helm-m01-arch` |
 
 ### Challenge exercise
 
-Add a ConfigMap template driven by values and prove it with `helm get manifest`.
+Add a `values.yaml` to `probe/` with `replicaCount: 1` and re-install with `helm upgrade --install arch-probe probe -n rebash-helm-m01-arch -f probe/values.yaml`. Prove the values file appears in `helm get values arch-probe -n rebash-helm-m01-arch`.
 
 ### Learning outcomes
 
-- Packaged Kubernetes YAML as a chart
-- Overrode values safely
-- Cleaned up the release
+- Verified Helm CLI and kind cluster readiness
+- Registered and searched a chart repository
+- Installed a release and inspected in-cluster Secret storage
+- Recovered from a failed upgrade attempt
 
 ### Cleanup
 
 ```bash
-helm uninstall labchart -n rebash-helm 2>/dev/null || true
-kubectl delete namespace rebash-helm --ignore-not-found
+helm uninstall arch-probe -n rebash-helm-m01-arch 2>/dev/null || true
+kubectl delete namespace rebash-helm-m01-arch --ignore-not-found
+helm repo remove bitnami 2>/dev/null || true
 ```
 
 ## Validation

@@ -177,11 +177,9 @@ Your team runs a nightly sync that writes a small status file used by a dashboar
 
 Create the core module. The fake probe fails twice, then succeeds. The circuit opens if you force too many failures.
 
-```bash
-cd ~/rebash-python/lab24
-set -euo pipefail
+Create `resilient_job.py`:
 
-cat > resilient_job.py << 'EOF'
+```python
 """Production patterns lab: structured logs, retry, circuit, idempotent write."""
 from __future__ import annotations
 
@@ -330,10 +328,16 @@ def main(argv: list[str] | None = None) -> int:
 
 if __name__ == "__main__":
     raise SystemExit(main())
-EOF
+```
 
+Run:
+
+```bash
+cd ~/rebash-python/lab24
+set -euo pipefail
 python3 -m py_compile resilient_job.py
 ```
+
 
 **Expected output:** `py_compile` exits 0 with no traceback.
 

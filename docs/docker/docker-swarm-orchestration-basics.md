@@ -4,7 +4,7 @@ description: Initialize a Swarm cluster, deploy replicated services, roll update
 difficulty: intermediate
 estimated_time: "40 min"
 author: Shaik Basha
-last_updated: "2026-07-28"
+last_updated: "2026-08-03"
 category: docker
 tags:
   - docker
@@ -195,22 +195,21 @@ Keep a short note of the exact commands that proved the happy path and the failu
 
 ## Hands-on Lab
 
-
-
 ### Objective
 
-Build or run a real Docker solution for **Docker Swarm Orchestration Basics** and prove it with inspect/logs/HTTP.
+Initialise a single-node Swarm, deploy a replicated HTTP service, verify tasks with `docker service ps`, and leave Swarm in cleanup.
 
 ### Prerequisites
 
-- Docker Engine or Docker Desktop
-- Permission to run containers
+- Docker Engine with Swarm support
+- Port `18190` available on the host
+
+!!! warning "Single-node lab"
+    Production Swarm needs multiple managers for quorum. This lab uses one node for learning — do not treat it as a production cluster pattern.
 
 ### Lab environment
 
 Workspace: `~/rebash-docker/docker-swarm-orchestration-basics`
-
-Local Docker daemon. Clean up containers/images after the lab.
 
 ```bash
 mkdir -p ~/rebash-docker/docker-swarm-orchestration-basics && cd ~/rebash-docker/docker-swarm-orchestration-basics
@@ -218,64 +217,109 @@ mkdir -p ~/rebash-docker/docker-swarm-orchestration-basics && cd ~/rebash-docker
 
 ### Real-world scenario
 
-You are validating **Docker Swarm Orchestration Basics** before it lands in CI. The change must be reproducible with copy-paste commands and leave no orphan containers.
+Your team still runs a legacy Swarm cluster for one internal tool. You need to prove you can init a manager, publish a stateless web service with two replicas, and confirm tasks are running before the maintenance window closes.
 
 ### Step-by-step tasks
 
-#### Task 1 – Run and inspect a container
+#### Task 1 – Initialise Swarm
 
-Start from a known image, publish a port, and verify HTTP.
-
+{% raw %}
 ```bash
-docker run -d --name rebash-lab -p 18080:80 nginx:alpine
-docker ps --filter name=rebash-lab
-curl -sI http://127.0.0.1:18080 | head -n 5 | tee headers.txt
-docker logs rebash-lab 2>&1 | head -n 10 | tee logs.txt
+cd ~/rebash-docker/docker-swarm-orchestration-basics
+docker swarm init 2>&1 | tee swarm-init.txt || true
+docker info --format 'Swarm={{ "{{" }}.Swarm.LocalNodeState{{ "}}" }}' | tee swarm-info.txt
+grep -q 'Swarm=active' swarm-info.txt
+```
+{% endraw %}
+
+**Expected output:** `swarm-info.txt` shows `Swarm=active`.
+
+#### Task 2 – Create overlay network and service
+
+Create `compose-swarm.yaml`:
+
+```yaml
+services:
+  web:
+    image: nginx:1.27-alpine
+    ports:
+      - "18190:80"
+    deploy:
+      replicas: 2
+      restart_policy:
+        condition: on-failure
+    networks:
+      - rebash-swarm-net
+
+networks:
+  rebash-swarm-net:
+    driver: overlay
 ```
 
-**Expected output:** Container Up; HTTP 200 in headers.txt.
-
-#### Task 2 – Inspect runtime config
-
-Use inspect for status — production debugging rarely starts with guesswork.
+Deploy the stack:
 
 ```bash
-docker inspect rebash-lab --format '{{ "{{" }}.State.Status{{ "}}" }} {{ "{{" }}.Config.Image{{ "}}" }}' | tee inspect.txt
-test -s inspect.txt
+cd ~/rebash-docker/docker-swarm-orchestration-basics
+docker network create -d overlay rebash-swarm-net 2>/dev/null || true
+docker service create --name rebash-swarm-web \
+  --replicas 2 \
+  --publish 18190:80 \
+  --network rebash-swarm-net \
+  nginx:1.27-alpine
+docker service ls | tee swarm-services.txt
+grep -q rebash-swarm-web swarm-services.txt
 ```
 
-**Expected output:** inspect.txt shows `running` and the nginx image.
+**Expected output:** `swarm-services.txt` lists `rebash-swarm-web` with 2/2 replicas (may take a few seconds).
+
+#### Task 3 – Verify tasks and HTTP
+
+```bash
+cd ~/rebash-docker/docker-swarm-orchestration-basics
+sleep 10
+docker service ps rebash-swarm-web --no-trunc | tee swarm-ps.txt
+grep -c Running swarm-ps.txt | tee running-count.txt
+curl -sI http://127.0.0.1:18190 | head -n 1 | tee swarm-http.txt
+grep -q '200' swarm-http.txt
+```
+
+**Expected output:** `swarm-ps.txt` shows Running tasks; `swarm-http.txt` contains HTTP 200.
 
 ### Validation steps
 
-- [ ] Container or image behaves as Expected output describes
-- [ ] Ports respond or command output matches
-- [ ] Cleanup removes lab resources
+- [ ] Swarm mode active on the node
+- [ ] Service created with two replicas
+- [ ] `docker service ps` shows Running tasks
+- [ ] Published port responds over HTTP
+- [ ] Cleanup removes service and leaves Swarm
 
 ### Common errors and fixes
 
 | Error | Cause | Fix |
 |-------|-------|-----|
-| port is already allocated | Previous lab left a container | `docker rm -f` the old name or change port |
-| permission denied | User not in docker group | Use rootless Docker or fix group membership |
-| manifest unknown | Bad tag | Pin a real tag such as `nginx:alpine` |
+| `This node is already part of a swarm` | Prior lab | `docker swarm leave --force` then re-init |
+| 0/2 replicas | Image pull slow | Wait and re-run `docker service ps` |
+| Port 18190 in use | Host conflict | Change publish port |
+| Overlay network error | Swarm not active | Confirm `docker info` Swarm state |
 
 ### Challenge exercise
 
-Add a non-root USER (or Compose healthcheck) and prove it with inspect.
+Perform a rolling update to `nginx:1.27-alpine` with `--update-delay 10s` and capture `docker service ps` before/after in `rolling-update.txt`.
 
 ### Learning outcomes
 
-- Executed a real Docker workflow
-- Captured evidence files
-- Removed disposable resources
+- Initialised Swarm on a single learning node
+- Published a replicated service with overlay networking
+- Inspected task placement with `docker service ps`
+- Cleaned up services and left Swarm safely
 
 ### Cleanup
 
 ```bash
-docker rm -f rebash-lab 2>/dev/null || true
-docker rmi rebash-lab:local 2>/dev/null || true
-docker compose down -v 2>/dev/null || true
+docker service rm rebash-swarm-web 2>/dev/null || true
+docker network rm rebash-swarm-net 2>/dev/null || true
+docker swarm leave --force 2>/dev/null || true
+rm -f ~/rebash-docker/docker-swarm-orchestration-basics/*.txt compose-swarm.yaml
 ```
 
 ## Validation

@@ -167,8 +167,11 @@ Your inventory CLI will soon accept YAML hosts. Before wiring files, you model a
 cd ~/rebash-python/lab09
 set -euo pipefail
 source .venv/bin/activate
+```
 
-cat > host_model.py << 'PY'
+Create `host_model.py`:
+
+```python
 from __future__ import annotations
 
 from dataclasses import asdict, dataclass
@@ -203,8 +206,11 @@ class Host:
 
     def to_dict(self) -> dict[str, str]:
         return asdict(self)
-PY
+```
 
+Run:
+
+```bash
 python -c "from host_model import Host; print(Host('web-01','prod','10.0.1.11').label())"
 ```
 

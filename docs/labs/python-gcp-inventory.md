@@ -61,13 +61,13 @@ python3 -m venv .venv && source .venv/bin/activate
 
 ## Initial State
 
-```bash
-cat > fixtures/instances.json << 'EOF'
+Create `fixtures/instances.json`:
+
+```json
 [
   {"name": "api-1", "zone": "europe-west2-a", "status": "RUNNING", "labels": {"owner": "platform"}},
   {"name": "scratch", "zone": "europe-west2-b", "status": "TERMINATED", "labels": {}}
 ]
-EOF
 ```
 
 ## Task

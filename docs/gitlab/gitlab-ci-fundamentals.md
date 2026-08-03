@@ -34,7 +34,7 @@ tags:
   - cicd
   - pipelines
 author: Shaik Basha
-last_updated: "2026-07-31"
+last_updated: "2026-08-03"
 comments: false
 ---
 
@@ -157,16 +157,14 @@ You do **not** need a paid GitLab instance for early labs: use **GitLab.com free
 
 ## Hands-on Lab
 
-
-
 ### Objective
 
-Author a valid `.gitlab-ci.yml` that models **GitLab CI/CD Fundamentals** and validate it locally before pushing.
+Create a minimal Python app, a two-stage `.gitlab-ci.yml` with `needs`, and prove both YAML validity and local script execution before pushing to GitLab.
 
 ### Prerequisites
 
 - Python 3 with PyYAML (`pip install pyyaml`)
-- Optional: GitLab project to run the pipeline
+- Optional: GitLab.com project or self-managed instance to run the pipeline on a runner
 
 ### Lab environment
 
@@ -175,78 +173,119 @@ Workspace: `~/rebash-gitlab/module-01`
 File-first lab. Push to GitLab only when you want a runner to execute jobs.
 
 ```bash
-mkdir -p ~/rebash-gitlab/module-01 && cd ~/rebash-gitlab/module-01
+mkdir -p ~/rebash-gitlab/module-01/src && cd ~/rebash-gitlab/module-01
 ```
 
 ### Real-world scenario
 
-Your squad is encoding **GitLab CI/CD Fundamentals** as CI. Reviewers reject YAML that does not parse or that skips artefacts/needs incorrectly.
+Your squad is onboarding a new microservice repository. The platform team requires every project to ship a `.gitlab-ci.yml` with explicit `lint` and `test` stages before the first merge request. You author the files locally, validate YAML offline, and simulate job scripts on your laptop to save runner minutes.
 
 ### Step-by-step tasks
 
-#### Task 1 – Write pipeline YAML
+#### Task 1 – Create the application source
 
-Stages and jobs must be explicit so MR pipelines are predictable.
+Create `src/app.py`:
+
+```python
+"""Minimal service entrypoint for GitLab CI fundamentals lab."""
+print("ok")
+```
+
+Verify the script runs:
 
 ```bash
-mkdir -p src && echo 'print("ok")' > src/app.py
-cat > .gitlab-ci.yml << 'EOF'
-stages: [lint, test]
+cd ~/rebash-gitlab/module-01
+python3 src/app.py | tee app-out.txt
+grep -q '^ok$' app-out.txt
+```
+
+**Expected output:** `app-out.txt` contains exactly `ok`.
+
+#### Task 2 – Author the pipeline with stages and needs
+
+Create `.gitlab-ci.yml`:
+
+```yaml
+stages:
+  - lint
+  - test
+
 lint:
   stage: lint
   image: python:3.12-alpine
   script:
     - python -m py_compile src/app.py
+
 test:
   stage: test
   image: python:3.12-alpine
-  needs: [lint]
+  needs:
+    - lint
   script:
     - python src/app.py
-EOF
-python3 -c "import yaml; d=yaml.safe_load(open('.gitlab-ci.yml')); assert d['stages']==['lint','test']; print('OK', list(d))"
 ```
 
-**Expected output:** Prints `OK` and job names; no YAML exception.
-
-#### Task 2 – Simulate the scripts locally
-
-Prove the job script works before burning runner minutes.
+Validate offline:
 
 ```bash
-python3 -m py_compile src/app.py
-python3 src/app.py | tee out.txt
-test "$(cat out.txt)" = 'ok'
+cd ~/rebash-gitlab/module-01
+python3 -c "
+import yaml
+d = yaml.safe_load(open('.gitlab-ci.yml'))
+assert d['stages'] == ['lint', 'test']
+assert d['test']['needs'] == ['lint']
+print('OK', sorted(k for k in d if k != 'stages'))
+"
 ```
 
-**Expected output:** Compile succeeds; out.txt is `ok`.
+**Expected output:** Prints `OK` followed by job keys (`lint`, `test`); no YAML exception.
+
+#### Task 3 – Simulate job scripts locally
+
+Run the same commands the runner would execute:
+
+```bash
+cd ~/rebash-gitlab/module-01
+python3 -m py_compile src/app.py
+python3 src/app.py | tee simulate-out.txt
+test "$(cat simulate-out.txt)" = 'ok'
+```
+
+**Expected output:** Compile succeeds with no output; `simulate-out.txt` is `ok`.
 
 ### Validation steps
 
-- [ ] `.gitlab-ci.yml` parses
-- [ ] Local script path matches job intent
+- [ ] `src/app.py` prints `ok` when run directly
+- [ ] `.gitlab-ci.yml` parses with PyYAML
+- [ ] `stages` lists `lint` then `test`
+- [ ] `test` job declares `needs: [lint]`
+- [ ] Local compile and run match job scripts
 
 ### Common errors and fixes
 
 | Error | Cause | Fix |
 |-------|-------|-----|
-| yaml.scanner.ScannerError | Indentation | Use 2-space indent; re-validate with PyYAML |
-| job stuck pending | No runner / tags | Check runner tags match job tags |
-| needs not found | Typo in job name | Align `needs` with actual job keys |
+| `yaml.scanner.ScannerError` | Wrong indentation in `.gitlab-ci.yml` | Use 2-space indent; re-validate with PyYAML |
+| `needs: job not found` | Typo in job name | Job keys are case-sensitive; align `needs` with the `lint` job key |
+| Job stuck `pending` on GitLab | No runner available | Register a runner or enable shared runners; check tags |
+| `python: command not found` locally | Alpine image vs host Python | Local simulation uses `python3`; CI job uses the pinned `python:3.12-alpine` image |
 
 ### Challenge exercise
 
-Add an `artifacts:` path from lint to test and document expire_in.
+Add a top-level `default:` block with `image: python:3.12-alpine` and remove duplicate `image:` lines from each job. Re-validate YAML and confirm both jobs still parse.
 
 ### Learning outcomes
 
-- Produced reviewable GitLab CI YAML
-- Validated structure and scripts locally
+- Modelled pipeline stages and job ordering with `needs`
+- Pinned container images for reproducible CI runs
+- Validated GitLab CI YAML offline before pushing
+- Simulated runner scripts locally to catch failures early
 
 ### Cleanup
 
 ```bash
-# File-only lab — keep YAML for the next tutorial
+rm -f ~/rebash-gitlab/module-01/app-out.txt ~/rebash-gitlab/module-01/simulate-out.txt
+# Keep src/ and .gitlab-ci.yml for the next module
 ```
 
 ## Validation

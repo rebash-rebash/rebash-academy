@@ -31,7 +31,7 @@ tags:
   - release
   - rollback
 author: Shaik Basha
-last_updated: "2026-07-31"
+last_updated: "2026-08-03"
 comments: false
 ---
 
@@ -148,89 +148,220 @@ Releases are **namespaced** by default (Helm 3). The same release name can exist
 
 ### Objective
 
-Create, lint, render, install, and uninstall a Helm chart demonstrating **Helm Releases and Lifecycle**.
+Install a release, upgrade it with new values to create revision 2, inspect `helm history` and `helm status`, then roll back to revision 1 with evidence files.
 
 ### Prerequisites
 
-- helm CLI
-- kubectl + lab cluster
+- Helm 3 CLI and kubectl configured for a lab cluster (kind or minikube)
 - Ability to create namespaces
 
 ### Lab environment
 
 Workspace: `~/rebash-helm/module-07`
 
-Helm 3 against kind/minikube; release namespace `rebash-helm`.
+Helm 3 against kind/minikube; release namespace `rebash-helm-m07`.
 
 ```bash
-mkdir -p ~/rebash-helm/module-07 && cd ~/rebash-helm/module-07
+mkdir -p ~/rebash-helm/module-07/lifecycle-chart/templates && cd ~/rebash-helm/module-07
 ```
 
 ### Real-world scenario
 
-A team wants **Helm Releases and Lifecycle** packaged as a chart so GitOps can promote the same artefact across environments.
+Platform ops must deploy version 1 of an internal web chart, scale it for a traffic bump, then roll back when the new replica count causes resource pressure. You need revision history before you can roll back safely.
 
 ### Step-by-step tasks
 
-#### Task 1 – Create and lint a chart
+#### Task 1 – Create a minimal lifecycle chart
 
-Scaffold a chart and fail the build on lint errors before install.
+Create `lifecycle-chart/Chart.yaml`:
 
-```bash
-helm version
-helm create labchart
-helm lint ./labchart | tee lint.txt
-helm template labchart ./labchart | egrep '^kind:' | sort | uniq -c | tee kinds.txt
+```yaml
+apiVersion: v2
+name: lifecycle-chart
+description: Lab chart for release lifecycle practice
+type: application
+version: 0.1.0
+appVersion: "1.27.4"
 ```
 
-**Expected output:** lint reports no failures; kinds.txt lists Deployment/Service/etc.
+Create `lifecycle-chart/values.yaml`:
 
-#### Task 2 – Install with values override
-
-Prove values change rendered replicas, then install with wait.
-
-```bash
-kubectl create namespace rebash-helm --dry-run=client -o yaml | kubectl apply -f -
-cat > myvalues.yaml << 'EOF'
-replicaCount: 2
-EOF
-helm template labchart ./labchart -f myvalues.yaml | egrep 'replicas:' | head
-helm upgrade --install labchart ./labchart -n rebash-helm -f myvalues.yaml --wait --timeout 2m
-helm list -n rebash-helm
-kubectl get deploy -n rebash-helm
+```yaml
+replicaCount: 1
+image:
+  repository: nginx
+  tag: "1.27.4-alpine"
+service:
+  port: 80
 ```
 
-**Expected output:** Release deployed; Deployment shows 2 replicas (or Ready pods).
+Create `lifecycle-chart/templates/deployment.yaml`:
+
+```yaml
+{% raw %}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Release.Name }}-web
+  labels:
+    app.kubernetes.io/name: {{ .Chart.Name }}
+    app.kubernetes.io/instance: {{ .Release.Name }}
+spec:
+  replicas: {{ .Values.replicaCount }}
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: {{ .Chart.Name }}
+      app.kubernetes.io/instance: {{ .Release.Name }}
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: {{ .Chart.Name }}
+        app.kubernetes.io/instance: {{ .Release.Name }}
+    spec:
+      containers:
+        - name: web
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+          ports:
+            - containerPort: 80
+{% endraw %}
+```
+
+Create `lifecycle-chart/templates/service.yaml`:
+
+```yaml
+{% raw %}
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ .Release.Name }}-web
+spec:
+  selector:
+    app.kubernetes.io/name: {{ .Chart.Name }}
+    app.kubernetes.io/instance: {{ .Release.Name }}
+  ports:
+    - port: {{ .Values.service.port }}
+      targetPort: 80
+{% endraw %}
+```
+
+Lint and render:
+
+```bash
+cd ~/rebash-helm/module-07
+helm lint ./lifecycle-chart | tee lint.txt
+helm template lifecycle-demo ./lifecycle-chart | grep -E '^kind:' | sort | uniq -c | tee kinds.txt
+grep -q '0 chart(s) failed' lint.txt
+```
+
+**Expected output:** `lint.txt` reports zero failures; `kinds.txt` lists Deployment and Service.
+
+#### Task 2 – Install revision 1
+
+Install the first revision and capture status evidence.
+
+```bash
+kubectl create namespace rebash-helm-m07 --dry-run=client -o yaml | kubectl apply -f -
+helm upgrade --install lifecycle-demo ./lifecycle-chart \
+  -n rebash-helm-m07 --wait --timeout 3m | tee install-rev1.txt
+helm status lifecycle-demo -n rebash-helm-m07 | tee status-rev1.txt
+kubectl get deploy lifecycle-demo-web -n rebash-helm-m07 -o jsonpath='{.spec.replicas}{"\n"}' | tee replicas-rev1.txt
+```
+
+**Expected output:** `status-rev1.txt` shows `STATUS: deployed`; `replicas-rev1.txt` contains `1`.
+
+#### Task 3 – Upgrade to revision 2 with values override
+
+Create `rev2-values.yaml`:
+
+```yaml
+replicaCount: 3
+image:
+  repository: nginx
+  tag: "1.27.4-alpine"
+service:
+  port: 80
+```
+
+Upgrade and prove the replica change:
+
+```bash
+cd ~/rebash-helm/module-07
+helm template lifecycle-demo ./lifecycle-chart -f rev2-values.yaml | grep 'replicas:' | head -1 | tee render-rev2.txt
+helm upgrade lifecycle-demo ./lifecycle-chart \
+  -n rebash-helm-m07 -f rev2-values.yaml --wait --timeout 3m | tee upgrade-rev2.txt
+helm history lifecycle-demo -n rebash-helm-m07 | tee history.txt
+kubectl get deploy lifecycle-demo-web -n rebash-helm-m07 -o jsonpath='{.spec.replicas}{"\n"}' | tee replicas-rev2.txt
+grep -q ' 2 ' history.txt
+```
+
+**Expected output:** `history.txt` lists revisions 1 and 2; `replicas-rev2.txt` contains `3`.
+
+#### Task 4 – Roll back to revision 1
+
+Roll back and confirm the prior replica count returns.
+
+```bash
+helm rollback lifecycle-demo 1 -n rebash-helm-m07 --wait --timeout 3m | tee rollback.txt
+helm history lifecycle-demo -n rebash-helm-m07 | tee history-after-rollback.txt
+helm status lifecycle-demo -n rebash-helm-m07 | tee status-after-rollback.txt
+kubectl get deploy lifecycle-demo-web -n rebash-helm-m07 -o jsonpath='{.spec.replicas}{"\n"}' | tee replicas-after-rollback.txt
+grep -q 'superseded' history-after-rollback.txt
+grep -q '^1$' replicas-after-rollback.txt
+```
+
+**Expected output:** `history-after-rollback.txt` shows revision 3 as deployed (rollback revision); `replicas-after-rollback.txt` contains `1`.
 
 ### Validation steps
 
-- [ ] helm lint clean
-- [ ] Release listed in namespace
-- [ ] Uninstall removes the release
+- [ ] `helm lint` passes with zero failures
+- [ ] Revision 1 installed and `helm status` shows deployed
+- [ ] Upgrade created revision 2 with three replicas
+- [ ] Rollback restored one replica; history lists all revisions
 
 ### Common errors and fixes
 
 | Error | Cause | Fix |
 |-------|-------|-----|
-| PENDING_INSTALL | Image pull / probes | `helm status` + `kubectl describe` |
-| lint failed | Template YAML break | Fix templates; re-run helm lint |
-| context deadline | Slow cluster | Increase --timeout or fix readiness |
+| `Error: release: not found` | Wrong release name or namespace | Confirm `-n rebash-helm-m07` and release name `lifecycle-demo` |
+| Rollback to revision 0 | Invalid revision number | Run `helm history`; roll back to an existing revision (1 or 2) |
+| `context deadline exceeded` | Pods not Ready within timeout | `kubectl describe pod -n rebash-helm-m07`; increase `--timeout` or fix image pull |
+| Revision missing after rollback | Namespace deleted | Never delete the namespace before capturing history evidence |
 
 ### Challenge exercise
 
-Add a ConfigMap template driven by values and prove it with `helm get manifest`.
+Create `bad-image-values.yaml` with tag `does-not-exist:9.9.9`. Attempt an upgrade with `--atomic --wait --timeout 2m` and capture that the release returns to the last good revision:
+
+```yaml
+replicaCount: 1
+image:
+  repository: nginx
+  tag: "does-not-exist:9.9.9"
+service:
+  port: 80
+```
+
+```bash
+cd ~/rebash-helm/module-07
+helm upgrade lifecycle-demo ./lifecycle-chart \
+  -n rebash-helm-m07 -f bad-image-values.yaml --atomic --wait --timeout 2m 2>&1 | tee atomic-fail.txt || true
+helm history lifecycle-demo -n rebash-helm-m07 | tee history-after-atomic.txt
+helm status lifecycle-demo -n rebash-helm-m07 | grep -E 'STATUS|REVISION' | tee status-after-atomic.txt
+```
+
+**Expected output:** Upgrade fails; release status remains deployed on the last successful revision.
 
 ### Learning outcomes
 
-- Packaged Kubernetes YAML as a chart
-- Overrode values safely
-- Cleaned up the release
+- Installed and upgraded a Helm release with values overrides
+- Read revision history and release status as operational evidence
+- Rolled back to a prior revision and verified workload state
+- Understood how `--atomic` prevents leaving a failed upgrade as the active revision
 
 ### Cleanup
 
 ```bash
-helm uninstall labchart -n rebash-helm 2>/dev/null || true
-kubectl delete namespace rebash-helm --ignore-not-found
+helm uninstall lifecycle-demo -n rebash-helm-m07 2>/dev/null || true
+kubectl delete namespace rebash-helm-m07 --ignore-not-found
 ```
 
 ## Validation
@@ -242,9 +373,9 @@ kubectl delete namespace rebash-helm --ignore-not-found
 
 
 - [ ] Lab commands run under `~/rebash-helm/module-07/`
-- [ ] You can explain each Theory section in your own words
-- [ ] You used modern tooling where it applies to this topic
-- [ ] You can describe one production failure mode for this topic
+- [ ] You captured `helm history` and `helm status` evidence across upgrade and rollback
+- [ ] You can explain when `--atomic` auto-rolls back a failed upgrade
+- [ ] You can describe one production failure mode for release lifecycle operations
 
 ## Code Walkthrough
 

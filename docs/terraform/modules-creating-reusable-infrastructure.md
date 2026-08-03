@@ -1,8 +1,8 @@
 ---
 title: "Modules — Creating Reusable Infrastructure"
-description: "Build a Terraform child module with typed inputs and outputs, call it from a root, and design reusable local versioning for DevOps teams."
+description: "Design Terraform module structure, inputs and outputs, and compose root modules that call child modules for reusable infrastructure."
 difficulty: intermediate
-estimated_time: "50–70 min"
+estimated_time: "60–70 min"
 technology: terraform
 category: terraform
 module: "Module 9 · Modules"
@@ -14,12 +14,14 @@ career_paths:
 skills:
   - terraform
   - modules
+  - composition
 prerequisites:
   - terraform/remote-state-and-backends
+  - terraform/variables-locals-and-outputs
 next:
   - terraform/registry-modules-and-composition
 related:
-  - terraform/variables-locals-and-outputs
+  - terraform/production-terraform-patterns
   - terraform/format-validate-and-terraform-test
 labs: []
 projects: []
@@ -29,370 +31,565 @@ certifications:
 tags:
   - terraform
   - modules
-  - reuse
 author: Shaik Basha
-last_updated: "2026-07-31"
+last_updated: "2026-08-03"
 comments: false
 ---
-
 
 # Modules — Creating Reusable Infrastructure
 
 ## Overview
 
+Copy-pasting the same resource blocks into ten environments is how organisations accumulate drift and midnight pages. **Modules** package Terraform configuration into reusable units with a clear **input/output contract** — the same idea as functions in programming or roles in Ansible.
 
+This tutorial covers **child module structure**, **calling modules** from root modules, **passing variables**, **reading module outputs**, and **versioning** conventions. The lab builds a reusable **`service`** Docker module under `~/rebash-terraform/module-09` with real networks and containers.
 
-
-
-
-
-Create a child module with typed variables and outputs, call it twice from a root, and apply a clear input/output contract without leaking internals.
-
-**Modules** package reusable infrastructure patterns behind a typed API. Platform teams publish child modules; application roots call them without copying raw resource blocks. Local `source = "./modules/..."` is the composition skill before Registry modules.
-
-This is a core tutorial in **Module 9 · Modules** of the REBASH Academy **Terraform for Cloud & DevOps Engineers** series — written for Cloud, DevOps, Platform, and SRE engineers.
+This is **Tutorial 10** in **Module 9: Modules** of the REBASH Academy **Terraform for Cloud & DevOps Engineers** series.
 
 ## Prerequisites
 
-
-
-
-
-
-
 - [Remote State and Backends](remote-state-and-backends.md)
-- Terraform CLI 1.9+
+- [Variables, Locals, and Outputs](variables-locals-and-outputs.md)
+- Terraform CLI ≥ 1.5
 
 ## Learning Objectives
 
-
-
-
-
-
-
 By the end of this tutorial, you will be able to:
 
-- [ ] Create a child module with variables, resources, and outputs  
-- [ ] Call modules with a local `source`  
-- [ ] Use `path.module` correctly inside children  
-- [ ] Design small modules with stable contracts
+- [ ] Lay out a module directory with `variables.tf`, `main.tf`, and `outputs.tf`
+- [ ] Call a child module from a root module with `module "name" { source = ... }`
+- [ ] Pass inputs and consume outputs via `module.name.output_name`
+- [ ] Explain when to split code into modules versus separate stacks
+- [ ] Describe module versioning strategies for internal and registry modules
 
 ## Architecture
 
+The root module orchestrates one or more child modules; each module owns its resources and exposes outputs upward.
 
-
-
-
-
-
-This topic’s control points and relationships are shown below.
-
-![Terraform modules](../assets/excalidraw/terraform-modules.svg)
+![Terraform module architecture](../assets/excalidraw/terraform-modules.svg)
 
 ## Theory
 
-
-
-
-
-
-
 ### What it is
 
-A **module** is a directory of `.tf` files. The **root module** is where you run Terraform; **child modules** are called with a `module` block. Values enter through arguments (mapped to `variable` blocks) and exit through `output` blocks. Reference results as `module.NAME.output_name`. Providers are inherited from the root unless you pass an explicit `providers` map.
+A **module** is a container of Terraform configuration. Every configuration has a **root module** (your working directory). **Child modules** are called via:
 
-Typical child layout: `variables.tf`, `main.tf`, `outputs.tf`, optional `versions.tf` (`required_providers`), and a README. Prefer `path.module` for files the child owns; pass caller paths as inputs instead of hard-coded `../../` escapes.
+```hcl
+module "api_service" {
+  source = "./modules/service"
+
+  environment = var.environment
+  owner       = var.owner
+}
+```
+
+The **`source`** argument can be:
+
+| Source type | Example |
+|-------------|---------|
+| Local path | `./modules/service` |
+| Registry | `terraform-aws-modules/vpc/aws` |
+| Git | `git::https://github.com/org/repo.git//modules/vpc?ref=v1.2.0` |
+| S3/GCS | `s3::https://...` |
+
+Module addresses in state look like `module.api_service.null_resource.service`.
 
 ### Why it matters
 
-Copy-pasted VPC and IAM blocks drift across teams. Modules encode a reviewed pattern once — naming, tags, secure defaults — and roots supply environment-specific inputs. Clear contracts speed code review: reviewers check the module API, not every nested resource address. Local versioning (Git tags on a module repo, or a pinned subdirectory) lets you evolve internals without breaking every consumer on day one.
+Modules encode **standards** — naming, tags, security defaults — once. Platform teams publish modules; product teams consume them with minimal inputs. Smaller blast radius: test and version modules independently. Without modules, enterprise repos become monolithic `.tf` files nobody dares refactor.
 
 ### How it works
 
-1. Author the child with typed variables (descriptions, validation) and minimal outputs (IDs, names, ARNs — not every attribute).
-2. From the root: `module "greeting" { source = "./modules/greeting" ... }`.
-3. `terraform init` installs / links the module source; addresses become `module.greeting.local_file.this`.
-4. Two `module` blocks with different inputs create two state namespaces — reuse without copy-paste.
-5. Change behaviour inside the child; callers that only depend on outputs stay stable.
+1. Root module evaluates `module` blocks and loads child directories.
+2. Child module receives **input variables** from the caller.
+3. Child resources are created with prefixed addresses.
+4. **Outputs** from child modules are available as `module.NAME.OUTPUT`.
+5. State stores nested module paths.
 
-Design tips: one responsibility per module; sensible defaults for non-secret optionals; avoid mega-modules; declare `required_providers` so callers get clear version errors.
+**Standard module layout:**
+
+```text
+modules/service/
+├── README.md
+├── variables.tf
+├── main.tf
+├── outputs.tf
+└── versions.tf
+```
 
 ### Key concepts and comparisons
 
-| Layer | Responsibility |
-|-------|----------------|
-| Root | Backend, providers, composition, env values |
-| Child | One reusable pattern |
-| Contract | Variables in, outputs out — hide resource addresses |
+| Pattern | Prefer when |
+|---------|-------------|
+| Child module | Reuse within same repo/stack |
+| Separate root stack + remote state | Independent lifecycle (network vs app) |
+| Registry module | Community or org-standard building blocks |
+| `for_each` on module | Many similar instances (one per team/app) |
 
-| Expression | Meaning |
-|------------|---------|
-| `path.module` | Directory of the **current** module |
-| `path.root` | Directory of the root module |
-
-Child module when reused; inline resources for one-offs; wrapper modules to soften a third-party Registry API.
+| Scope | Can reference |
+|-------|---------------|
+| Root → child | Pass variables in module block |
+| Child → root | Only via outputs returned upward |
+| Child → child | Root wires outputs to inputs (no direct import) |
 
 ### Common pitfalls
 
-- Mega-modules with unreviewable blast radius.
-- Leaking every resource as an output — callers couple to internals.
-- Using relative `../` paths as the public API instead of input variables.
-- Forgetting `required_providers` or a README with examples.
+- **Relative source paths** break when cwd changes — prefer stable `./modules/...` from root.
+- **Too many required variables** — module becomes harder to use than raw resources.
+- **Hidden provider configuration** — child modules inherit providers; explicit `providers` map needed for aliases.
+- **Circular modules** — module A calls B calls A; refactor to root orchestration.
+- **No README** — consumers guess required inputs; document every variable.
 
 ## Hands-on Lab
 
-
-
 ### Objective
 
-Run a complete Terraform workflow (init → plan → apply → prove → destroy) for **Modules — Creating Reusable Infrastructure** without paid cloud resources.
+Create a reusable **`service`** child module that provisions a Docker network and container, then a root module that instantiates it twice with different inputs — prove outputs and state addresses with `docker ps` and an evidence script under `~/rebash-terraform/module-09`.
 
 ### Prerequisites
 
-- Terraform CLI ≥ 1.5
-- Network access to download the null provider once
+- **Terraform ≥ 1.5**
+- **Docker Engine running** (`docker info` succeeds)
+- Completed Modules 7–9 labs
 
 ### Lab environment
 
-Workspace: `~/rebash-terraform/module-09/create-modules/{modules/greeting,generated}`
-
-Local Terraform only (`null`/`local` providers). No AWS/GCP/Azure credentials required.
-
 ```bash
-mkdir -p ~/rebash-terraform/module-09/create-modules/{modules/greeting,generated} && cd ~/rebash-terraform/module-09/create-modules/{modules/greeting,generated}
+mkdir -p ~/rebash-terraform/module-09/modules/service && cd ~/rebash-terraform/module-09
 ```
 
 ### Real-world scenario
 
-You are automating **Modules — Creating Reusable Infrastructure** for a platform repo. Reviewers expect a clean plan artefact, applied evidence, and a destroy path before merge.
+Platform engineering ships a **`service`** module that enforces naming, tags, and a standard Alpine sidecar before teams add cloud-specific resources. Ticket **PLAT-410**: application teams call the module twice — `billing` and `catalog` — with different owners in the same environment; success means four Docker objects (two networks, two containers) visible in `docker ps`.
 
 ### Step-by-step tasks
 
-#### Task 1 – Author and initialise configuration
+#### Task 1 – Author the service child module
 
-Use local/null providers so the lab never bills a cloud account.
+Create `~/rebash-terraform/module-09/modules/service/versions.tf`:
 
-```bash
-cat > versions.tf << 'EOF'
+```hcl
 terraform {
   required_version = ">= 1.5.0"
+
   required_providers {
-    null = { source = "hashicorp/null", version = "~> 3.2" }
+    docker = {
+      source  = "kreuzwerker/docker"
+      version = "~> 3.0"
+    }
   }
 }
-EOF
-cat > main.tf << 'EOF'
-resource "null_resource" "lab" {
-  triggers = { topic = "rebash-lab" }
-  provisioner "local-exec" {
-    command = "echo applied > applied.txt"
+```
+
+Create `~/rebash-terraform/module-09/modules/service/variables.tf`:
+
+```hcl
+variable "service_name" {
+  type        = string
+  description = "Short service identifier"
+}
+
+variable "environment" {
+  type        = string
+  description = "Deployment tier"
+}
+
+variable "owner" {
+  type        = string
+  description = "Owning team"
+}
+```
+
+Create `~/rebash-terraform/module-09/modules/service/main.tf`:
+
+```hcl
+locals {
+  full_name = "${var.service_name}-${var.environment}"
+  common_tags = {
+    service     = var.service_name
+    environment = var.environment
+    owner       = var.owner
   }
 }
-output "note" { value = null_resource.lab.triggers.topic }
-EOF
+
+resource "docker_network" "service" {
+  name = "${local.full_name}-net"
+}
+
+resource "docker_image" "alpine" {
+  name = "alpine:3.20"
+}
+
+resource "docker_container" "service" {
+  name  = "${local.full_name}-svc"
+  image = docker_image.alpine.image_id
+
+  command = ["sleep", "3600"]
+
+  networks_advanced {
+    name = docker_network.service.name
+  }
+
+  dynamic "labels" {
+    for_each = local.common_tags
+    content {
+      label = labels.key
+      value = labels.value
+    }
+  }
+}
+```
+
+Create `~/rebash-terraform/module-09/modules/service/outputs.tf`:
+
+```hcl
+output "service_full_name" {
+  description = "Computed service name"
+  value       = local.full_name
+}
+
+output "container_name" {
+  description = "Running container name"
+  value       = docker_container.service.name
+}
+
+output "network_name" {
+  description = "Dedicated service network"
+  value       = docker_network.service.name
+}
+```
+
+Run:
+
+```bash
+cd ~/rebash-terraform/module-09/modules/service
 terraform init
 terraform validate
+echo "child module validate OK" | tee child-validate-ok.txt
 ```
 
-**Expected output:** `Terraform has been successfully initialized` and validate succeeds.
+**Expected output:** Validate succeeds in the module directory (isolated syntax check).
 
-#### Task 2 – Plan, apply, and prove outputs
+#### Task 2 – Root module calling the child twice
 
-Treat the plan as the change ticket — review before apply.
+Create `~/rebash-terraform/module-09/versions.tf`:
+
+```hcl
+terraform {
+  required_version = ">= 1.5.0"
+
+  required_providers {
+    docker = {
+      source  = "kreuzwerker/docker"
+      version = "~> 3.0"
+    }
+  }
+}
+
+provider "docker" {}
+```
+
+Create `~/rebash-terraform/module-09/variables.tf`:
+
+```hcl
+variable "environment" {
+  type    = string
+  default = "dev"
+}
+```
+
+Create `~/rebash-terraform/module-09/main.tf`:
+
+```hcl
+module "billing" {
+  source = "./modules/service"
+
+  service_name = "billing"
+  environment  = var.environment
+  owner        = "finance-team"
+}
+
+module "catalog" {
+  source = "./modules/service"
+
+  service_name = "catalog"
+  environment  = var.environment
+  owner        = "product-team"
+}
+```
+
+Create `~/rebash-terraform/module-09/outputs.tf`:
+
+```hcl
+output "billing_service_name" {
+  value = module.billing.service_full_name
+}
+
+output "catalog_service_name" {
+  value = module.catalog.service_full_name
+}
+
+output "container_names" {
+  value = {
+    billing = module.billing.container_name
+    catalog = module.catalog.container_name
+  }
+}
+```
+
+Run:
+
+{% raw %}
+```bash
+cd ~/rebash-terraform/module-09
+terraform init
+terraform plan | tee root-plan.txt
+grep -q 'module.billing' root-plan.txt
+grep -q 'module.catalog' root-plan.txt
+terraform apply -auto-approve
+terraform output -json | tee root-outputs.json
+grep -q 'billing-dev' root-outputs.json
+grep -q 'catalog-dev' root-outputs.json
+docker ps --filter name=billing-dev --format '{{.Names}}' | grep -q billing-dev-svc
+docker ps --filter name=catalog-dev --format '{{.Names}}' | grep -q catalog-dev-svc
+echo "root apply OK" | tee root-apply-ok.txt
+```
+{% endraw %}
+
+**Expected output:** Two module instances in plan; outputs show `billing-dev` and `catalog-dev`; both containers running.
+
+#### Task 3 – Inspect module addresses in state
+
+Run:
+
+{% raw %}
+```bash
+cd ~/rebash-terraform/module-09
+terraform state list | tee module-state-list.txt
+grep -q 'module.billing.docker_container.service' module-state-list.txt
+grep -q 'module.catalog.docker_container.service' module-state-list.txt
+terraform state show module.billing.docker_container.service | grep -q 'finance-team'
+docker network ls --filter name=dev-net --format '{{.Name}}' | tee docker-nets.txt
+grep -q 'billing-dev-net' docker-nets.txt
+grep -q 'catalog-dev-net' docker-nets.txt
+echo "state inspect OK" | tee state-inspect-ok.txt
+```
+{% endraw %}
+
+**Expected output:** State addresses include module prefix paths; billing labels reference `finance-team`; two dedicated networks exist.
+
+#### Task 4 – Module evidence script
+
+Create `~/rebash-terraform/module-09/module-evidence.sh`:
+
+{% raw %}
+```bash
+#!/usr/bin/env bash
+set -euo pipefail
+cd ~/rebash-terraform/module-09
+terraform validate
+terraform output -raw billing_service_name | grep -q '^billing-dev$'
+terraform output -raw catalog_service_name | grep -q '^catalog-dev$'
+terraform state list | grep -c 'module\.' | grep -q '^6$'
+docker ps --filter name=-dev-svc --format '{{.Names}}' | wc -l | grep -q '^2$'
+echo "module-evidence PASS" | tee module-evidence-pass.txt
+```
+{% endraw %}
+
+Run:
 
 ```bash
-terraform plan -out=tfplan
-terraform show -no-color tfplan | tee plan.txt
-terraform apply tfplan
-terraform output
-test -f applied.txt && cat applied.txt
+chmod +x ~/rebash-terraform/module-09/module-evidence.sh
+~/rebash-terraform/module-09/module-evidence.sh
 ```
 
-**Expected output:** plan.txt shows create; `applied` written; output prints the note.
-
-#### Task 3 – Inspect state safely
-
-State is the source of truth — list and show without hand-editing.
-
-```bash
-terraform state list | tee state-list.txt
-terraform state show null_resource.lab | tee state-show.txt
-```
-
-**Expected output:** state-list.txt contains `null_resource.lab`.
+**Expected output:** `module-evidence-pass.txt` contains `module-evidence PASS`.
 
 ### Validation steps
 
-- [ ] terraform validate passes
-- [ ] Plan was saved and reviewed before apply
-- [ ] Destroy completes with empty state (or resources removed)
+- [ ] Child module has variables, main, outputs, versions
+- [ ] Root calls module twice with different inputs
+- [ ] Module outputs referenced at root level
+- [ ] State shows `module.*` addresses
+- [ ] `docker ps` shows both service containers running
+- [ ] Evidence script passes
 
 ### Common errors and fixes
 
 | Error | Cause | Fix |
 |-------|-------|-----|
-| Provider not found | Missing init / network | Run `terraform init` again |
-| State locked | Concurrent apply | Wait or coordinate; never force-unlock casually |
-| Unexpected destroy in plan | Drift or wrong workspace | Read plan line-by-line before apply |
+| Module not found | Wrong source path | Use `./modules/service` relative to root |
+| Required variable not set | Missing module argument | Pass all required inputs in module block |
+| Duplicate module name | Two `module "billing"` blocks | Unique module block labels |
+| Provider config error | Child needs provider upgrade | Align `required_providers` versions |
+| Container name conflict | Prior lab left container | `terraform destroy` in old module dirs |
 
 ### Challenge exercise
 
-Add an input variable with a validation block and fail the plan with an illegal value, then fix it.
+Add a third module instance `module "audit"` for service `audit` owned by `security-team`. Apply and verify:
+
+Create `audit.tf` in the root module:
+
+```hcl
+module "audit" {
+  source = "./modules/service"
+
+  service_name = "audit"
+  environment  = var.environment
+  owner        = "security-team"
+}
+```
+
+Add to `outputs.tf`:
+
+```hcl
+output "audit_service_name" {
+  value = module.audit.service_full_name
+}
+```
+
+Apply:
+
+{% raw %}
+```bash
+cd ~/rebash-terraform/module-09
+terraform apply -auto-approve
+docker ps --filter name=audit-dev-svc --format '{{.Names}}' | grep -q audit-dev-svc
+echo "third module challenge OK"
+```
+{% endraw %}
+
+**Expected output:** Audit container running; output includes `audit-dev`.
 
 ### Learning outcomes
 
-- Completed a reviewable plan/apply cycle
-- Proved outputs/files exist
-- Destroyed lab state
+- Standard module directory layout with real Docker resources
+- Root-to-child variable passing
+- Module output consumption
+- Module-prefixed state addresses verified with `docker ps`
 
 ### Cleanup
 
 ```bash
+cd ~/rebash-terraform/module-09
 terraform destroy -auto-approve
-rm -rf .terraform tfplan 2>/dev/null || true
+rm -f child-validate-ok.txt root-plan.txt root-outputs.json root-apply-ok.txt \
+  module-state-list.txt state-inspect-ok.txt module-evidence-pass.txt docker-nets.txt audit.tf 2>/dev/null || true
+rm -rf .terraform .terraform.lock.hcl terraform.tfstate terraform.tfstate.backup
+rm -rf modules/service/.terraform modules/service/.terraform.lock.hcl
 ```
 
 ## Validation
 
-
-
-
-
-
-
-- [ ] Lab commands run under `~/rebash-terraform/module-09/create-modules/{modules/greeting,generated}/`
-- [ ] You can explain each Theory section in your own words
-- [ ] You used modern tooling where it applies to this topic
-- [ ] You can describe one production failure mode for this topic
+- [ ] Completed module-10 lab with two module instances and Docker proof
+- [ ] Can draw root → child variable flow
+- [ ] Know difference between module and separate stack
+- [ ] Can locate module resources in state list
 
 ## Code Walkthrough
 
-
-
-
-
-
-
-Production practice for **Modules — Creating Reusable Infrastructure** always combines:
-
-1. Inspect before you change (status, plan, logs, dry-run)
-2. Prefer reversible, documented changes (Git, IaC, drop-ins, version pins)
-3. Capture evidence (command output, pipeline logs) for handovers
-4. Prefer current tools and APIs over legacy shortcuts
-5. Least privilege — escalate credentials only when required
-
-Keep runbooks short enough to follow under pressure. Automate checks; keep humans for judgement.
+1. **Module as API** — variables in, outputs out; hide resource implementation.
+2. **locals inside module** — encode naming standard once.
+3. **Unique module block names** — become state path segments.
+4. **README on module** — document required inputs and example call block.
+5. **Pin module source ref** — Git/registry tags for reproducible builds.
 
 ## Security Considerations
 
-
-
-
-
-
-
-- Treat credentials and tokens for terraform as privileged — never commit them
-- Prefer short-lived auth (OIDC, roles, SSO) over long-lived keys
-- Validate blast radius before apply/deploy/delete operations
-- Restrict who can approve production changes
-- Collect audit logs; limit who can read sensitive traces
+- Modules inherit provider credentials from the caller — restrict who can call prod modules.
+- Do not embed secrets in module defaults — require explicit sensitive variables.
+- Review third-party modules before enterprise adoption — supply chain risk.
+- Module outputs can leak internal IDs — expose minimum necessary fields.
+- Sign and scan module artifacts in private registries.
 
 ## Common Mistakes
 
+!!! warning "Monolithic root module"
+    Five hundred lines in `main.tf` with no modules.  
+    **Fix:** Extract repeated patterns when you copy a third time.
 
+!!! warning "Over-flexible modules"
+    Thirty variables with unclear defaults.  
+    **Fix:** Opinionated modules with sensible defaults; thin wrappers for edge cases.
 
-
-
-
-
-!!! warning "Mega-modules with unreviewable blast radius."
-    Validate assumptions against the Theory section and official docs before changing production.
-
-!!! warning "Leaking every resource as an output — callers couple to internals."
-    Lab shortcuts (open security groups, admin roles, skip approvals) must not ship unchanged.
-
-!!! warning "Changing production without a rollback path"
-    Always know how to revert (previous artefact, prior release, state rollback, DNS failback).
+!!! warning "Calling modules with unstable source"
+    `source = "../copy-of-vpc"` without version pin.  
+    **Fix:** Git ref or registry version constraint.
 
 ## Best Practices
 
-
-
-
-
-
-
-- Encode Modules — Creating Reusable Infrastructure changes as code and review them in pull requests
-- Pin versions (images, modules, actions, provider plugins)
-- Separate environments with clear promotion gates
-- Alert on symptoms with runbooks attached
-- Destroy lab resources; tag everything with owner and expiry where possible
+- One logical concern per module (service, network tier, monitoring baseline).
+- Include `versions.tf` in every module with provider constraints.
+- Write `README.md` with example usage and input table.
+- Use semantic versioning for internal module releases.
+- Test modules in isolation with `terraform validate` and example root wrappers.
 
 ## Troubleshooting
 
-
-
-
-
-
-
 | Symptom | Likely cause | Fix |
 |---------|--------------|-----|
-| Auth / permission denied | Wrong identity, policy, or scope | Check caller identity, roles, and least-privilege policies |
-| Timeout / no route | Network, DNS, security group, or endpoint | Trace path, DNS, and allow-lists before retrying |
-| Drift / unexpected plan | Manual change or wrong state/workspace | Reconcile desired vs actual; avoid click-ops on managed resources |
-| Pipeline/job red | Flaky step, cache, or missing secret | Read failing step logs; bisect recent workflow/config changes |
-| Cost spike | Idle load balancer, NAT, oversized compute | Inventory billable resources; stop/delete labs promptly |
+| `Unsupported argument` in module block | Input not declared in child | Add variable to child or remove extra arg |
+| Plan changes unrelated resources | Module source changed | Pin source ref; review module diff |
+| Provider configuration not present | Child expects alias | Pass `providers` map in module block |
+| Output is unknown after apply | Output references missing resource | Fix dependency in child module |
+| State mv needed after module refactor | Moved resource into module | `terraform state mv` into `module.name.*` |
 
 ## Summary
 
-
-
-
-
-
-
-**Modules — Creating Reusable Infrastructure** is essential for Cloud and DevOps engineers working with terraform. Practise the lab until the inspection and change path is muscle memory, then continue the track.
+Modules turn repeated Terraform into reusable, testable building blocks. You authored a **`service`** child module, called it twice from root, and traced **`module.*`** addresses in state. Next, [Registry Modules and Composition](registry-modules-and-composition.md) consumes public Registry modules and composes them with your own code.
 
 ## Interview Questions
 
+**1. What is the difference between a root module and a child module?**
 
+??? success "Reveal answer"
+    The **root module** is the working directory where you run `terraform apply`. **Child modules** are reusable packages called via `module` blocks. Every configuration has exactly one root; it may call many children. State addresses prefix child resources with `module.NAME.`.
 
+**2. How do you reference a module output in the root module?**
 
+??? success "Reveal answer"
+    Use **`module.<MODULE_NAME>.<OUTPUT_NAME>`** — for example `module.vpc.vpc_id`. Outputs must be declared in the child module's `outputs.tf`. Root outputs can re-export module outputs for remote state consumers.
 
+**3. When should you use a module versus a separate Terraform stack?**
 
-1. What problem do modules solve?
-2. How do module inputs and outputs define a contract?
-3. What should you avoid putting inside a general-purpose module?
-4. How can a poorly versioned module create blast radius across many stacks?
-5. What is the difference between a root module and a child module?
+??? success "Reveal answer"
+    **Modules** — same lifecycle, deployed together, shared state file (e.g. VPC + subnets in one apply). **Separate stacks** — independent lifecycle, different teams, different apply cadence — connect via **remote state** or data sources. Split when blast radius or ownership differs.
 
-!!! tip "Sample answer — question 2"
-    Variables declare required inputs; outputs expose selected results. A clear contract lets callers compose modules without reading every resource inside.
+**4. What module source types have you used?**
 
-!!! tip "Sample answer — question 4"
-    One module change can alter hundreds of workspaces. Version modules, changelog breaking changes, and roll out upgrades gradually with plans reviewed per environment.
+??? success "Reveal answer"
+    **Local paths** (`./modules/x`) for monorepos; **Terraform Registry** for community modules; **Git** with `?ref=` tags for internal modules; **S3/GCS** for artefact storage. Always pin versions/refs — floating `main` branch breaks reproducibility.
+
+**5. Why include versions.tf in child modules?**
+
+??? success "Reveal answer"
+    Declares **required Terraform version** and **provider constraints** so callers know compatibility before init. Prevents silent provider upgrades that change resource behaviour. Registry modules require clear version metadata.
+
+**6. What happens to resource addresses when you move code into a module?**
+
+??? success "Reveal answer"
+    Addresses gain a **`module.NAME.`** prefix. Without **`terraform state mv`**, Terraform plans destroy/create. Migration runbook: refactor code, move each resource address in state, verify empty plan.
+
+**7. How do modules interact with provider configuration?**
+
+??? success "Reveal answer"
+    Child modules **inherit** default provider configurations from the parent unless the child declares **`configuration_aliases`** and the parent passes a **`providers`** map. Required for multi-region or multi-account patterns.
+
+**8. What belongs in a module README?**
+
+??? success "Reveal answer"
+    Purpose, **example module block**, input/output tables, version compatibility, known limitations, and upgrade notes. Treat it as API documentation — consumers should not read `main.tf` to guess inputs.
 
 ## Related Tutorials
 
-
-
-
-
-
-
-- [Course overview](index.md)
-- [Registry Modules and Composition](registry-modules-and-composition.md)
+- [Terraform course index](index.md)
+- **Previous:** [Remote State and Backends](remote-state-and-backends.md)
+- **Next:** [Registry Modules and Composition](registry-modules-and-composition.md)
+- [Production Terraform Patterns](production-terraform-patterns.md)
 
 ## References
 
-
-
-
-
-
-
-- [Modules Overview](https://developer.hashicorp.com/terraform/language/modules)  
-- [Module Blocks](https://developer.hashicorp.com/terraform/language/modules/syntax)  
-- [Module Composition](https://developer.hashicorp.com/terraform/language/modules/develop/composition)
+- [Modules overview](https://developer.hashicorp.com/terraform/language/modules)
+- [Module sources](https://developer.hashicorp.com/terraform/language/modules/sources)
+- [Publishing modules](https://developer.hashicorp.com/terraform/registry/modules/publish)
+- [Module composition](https://developer.hashicorp.com/terraform/language/modules/develop/composition)

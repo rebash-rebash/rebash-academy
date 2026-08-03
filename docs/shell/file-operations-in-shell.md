@@ -176,11 +176,9 @@ grep -F 'app.conf' out/found-confs.txt
 
 #### Task 2 – Stage with `mktemp`, safe `cp`/`mv`, publish
 
-```bash
-cd ~/rebash-shell/lab09
-set -euo pipefail
+Create `publish-confs.sh`:
 
-cat > publish-confs.sh << 'EOF'
+```bash
 #!/usr/bin/env bash
 set -euo pipefail
 root="$(cd "$(dirname "$0")" && pwd)"
@@ -205,20 +203,26 @@ done < <(find ./incoming -type f -name '*.conf' -print0)
 test -f published/app-a/app.conf
 test -f published/app-b/app.conf
 grep -F 'app-a' out/published-manifest.txt
-EOF
-chmod +x publish-confs.sh
-./publish-confs.sh
 ```
 
-**Expected output:** `published/app-a/app.conf` and `published/app-b/app.conf` exist; manifest lists both mappings; temp stage directory is removed by `trap`.
-
-#### Task 3 – Optional lock with `flock` and evidence pack
+Run:
 
 ```bash
 cd ~/rebash-shell/lab09
 set -euo pipefail
 
-cat > locked-publish.sh << 'EOF'
+chmod +x publish-confs.sh
+./publish-confs.sh
+```
+
+
+**Expected output:** `published/app-a/app.conf` and `published/app-b/app.conf` exist; manifest lists both mappings; temp stage directory is removed by `trap`.
+
+#### Task 3 – Optional lock with `flock` and evidence pack
+
+Create `locked-publish.sh`:
+
+```bash
 #!/usr/bin/env bash
 set -euo pipefail
 root="$(cd "$(dirname "$0")" && pwd)"
@@ -239,7 +243,14 @@ fi
 ) 9>"$lockfile"
 
 grep -q 'lock_acquired=1' out/lock-status.txt
-EOF
+```
+
+Run:
+
+```bash
+cd ~/rebash-shell/lab09
+set -euo pipefail
+
 chmod +x locked-publish.sh
 ./locked-publish.sh
 
@@ -249,6 +260,7 @@ tar -czf out/fileops-evidence.tgz \
   published/app-a/app.conf published/app-b/app.conf
 ls -l out/fileops-evidence.tgz | tee out/evidence-ls.txt
 ```
+
 
 **Expected output:** `lock-status.txt` shows `lock_acquired=1` (or `flock_missing=1` if `flock` is unavailable); evidence archive is not empty.
 

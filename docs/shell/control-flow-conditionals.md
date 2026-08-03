@@ -169,11 +169,9 @@ Your team wants a tiny wrapper, `svcctl.sh`, for a practice app: actions `start`
 
 #### Task 1 – File and empty-string tests with if/elif/else
 
-```bash
-cd ~/rebash-shell/lab05
-set -euo pipefail
+Create `precondition.sh`:
 
-cat > precondition.sh << 'EOF'
+```bash
 #!/usr/bin/env bash
 set -euo pipefail
 
@@ -192,7 +190,13 @@ else
   printf 'error: config not found: %s\n' "$cfg" >&2
   exit 3
 fi
-EOF
+```
+
+Run:
+
+```bash
+cd ~/rebash-shell/lab05
+set -euo pipefail
 
 chmod +x precondition.sh
 
@@ -214,15 +218,14 @@ grep -q 'empty' empty.stderr
 grep -q 'not found' miss.stderr
 ```
 
+
 **Expected output:** success path writes `precheck-ok.txt`; empty path exits `2`; missing file exits `3`.
 
 #### Task 2 – case statement on CLI args
 
-```bash
-cd ~/rebash-shell/lab05
-set -euo pipefail
+Create `svcctl.sh`:
 
-cat > svcctl.sh << 'EOF'
+```bash
 #!/usr/bin/env bash
 set -euo pipefail
 
@@ -263,7 +266,13 @@ case "$action" in
 esac
 
 exit 0
-EOF
+```
+
+Run:
+
+```bash
+cd ~/rebash-shell/lab05
+set -euo pipefail
 
 chmod +x svcctl.sh
 
@@ -286,6 +295,7 @@ test "$rc_noarg" -eq 2
 grep -q 'unknown action' unknown.stderr
 grep -q 'Usage:' noarg.stderr
 ```
+
 
 **Expected output:** `start` and `status` succeed; unknown and missing-arg paths exit `2` with stderr messages.
 

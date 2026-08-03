@@ -35,7 +35,7 @@ tags:
   - troubleshooting
   - debugging
 author: Shaik Basha
-last_updated: "2026-07-31"
+last_updated: "2026-08-03"
 comments: false
 ---
 
@@ -160,92 +160,198 @@ Reproduce with a minimal job when possible. Prefer fixing root cause over `retry
 
 ### Objective
 
-Author a valid `.gitlab-ci.yml` that models **Troubleshooting GitLab CI** and validate it locally before pushing.
+Start from intentionally broken GitLab CI YAML, prove the failure with local validation, fix the configuration, and confirm the pipeline parses cleanly.
 
 ### Prerequisites
 
 - Python 3 with PyYAML (`pip install pyyaml`)
-- Optional: GitLab project to run the pipeline
+- Optional: GitLab project to observe runner-side failures
 
 ### Lab environment
 
 Workspace: `~/rebash-gitlab/module-17`
 
-File-first lab. Push to GitLab only when you want a runner to execute jobs.
+File-first lab. Broken YAML fails locally before wasting runner minutes.
 
 ```bash
 mkdir -p ~/rebash-gitlab/module-17 && cd ~/rebash-gitlab/module-17
+set -euo pipefail
 ```
 
 ### Real-world scenario
 
-Your squad is encoding **Troubleshooting GitLab CI** as CI. Reviewers reject YAML that does not parse or that skips artefacts/needs incorrectly.
+On-call receives “pipeline stuck” alerts. The first step is validating YAML and job dependencies locally — not restarting runners. You reproduce a broken config, capture the error, apply the fix, and re-validate.
 
 ### Step-by-step tasks
 
-#### Task 1 – Write pipeline YAML
+#### Task 1 – Broken pipeline (before)
 
-Stages and jobs must be explicit so MR pipelines are predictable.
+Create `.gitlab-ci.yml.broken`:
 
-```bash
-mkdir -p src && echo 'print("ok")' > src/app.py
-cat > .gitlab-ci.yml << 'EOF'
-stages: [lint, test]
+{% raw %}
+```yaml
+stages:
+  - lint
+  - test
+
 lint:
   stage: lint
   image: python:3.12-alpine
   script:
     - python -m py_compile src/app.py
+
+test:
+  stage: test
+  image: python:3.12-alpine
+  needs: [lintt]
+  script:
+    - python src/app.py
+```
+{% endraw %}
+
+Create `src/app.py`:
+
+```python
+print("ok")
+```
+
+Validate and capture the failure:
+
+```bash
+cd ~/rebash-gitlab/module-17
+set -euo pipefail
+python3 -m py_compile src/app.py
+if python3 -c "import yaml; yaml.safe_load(open('.gitlab-ci.yml.broken'))" 2>/dev/null; then
+  echo 'YAML parsed — checking needs typo'
+  grep 'needs: \[lintt\]' .gitlab-ci.yml.broken | tee before-needs.txt
+else
+  echo 'YAML parse failed' | tee before-parse.txt
+fi
+grep -q 'lintt' .gitlab-ci.yml.broken
+echo 'broken config confirmed' | tee before-status.txt
+```
+
+**Expected output:** `broken config confirmed`; typo `lintt` visible in needs.
+
+#### Task 2 – Fixed pipeline (after)
+
+Create `.gitlab-ci.yml`:
+
+{% raw %}
+```yaml
+stages:
+  - lint
+  - test
+
+lint:
+  stage: lint
+  image: python:3.12-alpine
+  script:
+    - python -m py_compile src/app.py
+
 test:
   stage: test
   image: python:3.12-alpine
   needs: [lint]
   script:
     - python src/app.py
-EOF
-python3 -c "import yaml; d=yaml.safe_load(open('.gitlab-ci.yml')); assert d['stages']==['lint','test']; print('OK', list(d))"
+  artifacts:
+    when: always
+    paths:
+      - out.txt
+    expire_in: 1 day
 ```
+{% endraw %}
 
-**Expected output:** Prints `OK` and job names; no YAML exception.
-
-#### Task 2 – Simulate the scripts locally
-
-Prove the job script works before burning runner minutes.
+Validate the fix:
 
 ```bash
+cd ~/rebash-gitlab/module-17
+set -euo pipefail
+python3 -c "
+import yaml
+d = yaml.safe_load(open('.gitlab-ci.yml'))
+assert d['test']['needs'] == ['lint']
+print('fixed gitlab-ci OK', list(d))
+"
+grep -q 'python:3.12-alpine' .gitlab-ci.yml
+! grep -q 'lintt' .gitlab-ci.yml
+```
+
+**Expected output:** `fixed gitlab-ci OK` with job keys; no `lintt` typo.
+
+#### Task 3 – Simulate job scripts locally
+
+```bash
+cd ~/rebash-gitlab/module-17
+set -euo pipefail
 python3 -m py_compile src/app.py
 python3 src/app.py | tee out.txt
 test "$(cat out.txt)" = 'ok'
+echo 'local script simulation passed' | tee after-scripts.txt
 ```
 
-**Expected output:** Compile succeeds; out.txt is `ok`.
+**Expected output:** `local script simulation passed`
+
+#### Task 4 – Before/after validation report
+
+Create `validate-fix.sh`:
+
+```bash
+#!/usr/bin/env bash
+set -euo pipefail
+grep -q 'lintt' .gitlab-ci.yml.broken
+python3 -c "import yaml; d=yaml.safe_load(open('.gitlab-ci.yml')); assert d['test']['needs']==['lint']"
+python3 src/app.py | tee out.txt
+test "$(cat out.txt)" = 'ok'
+echo 'module-17 troubleshooting lab passed'
+```
+
+Run it:
+
+```bash
+cd ~/rebash-gitlab/module-17
+set -euo pipefail
+chmod +x validate-fix.sh
+./validate-fix.sh | tee validation.txt
+```
+
+**Expected output:** `module-17 troubleshooting lab passed`
 
 ### Validation steps
 
-- [ ] `.gitlab-ci.yml` parses
-- [ ] Local script path matches job intent
+- [ ] Broken file documents the `needs` typo (`lintt`)
+- [ ] Fixed `.gitlab-ci.yml` parses; `needs: [lint]` is correct
+- [ ] Local script path matches job intent (`ok` in out.txt)
+- [ ] Pinned image `python:3.12-alpine` on both jobs
+- [ ] Before/after validator script passes
 
 ### Common errors and fixes
 
 | Error | Cause | Fix |
 |-------|-------|-----|
-| yaml.scanner.ScannerError | Indentation | Use 2-space indent; re-validate with PyYAML |
-| job stuck pending | No runner / tags | Check runner tags match job tags |
-| needs not found | Typo in job name | Align `needs` with actual job keys |
+| `needs: job not found` | Typo in job name | Match `needs` to actual job key exactly |
+| Job stuck pending | Runner tag mismatch | Align job `tags` with runner registration |
+| YAML parse error | Tabs or bad indent | Use 2-space indent; validate with PyYAML |
+| Cache miss every run | Wrong cache key | Include lockfile hash in cache key |
+| Secret in logs | Debug echo of variables | Mask variables; never print CI secrets |
 
 ### Challenge exercise
 
-Add an `artifacts:` path from lint to test and document expire_in.
+Add a third broken variant `.gitlab-ci.yml.runner-mismatch` where jobs require tag `gpu` but no runner provides it. Document the GitLab UI path to diagnose pending jobs.
 
 ### Learning outcomes
 
-- Produced reviewable GitLab CI YAML
-- Validated structure and scripts locally
+- Reproduced a realistic CI configuration failure locally
+- Fixed dependency typo and re-validated YAML structure
+- Simulated job scripts before pushing to runners
+- Built a before/after evidence trail for handover
 
 ### Cleanup
 
 ```bash
-# File-only lab — keep YAML for the next tutorial
+rm -f ~/rebash-gitlab/module-17/out.txt 2>/dev/null || true
+ls ~/rebash-gitlab/module-17
 ```
 
 ## Validation

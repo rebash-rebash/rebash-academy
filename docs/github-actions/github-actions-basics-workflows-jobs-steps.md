@@ -1,8 +1,8 @@
 ---
 title: "GitHub Actions Basics: Workflows, Jobs, and Steps"
-description: "Author your first real workflow — files, events, jobs, steps, actions, expressions, and variables."
+description: "Master workflow files, events, jobs, steps, actions, expressions, and variables — then build and validate a CI workflow locally."
 difficulty: beginner
-estimated_time: "40–55 min"
+estimated_time: "50–60 min"
 technology: github-actions
 category: github-actions
 module: "Module 2 · GitHub Actions Basics"
@@ -11,7 +11,6 @@ career_paths:
   - cloud-engineer
   - platform-engineer
   - site-reliability-engineer
-  - devsecops-engineer
 skills:
   - github-actions
   - workflows
@@ -21,396 +20,480 @@ prerequisites:
 next:
   - github-actions/github-hosted-and-self-hosted-runners
 related:
-  - git/git-workflows-and-branching
+  - git/basic-git-workflow-add-commit-push
   - github-actions/workflow-syntax-matrix-and-reusable
-labs: []
-projects: []
-interview: interview/github-actions
-certifications:
-  - GitHub Foundations
-  - GitHub Actions
 tags:
   - github-actions
   - workflows
-  - jobs
-  - steps
+  - events
+  - expressions
 author: Shaik Basha
-last_updated: "2026-07-31"
+last_updated: "2026-08-03"
 comments: false
 ---
-
 
 # GitHub Actions Basics: Workflows, Jobs, and Steps
 
 ## Overview
 
+A GitHub Actions workflow is a YAML contract: when something happens in Git, which jobs run, on which runner, in what order, with what permissions. Module 1 mapped the lifecycle; this module teaches the **building blocks** — events, jobs, steps, actions, expressions, and variables — so you can read and write production workflows confidently.
 
+Every workflow file lives under `.github/workflows/`. Events decide *when* it runs. Jobs group steps that share one runner workspace. Steps are the smallest unit — a shell command or a reusable action from the marketplace. **Expressions** (`{% raw %}${{ }}{% endraw %}`) inject context such as branch name, commit SHA, and matrix values at runtime.
 
-
-
-
-
-
-Write a working workflow that checks out code, uses an action, sets a variable, evaluates an expression, and prints useful run context — the building blocks of every later module.
-
-Workflow files live in **`.github/workflows/`**. Each file defines **`on:`** (when it runs), **`jobs:`** (what runs where), and under each job a list of **`steps:`**. Steps are either **`run:`** shell commands or **`uses:`** references to actions. **Expressions** ({% raw %}`${{ … }}`{% endraw %}) and **contexts** (`github`, `env`, `vars`, `secrets`) parameterise behaviour without hard-coding every branch name.
-
-This is a core tutorial in **Module 2 · GitHub Actions Basics** of the REBASH Academy **GitHub Actions for Cloud & DevOps Engineers** series — written for Cloud, DevOps, Platform, and SRE engineers.
+This is **Tutorial 2** in **Module 2: GitHub Actions Basics** of the REBASH Academy **GitHub Actions for Cloud & DevOps Engineers** series. By the end you will complete a `ci.yml` with checkout and shell steps, validate YAML structure offline, and understand the context objects available in expressions.
 
 ## Prerequisites
 
-
-
-
-
-
-
-
 - [CI/CD Fundamentals and GitHub Actions](cicd-fundamentals-and-github-actions.md)
-- A GitHub repository you can push to (public is fine for learning)
+- [Git basics](../git/basic-git-workflow-add-commit-push.md)
+- Python 3 with PyYAML (or `pip install pyyaml`)
+- Optional: [GitHub CLI](https://cli.github.com/) (`gh`) for optional live runs
 
 ## Learning Objectives
 
-
-
-
-
-
-
-
 By the end of this tutorial, you will be able to:
 
-- [ ] Place a workflow under `.github/workflows/` and choose events  
-- [ ] Structure jobs with `runs-on` and ordered steps  
-- [ ] Use `actions/checkout` and at least one other official action  
-- [ ] Read `github` / `env` contexts and write a simple expression  
-- [ ] Distinguish workflow `env`, job `env`, and step `env`
+- [ ] Structure a workflow file with `name`, `on`, `permissions`, `jobs`, and `steps`
+- [ ] Choose appropriate trigger events for CI versus manual operations
+- [ ] Use `actions/checkout` and `run:` steps with fail-fast shell patterns
+- [ ] Reference `github`, `env`, and `vars` context in expressions safely
+- [ ] Validate workflow YAML locally before pushing to GitHub
 
 ## Architecture
 
+Workflow files react to events; jobs execute on runners; steps call actions or shell commands; context flows into expressions.
 
-
-
-
-
-
-
-This topic’s control points and relationships are shown below.
-
-![GitHub Actions basics](../assets/excalidraw/gha-basics.svg)
+![GitHub Actions building blocks — events, jobs, steps, and actions](../assets/excalidraw/gha-basics.svg)
 
 ## Theory
 
-
-
-
-
-
-
-
 ### What it is
 
-A **workflow file** is YAML GitHub loads when events fire. Common events for application CI are `push`, `pull_request`, and `workflow_dispatch` (manual). You can filter by branches, paths, and activity types so a docs-only change does not rebuild everything.
+A **workflow** is a YAML file (`.yml` or `.yaml`) in `.github/workflows/`. Required top-level keys for most workflows:
 
-A **job** runs on one runner image (`runs-on: ubuntu-latest` is the default learning choice). Jobs in the same workflow are **independent by default** and may run in parallel; you connect them later with `needs:`. Inside a job, **steps** share a working directory and environment unless you deliberately isolate them.
+| Key | Purpose |
+|-----|---------|
+| `name` | Display name in the Actions UI |
+| `on` | Events and filters that trigger runs |
+| `jobs` | Named units of work |
+| `permissions` | Scopes for the `GITHUB_TOKEN` (recommended) |
 
-An **action** is a reusable unit published in a repository (or a local `./.github/actions/…` composite). Official actions such as `actions/checkout` and `actions/setup-node` save you from reinventing clone and toolchain setup. **Expressions** wrap dynamic values: {% raw %}`${{ github.sha }}`{% endraw %}, {% raw %}`${{ env.APP_NAME }}`{% endraw %}, conditionals such as {% raw %}`${{ github.ref == 'refs/heads/main' }}`{% endraw %}. **Variables** appear as `env:` blocks (workflow, job, or step scope) or as repository/organisation **configuration variables** (`vars.*`) set in the GitHub UI.
+A **job** runs on one runner. All steps in a job share the same workspace directory (`$GITHUB_WORKSPACE`). Jobs can depend on each other with `needs:`.
 
-| Piece | You write | Runner sees |
-|-------|-----------|-------------|
-| `on:` | Events and filters | Whether the run starts |
-| `jobs.*.runs-on` | Label set | Which machine claims the job |
-| `steps[].run` | Shell | Exit code fails the step |
-| `steps[].uses` | Action ref | Action’s entrypoint |
-| {% raw %}`${{ }}`{% endraw %} | Expression | Evaluated string/boolean |
+A **step** is either:
+
+- `run:` — shell command (default shell depends on OS: bash on Linux/macOS, pwsh on Windows)
+- `uses:` — reusable **action** (for example `actions/checkout@v4`)
+
+An **action** packages reusable logic — either from the marketplace, your organisation, or a local path (`./.github/actions/my-action`).
 
 ### Why it matters
 
-Almost every production pipeline — lint, test, Docker build, Terraform plan, Kubernetes deploy — is a composition of these primitives. Teams that skip the basics end up with copy-pasted mega-YAML, unclear `if:` conditions, and secrets leaked via `echo`. Learning scopes (`env` vs `vars` vs `secrets`), pinning action versions (`@v4` or preferably a commit SHA later), and reading the **Actions** tab logs are core DevOps skills. Pull request status checks also depend on job names staying stable so branch protection rules keep working when you refactor.
+Without a clear mental model, workflows become copy-paste soup: wrong event filters, jobs that never run, expressions that evaluate to empty strings, and secrets printed in logs. Platform teams publish **golden templates** — minimal CI, Docker build, Terraform plan — so product engineers inherit correct structure.
+
+Expressions let one workflow serve many branches and matrix combinations without duplicating files. Variables (repository, environment, organisation) separate configuration from logic — rotate a URL in Settings instead of editing YAML across fifty repositories.
 
 ### How it works
 
-1. GitHub parses the workflow and matches `on:` to the incoming event.
-2. For each eligible job, a runner starts (or is reused from a warm pool on hosted runners).
-3. Default steps often begin with checkout so the workspace contains your commit.
-4. Subsequent steps run in order; a failed step fails the job unless `continue-on-error` is set.
-5. Expressions are evaluated by the Actions runtime before the step runs; contexts such as `github`, `env`, `vars`, `secrets`, `needs`, and `matrix` supply data.
-6. Job status rolls up; required checks (configured in branch protection) block merge when red.
+**Events (`on:`)** — common triggers:
 
-For local authoring without burning minutes, write YAML first, validate structure, then push. Tools such as `actionlint` catch many mistakes before CI.
+| Event | Typical use |
+|-------|-------------|
+| `push` | CI on branch commits |
+| `pull_request` | CI on PRs (uses merge ref) |
+| `workflow_dispatch` | Manual run with optional inputs |
+| `schedule` | Cron-based jobs (UTC) |
+| `release` | Publish on GitHub Release |
+
+Filters narrow triggers:
+
+```yaml
+on:
+  push:
+    branches: [main, 'release/**']
+    paths:
+      - 'src/**'
+      - '.github/workflows/ci.yml'
+  pull_request:
+    branches: [main]
+```
+
+**Job defaults:**
+
+```yaml
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    defaults:
+      run:
+        shell: bash
+```
+
+**Expressions** wrap dynamic values. In documentation samples below, expressions are shown wrapped for MkDocs compatibility:
+
+{% raw %}
+```yaml
+- name: Show context
+  run: echo "Branch ${{ github.ref_name }} at ${{ github.sha }}"
+```
+{% endraw %}
+
+**Context objects** (most used):
+
+| Context | Examples |
+|---------|----------|
+| `github` | `github.repository`, `github.ref`, `github.event_name`, `github.sha` |
+| `env` | Variables set in `env:` blocks |
+| `vars` | Repository / organisation variables (non-secret) |
+| `secrets` | Encrypted secrets (never log) |
+| `runner` | `runner.os`, `runner.arch` |
+| `needs` | Outputs from dependent jobs |
+
+**Variables versus secrets:**
+
+| Type | Storage | Visible in logs? |
+|------|---------|------------------|
+| `vars.*` | Settings → Variables | Yes (non-sensitive config) |
+| `secrets.*` | Settings → Secrets | No (masked when possible) |
+| `env:` in workflow | YAML / runtime | Depends — do not put secrets in plain `env` |
 
 ### Key concepts and comparisons
 
-| Scope | Keyword | Visibility |
-|-------|---------|------------|
-| Workflow | top-level `env:` | All jobs |
-| Job | `jobs.<id>.env` | All steps in that job |
-| Step | `steps[].env` | That step only |
-| Repo/org config | `vars.NAME` | Non-secret settings from UI |
-| Secrets | `secrets.NAME` | Sensitive; never print |
+| Pattern | When to use |
+|---------|-------------|
+| Single job CI | Small repos; lint + test in one runner |
+| Multi-job CI | Separate lint, test, build for clearer failures and parallelism |
+| `needs:` chain | Test only after lint passes; deploy only after test |
+| `if:` on job/step | Skip deploy on fork PRs; run only on `main` |
 
-| `run:` | `uses:` |
-|--------|---------|
-| Inline shell you own | Shared action logic |
-| Good for one-liners and repo scripts | Good for checkout, setup-*, marketplace tools |
-
-**Concurrency note:** multiple pushes can start overlapping runs; later modules cover `concurrency:` groups. For now, know that the newest commit is not always the only run still executing.
+| `run:` vs `uses:` | |
+|-------------------|---|
+| `run:` | Custom shell logic; full control |
+| `uses:` | Pin community or internal reusable steps |
 
 ### Common pitfalls
 
-- Putting workflow files outside `.github/workflows/` — GitHub will ignore them.
-- Using `master` in filters when the default branch is `main`.
-- Forgetting `actions/checkout` then wondering why files are missing.
-- Printing {% raw %}`${{ secrets.* }}`{% endraw %} “to debug” — logs may redact, but exfiltration is still possible.
-- Treating `@v4` as immutable forever — tags can move; production often pins SHAs.
-- Confusing job-level failure with workflow cancellation of sibling jobs (default: other jobs still run).
+- **`pull_request` vs `pull_request_target`** — the latter runs with base branch context and elevated risk for forks; avoid unless you understand the security model.
+- **Missing checkout** — the runner workspace starts empty; most jobs need `actions/checkout` first.
+- **Expression syntax** — use `{% raw %}${{ }}{% endraw %}` inside YAML strings; compare with `{% raw %}${{ github.ref == 'refs/heads/main' }}{% endraw %}` not shell `==` alone in `if:`.
+- **Unpinned actions** — `@main` moves; pin `@v4` or a commit SHA.
+- **Wrong shell** — multiline scripts need `set -euo pipefail` in bash for fail-fast behaviour.
 
 ## Hands-on Lab
 
-
-
 ### Objective
 
-Author a GitHub Actions workflow that implements **GitHub Actions Basics: Workflows, Jobs, and Steps** and validate YAML structure locally.
+Complete `.github/workflows/ci.yml` with checkout, environment variables, a context-aware shell step, and offline YAML validation under `~/rebash-github-actions/module-02`.
 
 ### Prerequisites
 
+- Completed Module 1 lab or equivalent
 - Python 3 with PyYAML
-- Optional: GitHub repo to run the workflow
+- Bash
 
 ### Lab environment
 
-Workspace: `~/rebash-github-actions/module-02/.github/workflows`
-
-Workflows under `.github/workflows/`. In docs, wrap GitHub Actions expressions in Jinja raw blocks so MkDocs macros do not parse them; use heredocs in the lab.
-
 ```bash
-mkdir -p ~/rebash-github-actions/module-02/.github/workflows && cd ~/rebash-github-actions/module-02/.github/workflows
+mkdir -p ~/rebash-github-actions/module-02 && cd ~/rebash-github-actions/module-02
+set -euo pipefail
 ```
 
 ### Real-world scenario
 
-Platform engineering wants **GitHub Actions Basics: Workflows, Jobs, and Steps** as a reusable workflow pattern. You prototype YAML that passes review and runs on `ubuntu-latest`.
+Your team’s first production workflow must run on every pull request to `main`, checkout code, print the commit context, run unit tests from a stub script, and fail if tests fail — all reviewable in YAML before the first push.
 
 ### Step-by-step tasks
 
-#### Task 1 – Create workflow file
+#### Task 1 – Create project layout and stub test script
 
-Jobs and steps must be explicit; pin mainstream actions.
+Create the directory layout, then add the test script and README.
 
 ```bash
-mkdir -p .github/workflows
-cat > .github/workflows/lab.yml << 'EOF'
-name: lab
+cd ~/rebash-github-actions/module-02
+set -euo pipefail
+mkdir -p demo-app/tests .github/workflows
+```
+
+Create `demo-app/tests/run-tests.sh`:
+
+```bash
+#!/usr/bin/env bash
+set -euo pipefail
+echo "Running stub unit tests..."
+test -f ../README.md || { echo "README missing"; exit 1; }
+echo "ALL TESTS PASSED"
+```
+
+Create `demo-app/README.md`:
+
+````markdown
+# Demo app for Module 2 CI lab
+
+Minimal fixture used by the CI workflow stub. Run tests locally:
+
+```bash
+cd demo-app/tests && ./run-tests.sh
+```
+````
+
+Run and verify:
+
+```bash
+cd ~/rebash-github-actions/module-02
+chmod +x demo-app/tests/run-tests.sh
+test -x demo-app/tests/run-tests.sh
+grep -q 'ALL TESTS PASSED' demo-app/tests/run-tests.sh
+```
+
+**Expected output:** Script is executable; grep succeeds.
+
+#### Task 2 – Write the CI workflow
+
+Create `.github/workflows/ci.yml`:
+
+{% raw %}
+```yaml
+name: Module 2 CI
 on:
-  workflow_dispatch:
+  pull_request:
+    branches: [main]
   push:
+    branches: [main]
+  workflow_dispatch:
+
 permissions:
   contents: read
+
+env:
+  APP_NAME: rebash-demo
+
 jobs:
-  build:
+  ci:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - name: Prove workspace
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Show context
+        env:
+          REF_NAME: ${{ github.ref_name }}
+          SHA_SHORT: ${{ github.sha }}
         run: |
-          mkdir -p out
-          echo ok > out/marker.txt
-          test -s out/marker.txt
-EOF
-python3 -c "import yaml; yaml.safe_load(open('.github/workflows/lab.yml')); print('workflow OK')"
+          set -euo pipefail
+          echo "Repository: ${{ github.repository }}"
+          echo "Event: ${{ github.event_name }}"
+          echo "Ref: ${REF_NAME}"
+          echo "SHA: ${SHA_SHORT:0:7}"
+          echo "${{ env.APP_NAME }}" > context.txt
+          test -s context.txt
+
+      - name: Run tests
+        working-directory: demo-app/tests
+        run: |
+          set -euo pipefail
+          ./run-tests.sh | tee test-output.txt
+          grep -q 'ALL TESTS PASSED' test-output.txt
 ```
+{% endraw %}
 
-**Expected output:** `workflow OK` printed; file exists under `.github/workflows/`.
-
-#### Task 2 – Dry-run the shell steps locally
-
-The `run:` block should work in a normal shell before CI.
+Validate offline:
 
 ```bash
-mkdir -p out && echo ok > out/marker.txt
-test -s out/marker.txt && cat out/marker.txt
+cd ~/rebash-github-actions/module-02
+set -euo pipefail
+grep -q 'actions/checkout@v4' .github/workflows/ci.yml
+grep -q 'github.ref_name' .github/workflows/ci.yml
+grep -q 'working-directory: demo-app/tests' .github/workflows/ci.yml
 ```
 
-**Expected output:** Prints `ok`.
+**Expected output:** All greps succeed.
+
+#### Task 3 – Validate YAML structure
+
+```bash
+cd ~/rebash-github-actions/module-02
+set -euo pipefail
+python3 -c "
+import yaml
+with open('.github/workflows/ci.yml') as f:
+    doc = yaml.safe_load(f)
+assert doc['name'] == 'Module 2 CI'
+assert 'pull_request' in doc['on']
+assert 'ci' in doc['jobs']
+steps = doc['jobs']['ci']['steps']
+assert any('checkout' in s.get('uses', '').lower() for s in steps)
+assert doc['permissions']['contents'] == 'read'
+print('structure OK')
+"
+```
+
+**Expected output:** `structure OK`
+
+#### Task 4 – Simulate workflow shell steps locally
+
+```bash
+cd ~/rebash-github-actions/module-02
+set -euo pipefail
+
+export APP_NAME=rebash-demo
+echo "${APP_NAME}" > context.txt
+test -s context.txt
+grep -q 'rebash-demo' context.txt
+
+cd demo-app/tests
+./run-tests.sh | tee ../../test-output.txt
+grep -q 'ALL TESTS PASSED' ../../test-output.txt
+echo "local simulation OK"
+```
+
+**Expected output:** `local simulation OK`
+
+**Optional — run on GitHub:**
+
+```bash
+# gh workflow run ci.yml
+# gh run watch
+```
 
 ### Validation steps
 
-- [ ] Workflow YAML parses
-- [ ] Local run steps succeed
+- [ ] `demo-app/tests/run-tests.sh` exits 0 locally
+- [ ] `.github/workflows/ci.yml` passes Python structure asserts
+- [ ] Workflow contains checkout, context step, and test step
+- [ ] `permissions: contents: read` is set
+- [ ] `context.txt` and `test-output.txt` prove local simulation
 
 ### Common errors and fixes
 
 | Error | Cause | Fix |
 |-------|-------|-----|
-| Invalid workflow file | YAML/indent | Validate with PyYAML / actionlint |
-| Action not found | Bad uses ref | Pin `actions/checkout@v4` |
-| Permission denied | Missing permissions/OIDC | Set least-privilege `permissions:` |
+| `yaml.scanner.ScannerError` | Tab characters in YAML | Replace tabs with spaces (2-space indent) |
+| Tests fail — README missing | Wrong working directory | Use `working-directory: demo-app/tests` or adjust path |
+| Expression literal in log | Forgot expression syntax | Use `{% raw %}${{ github.ref_name }}{% endraw %}` in YAML, not `$GITHUB_REF_NAME` alone in `env:` mapping |
+| Action not found | Typo in `uses:` | Pin `actions/checkout@v4` exactly |
 
 ### Challenge exercise
 
-Add a second job with `needs: build` that uploads `out/` as an artefact (YAML only is fine offline).
+Add a job `lint` that runs before `ci` using `needs:` — the lint job echoes "lint ok" and writes `lint-passed.txt`. Update structure validation to assert two jobs and the `needs` relationship.
 
 ### Learning outcomes
 
-- Created a real workflow file
-- Validated structure before push
+- Created a multi-step CI workflow with checkout and shell steps
+- Used `github` context and `env` in expressions
+- Validated YAML structure with Python asserts
+- Simulated runner steps locally without a GitHub push
 
 ### Cleanup
 
 ```bash
-# Keep workflow stubs under ~/rebash-github-actions/
+# Retain ~/rebash-github-actions/module-02 for Module 3+
+# rm -f context.txt test-output.txt  # optional
 ```
 
 ## Validation
 
-
-
-
-
-
-
-
-- [ ] Lab commands run under `~/rebash-github-actions/module-02/.github/workflows/`
-- [ ] You can explain each Theory section in your own words
-- [ ] You used modern tooling where it applies to this topic
-- [ ] You can describe one production failure mode for this topic
+- [ ] Lab completed under `~/rebash-github-actions/module-02/`
+- [ ] You can name five `github.*` context properties and their purpose
+- [ ] You can explain when to use `vars` versus `secrets`
+- [ ] You can describe what happens if checkout is omitted
 
 ## Code Walkthrough
 
-
-
-
-
-
-
-
-Production practice for **GitHub Actions Basics: Workflows, Jobs, and Steps** always combines:
-
-1. Inspect before you change (status, plan, logs, dry-run)
-2. Prefer reversible, documented changes (Git, IaC, drop-ins, version pins)
-3. Capture evidence (command output, pipeline logs) for handovers
-4. Prefer current tools and APIs over legacy shortcuts
-5. Least privilege — escalate credentials only when required
-
-Keep runbooks short enough to follow under pressure. Automate checks; keep humans for judgement.
+1. **Start with triggers** — match `on:` to the feedback loop you want (PR for CI, dispatch for ops).
+2. **Set permissions first** — default read-only; add scopes per job if needed.
+3. **Checkout early** — first step in almost every build job.
+4. **Fail fast in shell** — `set -euo pipefail` and explicit `test`/`grep` asserts.
+5. **Pin actions** — `@v4` minimum; commit SHA for highest supply-chain assurance.
 
 ## Security Considerations
 
-
-
-
-
-
-
-
-- Treat credentials and tokens for github-actions as privileged — never commit them
-- Prefer short-lived auth (OIDC, roles, SSO) over long-lived keys
-- Validate blast radius before apply/deploy/delete operations
-- Restrict who can approve production changes
-- Collect audit logs; limit who can read sensitive traces
+- Use `pull_request` for external contributions; avoid `pull_request_target` unless you need base-branch secrets and accept the risk model.
+- Never echo `secrets.*` or mask bypass patterns; GitHub masks known secrets but custom encoding can leak.
+- Restrict `workflow_dispatch` inputs — validate and sanitise before use in shell commands.
+- Limit `permissions:` — `contents: read` suffices for most CI jobs.
+- Review third-party actions — prefer verified creators and pinned versions.
 
 ## Common Mistakes
 
+!!! warning "Forgetting actions/checkout"
+    The runner workspace is empty at job start. **Fix:** Add `uses: actions/checkout@v4` before steps that read repository files.
 
+!!! warning "Using shell syntax inside expressions"
+    `if: github.ref == 'refs/heads/main'` is expression syntax; `if: [ "$(git branch)" = main ]` in the wrong field fails silently or skips unexpectedly. **Fix:** Use `{% raw %}${{ }}{% endraw %}` expressions in `if:`, `env:`, and `with:` — shell logic inside `run:` only.
 
-
-
-
-
-
-!!! warning "Putting workflow files outside `.github/workflows/` — GitHub will ignore them."
-    Validate assumptions against the Theory section and official docs before changing production.
-
-!!! warning "Using `master` in filters when the default branch is `main`."
-    Lab shortcuts (open security groups, admin roles, skip approvals) must not ship unchanged.
-
-!!! warning "Changing production without a rollback path"
-    Always know how to revert (previous artefact, prior release, state rollback, DNS failback).
+!!! warning "Pinning actions to a moving branch"
+    `@main` can change without notice. **Fix:** Pin major version tags or full commit SHAs.
 
 ## Best Practices
 
-
-
-
-
-
-
-
-- Encode GitHub Actions Basics: Workflows, Jobs, and Steps changes as code and review them in pull requests
-- Pin versions (images, modules, actions, provider plugins)
-- Separate environments with clear promotion gates
-- Alert on symptoms with runbooks attached
-- Destroy lab resources; tag everything with owner and expiry where possible
+- One workflow file per concern (CI, release, deploy) when triggers and permissions differ.
+- Use `env:` at workflow or job level for shared non-secret configuration.
+- Name steps clearly — logs become searchable incident evidence.
+- Add `timeout-minutes` on long jobs to avoid hung runners consuming quota.
+- Validate YAML in CI with `actionlint` or Python before merge.
 
 ## Troubleshooting
 
-
-
-
-
-
-
-
 | Symptom | Likely cause | Fix |
 |---------|--------------|-----|
-| Auth / permission denied | Wrong identity, policy, or scope | Check caller identity, roles, and least-privilege policies |
-| Timeout / no route | Network, DNS, security group, or endpoint | Trace path, DNS, and allow-lists before retrying |
-| Drift / unexpected plan | Manual change or wrong state/workspace | Reconcile desired vs actual; avoid click-ops on managed resources |
-| Pipeline/job red | Flaky step, cache, or missing secret | Read failing step logs; bisect recent workflow/config changes |
-| Cost spike | Idle load balancer, NAT, oversized compute | Inventory billable resources; stop/delete labs promptly |
+| Workflow not triggered on PR | PR targets wrong branch or path filter excludes files | Check `on.pull_request.branches` and `paths` |
+| Expression shows empty | Wrong context property or typo | Compare with [contexts reference](https://docs.github.com/en/actions/learn-github-actions/contexts) |
+| Step cannot find file | Missing checkout or wrong `working-directory` | Add checkout; set path relative to workspace root |
+| `Permission denied` pushing tags | Token lacks `contents: write` | Add scoped permissions only on the job that needs write |
+| Fork PR secrets missing | Expected — secrets not exposed to fork workflows | Use `pull_request` workflows without secrets or use approval gates |
 
 ## Summary
 
-
-
-
-
-
-
-
-**GitHub Actions Basics: Workflows, Jobs, and Steps** is essential for Cloud and DevOps engineers working with github-actions. Practise the lab until the inspection and change path is muscle memory, then continue the track.
+Workflows combine **events**, **jobs**, **steps**, and **actions** with **expressions** for dynamic behaviour. Module 2’s lab gives you a validated CI skeleton. Next, [GitHub-hosted and Self-hosted Runners](github-hosted-and-self-hosted-runners.md) explains where those jobs actually execute.
 
 ## Interview Questions
 
+**1. What is the difference between a job and a step?**
 
+??? success "Reveal answer"
+    A **job** is a logical unit scheduled on one runner — all its steps share the same workspace and runner environment. A **step** is a single action within that job: either a `run:` shell command or a `uses:` action. Jobs can run in parallel (unless linked by `needs:`); steps within a job run sequentially.
 
+**2. When would you use `workflow_dispatch` inputs?**
 
+??? success "Reveal answer"
+    Manual operations that need parameters: choosing an environment, specifying a version tag, or rerunning a deploy for a particular artefact. Inputs appear in the Actions UI when triggering manually. Validate inputs in the workflow before passing them to shell commands to avoid injection.
 
+**3. Explain `github.ref` versus `github.ref_name`.**
 
-1. How do needs and job outputs pass data between jobs?
-2. Why might a step that works locally fail in Actions?
-3. What is GITHUB_OUTPUT used for?
-4. How can overly broad permissions write-all hurt you?
-5. When should jobs be split versus one large job?
+??? success "Reveal answer"
+    `github.ref` is the full ref (for example `refs/heads/main` or `refs/pull/42/merge`). `github.ref_name` is the short name (`main` or `42/merge`). Use `ref_name` for display and simple branch comparisons; use full `ref` when comparing against `refs/heads/*` patterns in expressions.
 
-!!! tip "Sample answer — question 2"
-    Confirm the upstream job published outputs, the downstream job declares needs, and expression syntax matches. Also check runner OS path differences.
+**4. Why pin `actions/checkout@v4` instead of `@main`?**
 
-!!! tip "Sample answer — question 4"
-    Least-privilege tokens limit blast radius if a supply-chain step is compromised.
+??? success "Reveal answer"
+    `@main` is a moving target — the action author can push breaking changes without your review. `@v4` pins to a major version line that receives compatible fixes. For highest assurance, pin the full commit SHA. Supply-chain attacks on popular actions make pinning a production requirement.
+
+**5. What permissions does a typical read-only CI job need?**
+
+??? success "Reveal answer"
+    `permissions: contents: read` at workflow or job level. That allows checkout and reading repository contents. Add `pull-requests: read` if using the API for PR comments. Avoid granting `write` scopes unless a step publishes packages, creates releases, or pushes commits.
+
+**6. How do repository variables differ from secrets?**
+
+??? success "Reveal answer"
+    **Variables** (`vars.*`) store non-sensitive configuration — API base URLs, feature flags, environment names. They appear in logs. **Secrets** store credentials and tokens; GitHub masks them in logs when possible. Use variables for config you want visible in debugging; secrets for anything that grants access.
+
+**7. A step runs but the job shows success despite test failures — why?**
+
+??? success "Reveal answer"
+    The shell step likely did not propagate exit codes — perhaps a piped command (`cmd | tee`) where only `tee`'s exit code counts, or missing `set -e`. **Fix:** Use `set -euo pipefail`, append `| tee` carefully with `pipefail`, or use explicit `test`/`grep -q` asserts that exit non-zero on failure.
 
 ## Related Tutorials
 
-
-
-
-
-
-
-
-- [Course overview](index.md)
-- [GitHub-Hosted and Self-Hosted Runners](github-hosted-and-self-hosted-runners.md)
+- [CI/CD Fundamentals and GitHub Actions](cicd-fundamentals-and-github-actions.md)
+- [GitHub-hosted and Self-hosted Runners](github-hosted-and-self-hosted-runners.md)
+- [Workflow Syntax: Matrix and Reusable Workflows](workflow-syntax-matrix-and-reusable.md)
 
 ## References
 
-
-
-
-
-
-
-
-- [Workflow syntax for GitHub Actions](https://docs.github.com/en/actions/using-workflows/workflow-syntax-for-github-actions)  
-- [Contexts and expressions](https://docs.github.com/en/actions/learn-github-actions/contexts)  
-- [Essential features of GitHub Actions](https://docs.github.com/en/actions/learn-github-actions/essential-features-of-github-actions)
+- [Workflow syntax for GitHub Actions](https://docs.github.com/en/actions/using-workflows/workflow-syntax-for-github-actions)
+- [Contexts reference](https://docs.github.com/en/actions/learn-github-actions/contexts)
+- [Expressions reference](https://docs.github.com/en/actions/learn-github-actions/expressions)
+- [Metadata syntax for GitHub Actions](https://docs.github.com/en/actions/creating-actions/metadata-syntax-for-github-actions)
+- [actions/checkout](https://github.com/actions/checkout)

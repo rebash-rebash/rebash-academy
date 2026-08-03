@@ -31,7 +31,7 @@ tags:
   - security
   - oci
 author: Shaik Basha
-last_updated: "2026-07-31"
+last_updated: "2026-08-03"
 comments: false
 ---
 
@@ -145,89 +145,286 @@ Security is layered: a signed chart that still embeds a default admin password i
 
 ### Objective
 
-Create, lint, render, install, and uninstall a Helm chart demonstrating **Helm Security**.
+Build a hardened chart with non-root `securityContext`, an external secret reference (no plaintext credentials in values), least-privilege RBAC, and rendered-manifest proof.
 
 ### Prerequisites
 
-- helm CLI
-- kubectl + lab cluster
-- Ability to create namespaces
+- Helm 3 CLI and kubectl configured for a lab cluster
+- Basic understanding of Pod Security and RBAC
 
 ### Lab environment
 
 Workspace: `~/rebash-helm/module-09`
 
-Helm 3 against kind/minikube; release namespace `rebash-helm`.
+Helm 3 against kind/minikube; release namespace `rebash-helm-m09`.
 
 ```bash
-mkdir -p ~/rebash-helm/module-09 && cd ~/rebash-helm/module-09
+mkdir -p ~/rebash-helm/module-09/secure-chart/templates && cd ~/rebash-helm/module-09
 ```
 
 ### Real-world scenario
 
-A team wants **Helm Security** packaged as a chart so GitOps can promote the same artefact across environments.
+Security review flagged a chart that ran as root and embedded database passwords in `values.yaml`. You must refactor the chart to run non-root, reference secrets created outside Helm, and scope the workload ServiceAccount with namespace RBAC.
 
 ### Step-by-step tasks
 
-#### Task 1 – Create and lint a chart
+#### Task 1 – Create values and templates with securityContext
 
-Scaffold a chart and fail the build on lint errors before install.
+Create `secure-chart/Chart.yaml`:
 
-```bash
-helm version
-helm create labchart
-helm lint ./labchart | tee lint.txt
-helm template labchart ./labchart | egrep '^kind:' | sort | uniq -c | tee kinds.txt
+```yaml
+apiVersion: v2
+name: secure-chart
+description: Lab chart for Helm security baseline
+type: application
+version: 0.1.0
+appVersion: "1.27.4"
 ```
 
-**Expected output:** lint reports no failures; kinds.txt lists Deployment/Service/etc.
+Create `secure-chart/values.yaml`:
 
-#### Task 2 – Install with values override
-
-Prove values change rendered replicas, then install with wait.
-
-```bash
-kubectl create namespace rebash-helm --dry-run=client -o yaml | kubectl apply -f -
-cat > myvalues.yaml << 'EOF'
-replicaCount: 2
-EOF
-helm template labchart ./labchart -f myvalues.yaml | egrep 'replicas:' | head
-helm upgrade --install labchart ./labchart -n rebash-helm -f myvalues.yaml --wait --timeout 2m
-helm list -n rebash-helm
-kubectl get deploy -n rebash-helm
+```yaml
+replicaCount: 1
+image:
+  repository: nginx
+  tag: "1.27.4-alpine"
+serviceAccount:
+  create: true
+  name: ""
+securityContext:
+  runAsNonRoot: true
+  runAsUser: 101
+  allowPrivilegeEscalation: false
+  readOnlyRootFilesystem: false
+externalSecret:
+  enabled: true
+  secretName: app-db-credentials
+  # Password supplied outside the chart — never commit plaintext here
 ```
 
-**Expected output:** Release deployed; Deployment shows 2 replicas (or Ready pods).
+Create `secure-chart/templates/serviceaccount.yaml`:
+
+```yaml
+{% raw %}
+{{- if .Values.serviceAccount.create }}
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: {{ include "secure-chart.fullname" . }}
+  labels:
+    app.kubernetes.io/name: {{ .Chart.Name }}
+    app.kubernetes.io/instance: {{ .Release.Name }}
+{{- end }}
+{% endraw %}
+```
+
+Create `secure-chart/templates/_helpers.tpl`:
+
+```yaml
+{% raw %}
+{{- define "secure-chart.fullname" -}}
+{{- printf "%s-%s" .Release.Name .Chart.Name | trunc 63 | trimSuffix "-" -}}
+{{- end -}}
+{% endraw %}
+```
+
+Create `secure-chart/templates/role.yaml`:
+
+```yaml
+{% raw %}
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: {{ include "secure-chart.fullname" . }}-reader
+rules:
+  - apiGroups: [""]
+    resources: ["pods"]
+    verbs: ["get", "list"]
+{% endraw %}
+```
+
+Create `secure-chart/templates/rolebinding.yaml`:
+
+```yaml
+{% raw %}
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: {{ include "secure-chart.fullname" . }}-reader
+subjects:
+  - kind: ServiceAccount
+    name: {{ include "secure-chart.fullname" . }}
+    namespace: {{ .Release.Namespace }}
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: {{ include "secure-chart.fullname" . }}-reader
+{% endraw %}
+```
+
+Create `secure-chart/templates/deployment.yaml`:
+
+```yaml
+{% raw %}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "secure-chart.fullname" . }}
+  labels:
+    app.kubernetes.io/name: {{ .Chart.Name }}
+    app.kubernetes.io/instance: {{ .Release.Name }}
+spec:
+  replicas: {{ .Values.replicaCount }}
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: {{ .Chart.Name }}
+      app.kubernetes.io/instance: {{ .Release.Name }}
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: {{ .Chart.Name }}
+        app.kubernetes.io/instance: {{ .Release.Name }}
+    spec:
+      serviceAccountName: {{ include "secure-chart.fullname" . }}
+      securityContext:
+        runAsNonRoot: {{ .Values.securityContext.runAsNonRoot }}
+        runAsUser: {{ .Values.securityContext.runAsUser }}
+      containers:
+        - name: web
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+          securityContext:
+            allowPrivilegeEscalation: {{ .Values.securityContext.allowPrivilegeEscalation }}
+            readOnlyRootFilesystem: {{ .Values.securityContext.readOnlyRootFilesystem }}
+          {{- if .Values.externalSecret.enabled }}
+          env:
+            - name: DB_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.externalSecret.secretName }}
+                  key: password
+          {{- end }}
+          ports:
+            - containerPort: 80
+{% endraw %}
+```
+
+Prove security settings in rendered output (offline):
+
+```bash
+cd ~/rebash-helm/module-09
+helm lint ./secure-chart | tee lint.txt
+helm template secure-demo ./secure-chart 2>&1 | tee render.txt
+grep -q 'runAsNonRoot: true' render.txt
+grep -q 'runAsUser: 101' render.txt
+grep -q 'kind: ServiceAccount' render.txt
+grep -q 'kind: Role' render.txt
+grep -q 'secretKeyRef' render.txt
+grep -qv 'password: changeme' render.txt
+grep -q '0 chart(s) failed' lint.txt
+```
+
+**Expected output:** Rendered manifest includes non-root context, RBAC objects, and a `secretKeyRef` — no plaintext password in values or render output.
+
+#### Task 2 – Create the external Secret and install
+
+Create the Secret outside the chart (simulating external-secrets or sealed secrets):
+
+Create `external-secret.yaml`:
+
+```yaml
+apiVersion: v1
+kind: Secret
+metadata:
+  name: app-db-credentials
+  namespace: rebash-helm-m09
+type: Opaque
+stringData:
+  password: lab-only-not-for-git
+```
+
+Install and verify RBAC bindings:
+
+```bash
+kubectl create namespace rebash-helm-m09 --dry-run=client -o yaml | kubectl apply -f -
+kubectl apply -f external-secret.yaml
+helm upgrade --install secure-demo ./secure-chart \
+  -n rebash-helm-m09 --wait --timeout 3m | tee install.txt
+kubectl get sa,role,rolebinding -n rebash-helm-m09 | tee rbac.txt
+kubectl get deploy -n rebash-helm-m09 -o jsonpath='{.items[0].spec.template.spec.securityContext.runAsUser}{"\n"}' | tee run-as.txt
+grep -q '101' run-as.txt
+grep -q 'secure-demo-secure-chart' rbac.txt
+```
+
+**Expected output:** ServiceAccount, Role, and RoleBinding exist; Deployment runs as UID 101.
 
 ### Validation steps
 
-- [ ] helm lint clean
-- [ ] Release listed in namespace
-- [ ] Uninstall removes the release
+- [ ] Rendered manifest shows `runAsNonRoot: true` and pinned image tag
+- [ ] No plaintext password appears in `values.yaml` or rendered YAML
+- [ ] ServiceAccount, Role, and RoleBinding are created in the namespace
+- [ ] External Secret is referenced via `secretKeyRef`, not embedded in values
 
 ### Common errors and fixes
 
 | Error | Cause | Fix |
 |-------|-------|-----|
-| PENDING_INSTALL | Image pull / probes | `helm status` + `kubectl describe` |
-| lint failed | Template YAML break | Fix templates; re-run helm lint |
-| context deadline | Slow cluster | Increase --timeout or fix readiness |
+| Pod `CreateContainerConfigError` | External Secret missing | Create `app-db-credentials` before install or disable `externalSecret.enabled` for render-only practice |
+| `runAsNonRoot` violation | Image expects root | Use an image that supports non-root (nginx official image UID 101) |
+| RBAC denied at runtime | Role too broad or missing binding | Confirm RoleBinding subject matches ServiceAccount name |
+| Secret in Git history | Password committed to values | Rotate secret; use sealed-secrets or external-secrets operator in production |
 
 ### Challenge exercise
 
-Add a ConfigMap template driven by values and prove it with `helm get manifest`.
+Add a `networkPolicy` template stub (disabled by default) and a values flag `networkPolicy.enabled`. Render with the flag enabled and prove the NetworkPolicy appears:
+
+Create `networkpolicy.yaml` in `secure-chart/templates/`:
+
+```yaml
+{% raw %}
+{{- if .Values.networkPolicy.enabled }}
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: {{ include "secure-chart.fullname" . }}
+spec:
+  podSelector:
+    matchLabels:
+      app.kubernetes.io/name: {{ .Chart.Name }}
+  policyTypes:
+    - Ingress
+  ingress:
+    - from:
+        - podSelector: {}
+{{- end }}
+{% endraw %}
+```
+
+Add to `values.yaml`:
+
+```yaml
+networkPolicy:
+  enabled: false
+```
+
+```bash
+cd ~/rebash-helm/module-09
+helm template secure-demo ./secure-chart --set networkPolicy.enabled=true | grep -q 'kind: NetworkPolicy'
+```
+
+**Expected output:** Render includes a NetworkPolicy when the flag is enabled.
 
 ### Learning outcomes
 
-- Packaged Kubernetes YAML as a chart
-- Overrode values safely
-- Cleaned up the release
+- Applied non-root `securityContext` through values and templates
+- Referenced secrets externally instead of embedding credentials in values
+- Scoped workload identity with ServiceAccount and namespace RBAC
+- Validated security posture from rendered manifests before install
 
 ### Cleanup
 
 ```bash
-helm uninstall labchart -n rebash-helm 2>/dev/null || true
-kubectl delete namespace rebash-helm --ignore-not-found
+helm uninstall secure-demo -n rebash-helm-m09 2>/dev/null || true
+kubectl delete namespace rebash-helm-m09 --ignore-not-found
 ```
 
 ## Validation
@@ -239,9 +436,9 @@ kubectl delete namespace rebash-helm --ignore-not-found
 
 
 - [ ] Lab commands run under `~/rebash-helm/module-09/`
-- [ ] You can explain each Theory section in your own words
-- [ ] You used modern tooling where it applies to this topic
-- [ ] You can describe one production failure mode for this topic
+- [ ] You proved non-root securityContext and RBAC in rendered manifests
+- [ ] No plaintext credentials appear in values or rendered YAML
+- [ ] You can describe one production failure mode for Helm security
 
 ## Code Walkthrough
 

@@ -1,6 +1,6 @@
 ---
 title: "Testing in GitHub Actions"
-description: "Run unit, integration, smoke, and end-to-end tests in GitHub Actions — matrix parallelism, artefacts, and quality gates that block merge."
+description: "Run unit, integration, and end-to-end tests in GitHub Actions with parallel matrix jobs, artefacts, and quality gates."
 difficulty: intermediate
 estimated_time: "45–60 min"
 technology: github-actions
@@ -8,14 +8,13 @@ category: github-actions
 module: "Module 12 · Testing"
 career_paths:
   - devops-engineer
-  - cloud-engineer
+  - software-engineer
   - platform-engineer
   - site-reliability-engineer
-  - devsecops-engineer
 skills:
   - github-actions
   - testing
-  - quality-gates
+  - ci
   - matrix
 prerequisites:
   - github-actions/security-scanning-and-supply-chain
@@ -23,381 +22,431 @@ next:
   - github-actions/release-management-and-versioning
 related:
   - github-actions/artifacts-and-caching
-  - github-actions/workflow-syntax-matrix-and-reusable
-labs: []
-projects: []
-interview: interview/github-actions
-certifications:
-  - GitHub Actions
+  - jenkins/testing-reports-and-quality-gates
 tags:
   - github-actions
   - testing
   - matrix
-  - quality-gates
+  - e2e
+  - unit-tests
 author: Shaik Basha
-last_updated: "2026-07-31"
+last_updated: "2026-08-03"
 comments: false
 ---
-
 
 # Testing in GitHub Actions
 
 ## Overview
 
+Continuous Integration (CI) without tests is packaging, not integration. GitHub Actions runs **unit**, **integration**, and **end-to-end (E2E)** jobs — often in **parallel matrix** builds across language versions or browsers — and fails the workflow before deploy when quality gates break.
 
-
-
-
-
-
-
-Design a test pyramid in GitHub Actions with unit, integration, smoke, and end-to-end (e2e) jobs, parallel matrix execution, and quality gates that fail the workflow when thresholds are missed.
-
-Tests are the cheapest production incident you never ship. GitHub Actions runs **unit**, **integration**, **smoke**, and selective **e2e** jobs on pull requests; publishes reports as artefacts; and enforces **quality gates** so red tests block merge. A **matrix** fans the same job across runtimes or shards so feedback stays fast as the suite grows.
-
-This is a core tutorial in **Module 12 · Testing** of the REBASH Academy **GitHub Actions for Cloud & DevOps Engineers** series — written for Cloud, DevOps, Platform, and SRE engineers.
+This is **Tutorial 12** in **Module 12: Testing** of the REBASH Academy **GitHub Actions for Cloud & DevOps Engineers** series — written for Cloud, DevOps, Platform, SRE, and software engineers.
 
 ## Prerequisites
 
-
-
-
-
-
-
-
 - [Security Scanning and Supply Chain](security-scanning-and-supply-chain.md)
-- Comfortable with jobs, `needs`, and artefacts from earlier modules
+- [Artifacts and Caching](artifacts-and-caching.md)
+- Python 3 or Node.js for local test execution in the lab
 
 ## Learning Objectives
 
-
-
-
-
-
-
-
 By the end of this tutorial, you will be able to:
 
-- [ ] Map unit / integration / smoke / e2e to workflow jobs  
-- [ ] Parallelise with `strategy.matrix` or shards  
-- [ ] Upload test reports and coverage artefacts  
-- [ ] Fail the workflow on failed tests or coverage floors
+- [ ] Structure separate jobs for unit, integration, and E2E tests
+- [ ] Use matrix strategy for parallel version/browser coverage
+- [ ] Upload test reports and coverage as artefacts
+- [ ] Chain jobs with `needs:` so deploy waits on tests
+- [ ] Diagnose flaky tests vs infrastructure failures
 
 ## Architecture
 
+Build produces artefacts; test jobs run in parallel; deploy depends on all gates passing.
 
-
-
-
-
-
-
-This topic’s control points and relationships are shown below.
-
-![Testing in Actions](../assets/excalidraw/gha-testing.svg)
+![Testing pipeline in GitHub Actions](../assets/excalidraw/gha-testing.svg)
 
 ## Theory
 
-
-
-
-
-
-
-
 ### What it is
 
-**Testing in GitHub Actions** means every meaningful change runs automated checks before it becomes a deployable artefact. Jobs invoke your language’s test runners, collect machine-readable reports, and upload them with `actions/upload-artifact` (or native report integrations). A **quality gate** turns a soft signal into a hard failure — non-zero exit codes, coverage below a floor, or required status checks on a protected branch.
+| Layer | Scope | Typical tools | Speed |
+|-------|-------|---------------|-------|
+| Unit | Functions/modules in isolation | pytest, Jest, Go test | Seconds |
+| Integration | Services + databases/APIs | pytest + Testcontainers, supertest | Minutes |
+| E2E | Full user flows in browser/API | Playwright, Cypress | Minutes–tens of minutes |
+| Smoke | Post-deploy health | curl, kubectl, synthetic check | Seconds |
 
-| Layer | Typical scope | CI cost |
-|-------|---------------|---------|
-| Unit | Functions / packages, mocked I/O | Fast, run always |
-| Integration | Service + DB / API contracts | Medium |
-| Smoke | Post-deploy health of a thin path | Short, after deploy |
-| E2E | Browser or full user path | Slow, selective |
+**Matrix builds** run the same job with different `strategy.matrix` values (Python 3.11/3.12, Node 20/22) — failures pinpoint version-specific breaks.
 
 ### Why it matters
 
-Cloud services fail in integration, not in unit isolation. Pipelines that only build an image ship regressions at promotion time. Pull-request-visible failures and coverage make review concrete. Quality gates protect trunk — flaky or missing tests become a platform problem, not a Friday surprise in production.
+Deploying without tests shifts failures to production where rollback is expensive. Parallel matrices shorten feedback while increasing coverage. Clear job boundaries (`unit` → `integration` → `e2e`) keep fast tests failing first so developers do not wait twenty minutes for a typo.
 
 ### How it works
 
-Recommended shape:
+1. **Unit job** — checkout, install deps, run `pytest tests/unit` or `npm test`.
+2. **Integration job** — `needs: unit`, start dependencies (Docker Compose service containers or Testcontainers), run integration suite.
+3. **E2E job** — `needs: integration`, run Playwright against staging URL or ephemeral preview.
+4. **Matrix** — {% raw %}`strategy.matrix.python-version: ['3.11','3.12']`{% endraw %} generates one runner per version.
+5. **Artefacts** — upload JUnit XML, coverage HTML, Playwright traces for debugging failed runs.
 
-1. **Fail fast** — lint and unit tests before expensive builds or image pushes.  
-2. **Parallelise** — `strategy.matrix` over Python/Node versions, OS, or shard indexes.  
-3. **Report** — write JUnit XML or language-native reports; upload with `if: always()` so failed suites still leave artefacts.  
-4. **Gate** — job exit code non-zero on failure; optional follow-on job that compares coverage to a minimum.  
-5. **Select e2e** — full e2e on `main` / schedule; smoke or subset on pull requests with `paths` / event filters.
+Example matrix snippet (documentation):
 
-Use `needs` so unit jobs start without waiting for unrelated deploy work. Keep report paths stable for reviewers.
+{% raw %}
+```yaml
+strategy:
+  fail-fast: false
+  matrix:
+    python-version: ['3.11', '3.12']
+runs-on: ubuntu-latest
+steps:
+  - uses: actions/setup-python@v5
+    with:
+      python-version: ${{ matrix.python-version }}
+```
+{% endraw %}
 
 ### Key concepts and comparisons
 
-| Mechanism | Purpose |
-|-----------|---------|
-| Job exit code | Primary gate (failed tests → failed check) |
-| Matrix / shards | Parallel wall-clock reduction |
-| Artefacts (`if: always()`) | Debug failed suites after the job dies |
-| Required status checks | Branch protection hard gate |
-
-Unit proves logic; integration proves wiring; smoke proves “it is up”; e2e proves the user path.
+| Pattern | When to use | Trade-off |
+|---------|-------------|-----------|
+| Single job all tests | Tiny repos | Slow feedback; hard to parallelise |
+| Job per layer | Most services | More YAML; clearer failures |
+| Matrix | Multi-version/browser | Runner minutes multiply |
+| Reusable test workflow | Many repos | Central policy updates |
 
 ### Common pitfalls
 
-- Publishing reports while `continue-on-error: true` keeps the check green.  
-- One monolithic e2e job on every commit — burns minutes and creates flaky noise.  
-- Uploading artefacts only on success — failed suites never leave XML for debugging.  
-- Matrix explosion without a deliberate `fail-fast` policy.
+- E2E on every pull request without caching browsers — slow and flaky.
+- `continue-on-error: true` on test steps — green pipeline with failing tests.
+- Integration tests hitting production APIs — data corruption and cost.
+- No artefact upload on failure — cannot download Playwright trace.
+- Matrix without `fail-fast: false` — one version failure hides others.
 
 ## Hands-on Lab
 
-
-
 ### Objective
 
-Author a GitHub Actions workflow that implements **Testing in GitHub Actions** and validate YAML structure locally.
+Build a Python sample app with unit and integration tests, author a matrix test workflow with job dependencies, and validate tests locally plus YAML offline.
 
 ### Prerequisites
 
-- Python 3 with PyYAML
-- Optional: GitHub repo to run the workflow
+- Python 3.11+
+- `pip` and `pytest`
 
 ### Lab environment
 
-Workspace: `~/rebash-github-actions/module-12/{.github/workflows,tests}`
-
-Workflows under `.github/workflows/`. In docs, wrap GitHub Actions expressions in Jinja raw blocks so MkDocs macros do not parse them; use heredocs in the lab.
+Workspace: `~/rebash-github-actions/module-12`
 
 ```bash
-mkdir -p ~/rebash-github-actions/module-12/{.github/workflows,tests} && cd ~/rebash-github-actions/module-12/{.github/workflows,tests}
+mkdir -p ~/rebash-github-actions/module-12/{app,tests/unit,tests/integration,.github/workflows} && cd ~/rebash-github-actions/module-12
+set -euo pipefail
+python3 --version | tee python-version.txt
 ```
 
 ### Real-world scenario
 
-Platform engineering wants **Testing in GitHub Actions** as a reusable workflow pattern. You prototype YAML that passes review and runs on `ubuntu-latest`.
+A platform team requires unit tests on every push, integration tests after unit pass, and a Python version matrix (3.11 and 3.12) before merge to `main`.
 
 ### Step-by-step tasks
 
-#### Task 1 – Create workflow file
+#### Task 1 – Sample app and tests
 
-Jobs and steps must be explicit; pin mainstream actions.
+Create `app/calc.py`:
+
+```python
+def add(a: int, b: int) -> int:
+    return a + b
+```
+
+Create `tests/unit/test_calc.py`:
+
+```python
+from app.calc import add
+
+def test_add():
+    assert add(2, 3) == 5
+```
+
+Create `tests/integration/test_api_stub.py`:
+
+```python
+def test_integration_placeholder():
+    # Stand-in for HTTP/DB integration
+    assert True
+```
+
+Create `requirements-dev.txt`:
+
+```text
+pytest>=8.0
+pytest-cov>=4.0
+```
+
+Run tests locally:
 
 ```bash
-mkdir -p .github/workflows
-cat > .github/workflows/lab.yml << 'EOF'
-name: lab
+cd ~/rebash-github-actions/module-12
+set -euo pipefail
+python3 -m pip install -q -r requirements-dev.txt
+PYTHONPATH=. pytest tests/unit -q | tee unit-local.txt
+PYTHONPATH=. pytest tests/integration -q | tee integration-local.txt
+```
+
+**Expected output:** Both pytest runs pass; output captured in `unit-local.txt` and `integration-local.txt`.
+
+#### Task 2 – Matrix test workflow with job chain
+
+Create `.github/workflows/test.yml`:
+
+{% raw %}
+```yaml
+name: Test
 on:
-  workflow_dispatch:
   push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
 permissions:
   contents: read
+
 jobs:
-  build:
+  unit:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ['3.11', '3.12']
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+      - run: pip install -r requirements-dev.txt
+      - run: PYTHONPATH=. pytest tests/unit --junitxml=unit-junit.xml -q
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: unit-junit-${{ matrix.python-version }}
+          path: unit-junit.xml
+
+  integration:
+    needs: unit
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Prove workspace
-        run: |
-          mkdir -p out
-          echo ok > out/marker.txt
-          test -s out/marker.txt
-EOF
-python3 -c "import yaml; yaml.safe_load(open('.github/workflows/lab.yml')); print('workflow OK')"
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: pip install -r requirements-dev.txt
+      - run: PYTHONPATH=. pytest tests/integration --junitxml=integration-junit.xml -q
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: integration-junit
+          path: integration-junit.xml
+
+  e2e-stub:
+    needs: integration
+    runs-on: ubuntu-latest
+    steps:
+      - run: echo "E2E stub — replace with Playwright against preview URL"
+      - run: test 0 -eq 0
 ```
+{% endraw %}
 
-**Expected output:** `workflow OK` printed; file exists under `.github/workflows/`.
-
-#### Task 2 – Dry-run the shell steps locally
-
-The `run:` block should work in a normal shell before CI.
+Validate offline:
 
 ```bash
-mkdir -p out && echo ok > out/marker.txt
-test -s out/marker.txt && cat out/marker.txt
+cd ~/rebash-github-actions/module-12
+set -euo pipefail
+python3 -c "import yaml; yaml.safe_load(open('.github/workflows/test.yml')); print('test workflow OK')"
+grep -q 'matrix:' .github/workflows/test.yml
+grep -q 'needs: unit' .github/workflows/test.yml
 ```
 
-**Expected output:** Prints `ok`.
+**Expected output:** `test workflow OK`; matrix and `needs` present.
+
+#### Task 3 – Local workflow structure checks
+
+Create `validate-tests.sh`:
+
+```bash
+#!/usr/bin/env bash
+set -euo pipefail
+PYTHONPATH=. pytest tests/unit tests/integration -q
+python3 -c "import yaml; d=yaml.safe_load(open('.github/workflows/test.yml')); assert 'unit' in d['jobs']; assert 'integration' in d['jobs']"
+grep -q 'upload-artifact' .github/workflows/test.yml
+echo 'module-12 test lab passed'
+```
+
+Run it:
+
+```bash
+cd ~/rebash-github-actions/module-12
+set -euo pipefail
+chmod +x validate-tests.sh
+./validate-tests.sh | tee validation.txt
+```
+
+**Expected output:** `module-12 test lab passed`
+
+#### Task 4 – Evidence archive
+
+```bash
+cd ~/rebash-github-actions/module-12
+set -euo pipefail
+tar -czf module-12-evidence.tgz app tests requirements-dev.txt .github/workflows/test.yml *.txt validate-tests.sh
+ls -l module-12-evidence.tgz | tee evidence.txt
+```
+
+**Expected output:** Evidence tarball listed.
 
 ### Validation steps
 
-- [ ] Workflow YAML parses
-- [ ] Local run steps succeed
+- [ ] Unit and integration tests pass locally
+- [ ] Workflow YAML parses; matrix covers two Python versions
+- [ ] Integration job `needs: unit`; E2E stub `needs: integration`
+- [ ] JUnit artefacts uploaded with `if: always()`
 
 ### Common errors and fixes
 
 | Error | Cause | Fix |
 |-------|-------|-----|
-| Invalid workflow file | YAML/indent | Validate with PyYAML / actionlint |
-| Action not found | Bad uses ref | Pin `actions/checkout@v4` |
-| Permission denied | Missing permissions/OIDC | Set least-privilege `permissions:` |
+| `ModuleNotFoundError: app` | PYTHONPATH | Set `PYTHONPATH=.` in test step |
+| Matrix job all red | One version incompatible | Use `fail-fast: false`; fix per version |
+| Integration cannot reach DB | Service not started | Add `services:` postgres/redis container |
+| Flaky E2E | Timing/network | Retries with limits; upload traces |
+| Deploy ran despite test fail | Missing `needs:` | Gate deploy job on test jobs |
 
 ### Challenge exercise
 
-Add a second job with `needs: build` that uploads `out/` as an artefact (YAML only is fine offline).
+Add a `services:` block with `postgres:16` and rewrite the integration test to connect with `psycopg` (or document connection string from `services` host). Fail if database is unreachable.
 
 ### Learning outcomes
 
-- Created a real workflow file
-- Validated structure before push
+- Created unit/integration tests with local proof
+- Authored matrix workflow with job dependencies
+- Uploaded test reports as artefacts
+- Understood E2E as final gated stage
 
 ### Cleanup
 
 ```bash
-# Keep workflow stubs under ~/rebash-github-actions/
+rm -rf ~/rebash-github-actions/module-12/__pycache__ ~/rebash-github-actions/module-12/**/__pycache__ 2>/dev/null || true
+ls ~/rebash-github-actions/module-12
 ```
 
 ## Validation
 
-
-
-
-
-
-
-
-- [ ] Lab commands run under `~/rebash-github-actions/module-12/{.github/workflows,tests}/`
-- [ ] You can explain each Theory section in your own words
-- [ ] You used modern tooling where it applies to this topic
-- [ ] You can describe one production failure mode for this topic
+- [ ] Lab completed under `~/rebash-github-actions/module-12/`
+- [ ] You can explain unit vs integration vs E2E boundaries
+- [ ] You can configure a matrix without fail-fast hiding versions
+- [ ] You can describe one flaky-test mitigation
 
 ## Code Walkthrough
 
-
-
-
-
-
-
-
-Production practice for **Testing in GitHub Actions** always combines:
-
-1. Inspect before you change (status, plan, logs, dry-run)
-2. Prefer reversible, documented changes (Git, IaC, drop-ins, version pins)
-3. Capture evidence (command output, pipeline logs) for handovers
-4. Prefer current tools and APIs over legacy shortcuts
-5. Least privilege — escalate credentials only when required
-
-Keep runbooks short enough to follow under pressure. Automate checks; keep humans for judgement.
+1. **Fast tests first** — unit before integration before E2E.
+2. **Matrix with fail-fast false** — see all version failures.
+3. **Artefacts on failure** — `if: always()` for JUnit/traces.
+4. **Service containers** — integration deps on localhost ports.
+5. **Deploy needs tests** — no shortcut around red jobs.
 
 ## Security Considerations
 
-
-
-
-
-
-
-
-- Treat credentials and tokens for github-actions as privileged — never commit them
-- Prefer short-lived auth (OIDC, roles, SSO) over long-lived keys
-- Validate blast radius before apply/deploy/delete operations
-- Restrict who can approve production changes
-- Collect audit logs; limit who can read sensitive traces
+- Do not run untrusted fork code with secrets in test jobs — restrict permissions.
+- Integration tests must not use production databases or credentials.
+- Sanitise test fixtures — no real Personal Identifiable Information (PII) in CI logs.
+- Pin test action versions (Module 11) like deploy actions.
+- Limit E2E credentials to ephemeral preview environments.
 
 ## Common Mistakes
 
+!!! warning "One giant test job"
+    Twenty-minute feedback for typos. **Fix:** split unit/integration/E2E jobs.
 
+!!! warning "`continue-on-error` on pytest"
+    Broken main branch. **Fix:** fail the step; waivers only with tracked exceptions.
 
+!!! warning "E2E against production"
+    Data loss and audit issues. **Fix:** ephemeral preview or staging with synthetic data.
 
-
-
-
-
-!!! warning "Publishing reports while `continue-on-error: true` keeps the check green.  "
-    Validate assumptions against the Theory section and official docs before changing production.
-
-!!! warning "One monolithic e2e job on every commit — burns minutes and creates flaky noise.  "
-    Lab shortcuts (open security groups, admin roles, skip approvals) must not ship unchanged.
-
-!!! warning "Changing production without a rollback path"
-    Always know how to revert (previous artefact, prior release, state rollback, DNS failback).
+!!! warning "No test artefacts"
+    Cannot debug CI-only failures. **Fix:** upload JUnit, coverage, Playwright traces.
 
 ## Best Practices
 
-
-
-
-
-
-
-
-- Encode Testing in GitHub Actions changes as code and review them in pull requests
-- Pin versions (images, modules, actions, provider plugins)
-- Separate environments with clear promotion gates
-- Alert on symptoms with runbooks attached
-- Destroy lab resources; tag everything with owner and expiry where possible
+- Cache dependencies (`actions/cache`) keyed on lockfiles.
+- Tag flaky tests; quarantine with ticket, do not silence permanently.
+- Require test workflow success in branch protection rules.
+- Keep integration tests deterministic — fixed seeds, isolated databases.
+- Report test timing trends to catch slow suites early.
 
 ## Troubleshooting
 
-
-
-
-
-
-
-
 | Symptom | Likely cause | Fix |
 |---------|--------------|-----|
-| Auth / permission denied | Wrong identity, policy, or scope | Check caller identity, roles, and least-privilege policies |
-| Timeout / no route | Network, DNS, security group, or endpoint | Trace path, DNS, and allow-lists before retrying |
-| Drift / unexpected plan | Manual change or wrong state/workspace | Reconcile desired vs actual; avoid click-ops on managed resources |
-| Pipeline/job red | Flaky step, cache, or missing secret | Read failing step logs; bisect recent workflow/config changes |
-| Cost spike | Idle load balancer, NAT, oversized compute | Inventory billable resources; stop/delete labs promptly |
+| Passes locally, fails CI | Version mismatch | Align matrix with local Python |
+| Integration timeout | Service not healthy | Add health check wait loop |
+| Matrix duplicates work | Too many dimensions | Split smoke vs full matrix nightly |
+| Empty JUnit artefact | Wrong output path | Verify `--junitxml` path matches upload |
+| E2E flaky on CI only | Resource/time limits | Increase timeout; reduce parallelism |
 
 ## Summary
 
-
-
-
-
-
-
-
-**Testing in GitHub Actions** is essential for Cloud and DevOps engineers working with github-actions. Practise the lab until the inspection and change path is muscle memory, then continue the track.
+Testing in GitHub Actions layers unit, integration, and E2E jobs with matrices for parallel coverage and artefacts for debugging. Gate deploy on green tests. Next: [Release Management and Versioning](release-management-and-versioning.md).
 
 ## Interview Questions
 
+**1. Why split unit, integration, and E2E into separate jobs?**
 
+??? success "Reveal answer"
+    Failures surface faster (unit fails in seconds), runner resources match test type, and deploy can depend on explicit gates rather than one opaque job result.
 
+**2. What does `strategy.matrix` do?**
 
+??? success "Reveal answer"
+    It expands one job definition into multiple parallel jobs — one per matrix combination (e.g. Python 3.11 and 3.12) — increasing coverage without duplicating YAML.
 
+**3. When should you set `fail-fast: false` on a matrix?**
 
-1. How do you surface pytest failures clearly in PRs?
-2. Flaky tests in CI only — what is your approach?
-3. Why upload JUnit with if always?
-4. How do path filters interact with required checks?
-5. What belongs in unit versus integration jobs?
+??? success "Reveal answer"
+    When you want all matrix combinations to run even if one fails — so you see every broken version rather than stopping at the first failure.
 
-!!! tip "Sample answer — question 2"
-    Read the pytest/JUnit output first, then compare dependency versions with local runs. Quarantine flakes with an owner.
+**4. How do service containers help integration tests?**
 
-!!! tip "Sample answer — question 4"
-    Keep test jobs free of production secrets when possible; use ephemeral credentials for integration tests.
+??? success "Reveal answer"
+    GitHub Actions starts Docker sidecars (e.g. Postgres) on localhost ports for the job, giving real dependencies without external infrastructure.
+
+**5. Why upload test artefacts with `if: always()`?**
+
+??? success "Reveal answer"
+    Failed tests still produce JUnit XML or Playwright traces needed for debugging — uploading only on success hides evidence when you need it most.
+
+**6. How should E2E tests relate to deploy jobs?**
+
+??? success "Reveal answer"
+    E2E should run against staging or preview after build; deploy to production should `need` E2E (and unit/integration) success unless a documented exception exists.
+
+**7. What is the difference between smoke tests and E2E?**
+
+??? success "Reveal answer"
+    Smoke tests are minimal post-deploy health checks (one endpoint up); E2E exercises full user journeys — smoke is faster and runs immediately after deploy.
+
+**8. How do you reduce flaky E2E in Actions?**
+
+??? success "Reveal answer"
+    Stable selectors, isolated test data, limited retries with alerting, artefact traces on failure, and not running full E2E on every commit if a nightly job suffices.
 
 ## Related Tutorials
 
-
-
-
-
-
-
-
-- [Course overview](index.md)
+- [Artifacts and Caching](artifacts-and-caching.md)
+- [Security Scanning and Supply Chain](security-scanning-and-supply-chain.md)
 - [Release Management and Versioning](release-management-and-versioning.md)
 
 ## References
 
-
-
-
-
-
-
-
-- [Workflow commands / exit codes](https://docs.github.com/en/actions/using-workflows/workflow-commands-for-github-actions)  
-- [Matrix strategy](https://docs.github.com/en/actions/using-jobs/using-a-matrix-for-your-jobs)  
-- [Storing workflow data as artefacts](https://docs.github.com/en/actions/using-workflows/storing-workflow-data-as-artifacts)
+- [Workflow syntax — jobs matrix](https://docs.github.com/en/actions/using-jobs/using-a-matrix-for-your-jobs)
+- [Service containers](https://docs.github.com/en/actions/using-containerized-services/about-service-containers)
+- [pytest documentation](https://docs.pytest.org/)
+- [Playwright CI](https://playwright.dev/docs/ci)

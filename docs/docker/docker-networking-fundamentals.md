@@ -31,7 +31,7 @@ tags:
   - networking
   - bridge
 author: Shaik Basha
-last_updated: "2026-07-31"
+last_updated: "2026-08-03"
 comments: false
 ---
 
@@ -135,22 +135,20 @@ User-defined bridge networks give containers IP addresses and DNS entries based 
 
 ## Hands-on Lab
 
-
-
 ### Objective
 
-Build or run a real Docker solution for **Docker Networking Fundamentals** and prove it with inspect/logs/HTTP.
+Create a custom bridge network, attach two containers, resolve each other by name, publish a port to the host, and capture `docker network inspect` evidence.
 
 ### Prerequisites
 
 - Docker Engine or Docker Desktop
-- Permission to run containers
+- `curl` on the host
 
 ### Lab environment
 
 Workspace: `~/rebash-docker/module-08`
 
-Local Docker daemon. Clean up containers/images after the lab.
+Custom network `rebash-mod08-net`; host port **18086** for the web container.
 
 ```bash
 mkdir -p ~/rebash-docker/module-08 && cd ~/rebash-docker/module-08
@@ -158,77 +156,98 @@ mkdir -p ~/rebash-docker/module-08 && cd ~/rebash-docker/module-08
 
 ### Real-world scenario
 
-You are validating **Docker Networking Fundamentals** before it lands in CI. The change must be reproducible with copy-paste commands and leave no orphan containers.
+Two microservices on the same Docker host must talk over a private network with DNS names, while only the web tier exposes a port to engineers on localhost. You create the network, start nginx and an Alpine client, curl from client to web by service name, and inspect the network attachment.
 
 ### Step-by-step tasks
 
-#### Task 1 – Run and inspect a container
-
-Start from a known image, publish a port, and verify HTTP.
+#### Task 1 – Create custom bridge network
 
 ```bash
-docker run -d --name rebash-lab -p 18080:80 nginx:alpine
-docker ps --filter name=rebash-lab
-curl -sI http://127.0.0.1:18080 | head -n 5 | tee headers.txt
-docker logs rebash-lab 2>&1 | head -n 10 | tee logs.txt
+cd ~/rebash-docker/module-08
+docker network create rebash-mod08-net | tee network-create.txt
+docker network ls --filter name=rebash-mod08-net | tee network-ls.txt
+grep -q 'rebash-mod08-net' network-ls.txt
 ```
 
-**Expected output:** Container Up; HTTP 200 in headers.txt.
+**Expected output:** `network-ls.txt` lists `rebash-mod08-net` as bridge driver.
 
-#### Task 2 – Inspect runtime config
+#### Task 2 – Start web and client on the network
 
-Use inspect for status — production debugging rarely starts with guesswork.
-
+{% raw %}
 ```bash
-docker inspect rebash-lab --format '{{ "{{" }}.State.Status{{ "}}" }} {{ "{{" }}.Config.Image{{ "}}" }}' | tee inspect.txt
-test -s inspect.txt
+cd ~/rebash-docker/module-08
+docker run -d --name rebash-mod08-web --network rebash-mod08-net -p 18086:80 nginx:1.27-alpine
+docker run -d --name rebash-mod08-client --network rebash-mod08-net alpine:3.20 sleep 600
+docker ps --filter network=rebash-mod08-net --format '{{ "{{" }}.Names{{ "}}" }}' | tee network-containers.txt
+grep rebash-mod08-web network-containers.txt
+grep rebash-mod08-client network-containers.txt
 ```
+{% endraw %}
 
-**Expected output:** inspect.txt shows `running` and the nginx image.
+**Expected output:** Both container names appear attached to the network.
+
+#### Task 3 – DNS by name, host curl, and network inspect
+
+{% raw %}
+```bash
+cd ~/rebash-docker/module-08
+docker exec rebash-mod08-client wget -qO- http://rebash-mod08-web/ | head -n 5 | tee client-to-web.txt
+grep -qi 'nginx' client-to-web.txt
+curl -sI http://127.0.0.1:18086 | head -n 3 | tee host-curl.txt
+grep -qi 'HTTP/' host-curl.txt
+docker network inspect rebash-mod08-net --format '{{ "{{" }}range .Containers{{ "}}" }}{{ "{{" }}.Name{{ "}}" }} {{ "{{" }}end{{ "}}" }}' | tee network-inspect-names.txt
+grep rebash-mod08-web network-inspect-names.txt
+```
+{% endraw %}
+
+**Expected output:** Client resolves `rebash-mod08-web` and returns HTML; host curl gets HTTP headers; inspect lists both container names.
 
 ### Validation steps
 
-- [ ] Container or image behaves as Expected output describes
-- [ ] Ports respond or command output matches
-- [ ] Cleanup removes lab resources
+- [ ] Custom network `rebash-mod08-net` exists
+- [ ] Client container reached web container via DNS name on the network
+- [ ] Host port 18086 responds and `network-inspect-names.txt` lists attachments
 
 ### Common errors and fixes
 
 | Error | Cause | Fix |
 |-------|-------|-----|
-| port is already allocated | Previous lab left a container | `docker rm -f` the old name or change port |
-| permission denied | User not in docker group | Use rootless Docker or fix group membership |
-| manifest unknown | Bad tag | Pin a real tag such as `nginx:alpine` |
+| wget: bad address | Containers on default bridge | Attach both to `rebash-mod08-net` |
+| port is already allocated | 18086 in use | Stop conflicting container or change port |
+| network with name exists | Previous lab | `docker network rm rebash-mod08-net` after cleanup |
 
 ### Challenge exercise
 
-Add a non-root USER (or Compose healthcheck) and prove it with inspect.
+Add a second client that fails to resolve a name off-network — prove isolation by pinging the web IP from inside the client (should work) versus wrong hostname:
+
+```bash
+cd ~/rebash-docker/module-08
+docker exec rebash-mod08-client ping -c 1 rebash-mod08-web | tee ping-dns.txt
+grep -q '1 packets transmitted' ping-dns.txt
+```
+
+**Expected output:** `ping-dns.txt` shows one successful ping to the web container by name.
 
 ### Learning outcomes
 
-- Executed a real Docker workflow
-- Captured evidence files
-- Removed disposable resources
+- Created an user-defined bridge with embedded DNS
+- Published only the web tier while keeping client internal
+- Used `docker network inspect` to audit container attachments
 
 ### Cleanup
 
 ```bash
-docker rm -f rebash-lab 2>/dev/null || true
-docker rmi rebash-lab:local 2>/dev/null || true
-docker compose down -v 2>/dev/null || true
+cd ~/rebash-docker/module-08
+docker rm -f rebash-mod08-web rebash-mod08-client 2>/dev/null || true
+docker network rm rebash-mod08-net 2>/dev/null || true
+docker rmi nginx:1.27-alpine alpine:3.20 2>/dev/null || true
 ```
 
 ## Validation
 
-
-
-
-
-
-
 - [ ] Lab commands run under `~/rebash-docker/module-08/`
+- [ ] `client-to-web.txt` and `network-inspect-names.txt` prove DNS and inspect goals
 - [ ] You can explain each Theory section in your own words
-- [ ] You used modern tooling where it applies to this topic
 - [ ] You can describe one production failure mode for this topic
 
 ## Code Walkthrough

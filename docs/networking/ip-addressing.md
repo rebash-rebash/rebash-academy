@@ -168,8 +168,11 @@ test -s ipv4-cidrs.txt
 ```bash
 cd ~/rebash-networking/lab04
 set -euo pipefail
+```
 
-cat > classify_ipv4.py << 'PY'
+Create `classify_ipv4.py`:
+
+```python
 #!/usr/bin/env python3
 """Classify IPv4 addresses for REBASH lab04."""
 import ipaddress
@@ -210,8 +213,9 @@ def main() -> int:
 
 if __name__ == "__main__":
     sys.exit(main())
-PY
+```
 
+```bash
 chmod +x classify_ipv4.py
 python3 classify_ipv4.py | tee classify-run.txt
 grep -E 'loopback|private|public|link-local' ipv4-classification.txt

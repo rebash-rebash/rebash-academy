@@ -32,7 +32,7 @@ tags:
   - kind
   - kubeconfig
 author: Shaik Basha
-last_updated: "2026-07-31"
+last_updated: "2026-08-03"
 comments: false
 ---
 
@@ -153,23 +153,21 @@ Local tools start control-plane and worker components for you. Managed clouds ho
 
 ## Hands-on Lab
 
-
-
 ### Objective
 
-Build and verify a working Kubernetes solution for **Installing Kubernetes and kubectl** that you can inspect, prove, and tear down safely.
+Create a reusable `verify-cluster.sh` script that checks kubeconfig context, node Ready state, and declarative apply sanity with `--dry-run=client`.
 
 ### Prerequisites
 
-- kubectl configured against a lab cluster (kind/minikube preferred)
-- Cluster-admin or namespace-create rights in the lab cluster
+- A working Kubernetes cluster (**kind**, **minikube**, or any lab cluster)
+- **kubectl** installed and on your `PATH`
 - Writable workspace at `~/rebash-k8s/module-02`
 
 ### Lab environment
 
 Workspace: `~/rebash-k8s/module-02`
 
-Local kind/minikube or a dedicated sandbox cluster. Never target a shared production API server.
+Use a disposable local cluster. Never target a shared production API server.
 
 ```bash
 mkdir -p ~/rebash-k8s/module-02 && cd ~/rebash-k8s/module-02
@@ -177,63 +175,146 @@ mkdir -p ~/rebash-k8s/module-02 && cd ~/rebash-k8s/module-02
 
 ### Real-world scenario
 
-Your platform team is rolling out **Installing Kubernetes and kubectl** for a new microservice. You must apply the change in an isolated namespace, prove it works with kubectl, and leave evidence for the on-call handover.
+Your team ships a onboarding script every new engineer runs on day one. It must fail fast when kubeconfig points at the wrong cluster, when nodes are not Ready, or when the API rejects a harmless dry-run apply. You build and test that script now.
 
 ### Step-by-step tasks
 
-#### Task 1 – Apply a topic workload
+#### Task 1 – Create verify-cluster.sh
 
-Create a namespace and a small Deployment to practise **What it is** against a live API.
-
-```bash
-kubectl create namespace rebash-lab --dry-run=client -o yaml | kubectl apply -f -
-kubectl create deployment topic --image=nginx:1.27-alpine -n rebash-lab
-kubectl rollout status deployment/topic -n rebash-lab
-kubectl get all -n rebash-lab
-```
-
-**Expected output:** Deployment Ready; Pods listed under the namespace.
-
-#### Task 2 – Inspect and gather evidence
-
-Production changes always leave an audit trail of describe/Events.
+Create `verify-cluster.sh`:
 
 ```bash
-kubectl describe deploy topic -n rebash-lab | tee describe.txt
-kubectl get events -n rebash-lab --sort-by=.lastTimestamp | tail -n 15 | tee events.txt
+#!/usr/bin/env bash
+set -euo pipefail
+
+echo "== context =="
+kubectl config current-context | tee context.txt
+
+echo "== cluster reachability =="
+kubectl cluster-info | tee cluster-info.txt
+
+echo "== nodes Ready =="
+kubectl get nodes -o wide | tee nodes-wide.txt
+grep -q ' Ready ' nodes-wide.txt
+
+echo "== dry-run apply sanity =="
+kubectl apply --dry-run=client -f sanity-pod.yaml | tee dry-run-out.txt
+grep -q 'dry run' dry-run-out.txt || grep -q 'configured' dry-run-out.txt || grep -q 'created' dry-run-out.txt
+
+echo "verify-cluster.sh: all checks passed"
 ```
 
-**Expected output:** describe.txt and events.txt capture healthy Objects/Events.
+Create `sanity-pod.yaml` (used only for dry-run in this task):
+
+```yaml
+apiVersion: v1
+kind: Pod
+metadata:
+  name: sanity-dry-run
+  namespace: default
+spec:
+  containers:
+    - name: pause
+      image: registry.k8s.io/pause:3.9
+  restartPolicy: Never
+```
+
+Make executable and run:
+
+```bash
+cd ~/rebash-k8s/module-02
+chmod +x verify-cluster.sh
+./verify-cluster.sh | tee verify-run.txt
+grep -q 'all checks passed' verify-run.txt
+```
+
+**Expected output:** `verify-run.txt` ends with `verify-cluster.sh: all checks passed`; `nodes-wide.txt` shows Ready nodes.
+
+#### Task 2 – Prove kubeconfig context and namespace isolation
+
+Create `namespace.yaml`:
+
+```yaml
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: rebash-m02
+```
+
+Apply namespace and confirm context still works:
+
+```bash
+cd ~/rebash-k8s/module-02
+kubectl apply -f namespace.yaml
+kubectl config view --minify -o jsonpath='{.contexts[0].context.cluster}{"\n"}{.contexts[0].context.user}{"\n"}' | tee context-details.txt
+kubectl get ns rebash-m02 | tee ns-check.txt
+grep rebash-m02 ns-check.txt
+```
+
+**Expected output:** Namespace `rebash-m02` appears Active in `ns-check.txt`.
+
+#### Task 3 – Server-side dry-run (optional, if supported)
+
+Create `probe-pod.yaml`:
+
+```yaml
+apiVersion: v1
+kind: Pod
+metadata:
+  name: probe-install
+  namespace: rebash-m02
+spec:
+  containers:
+    - name: busybox
+      image: busybox:1.36
+      command: ["sh", "-c", "sleep 3600"]
+      resources:
+        requests:
+          cpu: 10m
+          memory: 16Mi
+  restartPolicy: Never
+```
+
+Validate with server dry-run when your cluster supports it:
+
+```bash
+cd ~/rebash-k8s/module-02
+kubectl apply --dry-run=server -f probe-pod.yaml | tee server-dry-run.txt
+grep -E 'created|configured|unchanged|dry run' server-dry-run.txt
+```
+
+**Expected output:** Server accepts the manifest (wording varies by kubectl version).
 
 ### Validation steps
 
-- [ ] Namespace `rebash-lab` contains the expected Ready objects
-- [ ] You can explain each Task command from the Theory section
-- [ ] Cleanup deletes the namespace without leftover workloads
+- [ ] `./verify-cluster.sh` exits 0 and prints `all checks passed`
+- [ ] Current context and cluster info captured in evidence files
+- [ ] Namespace `rebash-m02` exists
+- [ ] Dry-run apply of `sanity-pod.yaml` succeeds
 
 ### Common errors and fixes
 
 | Error | Cause | Fix |
 |-------|-------|-----|
-| ImagePullBackOff | Wrong tag or registry auth | Fix image reference; check pull secrets |
-| Pending Pod | Scheduling / quota / PVC | `kubectl describe pod` and read Events |
-| Empty Endpoints | Selector or readiness mismatch | Compare Service selector to Pod labels and Ready |
+| `Unable to connect to the server` | Cluster stopped or wrong context | `kubectl config get-contexts`; start kind/minikube |
+| grep Ready fails | Nodes still booting | Wait; `kubectl get nodes -w` |
+| `--dry-run=server` forbidden | RBAC or old API | Skip Task 3; client dry-run is enough for onboarding |
+| Wrong cluster in context | Multiple kubeconfigs | `kubectl config use-context <lab-context>` |
 
 ### Challenge exercise
 
-Add a readinessProbe and a ResourceQuota to the namespace, then show that over-quota creates are rejected.
+Extend `verify-cluster.sh` to accept an expected context name as `$1` and exit non-zero when `kubectl config current-context` does not match.
 
 ### Learning outcomes
 
-- Applied a real cluster change for Installing Kubernetes and kubectl
-- Used describe/Events for verification
-- Destroyed lab resources cleanly
+- Built a repeatable cluster verification script
+- Confirmed kubeconfig context and node Ready state
+- Validated manifests with client (and optional server) dry-run
 
 ### Cleanup
 
 ```bash
-kubectl delete namespace rebash-lab --ignore-not-found
-# Keep ~/rebash-kubernetes/ for later tutorials
+kubectl delete namespace rebash-m02 --ignore-not-found --wait=true
 ```
 
 ## Validation

@@ -33,7 +33,7 @@ tags:
   - secrets
   - oidc
 author: Shaik Basha
-last_updated: "2026-07-31"
+last_updated: "2026-08-03"
 comments: false
 ---
 
@@ -149,22 +149,20 @@ No paid GitLab or live cloud account is required to author the YAML; enable OIDC
 
 ## Hands-on Lab
 
-
-
 ### Objective
 
-Author a valid `.gitlab-ci.yml` that models **Variables, Secrets, and OIDC** and validate it locally before pushing.
+Separate non-secret CI variables from masked secret placeholders in `.gitlab-ci.yml`, document OIDC trust configuration in `oidc-notes.yaml`, and validate that no real secrets appear in the repository.
 
 ### Prerequisites
 
 - Python 3 with PyYAML (`pip install pyyaml`)
-- Optional: GitLab project to run the pipeline
+- Optional: GitLab project with masked/protected variables configured in the UI
 
 ### Lab environment
 
 Workspace: `~/rebash-gitlab/module-06`
 
-File-first lab. Push to GitLab only when you want a runner to execute jobs.
+File-first lab. Never commit real tokens — use placeholders only.
 
 ```bash
 mkdir -p ~/rebash-gitlab/module-06 && cd ~/rebash-gitlab/module-06
@@ -172,73 +170,167 @@ mkdir -p ~/rebash-gitlab/module-06 && cd ~/rebash-gitlab/module-06
 
 ### Real-world scenario
 
-Your squad is encoding **Variables, Secrets, and OIDC** as CI. Reviewers reject YAML that does not parse or that skips artefacts/needs incorrectly.
+Security review flagged cloud access keys committed in YAML. You refactor the pipeline to keep configuration in file variables, reference secrets via GitLab UI placeholders, and capture OIDC trust settings in machine-readable YAML for the cloud team — without storing credentials in Git.
 
 ### Step-by-step tasks
 
-#### Task 1 – Write pipeline YAML
+#### Task 1 – Author CI with file vars and secret placeholders
 
-Stages and jobs must be explicit so MR pipelines are predictable.
+Create `src/deploy_check.py`:
 
-```bash
-mkdir -p src && echo 'print("ok")' > src/app.py
-cat > .gitlab-ci.yml << 'EOF'
-stages: [lint, test]
-lint:
-  stage: lint
-  image: python:3.12-alpine
-  script:
-    - python -m py_compile src/app.py
-test:
-  stage: test
-  image: python:3.12-alpine
-  needs: [lint]
-  script:
-    - python src/app.py
-EOF
-python3 -c "import yaml; d=yaml.safe_load(open('.gitlab-ci.yml')); assert d['stages']==['lint','test']; print('OK', list(d))"
+```python
+import os
+print("region", os.environ.get("AWS_REGION", "unset"))
+print("deploy ok")
 ```
 
-**Expected output:** Prints `OK` and job names; no YAML exception.
+Create `.gitlab-ci.yml`:
 
-#### Task 2 – Simulate the scripts locally
+```yaml
+variables:
+  AWS_REGION: ap-south-1
+  APP_ENV: staging
+  # Non-secret defaults only — never put real keys here
 
-Prove the job script works before burning runner minutes.
+stages:
+  - validate
+  - deploy
 
-```bash
-python3 -m py_compile src/app.py
-python3 src/app.py | tee out.txt
-test "$(cat out.txt)" = 'ok'
+validate_config:
+  stage: validate
+  image: python:3.12-alpine
+  script:
+    - test -n "$AWS_REGION"
+    - test "$APP_ENV" = "staging"
+    - python -m py_compile src/deploy_check.py
+
+deploy_staging:
+  stage: deploy
+  image: python:3.12-alpine
+  environment:
+    name: staging
+  rules:
+    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
+  variables:
+    # Set in GitLab UI: masked + protected
+    DB_PASSWORD: "$DB_PASSWORD"
+  script:
+    - test -n "$DB_PASSWORD"
+    - python src/deploy_check.py
+  # Production deploy would use id_tokens + cloud OIDC — see oidc-notes.yaml
 ```
 
-**Expected output:** Compile succeeds; out.txt is `ok`.
+Validate offline:
+
+```bash
+cd ~/rebash-gitlab/module-06
+python3 -c "
+import yaml
+d = yaml.safe_load(open('.gitlab-ci.yml'))
+assert d['variables']['AWS_REGION'] == 'ap-south-1'
+assert 'AKIA' not in open('.gitlab-ci.yml').read()
+print('OK no static keys in YAML')
+"
+```
+
+**Expected output:** Prints `OK no static keys in YAML`.
+
+#### Task 2 – Document OIDC trust configuration
+
+Create `oidc-notes.yaml` — machine-readable notes for the cloud administrator:
+
+```yaml
+oidc_provider:
+  gitlab_url: https://gitlab.com
+  audience: https://gitlab.com
+aws_role_trust_example:
+  provider: aws
+  role_arn: arn:aws:iam::123456789012:role/gitlab-ci-staging
+  trust_condition:
+    StringEquals:
+      gitlab.com:sub: project_path:my-group/rebash-gitlab-module-06:ref_type:branch:ref:main
+  job_config:
+    id_token_name: GITLAB_OIDC_TOKEN
+    cloud_command: aws sts assume-role-with-web-identity
+secret_handling:
+  never_in_git:
+    - long_lived_access_keys
+    - database_passwords
+  gitlab_ui_only:
+    - name: DB_PASSWORD
+      masked: true
+      protected: true
+      environment_scope: staging
+local_simulation:
+  export_placeholder: export DB_PASSWORD='replace-in-ui-not-git'
+```
+
+Validate:
+
+```bash
+cd ~/rebash-gitlab/module-06
+python3 -c "
+import yaml
+o = yaml.safe_load(open('oidc-notes.yaml'))
+assert o['secret_handling']['gitlab_ui_only'][0]['name'] == 'DB_PASSWORD'
+assert 'never_in_git' in o['secret_handling']
+print('OK oidc-notes', o['oidc_provider']['audience'])
+"
+```
+
+**Expected output:** Prints `OK oidc-notes https://gitlab.com`.
+
+#### Task 3 – Simulate staging deploy with a local placeholder
+
+Prove the script path without a real secret:
+
+```bash
+cd ~/rebash-gitlab/module-06
+export AWS_REGION=ap-south-1
+export APP_ENV=staging
+export DB_PASSWORD='lab-placeholder-not-a-real-secret'
+python3 -m py_compile src/deploy_check.py
+python3 src/deploy_check.py | tee vars-out.txt
+grep -q 'region ap-south-1' vars-out.txt
+grep -q 'deploy ok' vars-out.txt
+```
+
+**Expected output:** `vars-out.txt` contains both `region ap-south-1` and `deploy ok`.
 
 ### Validation steps
 
-- [ ] `.gitlab-ci.yml` parses
-- [ ] Local script path matches job intent
+- [ ] Non-secret config uses top-level `variables` in `.gitlab-ci.yml`
+- [ ] No access keys or passwords are hard-coded in any file
+- [ ] `oidc-notes.yaml` documents trust conditions and UI secret settings
+- [ ] `deploy_staging` references `$DB_PASSWORD` as a UI variable placeholder
+- [ ] Local simulation runs with an exported placeholder only
 
 ### Common errors and fixes
 
 | Error | Cause | Fix |
 |-------|-------|-----|
-| yaml.scanner.ScannerError | Indentation | Use 2-space indent; re-validate with PyYAML |
-| job stuck pending | No runner / tags | Check runner tags match job tags |
-| needs not found | Typo in job name | Align `needs` with actual job keys |
+| Secret visible in job log | Echoed variable or missing mask | Never print secrets; enable masked variables in GitLab UI |
+| Feature branch reads production secret | Variable not protected | Mark sensitive variables protected and scope to environment |
+| OIDC assume-role fails | Wrong audience or subject claim | Align `oidc-notes.yaml` trust `sub` with project path and ref |
+| Masked variable empty on MR | Protected variable on unprotected branch | Expected behaviour — test on protected default branch |
 
 ### Challenge exercise
 
-Add an `artifacts:` path from lint to test and document expire_in.
+Add an `id_tokens` block to `deploy_staging` with `GITLAB_OIDC_TOKEN` and audience `https://gitlab.com`. Extend `oidc-notes.yaml` with the matching `id_token_name`. Re-validate YAML — still no real secrets in Git.
 
 ### Learning outcomes
 
-- Produced reviewable GitLab CI YAML
-- Validated structure and scripts locally
+- Separated non-secret configuration from secret placeholders
+- Documented OIDC trust mapping in version-controlled YAML
+- Understood masked and protected variable behaviour
+- Validated files offline without committing credentials
 
 ### Cleanup
 
 ```bash
-# File-only lab — keep YAML for the next tutorial
+unset DB_PASSWORD AWS_REGION APP_ENV 2>/dev/null || true
+rm -f ~/rebash-gitlab/module-06/vars-out.txt
+# Keep .gitlab-ci.yml and oidc-notes.yaml for module 07
 ```
 
 ## Validation

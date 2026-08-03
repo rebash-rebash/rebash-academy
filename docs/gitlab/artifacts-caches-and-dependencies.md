@@ -34,7 +34,7 @@ tags:
   - artifacts
   - cache
 author: Shaik Basha
-last_updated: "2026-07-31"
+last_updated: "2026-08-03"
 comments: false
 ---
 
@@ -151,96 +151,174 @@ Prefer short retention for intermediate binaries; keep release artefacts on tags
 
 ## Hands-on Lab
 
-
-
 ### Objective
 
-Author a valid `.gitlab-ci.yml` that models **Artifacts, Caches, and Dependencies** and validate it locally before pushing.
+Create a pipeline with cache keys and job artefacts, simulate cache and artefact directories locally, and validate YAML offline.
 
 ### Prerequisites
 
 - Python 3 with PyYAML (`pip install pyyaml`)
-- Optional: GitLab project to run the pipeline
+- Optional: GitLab runner to observe cache restore in job logs
 
 ### Lab environment
 
 Workspace: `~/rebash-gitlab/module-07`
 
-File-first lab. Push to GitLab only when you want a runner to execute jobs.
+File-first lab. Local directories mimic runner cache and artefact paths.
 
 ```bash
-mkdir -p ~/rebash-gitlab/module-07 && cd ~/rebash-gitlab/module-07
+mkdir -p ~/rebash-gitlab/module-07/src && cd ~/rebash-gitlab/module-07
 ```
 
 ### Real-world scenario
 
-Your squad is encoding **Artifacts, Caches, and Dependencies** as CI. Reviewers reject YAML that does not parse or that skips artefacts/needs incorrectly.
+Your Node/Python monorepo rebuilds dependencies on every job, wasting minutes. Platform engineering asks for a lockfile-keyed cache on the install job and build artefacts passed to deploy. You model both patterns and prove directory layout locally before pushing.
 
 ### Step-by-step tasks
 
-#### Task 1 – Write pipeline YAML
+#### Task 1 – Create dependency manifest and app
 
-Stages and jobs must be explicit so MR pipelines are predictable.
+Create `requirements.txt`:
 
-```bash
-mkdir -p src && echo 'print("ok")' > src/app.py
-cat > .gitlab-ci.yml << 'EOF'
-stages: [lint, test]
-lint:
-  stage: lint
-  image: python:3.12-alpine
-  script:
-    - python -m py_compile src/app.py
-test:
-  stage: test
-  image: python:3.12-alpine
-  needs: [lint]
-  script:
-    - python src/app.py
-EOF
-python3 -c "import yaml; d=yaml.safe_load(open('.gitlab-ci.yml')); assert d['stages']==['lint','test']; print('OK', list(d))"
+```text
+# minimal lab dependency file — no external install required offline
 ```
 
-**Expected output:** Prints `OK` and job names; no YAML exception.
+Create `src/app.py`:
 
-#### Task 2 – Simulate the scripts locally
-
-Prove the job script works before burning runner minutes.
-
-```bash
-python3 -m py_compile src/app.py
-python3 src/app.py | tee out.txt
-test "$(cat out.txt)" = 'ok'
+```python
+print("artifacts-cache ok")
 ```
 
-**Expected output:** Compile succeeds; out.txt is `ok`.
+#### Task 2 – Author cache and artefact jobs
+
+Create `.gitlab-ci.yml`:
+
+```yaml
+variables:
+  PIP_CACHE_DIR: .cache/pip
+
+stages:
+  - prepare
+  - build
+  - deploy
+
+install_deps:
+  stage: prepare
+  image: python:3.12-alpine
+  cache:
+    key:
+      files:
+        - requirements.txt
+    paths:
+      - .cache/pip
+  script:
+    - mkdir -p .cache/pip dist
+    - echo "deps-ready" > dist/deps-status.txt
+  artifacts:
+    paths:
+      - dist/deps-status.txt
+    expire_in: 1 day
+
+build_app:
+  stage: build
+  image: python:3.12-alpine
+  needs:
+    - job: install_deps
+      artifacts: true
+  cache:
+    key:
+      files:
+        - requirements.txt
+    paths:
+      - .cache/pip
+    policy: pull
+  script:
+    - test -f dist/deps-status.txt
+    - mkdir -p dist
+    - python src/app.py | tee dist/build-output.txt
+  artifacts:
+    paths:
+      - dist/build-output.txt
+    expire_in: 1 day
+
+deploy_stub:
+  stage: deploy
+  image: alpine:3.20
+  needs:
+    - job: build_app
+      artifacts: true
+  script:
+    - test -f dist/build-output.txt
+    - cat dist/build-output.txt
+  rules:
+    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
+```
+
+Validate offline:
+
+```bash
+cd ~/rebash-gitlab/module-07
+python3 -c "
+import yaml
+d = yaml.safe_load(open('.gitlab-ci.yml'))
+assert d['install_deps']['cache']['key']['files'] == ['requirements.txt']
+assert d['build_app']['needs'][0]['artifacts'] is True
+print('OK cache and artifacts')
+"
+```
+
+**Expected output:** Prints `OK cache and artifacts`.
+
+#### Task 3 – Simulate cache paths and artefact hand-off locally
+
+```bash
+cd ~/rebash-gitlab/module-07
+mkdir -p .cache/pip dist
+echo "deps-ready" > dist/deps-status.txt
+echo "simulated pip cache" > .cache/pip/lab-marker.txt
+test -f dist/deps-status.txt
+test -f .cache/pip/lab-marker.txt
+python3 src/app.py | tee dist/build-output.txt
+grep -q 'artifacts-cache ok' dist/build-output.txt
+cat dist/build-output.txt
+```
+
+**Expected output:** Terminal shows `artifacts-cache ok`; cache marker and dist files exist.
 
 ### Validation steps
 
-- [ ] `.gitlab-ci.yml` parses
-- [ ] Local script path matches job intent
+- [ ] Cache key references `requirements.txt`
+- [ ] `install_deps` publishes `dist/deps-status.txt`
+- [ ] `build_app` pulls cache with `policy: pull` and needs install artefacts
+- [ ] `deploy_stub` consumes `dist/build-output.txt`
+- [ ] Local `.cache/pip` and `dist/` mirror runner paths
 
 ### Common errors and fixes
 
 | Error | Cause | Fix |
 |-------|-------|-----|
-| yaml.scanner.ScannerError | Indentation | Use 2-space indent; re-validate with PyYAML |
-| job stuck pending | No runner / tags | Check runner tags match job tags |
-| needs not found | Typo in job name | Align `needs` with actual job keys |
+| Cache never hits | Key changes every commit | Key on lockfile (`requirements.txt`) not commit SHA alone |
+| Empty artefact in later job | Missing `needs` artefacts | Set `artifacts: true` on the need entry |
+| Huge cache uploads | Caching build outputs | Cache dependencies; artefact final binaries separately |
+| Deploy job runs on MR | Missing branch rule | Gate `deploy_stub` to default branch |
 
 ### Challenge exercise
 
-Add an `artifacts:` path from lint to test and document expire_in.
+Add a `cache:policy: push` only on `install_deps` and document in a comment why `build_app` uses `pull`. Re-validate YAML.
 
 ### Learning outcomes
 
-- Produced reviewable GitLab CI YAML
-- Validated structure and scripts locally
+- Keyed caches to dependency files instead of rebuilding every job
+- Passed build artefacts downstream with `needs`
+- Simulated cache and dist directories locally
+- Validated pipeline YAML offline
 
 ### Cleanup
 
 ```bash
-# File-only lab — keep YAML for the next tutorial
+rm -rf ~/rebash-gitlab/module-07/.cache ~/rebash-gitlab/module-07/dist
+# Keep src/, requirements.txt, and .gitlab-ci.yml for module 08
 ```
 
 ## Validation

@@ -170,14 +170,9 @@ A cleanup script deleted the wrong files because a directory name contained a sp
 
 #### Task 1 – Quoting differences with a path that contains a space
 
+Create `quoting-demo.sh`:
+
 ```bash
-cd ~/rebash-shell/lab03
-set -euo pipefail
-
-mkdir -p "data/my reports"
-printf 'line1\n' > "data/my reports/summary.txt"
-
-cat > quoting-demo.sh << 'EOF'
 #!/usr/bin/env bash
 set -euo pipefail
 
@@ -197,7 +192,16 @@ printf '\n' | tee quoting-unsafe.txt
 # Prove the file is readable only when quoted correctly
 test -f "$path_with_space"
 wc -l < "$path_with_space" | tee line-count.txt
-EOF
+```
+
+Run:
+
+```bash
+cd ~/rebash-shell/lab03
+set -euo pipefail
+
+mkdir -p "data/my reports"
+printf 'line1\n' > "data/my reports/summary.txt"
 
 chmod +x quoting-demo.sh
 ./quoting-demo.sh
@@ -205,15 +209,14 @@ grep -q '<data/my reports/summary.txt>' quoting-safe.txt
 grep -q '<data/my>' quoting-unsafe.txt
 ```
 
+
 **Expected output:** Safe line shows one `<data/my reports/summary.txt>` argument; unsafe line splits into more than one `<>` chunk; `line-count.txt` is `1`.
 
 #### Task 2 – Defaults and arithmetic
 
-```bash
-cd ~/rebash-shell/lab03
-set -euo pipefail
+Create `defaults-math.sh`:
 
-cat > defaults-math.sh << 'EOF'
+```bash
 #!/usr/bin/env bash
 set -euo pipefail
 
@@ -238,7 +241,13 @@ empty_region=""
 echo "empty_fallback=${empty_region:-ap-south-1}" | tee -a defaults-math.txt
 
 test "$remaining" -eq 2
-EOF
+```
+
+Run:
+
+```bash
+cd ~/rebash-shell/lab03
+set -euo pipefail
 
 chmod +x defaults-math.sh
 ./defaults-math.sh
@@ -247,15 +256,14 @@ grep -q 'region=eu-west-1' defaults-math-override.txt
 grep -q 'region=ap-south-1' defaults-math.txt
 ```
 
+
 **Expected output:** Default run uses `ap-south-1` and `remaining=2`; override run shows `eu-west-1`.
 
 #### Task 3 – readonly and export to a child
 
-```bash
-cd ~/rebash-shell/lab03
-set -euo pipefail
+Create `export-readonly.sh`:
 
-cat > export-readonly.sh << 'EOF'
+```bash
 #!/usr/bin/env bash
 set -euo pipefail
 
@@ -283,7 +291,13 @@ grep -qi 'readonly\|read-only\|readonly variable' readonly-reassign.out \
 
 grep -q 'child_APP_ENV=lab' child-env.txt
 grep -q 'child_LOCAL_ONLY=missing' child-env.txt
-EOF
+```
+
+Run:
+
+```bash
+cd ~/rebash-shell/lab03
+set -euo pipefail
 
 chmod +x export-readonly.sh
 ./export-readonly.sh
@@ -294,6 +308,7 @@ tar -czf variables-evidence.tgz \
   child-env.txt readonly-value.txt readonly-reassign-exit.txt
 ls -l variables-evidence.tgz | tee evidence-ls.txt
 ```
+
 
 **Expected output:** Child sees `APP_ENV=lab` and missing `LOCAL_ONLY`; reassign exit is non-zero; evidence archive exists.
 

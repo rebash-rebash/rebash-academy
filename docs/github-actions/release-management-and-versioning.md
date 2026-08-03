@@ -1,454 +1,425 @@
 ---
 title: "Release Management and Versioning"
-description: "Automate Semantic Versioning, git tags, GitHub Releases, changelogs, and immutable artefacts from GitHub Actions."
+description: "Automate semantic versioning, Git tags, GitHub Releases, and changelogs from GitHub Actions workflows."
 difficulty: intermediate
-estimated_time: "40–55 min"
+estimated_time: "45–60 min"
 technology: github-actions
 category: github-actions
 module: "Module 13 · Release Management"
 career_paths:
   - devops-engineer
-  - cloud-engineer
   - platform-engineer
+  - software-engineer
   - site-reliability-engineer
-  - devsecops-engineer
 skills:
   - github-actions
-  - releases
   - semver
-  - changelogs
+  - releases
+  - changelog
 prerequisites:
   - github-actions/testing-in-github-actions
 next:
   - github-actions/composite-actions-and-reusable-workflows
 related:
-  - git/git-workflows-and-branching
+  - git/repository-management-and-releases
   - github-actions/docker-pipelines-with-github-actions
-labs: []
-projects: []
-interview: interview/github-actions
-certifications:
-  - GitHub Actions
 tags:
   - github-actions
-  - releases
+  - release
   - semver
-  - tags
+  - changelog
+  - gh-release
 author: Shaik Basha
-last_updated: "2026-07-31"
+last_updated: "2026-08-03"
 comments: false
 ---
-
 
 # Release Management and Versioning
 
 ## Overview
 
+Releases turn commits into consumable versions customers and operators can trust. **Semantic Versioning (SemVer)** tags (`v1.4.2`), **GitHub Releases** with notes and binaries, and **changelog** automation from conventional commits keep delivery auditable and repeatable from GitHub Actions.
 
-
-
-
-
-
-
-Create annotated git tags, publish GitHub Releases with notes and assets, and apply Semantic Versioning (SemVer) with changelog discipline from GitHub Actions.
-
-A **release** is more than a green workflow: it is an immutable Git reference, human-readable notes, and optional binaries or package links. GitHub ties **tags**, **Releases**, and Actions so the same SHA you tested becomes the version you promote through environments.
-
-This is a core tutorial in **Module 13 · Release Management** of the REBASH Academy **GitHub Actions for Cloud & DevOps Engineers** series — written for Cloud, DevOps, Platform, and SRE engineers.
+This is **Tutorial 13** in **Module 13: Release Management** of the REBASH Academy **GitHub Actions for Cloud & DevOps Engineers** series — written for Cloud, DevOps, Platform, SRE, and software engineers.
 
 ## Prerequisites
 
-
-
-
-
-
-
-
 - [Testing in GitHub Actions](testing-in-github-actions.md)
-- Comfortable with protected branches and `contents` / `packages` permissions
+- [Git — tags and releases](../git/repository-management-and-releases.md)
+- GitHub CLI (`gh`) optional for local release simulation
 
 ## Learning Objectives
 
-
-
-
-
-
-
-
 By the end of this tutorial, you will be able to:
 
-- [ ] Choose SemVer bumps (MAJOR / MINOR / PATCH) intentionally  
-- [ ] Tag from CI or a release train with protected tags  
-- [ ] Create a GitHub Release with notes and asset links  
-- [ ] Generate or attach a changelog for operators
+- [ ] Apply SemVer tagging rules in CI (`major.minor.patch`)
+- [ ] Create GitHub Releases with `gh release create` or `softprops/action-gh-release`
+- [ ] Generate changelog sections from git history or conventional commits
+- [ ] Gate releases on tests and security scans
+- [ ] Attach build artefacts (binaries, SBOM) to releases
 
 ## Architecture
 
+Tag push or manual dispatch triggers release job after quality gates; changelog and assets publish to GitHub Releases.
 
-
-
-
-
-
-
-This topic’s control points and relationships are shown below.
-
-![Release pipeline](../assets/excalidraw/gha-release-pipeline.svg)
+![Release pipeline in GitHub Actions](../assets/excalidraw/gha-release-pipeline.svg)
 
 ## Theory
 
-
-
-
-
-
-
-
 ### What it is
 
-**Release management** in GitHub combines **git tags** (pointers to commits) with the **Releases** API/UI (title, body, assets). **Semantic Versioning** (`MAJOR.MINOR.PATCH`) communicates compatibility: breaking API or ops contract → MAJOR; backwards-compatible features → MINOR; fixes → PATCH. Changelogs explain *what operators and consumers must know* — not every commit message.
+| Element | Role |
+|---------|------|
+| SemVer tag | Immutable pointer (`v2.1.0`) consumers pin |
+| GitHub Release | User-facing page + asset downloads |
+| Changelog | Human-readable what changed |
+| Release workflow | Automates tag, notes, artefact upload |
+| Draft/pre-release | Staging release before GA |
 
-| Artefact | Role |
-|----------|------|
-| Git tag | Immutable commit pointer (`v1.4.2`) |
-| GitHub Release | Notes, assets, audit-friendly package |
-| Changelog | Human summary of user-facing change |
-| Workflow on tag | Build/publish artefacts for that version |
+**SemVer rules (summary):** `MAJOR` breaking, `MINOR` features backward compatible, `PATCH` fixes. Pre-release: `v1.0.0-rc.1`.
 
 ### Why it matters
 
-Cloud deployments and GitOps consume versions, not branch tips. Without SemVer and release notes, rollbacks and incident communication degrade into archaeology. Automating tags and Releases from Actions removes “who remembered to click Publish?” and keeps evidence next to the code that produced the artefact.
+Floating `main` deploys are hard to roll back and support. Tags give operators a known version. Automated changelogs reduce release-day toil. Attachments (container digest, SBOM, binary) prove what shipped.
 
 ### How it works
 
-Typical automation loop:
+1. Merge to `main` with conventional commits or maintained `CHANGELOG.md`.
+2. Workflow on `push: tags: v*` or `workflow_dispatch` with version input.
+3. Run tests and security jobs (`needs:`) before release.
+4. Build artefacts; compute release notes (`git log`, `github-script`, or release-changelog-builder).
+5. Create annotated tag if not present; `gh release create` with `--notes-file` and `--attach`.
+6. Deploy workflows trigger on `release: published` event.
 
-1. Merge to the release branch / `main` after tests and security gates pass.  
-2. Decide the next SemVer (manual `workflow_dispatch` input, Conventional Commits, or a release bot such as `softprops/action-gh-release` / release-please).  
-3. Create an annotated tag (`vX.Y.Z`); protect tag patterns so only maintainers or bot identities can push.  
-4. A **tag workflow** builds images/packages with that version as an immutable tag.  
-5. A release job creates the GitHub Release, attaches links (container digest, package URL), and embeds changelog content.  
-6. Downstream environments promote that exact version — never rebuild for production.
+Example trigger (documentation):
 
-Prefer **annotated tags** over lightweight tags for release history. Keep changelog generation deterministic (Conventional Commits, `git-cliff`, or notes generated from merged pull requests).
+{% raw %}
+```yaml
+on:
+  push:
+    tags:
+      - 'v*.*.*'
+permissions:
+  contents: write
+```
+{% endraw %}
 
 ### Key concepts and comparisons
 
-| Approach | When to use |
-|----------|-------------|
-| Tag only | Simple libraries; consumers track Git |
-| Tag + GitHub Release | Product teams, ops handoffs, assets |
-| Continuous deploy every commit | Internal apps with strong progressive delivery |
-| Release train (calendar) | Coordinated multi-service cuts |
-
-| SemVer part | Bump when |
-|-------------|-----------|
-| MAJOR | Breaking behaviour or config contract |
-| MINOR | Compatible new capability |
-| PATCH | Compatible fix |
+| Approach | Pros | Cons |
+|----------|------|------|
+| Manual tag + release | Simple | Error-prone, inconsistent notes |
+| Tag push triggers CI | Git as source of truth | Requires tag discipline |
+| Release please / semantic-release | Automated bump | Setup learning curve |
+| Draft releases | Review before publish | Extra step |
 
 ### Common pitfalls
 
-- Moving or retagging `v1.2.0` after publish — consumers and digests diverge; always cut a new patch.  
-- Using `latest` as the only production pin — releases should be immutable versions.  
-- Changelog that lists every chore commit — operators need impact, not noise.  
-- Creating Releases without a matching successful tag workflow — notes without artefacts.  
-- Granting broad `contents: write` on every pull-request workflow — scope write permissions to release jobs only.
+- Tagging without running tests on the tagged commit.
+- Reusing deleted tag names — breaks consumers caching old version.
+- Changelog includes internal ticket noise only — no user impact.
+- `contents: write` on every workflow — over-permissioned forks risk.
+- Release assets not retained — compliance gap.
 
 ## Hands-on Lab
 
-
-
 ### Objective
 
-Author a GitHub Actions workflow that implements **Release Management and Versioning** and validate YAML structure locally.
+Simulate SemVer tagging locally, author a release workflow stub triggered by version tags, generate a changelog file from git history, and validate offline.
 
 ### Prerequisites
 
+- Git repository initialised in lab folder (local only is fine)
 - Python 3 with PyYAML
-- Optional: GitHub repo to run the workflow
 
 ### Lab environment
 
-Workspace: `~/rebash-github-actions/module-13/.github/workflows`
-
-Workflows under `.github/workflows/`. In docs, wrap GitHub Actions expressions in Jinja raw blocks so MkDocs macros do not parse them; use heredocs in the lab.
+Workspace: `~/rebash-github-actions/module-13`
 
 ```bash
-mkdir -p ~/rebash-github-actions/module-13/.github/workflows && cd ~/rebash-github-actions/module-13/.github/workflows
+mkdir -p ~/rebash-github-actions/module-13/.github/workflows && cd ~/rebash-github-actions/module-13
+set -euo pipefail
+git init -q 2>/dev/null || true
 ```
 
 ### Real-world scenario
 
-Platform engineering wants **Release Management and Versioning** as a reusable workflow pattern. You prototype YAML that passes review and runs on `ubuntu-latest`.
+Platform requires every production release to be a SemVer tag, GitHub Release with generated notes, and attached evidence tarball — only after tests pass.
 
 ### Step-by-step tasks
 
-#### Task 1 – Create workflow file
-
-Jobs and steps must be explicit; pin mainstream actions.
+#### Task 1 – Local SemVer tag practice
 
 ```bash
-mkdir -p .github/workflows
-cat > .github/workflows/lab.yml << 'EOF'
-name: lab
+cd ~/rebash-github-actions/module-13
+set -euo pipefail
+
+echo 'module 13 release lab' > README.md
+git add README.md 2>/dev/null || true
+git -c user.email='lab@rebash.local' -c user.name='lab' commit -m 'chore: init module-13 lab' 2>/dev/null || true
+git tag -a v0.1.0 -m 'lab patch release' 2>/dev/null || git tag v0.1.0
+git tag -l 'v*' | tee tags.txt
+```
+
+**Expected output:** `v0.1.0` listed in `tags.txt`.
+
+#### Task 2 – Changelog generator script
+
+Create `generate-changelog.sh`:
+
+```bash
+#!/usr/bin/env bash
+set -euo pipefail
+prev="${1:-}"
+out="${2:-CHANGELOG.md}"
+{
+  echo "# Changelog"
+  echo
+  echo "## Unreleased"
+  if [[ -n "$prev" ]] && git rev-parse "$prev" >/dev/null 2>&1; then
+    git log --pretty=format:'- %s (%h)' "${prev}..HEAD"
+  else
+    git log --pretty=format:'- %s (%h)' -n 10
+  fi
+} > "$out"
+echo "wrote $out"
+```
+
+Run it:
+
+```bash
+cd ~/rebash-github-actions/module-13
+set -euo pipefail
+chmod +x generate-changelog.sh
+./generate-changelog.sh '' CHANGELOG.md | tee changelog-gen.txt
+test -s CHANGELOG.md
+head -5 CHANGELOG.md
+```
+
+**Expected output:** Non-empty `CHANGELOG.md` with commit subjects.
+
+#### Task 3 – Release workflow stub
+
+Create `.github/workflows/release.yml`:
+
+{% raw %}
+```yaml
+name: Release
 on:
-  workflow_dispatch:
   push:
+    tags:
+      - 'v*.*.*'
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'SemVer tag without v prefix (e.g. 1.2.3)'
+        required: true
+
 permissions:
-  contents: read
+  contents: write
+
 jobs:
-  build:
+  test-gate:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Prove workspace
+      - run: echo "Replace with real test workflow needs"
+      - run: test -f README.md
+
+  release:
+    needs: test-gate
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Build release evidence
         run: |
-          mkdir -p out
-          echo ok > out/marker.txt
-          test -s out/marker.txt
-EOF
-python3 -c "import yaml; yaml.safe_load(open('.github/workflows/lab.yml')); print('workflow OK')"
+          tar -czf release-evidence.tgz README.md CHANGELOG.md 2>/dev/null || tar -czf release-evidence.tgz README.md
+      - name: Generate changelog
+        run: |
+          ./generate-changelog.sh "$(git describe --tags --abbrev=0 HEAD^ 2>/dev/null || echo '')" RELEASE_NOTES.md
+      - name: Create GitHub Release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          TAG="${GITHUB_REF_NAME}"
+          if [[ "${{ github.event_name }}" == "workflow_dispatch" ]]; then
+            TAG="v${{ inputs.version }}"
+          fi
+          gh release create "$TAG" release-evidence.tgz --notes-file RELEASE_NOTES.md --title "$TAG" || echo "gh not authenticated — stub OK locally"
 ```
+{% endraw %}
 
-**Expected output:** `workflow OK` printed; file exists under `.github/workflows/`.
-
-#### Task 2 – Dry-run the shell steps locally
-
-The `run:` block should work in a normal shell before CI.
+Validate offline:
 
 ```bash
-mkdir -p out && echo ok > out/marker.txt
-test -s out/marker.txt && cat out/marker.txt
+cd ~/rebash-github-actions/module-13
+set -euo pipefail
+python3 -c "import yaml; yaml.safe_load(open('.github/workflows/release.yml')); print('release workflow OK')"
+grep -q "tags:" .github/workflows/release.yml
+grep -q 'needs: test-gate' .github/workflows/release.yml
 ```
 
-**Expected output:** Prints `ok`.
+**Expected output:** `release workflow OK`; test gate and tag trigger present.
+
+#### Task 4 – Offline validation bundle
+
+```bash
+cd ~/rebash-github-actions/module-13
+set -euo pipefail
+tar -czf module-13-evidence.tgz .github/workflows/release.yml generate-changelog.sh CHANGELOG.md tags.txt
+ls -l module-13-evidence.tgz | tee evidence.txt
+```
+
+**Expected output:** Evidence archive created.
 
 ### Validation steps
 
-- [ ] Workflow YAML parses
-- [ ] Local run steps succeed
+- [ ] SemVer tag exists locally (`v0.1.0`)
+- [ ] Changelog generator produces non-empty output
+- [ ] Release workflow parses; `needs: test-gate` before release job
+- [ ] Tag push trigger `v*.*.*` configured
 
 ### Common errors and fixes
 
 | Error | Cause | Fix |
 |-------|-------|-----|
-| Invalid workflow file | YAML/indent | Validate with PyYAML / actionlint |
-| Action not found | Bad uses ref | Pin `actions/checkout@v4` |
-| Permission denied | Missing permissions/OIDC | Set least-privilege `permissions:` |
+| `gh: not authenticated` | No token locally | Expected offline; use `GITHUB_TOKEN` in CI |
+| Release on wrong commit | Shallow checkout | `fetch-depth: 0` |
+| Duplicate tag | Tag already exists | Bump version; never retag published releases |
+| Empty notes | No commits since tag | Fix range in changelog script |
+| Assets missing | Wrong path in `gh release create` | Verify artefact path before upload |
 
 ### Challenge exercise
 
-Add a second job with `needs: build` that uploads `out/` as an artefact (YAML only is fine offline).
+Split release into two workflows: (1) `workflow_dispatch` creates a **draft** release; (2) manual approval job publishes it. Document how this maps to GitHub Environments.
 
 ### Learning outcomes
 
-- Created a real workflow file
-- Validated structure before push
+- Practised SemVer tagging locally
+- Generated changelog from git history
+- Authored gated release workflow with artefact attach
+- Understood `contents: write` scope for releases
 
 ### Cleanup
 
 ```bash
-# Keep workflow stubs under ~/rebash-github-actions/
-```
-
-## Unreleased
-
-
-
-
-- GHA release lab
-EOF
-cat > .github/workflows/release.yml << 'EOF'
-name: Release
-on:
-  push:
-    tags: ["v*"]
-  workflow_dispatch:
-permissions:
-  contents: write
-jobs:
-  release:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - name: Package
-        run: |
-          mkdir -p dist
-          cp CHANGELOG.md dist/
-          echo "VERSION" > dist/VERSION
-      - uses: actions/upload-artifact@v4
-        with:
-          name: release-dist
-          path: dist/
-EOF
-```
-
-### Step 2 – Check tag trigger and packaging
-
-```bash
-grep -E 'tags:|VERSION|CHANGELOG' .github/workflows/release.yml
-test -f CHANGELOG.md
-```
-
-### Final step – Cleanup note
-
-```bash
-# Keep ~/rebash-github-actions/ for later tutorials
+# Keep lab artefacts for portfolio; delete tag locally if rehearsing:
+# git tag -d v0.1.0
+ls ~/rebash-github-actions/module-13
 ```
 
 ## Validation
 
-
-
-
-
-
-
-
-- [ ] Lab commands run under `~/rebash-github-actions/module-13/.github/workflows/`
-- [ ] You can explain each Theory section in your own words
-- [ ] You used modern tooling where it applies to this topic
-- [ ] You can describe one production failure mode for this topic
+- [ ] Lab completed under `~/rebash-github-actions/module-13/`
+- [ ] You can explain MAJOR/MINOR/PATCH bump rules
+- [ ] You can describe why releases need test gates
+- [ ] You can name one release rollback strategy (redeploy prior tag)
 
 ## Code Walkthrough
 
-
-
-
-
-
-
-
-Production practice for **Release Management and Versioning** always combines:
-
-1. Inspect before you change (status, plan, logs, dry-run)
-2. Prefer reversible, documented changes (Git, IaC, drop-ins, version pins)
-3. Capture evidence (command output, pipeline logs) for handovers
-4. Prefer current tools and APIs over legacy shortcuts
-5. Least privilege — escalate credentials only when required
-
-Keep runbooks short enough to follow under pressure. Automate checks; keep humans for judgement.
+1. **Tag is contract** — consumers pin `v1.2.3`, not branch names.
+2. **Full git history** — changelog and notes need `fetch-depth: 0`.
+3. **Test before release** — `needs:` test/security jobs.
+4. **Attach evidence** — SBOM, binaries, Terraform plan summaries.
+5. **Least privilege** — `contents: write` only on release job.
 
 ## Security Considerations
 
-
-
-
-
-
-
-
-- Treat credentials and tokens for github-actions as privileged — never commit them
-- Prefer short-lived auth (OIDC, roles, SSO) over long-lived keys
-- Validate blast radius before apply/deploy/delete operations
-- Restrict who can approve production changes
-- Collect audit logs; limit who can read sensitive traces
+- `GITHUB_TOKEN` with `contents: write` can push tags — restrict who can run release workflows.
+- Do not attach secrets or `.env` files to release assets.
+- Verify tag signature or protected tag rules for production repos.
+- Fork workflows must not create releases with elevated tokens.
+- Scan release artefacts (Module 11) before publish.
 
 ## Common Mistakes
 
+!!! warning "Release from untested commit"
+    Broken tag in production. **Fix:** require CI green on tagged SHA.
 
+!!! warning "Floating changelog edits only in UI"
+    Drift from git truth. **Fix:** generate notes from git/conventional commits in workflow.
 
+!!! warning "Reusing tag after hotfix mistake"
+    Consumers cache corrupted version. **Fix:** new patch version always.
 
-
-
-
-
-!!! warning "Moving or retagging `v1.2.0` after publish — consumers and digests diverge; always cut a n"
-    Validate assumptions against the Theory section and official docs before changing production.
-
-!!! warning "Using `latest` as the only production pin — releases should be immutable versions.  "
-    Lab shortcuts (open security groups, admin roles, skip approvals) must not ship unchanged.
-
-!!! warning "Changing production without a rollback path"
-    Always know how to revert (previous artefact, prior release, state rollback, DNS failback).
+!!! warning "Overbroad `contents: write`"
+    Any job can tag. **Fix:** isolate release job; use environments.
 
 ## Best Practices
 
-
-
-
-
-
-
-
-- Encode Release Management and Versioning changes as code and review them in pull requests
-- Pin versions (images, modules, actions, provider plugins)
-- Separate environments with clear promotion gates
-- Alert on symptoms with runbooks attached
-- Destroy lab resources; tag everything with owner and expiry where possible
+- Protect `main` and tag patterns; require reviews.
+- Use pre-release tags (`-rc.1`) for staging validation.
+- Link release notes to deployment workflow inputs (image digest per tag).
+- Keep `CHANGELOG.md` in repo for human curation plus automated section.
+- Notify Slack/Teams on `release: published` event.
 
 ## Troubleshooting
 
-
-
-
-
-
-
-
 | Symptom | Likely cause | Fix |
 |---------|--------------|-----|
-| Auth / permission denied | Wrong identity, policy, or scope | Check caller identity, roles, and least-privilege policies |
-| Timeout / no route | Network, DNS, security group, or endpoint | Trace path, DNS, and allow-lists before retrying |
-| Drift / unexpected plan | Manual change or wrong state/workspace | Reconcile desired vs actual; avoid click-ops on managed resources |
-| Pipeline/job red | Flaky step, cache, or missing secret | Read failing step logs; bisect recent workflow/config changes |
-| Cost spike | Idle load balancer, NAT, oversized compute | Inventory billable resources; stop/delete labs promptly |
+| Workflow not on tag push | Pattern mismatch | Use `v*.*.*` or exact tag filter |
+| `gh release` 403 | Token permissions | `permissions: contents: write` |
+| Wrong commits in notes | Shallow clone | `fetch-depth: 0` |
+| Asset upload fails | File > limit | Split assets or use object storage |
+| Double release | Retagged push | Enable immutable releases policy |
 
 ## Summary
 
-
-
-
-
-
-
-
-**Release Management and Versioning** is essential for Cloud and DevOps engineers working with github-actions. Practise the lab until the inspection and change path is muscle memory, then continue the track.
+Release management ties SemVer tags, automated changelogs, and GitHub Releases to tested artefacts. Gate publishing on CI and attach evidence for audit. Next: [Composite Actions and Reusable Workflows](composite-actions-and-reusable-workflows.md).
 
 ## Interview Questions
 
+**1. What do MAJOR, MINOR, and PATCH mean in SemVer?**
 
+??? success "Reveal answer"
+    MAJOR increments for breaking API/behaviour changes, MINOR for backward-compatible features, PATCH for backward-compatible bug fixes — communicated as `MAJOR.MINOR.PATCH`.
 
+**2. Why trigger release workflows on tag push rather than manual UI only?**
 
+??? success "Reveal answer"
+    Tag push keeps release steps in version-controlled workflows — repeatable, reviewable, and able to run tests before creating the GitHub Release.
 
+**3. What permission does `gh release create` typically need?**
 
-1. How do tag triggers differ from branch pushes?
-2. What should a release artifact include for traceability?
-3. Immutable tags — why do they matter?
-4. How do you automate changelog generation safely?
-5. Who should be allowed to publish releases?
+??? success "Reveal answer"
+    {% raw %}`contents: write`{% endraw %} on `GITHUB_TOKEN` (or a PAT with `contents` scope) to create releases and upload assets.
 
-!!! tip "Sample answer — question 2"
-    Confirm the workflow ran on the tag ref, artifacts uploaded, and the release points at the expected commit.
+**4. Why use `fetch-depth: 0` in release jobs?**
 
-!!! tip "Sample answer — question 4"
-    Restrict contents write, protect release tags, and sign/attest artifacts when required.
+??? success "Reveal answer"
+    Full history enables accurate changelog generation between tags and access to prior tags for comparison.
+
+**5. How do conventional commits help changelogs?**
+
+??? success "Reveal answer"
+    Prefixes like `feat:` and `fix:` classify commits so automation groups features vs fixes in release notes without manual sorting.
+
+**6. What is the difference between a draft and pre-release?**
+
+??? success "Reveal answer"
+    Draft releases are unpublished until explicitly released; pre-releases are published but marked unstable (e.g. `-rc.1`) for early adopters.
+
+**7. How should rollback relate to release tags?**
+
+??? success "Reveal answer"
+    Redeploy the previous known-good tag/digest — tags make rollback a concrete operation rather than guessing a commit on `main`.
+
+**8. Why gate release jobs on test workflows?**
+
+??? success "Reveal answer"
+    A tag must not ship broken artefacts; `needs:` ensures the exact commit passed unit/integration/E2E and security scans before assets publish.
 
 ## Related Tutorials
 
-
-
-
-
-
-
-
-- [Course overview](index.md)
-- [Composite Actions and Reusable Workflows](composite-actions-and-reusable-workflows.md)
+- [Testing in GitHub Actions](testing-in-github-actions.md)
+- [Docker Pipelines with GitHub Actions](docker-pipelines-with-github-actions.md)
+- [Git — repository management and releases](../git/repository-management-and-releases.md)
 
 ## References
 
-
-
-
-
-
-
-
-- [GitHub Releases](https://docs.github.com/en/repositories/releasing-projects-on-github/about-releases)  
-- [softprops/action-gh-release](https://github.com/softprops/action-gh-release)  
-- [Semantic Versioning](https://semver.org/)
+- [Semantic Versioning 2.0.0](https://semver.org/)
+- [GitHub Releases](https://docs.github.com/en/repositories/releasing-projects-on-github/about-releases)
+- [GitHub CLI release create](https://cli.github.com/manual/gh_release_create)
+- [Events that trigger workflows — release](https://docs.github.com/en/actions/using-workflows/events-that-trigger-workflows#release)

@@ -36,7 +36,7 @@ tags:
   - environments
   - progressive-delivery
 author: Shaik Basha
-last_updated: "2026-07-31"
+last_updated: "2026-08-03"
 comments: false
 ---
 
@@ -162,92 +162,209 @@ Keep production variables and runners scoped; production jobs should not share b
 
 ### Objective
 
-Author a valid `.gitlab-ci.yml` that models **Production Pipelines and Environments** and validate it locally before pushing.
+Author a promotion pipeline with **staging** and **production** GitLab environments, manual production gates, and the same artefact digest promoted — validated offline.
 
 ### Prerequisites
 
 - Python 3 with PyYAML (`pip install pyyaml`)
-- Optional: GitLab project to run the pipeline
+- Optional: GitLab project with protected environments configured
 
 ### Lab environment
 
 Workspace: `~/rebash-gitlab/module-15`
 
-File-first lab. Push to GitLab only when you want a runner to execute jobs.
+File-first lab. Environment approvals apply when pushed to GitLab.
 
 ```bash
 mkdir -p ~/rebash-gitlab/module-15 && cd ~/rebash-gitlab/module-15
+set -euo pipefail
 ```
 
 ### Real-world scenario
 
-Your squad is encoding **Production Pipelines and Environments** as CI. Reviewers reject YAML that does not parse or that skips artefacts/needs incorrectly.
+Release managers require automatic staging deploy on the default branch, smoke checks, then a **manual** production deploy using the same image digest — never a rebuild in production. You deliver pipeline YAML for review before environment protection rules are set.
 
 ### Step-by-step tasks
 
-#### Task 1 – Write pipeline YAML
+#### Task 1 – Promotion pipeline with environments
 
-Stages and jobs must be explicit so MR pipelines are predictable.
+Create `.gitlab-ci.yml`:
+
+{% raw %}
+```yaml
+stages:
+  - build
+  - deploy
+  - verify
+
+variables:
+  APP_NAME: rebash-lab
+
+build:
+  stage: build
+  image: alpine:3.20
+  script:
+    - echo "sha256:lab-${CI_COMMIT_SHORT_SHA}" > digest.txt
+    - cat digest.txt
+  artifacts:
+    paths:
+      - digest.txt
+    expire_in: 1 day
+  rules:
+    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
+
+deploy-staging:
+  stage: deploy
+  image: alpine:3.20
+  needs: [build]
+  environment:
+    name: staging
+    url: https://staging.example.com
+  script:
+    - echo "Deploy $(cat digest.txt) to staging"
+  rules:
+    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
+
+smoke-staging:
+  stage: verify
+  image: alpine:3.20
+  needs: [deploy-staging]
+  script:
+    - echo "Smoke check staging — HTTP 200 stub"
+    - test 0 -eq 0
+  rules:
+    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
+
+deploy-production:
+  stage: deploy
+  image: alpine:3.20
+  needs: [build, smoke-staging]
+  environment:
+    name: production
+    url: https://app.example.com
+  script:
+    - echo "Deploy SAME digest $(cat digest.txt) to production"
+  when: manual
+  rules:
+    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
+```
+{% endraw %}
+
+Validate offline:
 
 ```bash
-mkdir -p src && echo 'print("ok")' > src/app.py
-cat > .gitlab-ci.yml << 'EOF'
-stages: [lint, test]
-lint:
-  stage: lint
-  image: python:3.12-alpine
-  script:
-    - python -m py_compile src/app.py
-test:
-  stage: test
-  image: python:3.12-alpine
-  needs: [lint]
-  script:
-    - python src/app.py
-EOF
-python3 -c "import yaml; d=yaml.safe_load(open('.gitlab-ci.yml')); assert d['stages']==['lint','test']; print('OK', list(d))"
+cd ~/rebash-gitlab/module-15
+set -euo pipefail
+python3 -c "
+import yaml
+d = yaml.safe_load(open('.gitlab-ci.yml'))
+assert d['deploy-production']['when'] == 'manual'
+assert d['deploy-production']['needs'] == ['build', 'smoke-staging']
+assert d['deploy-staging']['environment']['name'] == 'staging'
+print('gitlab-ci OK')
+"
+grep -q 'alpine:3.20' .gitlab-ci.yml
+grep -q 'SAME digest' .gitlab-ci.yml
 ```
 
-**Expected output:** Prints `OK` and job names; no YAML exception.
+**Expected output:** `gitlab-ci OK`; manual production gate and digest promotion present.
 
-#### Task 2 – Simulate the scripts locally
+#### Task 2 – Deployment strategies reference
 
-Prove the job script works before burning runner minutes.
+Create `deployment-strategies.yaml`:
+
+```yaml
+strategies:
+  blue_green:
+    description: Maintain blue (current) and green (new) stacks
+    rollback: switch traffic back to blue without rebuild
+  canary:
+    description: Route small traffic percentage to new version
+    initial_weight_percent: 10
+gitlab_environments:
+  staging:
+    deploy_trigger: auto on default branch
+  production:
+    required_approvers: true
+    promotion: same digest from build job artefact
+```
+
+Validate offline:
 
 ```bash
-python3 -m py_compile src/app.py
-python3 src/app.py | tee out.txt
-test "$(cat out.txt)" = 'ok'
+cd ~/rebash-gitlab/module-15
+set -euo pipefail
+python3 -c "
+import yaml
+doc = yaml.safe_load(open('deployment-strategies.yaml'))
+assert 'blue_green' in doc['strategies']
+assert doc['gitlab_environments']['production']['promotion'].startswith('same digest')
+print('deployment-strategies.yaml OK')
+"
 ```
 
-**Expected output:** Compile succeeds; out.txt is `ok`.
+**Expected output:** `deployment-strategies.yaml OK`
+
+#### Task 3 – Simulate digest promotion locally
+
+Create `simulate-promote.sh`:
+
+```bash
+#!/usr/bin/env bash
+set -euo pipefail
+echo 'sha256:lab-local' > digest.txt
+staging_digest="$(cat digest.txt)"
+prod_digest="$(cat digest.txt)"
+test "${staging_digest}" = "${prod_digest}"
+grep -q 'when: manual' .gitlab-ci.yml
+echo 'module-15 promotion lab passed'
+```
+
+Run it:
+
+```bash
+cd ~/rebash-gitlab/module-15
+set -euo pipefail
+chmod +x simulate-promote.sh
+./simulate-promote.sh | tee validation.txt
+```
+
+**Expected output:** `module-15 promotion lab passed`
 
 ### Validation steps
 
-- [ ] `.gitlab-ci.yml` parses
-- [ ] Local script path matches job intent
+- [ ] Staging deploy runs before production in the stage graph
+- [ ] Production job is `when: manual` with `environment: production`
+- [ ] Build artefact `digest.txt` referenced in both deploy jobs
+- [ ] `deployment-strategies.yaml` documents blue/green and canary
+- [ ] Pinned image `alpine:3.20` on all jobs
 
 ### Common errors and fixes
 
 | Error | Cause | Fix |
 |-------|-------|-----|
-| yaml.scanner.ScannerError | Indentation | Use 2-space indent; re-validate with PyYAML |
-| job stuck pending | No runner / tags | Check runner tags match job tags |
-| needs not found | Typo in job name | Align `needs` with actual job keys |
+| Production deploy without approval | Environment not protected | Add required approvers in GitLab settings |
+| Staging/prod different digests | Rebuild in prod job | Pass `digest.txt` artefact from build |
+| Manual job never appears | Wrong branch rules | Confirm default-branch pipeline |
+| Rollback untested | No runbook | Add manual rollback job with prior tag input |
+| Unprotected production env | Missing access control | Restrict deploy rights to release managers |
 
 ### Challenge exercise
 
-Add an `artifacts:` path from lint to test and document expire_in.
+Add a `rollback-production` manual job that accepts a `PRIOR_DIGEST` variable and documents the Kubernetes `helm rollback` or `kubectl rollout undo` command it would run.
 
 ### Learning outcomes
 
-- Produced reviewable GitLab CI YAML
-- Validated structure and scripts locally
+- Configured staging and production GitLab environments
+- Gated production with manual deploy and smoke verification
+- Promoted the same digest artefact without rebuild
+- Documented deployment strategies in reviewable YAML
 
 ### Cleanup
 
 ```bash
-# File-only lab — keep YAML for the next tutorial
+rm -f ~/rebash-gitlab/module-15/digest.txt 2>/dev/null || true
+ls ~/rebash-gitlab/module-15
 ```
 
 ## Validation

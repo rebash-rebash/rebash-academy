@@ -30,7 +30,7 @@ tags:
   - docker
   - security
 author: Shaik Basha
-last_updated: "2026-07-31"
+last_updated: "2026-08-03"
 comments: false
 ---
 
@@ -133,22 +133,19 @@ Set `USER` in the Dockerfile to a non-root UID and align Kubernetes `runAsNonRoo
 
 ## Hands-on Lab
 
-
-
 ### Objective
 
-Build or run a real Docker solution for **Docker Security Hardening** and prove it with inspect/logs/HTTP.
+Build a hardened image with a non-root user, drop Linux capabilities, and run with a read-only root filesystem — then prove `User` and `CapDrop` via `docker inspect`.
 
 ### Prerequisites
 
 - Docker Engine or Docker Desktop
-- Permission to run containers
+- Permission to build and run containers
+- Basic familiarity with Dockerfile `USER` directive
 
 ### Lab environment
 
 Workspace: `~/rebash-docker/module-11`
-
-Local Docker daemon. Clean up containers/images after the lab.
 
 ```bash
 mkdir -p ~/rebash-docker/module-11 && cd ~/rebash-docker/module-11
@@ -156,64 +153,116 @@ mkdir -p ~/rebash-docker/module-11 && cd ~/rebash-docker/module-11
 
 ### Real-world scenario
 
-You are validating **Docker Security Hardening** before it lands in CI. The change must be reproducible with copy-paste commands and leave no orphan containers.
+Security review flagged a legacy container running as root with full capabilities. You ship a hardened replacement: non-root UID, dropped `NET_RAW`, read-only root with a writable `/tmp` mount, and runtime flags that enforce the policy.
 
 ### Step-by-step tasks
 
-#### Task 1 – Run and inspect a container
+#### Task 1 – Create a hardened Dockerfile
 
-Start from a known image, publish a port, and verify HTTP.
+Create `Dockerfile`:
 
-```bash
-docker run -d --name rebash-lab -p 18080:80 nginx:alpine
-docker ps --filter name=rebash-lab
-curl -sI http://127.0.0.1:18080 | head -n 5 | tee headers.txt
-docker logs rebash-lab 2>&1 | head -n 10 | tee logs.txt
+```dockerfile
+FROM alpine:3.20
+RUN apk add --no-cache netcat-openbsd \
+    && addgroup -S app && adduser -S app -G app \
+    && mkdir -p /app /tmp/app \
+    && chown -R app:app /app /tmp/app
+WORKDIR /app
+COPY --chown=app:app server.sh .
+RUN chmod +x server.sh
+USER app
+EXPOSE 8080
+CMD ["./server.sh"]
 ```
 
-**Expected output:** Container Up; HTTP 200 in headers.txt.
-
-#### Task 2 – Inspect runtime config
-
-Use inspect for status — production debugging rarely starts with guesswork.
+Create `server.sh`:
 
 ```bash
-docker inspect rebash-lab --format '{{ "{{" }}.State.Status{{ "}}" }} {{ "{{" }}.Config.Image{{ "}}" }}' | tee inspect.txt
-test -s inspect.txt
+#!/bin/sh
+set -eu
+echo "rebash-sec-lab listening on 8080 as $(id -un)"
+while true; do printf 'HTTP/1.0 200 OK\r\nContent-Length: 2\r\n\r\nok' | nc -l -p 8080 -q 1; done
 ```
 
-**Expected output:** inspect.txt shows `running` and the nginx image.
+Build the image:
+
+```bash
+cd ~/rebash-docker/module-11
+docker build -t rebash-sec-lab:1.0.0 .
+docker images rebash-sec-lab:1.0.0 | tee build-proof.txt
+grep -q rebash-sec-lab build-proof.txt
+```
+
+**Expected output:** Image `rebash-sec-lab:1.0.0` appears in `build-proof.txt`.
+
+#### Task 2 – Run with capability drop and read-only rootfs
+
+Run with production-style runtime hardening:
+
+```bash
+cd ~/rebash-docker/module-11
+docker run -d --name rebash-sec-18110 \
+  --read-only \
+  --tmpfs /tmp:rw,noexec,nosuid,size=16m \
+  --cap-drop ALL \
+  --cap-add NET_BIND_SERVICE \
+  -p 18110:8080 \
+  rebash-sec-lab:1.0.0
+docker ps --filter name=rebash-sec-18110 --format '{{ "{{" }}.Names{{ "}}" }} {{ "{{" }}.Status{{ "}}" }}' | tee run-status.txt
+curl -sS http://127.0.0.1:18110/ | tee curl-sec.txt
+```
+
+**Expected output:** Container is Up; `curl-sec.txt` contains `ok`.
+
+#### Task 3 – Prove User and CapDrop with inspect
+
+Capture security-relevant fields:
+
+```bash
+cd ~/rebash-docker/module-11
+docker inspect rebash-sec-18110 --format 'User={{ "{{" }}.Config.User{{ "}}" }} CapDrop={{ "{{" }}.HostConfig.CapDrop{{ "}}" }} ReadonlyRootfs={{ "{{" }}.HostConfig.ReadonlyRootfs{{ "}}" }}' | tee inspect-sec.txt
+grep -q 'User=app' inspect-sec.txt
+grep -q 'ReadonlyRootfs=true' inspect-sec.txt
+docker exec rebash-sec-18110 id | tee id-in-container.txt
+grep -q 'uid=100(app)' id-in-container.txt
+```
+
+**Expected output:** `inspect-sec.txt` shows `User=app`, `CapDrop=[all]`, `ReadonlyRootfs=true`; `id-in-container.txt` shows non-root UID.
 
 ### Validation steps
 
-- [ ] Container or image behaves as Expected output describes
-- [ ] Ports respond or command output matches
-- [ ] Cleanup removes lab resources
+- [ ] Dockerfile sets `USER app` before `CMD`
+- [ ] Container runs with `--read-only` and writable `/tmp`
+- [ ] `CapDrop` includes `ALL` with only `NET_BIND_SERVICE` added
+- [ ] HTTP responds on port `18110`
+- [ ] Cleanup removes container and image
 
 ### Common errors and fixes
 
 | Error | Cause | Fix |
 |-------|-------|-----|
-| port is already allocated | Previous lab left a container | `docker rm -f` the old name or change port |
-| permission denied | User not in docker group | Use rootless Docker or fix group membership |
-| manifest unknown | Bad tag | Pin a real tag such as `nginx:alpine` |
+| `Permission denied` writing to `/app` | Read-only root without tmpfs | Mount `--tmpfs /tmp` or a volume for writable paths |
+| `bind: permission denied` on port 8080 | Non-root cannot bind <1024 | Use `-p 18110:8080` (lab port) or `--cap-add NET_BIND_SERVICE` |
+| `exec user process caused: no such file` | Missing shebang or CRLF | Ensure `server.sh` uses LF and `chmod +x` in Dockerfile if needed |
+| Container exits immediately | `nc` missing in alpine | Add `RUN apk add --no-cache netcat-openbsd` to Dockerfile |
 
 ### Challenge exercise
 
-Add a non-root USER (or Compose healthcheck) and prove it with inspect.
+Add `HEALTHCHECK` using `wget` or a shell probe, rebuild, and capture `docker inspect --format '{{ "{{" }}.State.Health.Status{{ "}}" }}'` after 30 seconds in `health-sec.txt`.
 
 ### Learning outcomes
 
-- Executed a real Docker workflow
-- Captured evidence files
-- Removed disposable resources
+- Built an image that runs as a dedicated non-root user
+- Applied `--cap-drop ALL` with minimal capability adds
+- Ran with read-only root filesystem and tmpfs for writes
+- Verified hardening with `docker inspect` and in-container `id`
 
 ### Cleanup
 
 ```bash
-docker rm -f rebash-lab 2>/dev/null || true
-docker rmi rebash-lab:local 2>/dev/null || true
-docker compose down -v 2>/dev/null || true
+docker rm -f rebash-sec-18110 2>/dev/null || true
+docker rmi rebash-sec-lab:1.0.0 2>/dev/null || true
+rm -f ~/rebash-docker/module-11/*.txt
 ```
 
 ## Validation

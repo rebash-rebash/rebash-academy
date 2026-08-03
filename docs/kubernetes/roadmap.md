@@ -5,6 +5,7 @@ technology_id: kubernetes
 hide:
   - toc
 author: Shaik Basha
+last_updated: "2026-08-03"
 category: kubernetes
 tags:
   - kubernetes

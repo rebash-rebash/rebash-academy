@@ -4,7 +4,7 @@ description: Scale workloads with Horizontal Pod Autoscaler, protect availabilit
 difficulty: advanced
 estimated_time: "55 min"
 author: Shaik Basha
-last_updated: "2026-07-28"
+last_updated: "2026-08-03"
 category: kubernetes
 tags:
   - kubernetes
@@ -173,87 +173,192 @@ Get into the habit of watching state while commands run: `docker events` / `kube
 
 ## Hands-on Lab
 
-
-
 ### Objective
 
-Build and verify a working Kubernetes solution for **Production Patterns — HPA, PDB, and Affinity** that you can inspect, prove, and tear down safely.
+Apply production-style manifests combining Deployment (with pod anti-affinity), HorizontalPodAutoscaler, and PodDisruptionBudget in one namespace, validating each object the cluster accepts.
 
 ### Prerequisites
 
-- kubectl configured against a lab cluster (kind/minikube preferred)
-- Cluster-admin or namespace-create rights in the lab cluster
-- Writable workspace at `~/rebash-kubernetes/production-patterns-hpa-pdb-and-affinity`
+- kubectl configured against a lab cluster (kind or minikube; multi-node kind helps anti-affinity)
+- Writable workspace at `~/rebash-k8s/module-patterns`
 
 ### Lab environment
 
-Workspace: `~/rebash-kubernetes/production-patterns-hpa-pdb-and-affinity`
-
-Local kind/minikube or a dedicated sandbox cluster. Never target a shared production API server.
+Workspace: `~/rebash-k8s/module-patterns` on a disposable lab cluster.
 
 ```bash
-mkdir -p ~/rebash-kubernetes/production-patterns-hpa-pdb-and-affinity && cd ~/rebash-kubernetes/production-patterns-hpa-pdb-and-affinity
+mkdir -p ~/rebash-k8s/module-patterns && cd ~/rebash-k8s/module-patterns
 ```
 
 ### Real-world scenario
 
-Your platform team is rolling out **Production Patterns — HPA, PDB, and Affinity** for a new microservice. You must apply the change in an isolated namespace, prove it works with kubectl, and leave evidence for the on-call handover.
+**payments-api** must survive node drains: at least two replicas, spread across nodes where possible, autoscale under load, and never drop below one available Pod during voluntary disruptions. You will commit the YAML bundle and capture evidence for a production readiness review.
 
 ### Step-by-step tasks
 
-#### Task 1 – Apply a topic workload
+#### Task 1 – Namespace and Deployment with anti-affinity
 
-Create a namespace and a small Deployment to practise **Horizontal Pod Autoscaler** against a live API.
+Create `namespace.yaml`:
 
-```bash
-kubectl create namespace rebash-lab --dry-run=client -o yaml | kubectl apply -f -
-kubectl create deployment topic --image=nginx:1.27-alpine -n rebash-lab
-kubectl rollout status deployment/topic -n rebash-lab
-kubectl get all -n rebash-lab
+```yaml
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: rebash-m-patterns
 ```
 
-**Expected output:** Deployment Ready; Pods listed under the namespace.
+Create `deployment.yaml`:
 
-#### Task 2 – Inspect and gather evidence
-
-Production changes always leave an audit trail of describe/Events.
-
-```bash
-kubectl describe deploy topic -n rebash-lab | tee describe.txt
-kubectl get events -n rebash-lab --sort-by=.lastTimestamp | tail -n 15 | tee events.txt
+```yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: payments-api
+  namespace: rebash-m-patterns
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: payments-api
+  template:
+    metadata:
+      labels:
+        app: payments-api
+    spec:
+      affinity:
+        podAntiAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+            - weight: 100
+              podAffinityTerm:
+                labelSelector:
+                  matchLabels:
+                    app: payments-api
+                topologyKey: kubernetes.io/hostname
+      containers:
+        - name: api
+          image: nginxinc/nginx-unprivileged:1.27-alpine
+          ports:
+            - containerPort: 8080
+          resources:
+            requests:
+              cpu: 100m
+              memory: 64Mi
+            limits:
+              cpu: 200m
+              memory: 128Mi
 ```
 
-**Expected output:** describe.txt and events.txt capture healthy Objects/Events.
+Apply:
+
+```bash
+cd ~/rebash-k8s/module-patterns
+kubectl apply -f namespace.yaml -f deployment.yaml
+kubectl rollout status deployment/payments-api -n rebash-m-patterns --timeout=120s
+kubectl get pods -n rebash-m-patterns -o wide | tee patterns-pods-wide.txt
+```
+
+**Expected output:** Two Ready replicas; `patterns-pods-wide.txt` shows node placement (same node on single-node labs is acceptable with preferred anti-affinity).
+
+#### Task 2 – PodDisruptionBudget
+
+Create `pdb.yaml`:
+
+```yaml
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: payments-api-pdb
+  namespace: rebash-m-patterns
+spec:
+  minAvailable: 1
+  selector:
+    matchLabels:
+      app: payments-api
+```
+
+Apply and verify:
+
+```bash
+cd ~/rebash-k8s/module-patterns
+kubectl apply -f pdb.yaml
+kubectl get pdb payments-api-pdb -n rebash-m-patterns | tee patterns-pdb.txt
+kubectl describe pdb payments-api-pdb -n rebash-m-patterns | tee patterns-pdb-describe.txt
+grep -E 'Min Available|Allowed disruptions' patterns-pdb-describe.txt
+```
+
+**Expected output:** PDB shows `minAvailable: 1` and current allowed disruptions.
+
+#### Task 3 – HorizontalPodAutoscaler
+
+Create `hpa.yaml`:
+
+```yaml
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: payments-api-hpa
+  namespace: rebash-m-patterns
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: payments-api
+  minReplicas: 2
+  maxReplicas: 4
+  metrics:
+    - type: Resource
+      resource:
+        name: cpu
+        target:
+          type: Utilization
+          averageUtilization: 60
+```
+
+Apply and describe:
+
+```bash
+cd ~/rebash-k8s/module-patterns
+kubectl apply -f hpa.yaml
+kubectl get hpa,pdb,deploy -n rebash-m-patterns | tee patterns-objects.txt
+kubectl describe hpa payments-api-hpa -n rebash-m-patterns | tee patterns-hpa-describe.txt
+if ! kubectl top pods -n rebash-m-patterns >/dev/null 2>&1; then
+  echo "Metrics Server absent — HPA object valid; scaling conditions may show Unknown" | tee -a patterns-hpa-describe.txt
+fi
+```
+
+**Expected output:** HPA, PDB, and Deployment listed; HPA min/max replicas documented.
 
 ### Validation steps
 
-- [ ] Namespace `rebash-lab` contains the expected Ready objects
-- [ ] You can explain each Task command from the Theory section
-- [ ] Cleanup deletes the namespace without leftover workloads
+- [ ] Deployment runs at least two replicas with resource requests
+- [ ] PDB `minAvailable: 1` is admitted and visible via kubectl
+- [ ] HPA targets `payments-api` with min 2 / max 4
+- [ ] Anti-affinity preference appears in Pod spec (`kubectl describe pod`)
 
 ### Common errors and fixes
 
 | Error | Cause | Fix |
 |-------|-------|-----|
-| ImagePullBackOff | Wrong tag or registry auth | Fix image reference; check pull secrets |
-| Pending Pod | Scheduling / quota / PVC | `kubectl describe pod` and read Events |
-| Empty Endpoints | Selector or readiness mismatch | Compare Service selector to Pod labels and Ready |
+| PDB forbidden | replicas < minAvailable | Increase Deployment replicas or lower PDB |
+| HPA invalid without requests | Missing CPU requests | Add `resources.requests` to container |
+| Anti-affinity has no effect | Single-node cluster | Expected with `preferred`; use multi-node to spread |
+| Metrics unavailable | No metrics-server | Document; install for production autoscaling |
 
 ### Challenge exercise
 
-Add a readinessProbe and a ResourceQuota to the namespace, then show that over-quota creates are rejected.
+Run `kubectl drain <node> --ignore-daemonsets --delete-emptydir-data` on a multi-node lab and observe PDB blocking excessive evictions; capture Events to `patterns-drain.txt`.
 
 ### Learning outcomes
 
-- Applied a real cluster change for Production Patterns — HPA, PDB, and Affinity
-- Used describe/Events for verification
-- Destroyed lab resources cleanly
+- Combined HPA, PDB, and scheduling preferences in one manifest set
+- Verified disruption budget semantics alongside replica counts
+- Applied autoscaling configuration with honest metrics caveats
+- Prepared a production-style YAML bundle suitable for GitOps review
 
 ### Cleanup
 
 ```bash
-kubectl delete namespace rebash-lab --ignore-not-found
-# Keep ~/rebash-kubernetes/ for later tutorials
+kubectl delete namespace rebash-m-patterns --ignore-not-found
 ```
 
 ## Validation

@@ -30,7 +30,7 @@ tags:
   - helm
   - troubleshooting
 author: Shaik Basha
-last_updated: "2026-07-31"
+last_updated: "2026-08-03"
 comments: false
 ---
 
@@ -148,89 +148,201 @@ Separate questions: Did YAML render? Did the API accept it? Did Pods become Read
 
 ### Objective
 
-Create, lint, render, install, and uninstall a Helm chart demonstrating **Troubleshooting Helm**.
+Diagnose a broken template, fix the render error, trigger a failed upgrade with a bad image, then recover with `helm history` and `helm rollback` evidence.
 
 ### Prerequisites
 
-- helm CLI
-- kubectl + lab cluster
-- Ability to create namespaces
+- Helm 3 CLI and kubectl configured for a lab cluster
+- Completion of [Helm Releases and Lifecycle](helm-releases-and-lifecycle.md) lab
 
 ### Lab environment
 
 Workspace: `~/rebash-helm/module-12`
 
-Helm 3 against kind/minikube; release namespace `rebash-helm`.
+Helm 3 against kind/minikube; release namespace `rebash-helm-m12`.
 
 ```bash
-mkdir -p ~/rebash-helm/module-12 && cd ~/rebash-helm/module-12
+mkdir -p ~/rebash-helm/module-12/triage-chart/templates && cd ~/rebash-helm/module-12
 ```
 
 ### Real-world scenario
 
-A team wants **Troubleshooting Helm** packaged as a chart so GitOps can promote the same artefact across environments.
+On-call receives “Helm upgrade failed.” You must decide whether the failure is render-time (bad template) or runtime (bad image). The playbook: lint → template → fix → install → failed upgrade → history → rollback.
 
 ### Step-by-step tasks
 
-#### Task 1 – Create and lint a chart
+#### Task 1 – Create a chart with an intentional template bug
 
-Scaffold a chart and fail the build on lint errors before install.
+Create `triage-chart/Chart.yaml`:
 
-```bash
-helm version
-helm create labchart
-helm lint ./labchart | tee lint.txt
-helm template labchart ./labchart | egrep '^kind:' | sort | uniq -c | tee kinds.txt
+```yaml
+apiVersion: v2
+name: triage-chart
+description: Lab chart for Helm troubleshooting
+type: application
+version: 0.1.0
+appVersion: "1.27.4"
 ```
 
-**Expected output:** lint reports no failures; kinds.txt lists Deployment/Service/etc.
+Create `triage-chart/values.yaml`:
 
-#### Task 2 – Install with values override
-
-Prove values change rendered replicas, then install with wait.
-
-```bash
-kubectl create namespace rebash-helm --dry-run=client -o yaml | kubectl apply -f -
-cat > myvalues.yaml << 'EOF'
-replicaCount: 2
-EOF
-helm template labchart ./labchart -f myvalues.yaml | egrep 'replicas:' | head
-helm upgrade --install labchart ./labchart -n rebash-helm -f myvalues.yaml --wait --timeout 2m
-helm list -n rebash-helm
-kubectl get deploy -n rebash-helm
+```yaml
+replicaCount: 1
+image:
+  repository: nginx
+  tag: "1.27.4-alpine"
 ```
 
-**Expected output:** Release deployed; Deployment shows 2 replicas (or Ready pods).
+Create `triage-chart/templates/deployment.yaml` with a deliberate nil-pointer bug:
+
+```yaml
+{% raw %}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Release.Name }}-web
+spec:
+  replicas: {{ .Values.replicaCount }}
+  selector:
+    matchLabels:
+      app: {{ .Release.Name }}
+  template:
+    metadata:
+      labels:
+        app: {{ .Release.Name }}
+    spec:
+      containers:
+        - name: web
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+          env:
+            - name: FEATURE_FLAG
+              value: {{ .Values.feature.enabled | quote }}
+          ports:
+            - containerPort: 80
+{% endraw %}
+```
+
+Capture the render failure (`.Values.feature` is undefined):
+
+```bash
+cd ~/rebash-helm/module-12
+helm lint ./triage-chart 2>&1 | tee lint-broken.txt || true
+helm template triage-demo ./triage-chart --debug 2>&1 | tee template-broken.txt || true
+grep -qi 'nil pointer\|error' template-broken.txt
+```
+
+**Expected output:** Template fails with a nil pointer or similar error referencing `.Values.feature`.
+
+#### Task 2 – Fix the template and prove clean render
+
+Add defaults to `triage-chart/values.yaml`:
+
+```yaml
+replicaCount: 1
+image:
+  repository: nginx
+  tag: "1.27.4-alpine"
+feature:
+  enabled: false
+```
+
+Re-run lint and template:
+
+```bash
+cd ~/rebash-helm/module-12
+helm lint ./triage-chart | tee lint-fixed.txt
+helm template triage-demo ./triage-chart | grep -E '^kind:' | tee kinds-fixed.txt
+grep -q '0 chart(s) failed' lint-fixed.txt
+grep -q 'Deployment' kinds-fixed.txt
+```
+
+**Expected output:** Lint passes; template renders a Deployment without errors.
+
+#### Task 3 – Install, fail an upgrade, then roll back
+
+Install the good release, attempt a bad-image upgrade, inspect history, and roll back.
+
+Create `bad-image-values.yaml`:
+
+```yaml
+replicaCount: 1
+image:
+  repository: nginx
+  tag: "does-not-exist:9.9.9"
+feature:
+  enabled: false
+```
+
+Run the failed-upgrade drill:
+
+```bash
+kubectl create namespace rebash-helm-m12 --dry-run=client -o yaml | kubectl apply -f -
+helm upgrade --install triage-demo ./triage-chart \
+  -n rebash-helm-m12 --wait --timeout 3m | tee install-good.txt
+helm upgrade triage-demo ./triage-chart \
+  -n rebash-helm-m12 -f bad-image-values.yaml --wait --timeout 2m 2>&1 | tee upgrade-bad.txt || true
+helm status triage-demo -n rebash-helm-m12 | tee status-failed.txt
+helm history triage-demo -n rebash-helm-m12 | tee history-failed.txt
+kubectl get pods -n rebash-helm-m12 | tee pods-failed.txt
+grep -qi 'ImagePull\|ErrImage\|failed' upgrade-bad.txt || grep -qi 'ImagePull' pods-failed.txt
+```
+
+Roll back to the last good revision:
+
+```bash
+helm rollback triage-demo 1 -n rebash-helm-m12 --wait --timeout 3m | tee rollback.txt
+helm history triage-demo -n rebash-helm-m12 | tee history-after-rollback.txt
+helm status triage-demo -n rebash-helm-m12 | tee status-after-rollback.txt
+kubectl rollout status deployment/triage-demo-web -n rebash-helm-m12 --timeout=120s | tee rollout-ok.txt
+grep -q 'deployed' status-after-rollback.txt
+grep -q 'superseded\|deployed' history-after-rollback.txt
+```
+
+**Expected output:** Bad upgrade fails or leaves release in failed/pending state; rollback restores deployed status and Ready pods.
 
 ### Validation steps
 
-- [ ] helm lint clean
-- [ ] Release listed in namespace
-- [ ] Uninstall removes the release
+- [ ] Broken template fails `helm template --debug` with a clear error
+- [ ] Fixed chart passes lint and renders cleanly
+- [ ] Bad-image upgrade produces failure evidence in status/history/pod list
+- [ ] Rollback returns release to deployed with working pods
 
 ### Common errors and fixes
 
 | Error | Cause | Fix |
 |-------|-------|-----|
-| PENDING_INSTALL | Image pull / probes | `helm status` + `kubectl describe` |
-| lint failed | Template YAML break | Fix templates; re-run helm lint |
-| context deadline | Slow cluster | Increase --timeout or fix readiness |
+| Nil pointer evaluating interface | Missing nested values key | Add defaults in `values.yaml` or use `default`/`dig` in templates |
+| Rollback when nothing rendered | No successful revision exists | Fix template first; install a good revision before rollback drills |
+| `ImagePullBackOff` after rollback | Rollback target also bad | Roll back to a revision known good in `helm history` |
+| Editing Helm-owned objects with kubectl | Drift on next upgrade | Fix chart/values; upgrade or rollback through Helm |
 
 ### Challenge exercise
 
-Add a ConfigMap template driven by values and prove it with `helm get manifest`.
+Repeat the bad-image upgrade using `--atomic --wait` and capture that Helm auto-rolls back without manual `helm rollback`:
+
+```bash
+cd ~/rebash-helm/module-12
+helm upgrade triage-demo ./triage-chart \
+  -n rebash-helm-m12 -f bad-image-values.yaml --atomic --wait --timeout 2m 2>&1 | tee atomic-fail.txt || true
+helm status triage-demo -n rebash-helm-m12 | grep -E 'STATUS|REVISION' | tee status-atomic.txt
+helm history triage-demo -n rebash-helm-m12 | tee history-atomic.txt
+grep -q 'deployed' status-atomic.txt
+```
+
+**Expected output:** Atomic upgrade fails; release remains on the last deployed revision without manual rollback.
 
 ### Learning outcomes
 
-- Packaged Kubernetes YAML as a chart
-- Overrode values safely
-- Cleaned up the release
+- Separated template render failures from runtime apply failures
+- Used lint and debug template output to locate nil-pointer bugs
+- Inspected `helm status` and `helm history` during a failed upgrade
+- Recovered a release with rollback and verified pod readiness
 
 ### Cleanup
 
 ```bash
-helm uninstall labchart -n rebash-helm 2>/dev/null || true
-kubectl delete namespace rebash-helm --ignore-not-found
+helm uninstall triage-demo -n rebash-helm-m12 2>/dev/null || true
+kubectl delete namespace rebash-helm-m12 --ignore-not-found
 ```
 
 ## Validation
@@ -242,9 +354,9 @@ kubectl delete namespace rebash-helm --ignore-not-found
 
 
 - [ ] Lab commands run under `~/rebash-helm/module-12/`
-- [ ] You can explain each Theory section in your own words
-- [ ] You used modern tooling where it applies to this topic
-- [ ] You can describe one production failure mode for this topic
+- [ ] You fixed a template nil-pointer and re-ran lint/template successfully
+- [ ] You captured failed-upgrade and rollback evidence from history/status
+- [ ] You can describe one production failure mode for Helm troubleshooting
 
 ## Code Walkthrough
 

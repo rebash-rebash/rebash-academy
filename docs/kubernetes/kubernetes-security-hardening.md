@@ -31,7 +31,7 @@ tags:
   - psa
   - networkpolicy
 author: Shaik Basha
-last_updated: "2026-07-31"
+last_updated: "2026-08-03"
 comments: false
 ---
 
@@ -141,23 +141,19 @@ PSA replaces the older PodSecurityPolicy API; learn labels, not PSP.
 
 ## Hands-on Lab
 
-
-
 ### Objective
 
-Build and verify a working Kubernetes solution for **Kubernetes Security Hardening** that you can inspect, prove, and tear down safely.
+Deploy a hardened Pod with restrictive `securityContext` (non-root, no privilege escalation, read-only root filesystem) and optionally apply a default-deny NetworkPolicy stub.
 
 ### Prerequisites
 
-- kubectl configured against a lab cluster (kind/minikube preferred)
-- Cluster-admin or namespace-create rights in the lab cluster
+- kubectl configured against a lab cluster (kind or minikube)
+- CNI that supports NetworkPolicy (kind default CNI does; minikube may need `--cni=calico`)
 - Writable workspace at `~/rebash-k8s/module-10-hard`
 
 ### Lab environment
 
-Workspace: `~/rebash-k8s/module-10-hard`
-
-Local kind/minikube or a dedicated sandbox cluster. Never target a shared production API server.
+Workspace: `~/rebash-k8s/module-10-hard` on a disposable lab cluster.
 
 ```bash
 mkdir -p ~/rebash-k8s/module-10-hard && cd ~/rebash-k8s/module-10-hard
@@ -165,87 +161,167 @@ mkdir -p ~/rebash-k8s/module-10-hard && cd ~/rebash-k8s/module-10-hard
 
 ### Real-world scenario
 
-Your platform team is rolling out **Kubernetes Security Hardening** for a new microservice. You must apply the change in an isolated namespace, prove it works with kubectl, and leave evidence for the on-call handover.
+Security review flagged a web front-end running as root with a writable root filesystem. You must deploy a replacement Pod using the official unprivileged nginx image, enforce `securityContext` controls, and document optional network segmentation before production promotion.
 
 ### Step-by-step tasks
 
-#### Task 1 – Create ServiceAccount, Role, RoleBinding
+#### Task 1 – Namespace and hardened Deployment
 
-Least privilege starts with namespaced RBAC objects.
+Create `namespace.yaml`:
 
-```bash
-kubectl create namespace rebash-lab --dry-run=client -o yaml | kubectl apply -f -
-kubectl create serviceaccount viewer -n rebash-lab
-cat > rbac.yaml << EOF
-apiVersion: rbac.authorization.k8s.io/v1
-kind: Role
+```yaml
+apiVersion: v1
+kind: Namespace
 metadata:
-  name: pod-reader
-  namespace: rebash-lab
-rules:
-  - apiGroups: [""]
-    resources: ["pods"]
-    verbs: ["get", "list"]
----
-apiVersion: rbac.authorization.k8s.io/v1
-kind: RoleBinding
-metadata:
-  name: viewer-pods
-  namespace: rebash-lab
-subjects:
-  - kind: ServiceAccount
-    name: viewer
-    namespace: rebash-lab
-roleRef:
-  kind: Role
-  name: pod-reader
-  apiGroup: rbac.authorization.k8s.io
-EOF
-kubectl apply -f rbac.yaml
+  name: rebash-m10-hard
+  labels:
+    pod-security.kubernetes.io/enforce: baseline
 ```
 
-**Expected output:** Role and RoleBinding created without error.
+Create `deployment.yaml`:
 
-#### Task 2 – Prove allow and deny with auth can-i
-
-Never guess permissions — ask the API.
-
-```bash
-kubectl auth can-i list pods -n rebash-lab --as=system:serviceaccount:rebash-lab:viewer
-kubectl auth can-i delete pods -n rebash-lab --as=system:serviceaccount:rebash-lab:viewer || true
+```yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: web-secure
+  namespace: rebash-m10-hard
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: web-secure
+  template:
+    metadata:
+      labels:
+        app: web-secure
+    spec:
+      securityContext:
+        runAsNonRoot: true
+        seccompProfile:
+          type: RuntimeDefault
+      containers:
+        - name: web
+          image: nginxinc/nginx-unprivileged:1.27-alpine
+          ports:
+            - containerPort: 8080
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            runAsNonRoot: true
+            runAsUser: 101
+            capabilities:
+              drop: ["ALL"]
+          volumeMounts:
+            - name: tmp
+              mountPath: /tmp
+            - name: cache
+              mountPath: /var/cache/nginx
+            - name: run
+              mountPath: /var/run
+          resources:
+            requests:
+              cpu: 10m
+              memory: 32Mi
+      volumes:
+        - name: tmp
+          emptyDir: {}
+        - name: cache
+          emptyDir: {}
+        - name: run
+          emptyDir: {}
 ```
 
-**Expected output:** `yes` for list; `no` (or non-zero) for delete.
+Apply and wait:
+
+```bash
+cd ~/rebash-k8s/module-10-hard
+kubectl apply -f namespace.yaml -f deployment.yaml
+kubectl rollout status deployment/web-secure -n rebash-m10-hard --timeout=120s
+kubectl get pods -n rebash-m10-hard -l app=web-secure | tee secure-pods.txt
+```
+
+**Expected output:** Pod is `Running` with `1/1` Ready.
+
+#### Task 2 – Verify securityContext in the live Pod
+
+Inspect the admitted Pod spec:
+
+```bash
+cd ~/rebash-k8s/module-10-hard
+POD="$(kubectl get pod -n rebash-m10-hard -l app=web-secure -o jsonpath='{.items[0].metadata.name}')"
+kubectl get pod "$POD" -n rebash-m10-hard -o jsonpath='{.spec.containers[0].securityContext}' | tee security-context.json
+grep -E 'runAsNonRoot|readOnlyRootFilesystem|allowPrivilegeEscalation' security-context.json
+kubectl exec -n rebash-m10-hard "$POD" -- id | tee pod-id.txt
+grep -q 'uid=101' pod-id.txt
+```
+
+**Expected output:** JSON shows hardened flags; `pod-id.txt` shows non-root UID 101.
+
+#### Task 3 – Optional NetworkPolicy stub
+
+Create `networkpolicy.yaml` (default deny ingress except same-app traffic):
+
+```yaml
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: web-secure-isolate
+  namespace: rebash-m10-hard
+spec:
+  podSelector:
+    matchLabels:
+      app: web-secure
+  policyTypes:
+    - Ingress
+  ingress:
+    - from:
+        - podSelector:
+            matchLabels:
+              app: web-secure
+```
+
+Apply and confirm admission:
+
+```bash
+cd ~/rebash-k8s/module-10-hard
+kubectl apply -f networkpolicy.yaml
+kubectl get networkpolicy -n rebash-m10-hard | tee netpol-m10-hard.txt
+```
+
+**Expected output:** `web-secure-isolate` NetworkPolicy listed. If your CNI ignores policies, note that in your evidence — do not assume segmentation works without testing.
 
 ### Validation steps
 
-- [ ] Namespace `rebash-lab` contains the expected Ready objects
-- [ ] You can explain each Task command from the Theory section
-- [ ] Cleanup deletes the namespace without leftover workloads
+- [ ] Deployment Pod runs with non-root UID and read-only root filesystem
+- [ ] `securityContext` fields match the manifest intent
+- [ ] NetworkPolicy object exists (enforcement depends on CNI)
+- [ ] You can explain Pod Security Standards vs manual hardening
 
 ### Common errors and fixes
 
 | Error | Cause | Fix |
 |-------|-------|-----|
-| ImagePullBackOff | Wrong tag or registry auth | Fix image reference; check pull secrets |
-| Pending Pod | Scheduling / quota / PVC | `kubectl describe pod` and read Events |
-| Empty Endpoints | Selector or readiness mismatch | Compare Service selector to Pod labels and Ready |
+| CrashLoopBackOff | Writable paths missing | Add `emptyDir` mounts for `/tmp`, cache, runtime dirs |
+| Pod rejected by PSS | `restricted` without compliant image | Use unprivileged image or relax namespace label to `baseline` |
+| NetworkPolicy no effect | CNI lacks enforcement | Enable Calico/Cilium; document limitation |
+| Permission denied on port 80 | Unprivileged image uses 8080 | Probe and Service must target port 8080 |
 
 ### Challenge exercise
 
-Add a readinessProbe and a ResourceQuota to the namespace, then show that over-quota creates are rejected.
+Add a `readinessProbe` on `httpGet` port 8080 path `/` and capture `kubectl describe pod` showing successful probe events in `probe-evidence.txt`.
 
 ### Learning outcomes
 
-- Applied a real cluster change for Kubernetes Security Hardening
-- Used describe/Events for verification
-- Destroyed lab resources cleanly
+- Applied production-style `securityContext` hardening in YAML
+- Used an unprivileged container image with read-only root filesystem
+- Created a default-deny NetworkPolicy stub for ingress segmentation
+- Understood dependency on CNI for policy enforcement
 
 ### Cleanup
 
 ```bash
-kubectl delete namespace rebash-lab --ignore-not-found
-# Keep ~/rebash-kubernetes/ for later tutorials
+kubectl delete namespace rebash-m10-hard --ignore-not-found
 ```
 
 ## Validation

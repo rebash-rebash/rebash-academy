@@ -1,3 +1,38 @@
 title: Argo CD
+icon: material/ship-wheel
 nav:
-  - Overview: index.md
+  - index.md
+  - Module 1 · GitOps Fundamentals:
+    - introduction-to-gitops-and-argo-cd.md
+  - Module 2 · Architecture:
+    - argo-cd-architecture-and-components.md
+  - Module 3 · Installing Argo CD:
+    - installing-argo-cd.md
+  - Module 4 · Applications:
+    - argo-cd-applications-and-projects.md
+  - Module 5 · Repositories:
+    - argo-cd-repositories-and-credentials.md
+  - Module 6 · Synchronisation:
+    - synchronisation-sync-options-and-hooks.md
+  - Module 7 · Helm Integration:
+    - helm-with-argo-cd.md
+  - Module 8 · Kustomize Integration:
+    - kustomize-with-argo-cd.md
+  - Module 9 · ApplicationSets:
+    - applicationsets.md
+  - Module 10 · Multi-Cluster GitOps:
+    - multi-cluster-gitops.md
+  - Module 11 · Security:
+    - argo-cd-security-rbac-and-sso.md
+  - Module 12 · Notifications:
+    - argo-cd-notifications.md
+  - Module 13 · Progressive Delivery:
+    - progressive-delivery-and-sync-windows.md
+  - Module 14 · CI/CD Integration:
+    - ci-cd-integration-with-argo-cd.md
+  - Module 15 · Production GitOps:
+    - production-gitops-with-argo-cd.md
+  - Module 16 · Troubleshooting:
+    - troubleshooting-argo-cd.md
+  - roadmap.md
+  - faq.md

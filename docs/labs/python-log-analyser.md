@@ -86,20 +86,23 @@ source .venv/bin/activate
 
 ### Sample logs
 
-```bash
-cat > logs/app-a.log << 'EOF'
+Create `logs/app-a.log`:
+
+```text
 2026-07-28T10:01:02Z INFO  request_id=abc status=200
 2026-07-28T10:01:05Z ERROR request_id=def status=500 msg="timeout"
 2026-07-28T10:01:06Z WARN  request_id=ghi status=429 msg="rate limited"
 2026-07-28T10:01:07Z ERROR request_id=jkl status=500 msg="timeout"
-EOF
+```
 
-cat > logs/app-b.log << 'EOF'
+Create `logs/app-b.log`:
+
+```text
 2026-07-28T11:00:00Z INFO  request_id=mno status=200
 2026-07-28T11:00:01Z INFO  request_id=pqr status=201
 2026-07-28T11:00:02Z ERROR request_id=stu status=502 msg="bad gateway"
-EOF
 ```
+
 
 ## Task
 

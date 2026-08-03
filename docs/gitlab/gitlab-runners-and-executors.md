@@ -33,7 +33,7 @@ tags:
   - runners
   - executors
 author: Shaik Basha
-last_updated: "2026-07-31"
+last_updated: "2026-08-03"
 comments: false
 ---
 
@@ -152,22 +152,20 @@ You can study YAML without owning runners: GitLab.com free tier provides shared 
 
 ## Hands-on Lab
 
-
-
 ### Objective
 
-Author a valid `.gitlab-ci.yml` that models **GitLab Runners and Executors** and validate it locally before pushing.
+Document runner capacity in `runner-tags.yaml`, author a `.gitlab-ci.yml` where jobs target specific runner tags, and validate executor choices offline with PyYAML.
 
 ### Prerequisites
 
 - Python 3 with PyYAML (`pip install pyyaml`)
-- Optional: GitLab project to run the pipeline
+- Optional: GitLab project with group or project runners registered
 
 ### Lab environment
 
 Workspace: `~/rebash-gitlab/module-03`
 
-File-first lab. Push to GitLab only when you want a runner to execute jobs.
+File-first lab. Push to GitLab only when tagged runners exist to claim jobs.
 
 ```bash
 mkdir -p ~/rebash-gitlab/module-03 && cd ~/rebash-gitlab/module-03
@@ -175,73 +173,151 @@ mkdir -p ~/rebash-gitlab/module-03 && cd ~/rebash-gitlab/module-03
 
 ### Real-world scenario
 
-Your squad is encoding **GitLab Runners and Executors** as CI. Reviewers reject YAML that does not parse or that skips artefacts/needs incorrectly.
+Your platform team operates two runner fleets: `docker-linux` runners for containerised builds and `shell-legacy` runners for a locked-down deployment host. Untagged jobs caused production deploys to land on developer laptops. You encode the runner matrix in YAML and tag every job explicitly.
 
 ### Step-by-step tasks
 
-#### Task 1 – Write pipeline YAML
+#### Task 1 – Document the runner fleet matrix
 
-Stages and jobs must be explicit so MR pipelines are predictable.
+Create `runner-tags.yaml`:
 
-```bash
-mkdir -p src && echo 'print("ok")' > src/app.py
-cat > .gitlab-ci.yml << 'EOF'
-stages: [lint, test]
-lint:
-  stage: lint
-  image: python:3.12-alpine
-  script:
-    - python -m py_compile src/app.py
-test:
-  stage: test
-  image: python:3.12-alpine
-  needs: [lint]
-  script:
-    - python src/app.py
-EOF
-python3 -c "import yaml; d=yaml.safe_load(open('.gitlab-ci.yml')); assert d['stages']==['lint','test']; print('OK', list(d))"
+```yaml
+runners:
+  - name: shared-docker-linux
+    scope: group
+    executor: docker
+    tags:
+      - docker-linux
+    image_default: docker:27-cli
+    notes: "Default fleet for build and test jobs"
+  - name: deploy-shell-host
+    scope: project
+    executor: shell
+    tags:
+      - shell-legacy
+    notes: "Single locked host — never use for untrusted MRs"
+policy:
+  require_tags_on_production_jobs: true
+  forbid_untagged_jobs: true
 ```
 
-**Expected output:** Prints `OK` and job names; no YAML exception.
-
-#### Task 2 – Simulate the scripts locally
-
-Prove the job script works before burning runner minutes.
+Validate:
 
 ```bash
-python3 -m py_compile src/app.py
-python3 src/app.py | tee out.txt
-test "$(cat out.txt)" = 'ok'
+cd ~/rebash-gitlab/module-03
+python3 -c "
+import yaml
+m = yaml.safe_load(open('runner-tags.yaml'))
+assert m['runners'][0]['executor'] == 'docker'
+assert m['runners'][1]['executor'] == 'shell'
+print('OK executors', [r['executor'] for r in m['runners']])
+"
 ```
 
-**Expected output:** Compile succeeds; out.txt is `ok`.
+**Expected output:** Prints `OK executors ['docker', 'shell']`.
+
+#### Task 2 – Create tagged pipeline jobs
+
+Create `src/check.py`:
+
+```python
+print("runner-tags ok")
+```
+
+Create `.gitlab-ci.yml`:
+
+```yaml
+stages:
+  - build
+  - deploy
+
+docker_build:
+  stage: build
+  tags:
+    - docker-linux
+  image: docker:27-cli
+  script:
+    - docker version
+    - python3 -c "print('build on docker executor')"
+
+shell_deploy_stub:
+  stage: deploy
+  tags:
+    - shell-legacy
+  script:
+    - echo "Deploy stub — shell executor on locked host"
+    - uname -a
+  rules:
+    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
+
+# Anti-pattern example — commented for review; do not enable in production
+# untagged_job:
+#   stage: build
+#   script:
+#     - echo "Any runner may claim this — avoid"
+```
+
+Validate offline:
+
+```bash
+cd ~/rebash-gitlab/module-03
+python3 -c "
+import yaml
+d = yaml.safe_load(open('.gitlab-ci.yml'))
+assert d['docker_build']['tags'] == ['docker-linux']
+assert d['shell_deploy_stub']['tags'] == ['shell-legacy']
+print('OK tagged jobs')
+"
+```
+
+**Expected output:** Prints `OK tagged jobs`.
+
+#### Task 3 – Simulate docker-stage logic locally
+
+Run the build script path without a runner:
+
+```bash
+cd ~/rebash-gitlab/module-03
+python3 src/check.py | tee runner-out.txt
+python3 -c "print('build on docker executor')" | tee -a runner-out.txt
+grep -q 'runner-tags ok' runner-out.txt
+```
+
+**Expected output:** `runner-out.txt` contains both `runner-tags ok` and `build on docker executor`.
 
 ### Validation steps
 
-- [ ] `.gitlab-ci.yml` parses
-- [ ] Local script path matches job intent
+- [ ] `runner-tags.yaml` lists docker and shell executors with tags
+- [ ] `docker_build` requires tag `docker-linux`
+- [ ] `shell_deploy_stub` requires tag `shell-legacy` and runs only on default branch
+- [ ] No production job is left untagged
+- [ ] Local simulation of build output succeeds
 
 ### Common errors and fixes
 
 | Error | Cause | Fix |
 |-------|-------|-----|
-| yaml.scanner.ScannerError | Indentation | Use 2-space indent; re-validate with PyYAML |
-| job stuck pending | No runner / tags | Check runner tags match job tags |
-| needs not found | Typo in job name | Align `needs` with actual job keys |
+| Job stuck `pending` | No runner with matching tag | Register a runner with `docker-linux` or `shell-legacy` tags |
+| Job runs on wrong host | Tag typo | Match tags exactly between runner config and `.gitlab-ci.yml` |
+| Shell executor on public MR | Untrusted code on host filesystem | Use Docker or Kubernetes executors for MR pipelines |
+| `docker: command not found` in job | Shell executor used for docker job | Ensure `docker_build` lands on a Docker executor runner |
 
 ### Challenge exercise
 
-Add an `artifacts:` path from lint to test and document expire_in.
+Add a `lint_mr` job tagged `docker-linux` with `rules: [{ if: $CI_PIPELINE_SOURCE == "merge_request_event" }]` so MR feedback never uses the shell executor.
 
 ### Learning outcomes
 
-- Produced reviewable GitLab CI YAML
-- Validated structure and scripts locally
+- Documented runner capacity and executor types in version-controlled YAML
+- Routed jobs to tagged runners instead of accepting any available runner
+- Understood when shell versus Docker executors are appropriate
+- Validated pipeline and matrix YAML offline
 
 ### Cleanup
 
 ```bash
-# File-only lab — keep YAML for the next tutorial
+rm -f ~/rebash-gitlab/module-03/runner-out.txt
+# Keep runner-tags.yaml and .gitlab-ci.yml for module 04
 ```
 
 ## Validation

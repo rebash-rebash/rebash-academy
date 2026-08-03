@@ -29,7 +29,7 @@ tags:
   - helm
   - repositories
 author: Shaik Basha
-last_updated: "2026-07-31"
+last_updated: "2026-08-03"
 comments: false
 ---
 
@@ -144,23 +144,20 @@ Helm does not need a special server component in the cluster. If `kubectl` can r
 
 ## Hands-on Lab
 
-
-
 ### Objective
 
-Create, lint, render, install, and uninstall a Helm chart demonstrating **Installing Helm and Repositories**.
+Write a `verify-helm.sh` script that proves Helm 3 and kubectl connectivity, add the Bitnami chart repository, search for a chart, and capture `helm repo list` evidence.
 
 ### Prerequisites
 
-- helm CLI
-- kubectl + lab cluster
-- Ability to create namespaces
+- Helm 3.x (`helm version`)
+- kubectl with a valid context (kind or minikube)
+- Network access to `https://charts.bitnami.com/bitnami`
+- Bash shell
 
 ### Lab environment
 
-Workspace: `~/rebash-helm/module-02`
-
-Helm 3 against kind/minikube; release namespace `rebash-helm`.
+Workspace: `~/rebash-helm/module-02` on your workstation.
 
 ```bash
 mkdir -p ~/rebash-helm/module-02 && cd ~/rebash-helm/module-02
@@ -168,69 +165,129 @@ mkdir -p ~/rebash-helm/module-02 && cd ~/rebash-helm/module-02
 
 ### Real-world scenario
 
-A team wants **Installing Helm and Repositories** packaged as a chart so GitOps can promote the same artefact across environments.
+Your CI pipeline must fail fast when Helm is missing, the wrong major version is installed, or kubeconfig points at the wrong cluster. You ship a small verification script and document approved chart repositories before any install job runs.
 
 ### Step-by-step tasks
 
-#### Task 1 – Create and lint a chart
+#### Task 1 – Create the verification script
 
-Scaffold a chart and fail the build on lint errors before install.
+Create `verify-helm.sh`:
 
 ```bash
+#!/usr/bin/env bash
+set -euo pipefail
+
+echo "== Helm version =="
 helm version
-helm create labchart
-helm lint ./labchart | tee lint.txt
-helm template labchart ./labchart | egrep '^kind:' | sort | uniq -c | tee kinds.txt
+
+echo "== kubectl context =="
+kubectl config current-context
+kubectl cluster-info | head -3
+
+echo "== Helm environment (selected) =="
+helm env | grep -E 'HELM_(CACHE|CONFIG|DATA)_HOME'
+
+echo "verify-helm.sh: OK"
 ```
 
-**Expected output:** lint reports no failures; kinds.txt lists Deployment/Service/etc.
-
-#### Task 2 – Install with values override
-
-Prove values change rendered replicas, then install with wait.
+Run and capture evidence:
 
 ```bash
-kubectl create namespace rebash-helm --dry-run=client -o yaml | kubectl apply -f -
-cat > myvalues.yaml << 'EOF'
-replicaCount: 2
-EOF
-helm template labchart ./labchart -f myvalues.yaml | egrep 'replicas:' | head
-helm upgrade --install labchart ./labchart -n rebash-helm -f myvalues.yaml --wait --timeout 2m
-helm list -n rebash-helm
-kubectl get deploy -n rebash-helm
+cd ~/rebash-helm/module-02
+chmod +x verify-helm.sh
+./verify-helm.sh | tee verify-m02.txt
+grep -q 'verify-helm.sh: OK' verify-m02.txt
+helm version | grep -q 'v3'
 ```
 
-**Expected output:** Release deployed; Deployment shows 2 replicas (or Ready pods).
+**Expected output:** `verify-m02.txt` ends with `verify-helm.sh: OK`; Helm client reports v3.x.
+
+#### Task 2 – Add and update a chart repository
+
+```bash
+cd ~/rebash-helm/module-02
+helm repo add bitnami https://charts.bitnami.com/bitnami 2>/dev/null || true
+helm repo update | tee repo-update-m02.txt
+helm repo list | tee repo-list-m02.txt
+grep -q 'bitnami' repo-list-m02.txt
+```
+
+**Expected output:** `repo-list-m02.txt` lists `bitnami` with the Bitnami HTTPS URL.
+
+#### Task 3 – Search and pull evidence (no install required)
+
+```bash
+cd ~/rebash-helm/module-02
+helm search repo bitnami/nginx --versions | head -8 | tee search-nginx-m02.txt
+helm show chart bitnami/nginx | tee show-chart-m02.txt
+grep -q '^name: nginx' show-chart-m02.txt
+grep -q '^version:' show-chart-m02.txt
+```
+
+**Expected output:** Search returns multiple nginx chart versions; `show-chart-m02.txt` contains chart name and version fields.
+
+#### Task 4 – Optional smoke install into isolated namespace
+
+Create `namespace.yaml`:
+
+```yaml
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: rebash-helm-m02
+```
+
+```bash
+cd ~/rebash-helm/module-02
+if kubectl cluster-info >/dev/null 2>&1; then
+  kubectl apply -f namespace.yaml
+  helm upgrade --install nginx-smoke bitnami/nginx \
+    -n rebash-helm-m02 \
+    --set image.tag=1.27.4-debian-12-r0 \
+    --set replicaCount=1 \
+    --wait --timeout 180s | tee install-m02.txt
+  helm list -n rebash-helm-m02 | tee list-m02.txt
+else
+  echo "Skipping install — cluster unavailable" | tee install-m02.txt
+fi
+```
+
+**Expected output:** Release `nginx-smoke` appears in `list-m02.txt`, or skip message is recorded.
 
 ### Validation steps
 
-- [ ] helm lint clean
-- [ ] Release listed in namespace
-- [ ] Uninstall removes the release
+- [ ] `verify-helm.sh` exits successfully and records v3 client
+- [ ] Bitnami repository appears in `helm repo list`
+- [ ] `helm search repo` returns nginx chart versions
+- [ ] `helm show chart` output captured for review
+- [ ] Optional smoke install uses namespace `rebash-helm-m02`
 
 ### Common errors and fixes
 
 | Error | Cause | Fix |
 |-------|-------|-----|
-| PENDING_INSTALL | Image pull / probes | `helm status` + `kubectl describe` |
-| lint failed | Template YAML break | Fix templates; re-run helm lint |
-| context deadline | Slow cluster | Increase --timeout or fix readiness |
+| `helm: command not found` | Helm not on PATH | Install Helm 3 per official docs; re-run script |
+| Wrong major version | Helm 2 binary present | Remove legacy binary; confirm `helm version` shows v3 |
+| `repo add` 403/timeout | Network or proxy | Check egress; verify URL is reachable |
+| Search returns nothing | Stale index | Run `helm repo update` before search |
+| Install timeout | Slow cluster or image pull | Increase `--timeout`; `kubectl describe pod -n rebash-helm-m02` |
 
 ### Challenge exercise
 
-Add a ConfigMap template driven by values and prove it with `helm get manifest`.
+Extend `verify-helm.sh` to fail when `kubectl config current-context` contains the string `prod` (guardrail for lab laptops), and prove the guard with a simulated check using `grep`.
 
 ### Learning outcomes
 
-- Packaged Kubernetes YAML as a chart
-- Overrode values safely
-- Cleaned up the release
+- Automated Helm and kubectl preflight checks in a reusable script
+- Registered and refreshed a chart repository
+- Searched and inspected chart metadata before install
+- Installed a pinned vendor chart into an isolated namespace when permitted
 
 ### Cleanup
 
 ```bash
-helm uninstall labchart -n rebash-helm 2>/dev/null || true
-kubectl delete namespace rebash-helm --ignore-not-found
+helm uninstall nginx-smoke -n rebash-helm-m02 2>/dev/null || true
+kubectl delete namespace rebash-helm-m02 --ignore-not-found
 ```
 
 ## Validation

@@ -191,8 +191,11 @@ cd ~/rebash-python/lab01
 set -euo pipefail
 # shellcheck disable=SC1091
 source .venv/bin/activate
+```
 
-cat > hello.py << 'PY'
+Create `hello.py`:
+
+```python
 """Minimal DevOps hello — proves the venv interpreter runs project code."""
 from __future__ import annotations
 
@@ -213,8 +216,11 @@ def main() -> int:
 
 if __name__ == "__main__":
     raise SystemExit(main())
-PY
+```
 
+Run:
+
+```bash
 python hello.py | tee hello-output.txt
 grep -F 'Hello from REBASH' hello-output.txt
 grep -F '.venv' hello-output.txt

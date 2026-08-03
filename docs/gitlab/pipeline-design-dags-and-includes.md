@@ -33,7 +33,7 @@ tags:
   - dag
   - includes
 author: Shaik Basha
-last_updated: "2026-07-31"
+last_updated: "2026-08-03"
 comments: false
 ---
 
@@ -150,96 +150,189 @@ Prefer **your** group’s project includes as the golden path; GitLab `include:t
 
 ## Hands-on Lab
 
-
-
 ### Objective
 
-Author a valid `.gitlab-ci.yml` that models **Pipeline Design: DAGs and Includes** and validate it locally before pushing.
+Split CI into reusable `templates/*.yml` includes, compose a parent `.gitlab-ci.yml` with a `needs` DAG, and validate every YAML file offline.
 
 ### Prerequisites
 
 - Python 3 with PyYAML (`pip install pyyaml`)
-- Optional: GitLab project to run the pipeline
+- Completed module 04 lab (optional reference for variables pattern)
 
 ### Lab environment
 
-Workspace: `~/rebash-gitlab/module-05/{templates,generated}`
+Workspace: `~/rebash-gitlab/module-05` with `templates/` and `generated/` subdirectories
 
-File-first lab. Push to GitLab only when you want a runner to execute jobs.
+File-first lab. Push to GitLab only when you want includes resolved on the server.
 
 ```bash
-mkdir -p ~/rebash-gitlab/module-05/{templates,generated} && cd ~/rebash-gitlab/module-05/{templates,generated}
+mkdir -p ~/rebash-gitlab/module-05/{templates,generated,src} && cd ~/rebash-gitlab/module-05
 ```
 
 ### Real-world scenario
 
-Your squad is encoding **Pipeline Design: DAGs and Includes** as CI. Reviewers reject YAML that does not parse or that skips artefacts/needs incorrectly.
+Your platform team maintains shared CI templates. Product repos should `include` lint and test templates and wire a DAG so integration tests start only after unit tests and a build stub finish — without copy-pasting job definitions into every repository.
 
 ### Step-by-step tasks
 
-#### Task 1 – Write pipeline YAML
+#### Task 1 – Create shared lint template
 
-Stages and jobs must be explicit so MR pipelines are predictable.
+Create `templates/lint.yml`:
 
-```bash
-mkdir -p src && echo 'print("ok")' > src/app.py
-cat > .gitlab-ci.yml << 'EOF'
-stages: [lint, test]
-lint:
+```yaml
+.lint_template:
   stage: lint
   image: python:3.12-alpine
   script:
     - python -m py_compile src/app.py
-test:
+    - mkdir -p generated
+    - echo "lint-pass" > generated/lint-status.txt
+  artifacts:
+    paths:
+      - generated/lint-status.txt
+    expire_in: 1 day
+```
+
+#### Task 2 – Create shared test template
+
+Create `templates/test.yml`:
+
+```yaml
+.unit_test_template:
   stage: test
   image: python:3.12-alpine
-  needs: [lint]
   script:
+    - test -f generated/lint-status.txt
     - python src/app.py
-EOF
-python3 -c "import yaml; d=yaml.safe_load(open('.gitlab-ci.yml')); assert d['stages']==['lint','test']; print('OK', list(d))"
+
+.integration_test_template:
+  stage: test
+  image: python:3.12-alpine
+  script:
+    - echo "integration stub" > generated/integration.txt
+  artifacts:
+    paths:
+      - generated/integration.txt
+    expire_in: 1 day
 ```
 
-**Expected output:** Prints `OK` and job names; no YAML exception.
-
-#### Task 2 – Simulate the scripts locally
-
-Prove the job script works before burning runner minutes.
+Validate templates:
 
 ```bash
-python3 -m py_compile src/app.py
-python3 src/app.py | tee out.txt
-test "$(cat out.txt)" = 'ok'
+cd ~/rebash-gitlab/module-05
+python3 -c "
+import yaml, pathlib
+for p in pathlib.Path('templates').glob('*.yml'):
+    yaml.safe_load(p.read_text())
+    print('OK', p)
+"
 ```
 
-**Expected output:** Compile succeeds; out.txt is `ok`.
+**Expected output:** Two lines starting with `OK templates/`.
+
+#### Task 3 – Create app and parent pipeline with includes and needs DAG
+
+Create `src/app.py`:
+
+```python
+print("dag-lab ok")
+```
+
+Create `.gitlab-ci.yml`:
+
+```yaml
+include:
+  - local: templates/lint.yml
+  - local: templates/test.yml
+
+stages:
+  - lint
+  - test
+
+lint:
+  extends: .lint_template
+
+unit_test:
+  extends: .unit_test_template
+  needs:
+    - job: lint
+      artifacts: true
+
+integration_test:
+  extends: .integration_test_template
+  needs:
+    - job: unit_test
+    - job: lint
+      artifacts: true
+```
+
+Validate all YAML:
+
+```bash
+cd ~/rebash-gitlab/module-05
+python3 -c "
+import yaml, pathlib
+for f in ['.gitlab-ci.yml', 'templates/lint.yml', 'templates/test.yml']:
+    yaml.safe_load(pathlib.Path(f).read_text())
+    print('OK', f)
+d = yaml.safe_load(open('.gitlab-ci.yml'))
+assert d['integration_test']['needs'][0]['job'] == 'unit_test'
+print('OK DAG needs chain')
+"
+```
+
+**Expected output:** Three `OK` lines for files plus `OK DAG needs chain`.
+
+#### Task 4 – Simulate generated artefact paths locally
+
+```bash
+cd ~/rebash-gitlab/module-05
+mkdir -p generated
+python3 -m py_compile src/app.py
+echo "lint-pass" > generated/lint-status.txt
+test -f generated/lint-status.txt
+python3 src/app.py | tee dag-out.txt
+echo "integration stub" > generated/integration.txt
+test -f generated/integration.txt
+grep -q 'dag-lab ok' dag-out.txt
+```
+
+**Expected output:** Both files under `generated/` exist; `dag-out.txt` contains `dag-lab ok`.
 
 ### Validation steps
 
-- [ ] `.gitlab-ci.yml` parses
-- [ ] Local script path matches job intent
+- [ ] `templates/lint.yml` and `templates/test.yml` parse independently
+- [ ] Parent `.gitlab-ci.yml` includes both templates with `local:` paths
+- [ ] `unit_test` needs `lint` with artefacts
+- [ ] `integration_test` needs both `unit_test` and `lint`
+- [ ] Local simulation populates `generated/` as the jobs would
 
 ### Common errors and fixes
 
 | Error | Cause | Fix |
 |-------|-------|-----|
-| yaml.scanner.ScannerError | Indentation | Use 2-space indent; re-validate with PyYAML |
-| job stuck pending | No runner / tags | Check runner tags match job tags |
-| needs not found | Typo in job name | Align `needs` with actual job keys |
+| `Local file `templates/...` does not exist` | Wrong path relative to repo root | Place templates under `templates/` and use `local:` includes |
+| `extends` key unknown | Template job missing dot prefix | Hidden templates use `.lint_template` naming |
+| Circular `needs` | Jobs depend on each other | Draw the DAG on paper; integration should not block lint |
+| Duplicate stage job names | Same job name in include and parent | Override with unique job keys (`unit_test`, not `test`) |
 
 ### Challenge exercise
 
-Add an `artifacts:` path from lint to test and document expire_in.
+Add `templates/build.yml` with a `.build_template` job that writes `generated/build-id.txt`, include it, and make `integration_test` also `needs` the build job.
 
 ### Learning outcomes
 
-- Produced reviewable GitLab CI YAML
-- Validated structure and scripts locally
+- Split reusable job definitions into included template files
+- Composed a parent pipeline with `extends` and a `needs` DAG
+- Validated every include and parent file offline
+- Simulated generated artefact directories locally
 
 ### Cleanup
 
 ```bash
-# File-only lab — keep YAML for the next tutorial
+rm -rf ~/rebash-gitlab/module-05/generated
+rm -f ~/rebash-gitlab/module-05/dag-out.txt
+# Keep templates/ and .gitlab-ci.yml for module 06
 ```
 
 ## Validation
@@ -251,7 +344,7 @@ Add an `artifacts:` path from lint to test and document expire_in.
 
 
 
-- [ ] Lab commands run under `~/rebash-gitlab/module-05/{templates,generated}/`
+- [ ] Lab commands run under `~/rebash-gitlab/module-05/`
 - [ ] You can explain each Theory section in your own words
 - [ ] You used modern tooling where it applies to this topic
 - [ ] You can describe one production failure mode for this topic

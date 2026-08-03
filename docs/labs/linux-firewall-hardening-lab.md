@@ -115,22 +115,38 @@ ss -tulpn | grep 8080
 
 From another host (if any), confirm 8080 is reachable only when allowed; then delete the rule and confirm behaviour change.
 
-### Task 4 — Hardening checklist card
+### Task 4 — Hardening evidence checks
 
-Create `~/rebash-lab-linux-firewall/hardening-card.md`:
+Run automated checks that prove the host posture (not a handwritten checklist):
 
 ```bash
-cat > ~/rebash-lab-linux-firewall/hardening-card.md <<'EOF'
-# Lab hardening card
-- [ ] apt update && unattended-upgrades considered
-- [ ] SSH keys only (PasswordAuthentication no)
-- [ ] PermitRootLogin no
-- [ ] UFW default deny in; OpenSSH allowed
-- [ ] No unexpected listeners on 0.0.0.0
-- [ ] sudo group membership reviewed
+cd ~/rebash-lab-linux-firewall
+set -euo pipefail
+
+cat > hardening-checks.sh <<'EOF'
+#!/usr/bin/env bash
+set -euo pipefail
+out=hardening-evidence.txt
+: > "$out"
+{
+  echo "## ufw"
+  sudo ufw status verbose
+  echo "## sshd effective (non-interactive)"
+  sudo sshd -T 2>/dev/null | grep -E '^(passwordauthentication|permitrootlogin|pubkeyauthentication) ' || true
+  echo "## listeners"
+  ss -tulpn
+  echo "## sudo group"
+  getent group sudo || getent group wheel || true
+} | tee "$out"
+grep -qi 'Status: active' "$out"
+grep -qi 'OpenSSH\|22/tcp' "$out"
 EOF
-ss -tulpn | tee -a ~/rebash-lab-linux-firewall/hardening-card.md
+chmod +x hardening-checks.sh
+./hardening-checks.sh
+test -s hardening-evidence.txt
 ```
+
+**Expected output:** `hardening-evidence.txt` shows UFW active, OpenSSH/22 allow, and current listeners.
 
 ### Task 5 — Negative check
 
@@ -144,7 +160,7 @@ sudo ufw status numbered | tee ~/rebash-lab-linux-firewall/ufw-numbered.txt
 - [ ] `ufw status` shows `Status: active` and OpenSSH allow
 - [ ] SSH still works after enable
 - [ ] Before/after files saved
-- [ ] Hardening card completed honestly
+- [ ] `hardening-evidence.txt` produced by `hardening-checks.sh`
 
 ## Troubleshooting
 

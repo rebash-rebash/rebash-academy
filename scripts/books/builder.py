@@ -28,7 +28,7 @@ from .author import (
     AUTHOR_WEBSITE,
 )
 from .cover_art import cover_art_svg
-from .styles import BOOK_CSS
+from .styles import BOOK_CSS, book_css, get_page_profile
 
 ROOT = Path(__file__).resolve().parents[2]
 DOCS = ROOT / "docs"
@@ -675,15 +675,14 @@ def ensure_author_photo(out_dir: Path) -> str | None:
     return f"assets/{AUTHOR_ASSET_NAME}"
 
 
-def _pad_cover_to_a4(src: Path, dest: Path) -> None:
-    """Letterbox cover art onto an A4 canvas so footers are never cropped in PDF."""
+def _pad_cover_to_trim(src: Path, dest: Path, canvas_w: int, canvas_h: int) -> None:
+    """Letterbox cover art onto a trim canvas so footers are never cropped in PDF."""
     try:
         from PIL import Image
     except ImportError:
         shutil.copy2(src, dest)
         return
     raw = Image.open(src).convert("RGB")
-    canvas_w, canvas_h = 2480, 3508  # A4 @ ~300 dpi
     w, h = raw.size
     scale = min(canvas_w / w, canvas_h / h)
     nw, nh = max(1, int(round(w * scale))), max(1, int(round(h * scale)))
@@ -694,14 +693,23 @@ def _pad_cover_to_a4(src: Path, dest: Path) -> None:
     canvas.save(dest, "PNG", optimize=True)
 
 
-def ensure_cover_assets(out_dir: Path, course: str, course_title: str) -> dict[str, str]:
+def ensure_cover_assets(
+    out_dir: Path,
+    course: str,
+    course_title: str,
+    *,
+    page_size: str = "a4",
+) -> dict[str, str]:
     """Prepare cover artwork. Prefer a designed PNG cover when present."""
     assets = out_dir / "assets"
     assets.mkdir(parents=True, exist_ok=True)
     paths: dict[str, str] = {}
+    profile = get_page_profile(page_size)
+    canvas_w, canvas_h = profile["cover_px"]
+    suffix = "" if page_size == "a4" else f"-{page_size.replace('/', '-')}"
 
     # Designed full-bleed covers: docs/assets/images/covers/<course>.png|.jpg
-    # Prefer *-raw.png (unpadded source) when present, then pad to A4.
+    # Prefer *-raw.png (unpadded source) when present, then pad to trim size.
     covers_dir = DOCS / "assets" / "images" / "covers"
     candidates = [
         covers_dir / f"{course}-raw.png",
@@ -712,9 +720,9 @@ def ensure_cover_assets(out_dir: Path, course: str, course_title: str) -> dict[s
     ]
     for src in candidates:
         if src.is_file():
-            dest = assets / f"cover-{course}.png"
+            dest = assets / f"cover-{course}{suffix}.png"
             if src.suffix.lower() in {".png", ".jpg", ".jpeg", ".webp"}:
-                _pad_cover_to_a4(src, dest)
+                _pad_cover_to_trim(src, dest, canvas_w, canvas_h)
             else:
                 shutil.copy2(src, dest)
             paths["fullbleed"] = f"assets/{dest.name}"
@@ -796,7 +804,35 @@ def render_cover(
 """
 
 
-def render_copyright(course_title: str, author: str, year: int) -> str:
+def render_half_title(course_title: str) -> str:
+    """KDP half-title: right-facing, title only, no headers/page numbers."""
+    return f"""
+<section class="half-title">
+  <h1>{html.escape(course_title)}</h1>
+  <p class="imprint">REBASH Academy</p>
+</section>
+"""
+
+
+def render_title_page(course_title: str, subtitle: str, author: str) -> str:
+    """KDP title page: right-facing; title, subtitle, author (no leading “by”)."""
+    return f"""
+<section class="title-page">
+  <h1>{html.escape(course_title)}</h1>
+  <p class="subtitle">{html.escape(subtitle)}</p>
+  <p class="author">{html.escape(author)}</p>
+  <p class="imprint">REBASH Academy · rebash.in</p>
+</section>
+"""
+
+
+def render_copyright(course_title: str, author: str, year: int, *, kdp: bool = False) -> str:
+    trim_note = (
+        "<p>Paperback trim size: 6&nbsp;×&nbsp;9&nbsp;in (15.24&nbsp;×&nbsp;22.86&nbsp;cm). "
+        "Interior: no bleed.</p>"
+        if kdp
+        else ""
+    )
     return f"""
 <section class="copyright-page frontmatter">
   <h1>Copyright</h1>
@@ -810,12 +846,13 @@ def render_copyright(course_title: str, author: str, year: int) -> str:
   Always test changes on non-production hosts. The authors accept no liability for damage
   arising from use of this material.</p>
   <p>British English spelling is used throughout unless quoting product names or commands.</p>
+  {trim_note}
   <p>Generated from the REBASH Academy curriculum on {date.today().isoformat()}.</p>
 </section>
 """
 
 
-def render_about_author(author: str, photo_rel: str | None) -> str:
+def render_about_author(author: str, photo_rel: str | None, *, backmatter: bool = False) -> str:
     photo = ""
     if photo_rel:
         photo = (
@@ -823,8 +860,9 @@ def render_about_author(author: str, photo_rel: str | None) -> str:
             f'alt="Portrait of {html.escape(author)}"/>'
         )
     paras = "".join(f"<p>{html.escape(p)}</p>" for p in AUTHOR_BIO_PARAGRAPHS)
+    place = "backmatter" if backmatter else "frontmatter"
     return f"""
-<section class="about-author frontmatter" id="about-the-author">
+<section class="about-author {place}" id="about-the-author">
   <h1>About the author</h1>
   <div class="author-card">
     {photo}
@@ -914,7 +952,7 @@ def render_glossary(chapters: list[Chapter], course: str) -> str:
         rows.append(f'<dt id="gloss-{html.escape(slugify(term))}">{html.escape(term)}</dt>')
         rows.append(f"<dd>{html.escape(definition)}</dd>")
     return (
-        '<section class="glossary" id="glossary"><h1>Glossary</h1>'
+        '<section class="glossary backmatter" id="glossary"><h1>Glossary</h1>'
         '<p class="backmatter-lead">Key terms used in this course. '
         "Acronyms are expanded on first use in the chapters as well.</p>"
         f"<dl>{''.join(rows)}</dl></section>"
@@ -962,7 +1000,7 @@ def render_index(chapters: list[Chapter]) -> str:
         return ""
 
     items = [
-        '<section class="index-section" id="index"><h1>Index</h1>',
+        '<section class="index-section backmatter" id="index"><h1>Index</h1>',
         '<p class="backmatter-lead">Commands and topics with chapter page numbers.</p>',
         '<ul class="index-list">',
     ]
@@ -1020,11 +1058,17 @@ def write_html_book(
     *,
     author: str,
     subtitle: str,
+    page_size: str = "a4",
+    include_cover: bool = True,
+    html_name: str = "book.html",
+    css_name: str = "book.css",
 ) -> Path:
     year = date.today().year
-    (out_dir / "book.css").write_text(BOOK_CSS, encoding="utf-8")
+    kdp = page_size.startswith("kdp")
+    css = book_css(page_size)
+    (out_dir / css_name).write_text(css, encoding="utf-8")
     photo_rel = ensure_author_photo(out_dir)
-    cover_assets = ensure_cover_assets(out_dir, course, course_title)
+    cover_assets = ensure_cover_assets(out_dir, course, course_title, page_size=page_size)
 
     parts = [
         "<!DOCTYPE html>",
@@ -1032,26 +1076,50 @@ def write_html_book(
         "<head>",
         '<meta charset="utf-8"/>',
         f"<title>{html.escape(course_title)} — REBASH Academy</title>",
-        '<link rel="stylesheet" href="book.css"/>',
+        f'<link rel="stylesheet" href="{html.escape(css_name)}"/>',
         "</head>",
         "<body>",
         f'<span class="course-title-mark">{html.escape(course_title)}</span>',
-        render_cover(course_title, subtitle, author, year, photo_rel, cover_assets),
-        render_copyright(course_title, author, year),
-        render_about_author(author, photo_rel),
-        render_toc(chapters),
-        render_lof(chapters),
+        f'<span class="author-name-mark">{html.escape(author)}</span>',
     ]
+    if include_cover:
+        parts.append(render_cover(course_title, subtitle, author, year, photo_rel, cover_assets))
+
+    if kdp:
+        # KDP front matter order:
+        # https://kdp.amazon.com/en_US/help/topic/GDDYZG2C7RVF5N9J
+        # half-title → title → copyright (verso) → TOC → (LOF) → body → back matter
+        parts.extend(
+            [
+                render_half_title(course_title),
+                render_title_page(course_title, subtitle, author),
+                render_copyright(course_title, author, year, kdp=True),
+                render_toc(chapters),
+                render_lof(chapters),
+            ]
+        )
+    else:
+        parts.extend(
+            [
+                render_copyright(course_title, author, year, kdp=False),
+                render_about_author(author, photo_rel),
+                render_toc(chapters),
+                render_lof(chapters),
+            ]
+        )
 
     for ch in chapters:
         # Module name is shown as the chapter kicker (no blank divider pages)
         parts.append(render_chapter_html(ch))
 
+    if kdp:
+        # Author bio is back matter on KDP (right-facing)
+        parts.append(render_about_author(author, photo_rel, backmatter=True))
     parts.append(render_glossary(chapters, course))
     parts.append(render_index(chapters))
     parts.extend(["</body>", "</html>"])
 
-    path = out_dir / "book.html"
+    path = out_dir / html_name
     path.write_text("\n".join(p for p in parts if p), encoding="utf-8")
     return path
 
@@ -1207,14 +1275,122 @@ def build_epub(html_path: Path, epub_path: Path, course_title: str, chapters: li
     _ = html_path
 
 
-def build_pdf(html_path: Path, pdf_path: Path) -> None:
+def _finalize_kdp_pdf(pdf_path: Path) -> None:
+    """Strip link annotations and ensure even page count for KDP manuscript upload.
+
+    KDP treats hyperlink annotations as non-printable markup and often flags their
+    bounding boxes as objects outside the margins.
+    """
+    try:
+        from pypdf import PdfReader, PdfWriter
+    except ImportError:
+        try:
+            from PyPDF2 import PdfReader, PdfWriter  # type: ignore
+        except ImportError:
+            return
+
+    reader = PdfReader(str(pdf_path))
+    writer = PdfWriter()
+    stripped = 0
+    for page in reader.pages:
+        if "/Annots" in page:
+            try:
+                del page["/Annots"]
+                stripped += 1
+            except Exception:  # noqa: BLE001
+                pass
+        writer.add_page(page)
+
+    n = len(writer.pages)
+    if n % 2 == 1:
+        writer.add_blank_page(
+            width=float(reader.pages[0].mediabox.width),
+            height=float(reader.pages[0].mediabox.height),
+        )
+        print(f"  padded odd page count {n} → {n + 1} (blank last page)")
+
+    tmp = pdf_path.with_suffix(".kdp.tmp.pdf")
+    with tmp.open("wb") as fh:
+        writer.write(fh)
+    tmp.replace(pdf_path)
+    if stripped:
+        print(f"  stripped link annotations from {stripped} pages (KDP print-safe)")
+
+
+def build_pdf(
+    html_path: Path,
+    pdf_path: Path,
+    *,
+    ensure_even_pages: bool = False,
+    kdp_finalize: bool = False,
+) -> None:
     from weasyprint import HTML
 
     HTML(filename=str(html_path), base_url=str(html_path.parent)).write_pdf(str(pdf_path))
+    if kdp_finalize or ensure_even_pages:
+        _finalize_kdp_pdf(pdf_path)
 
 
 def which(cmd: str) -> bool:
     return shutil.which(cmd) is not None
+
+
+def build_kdp_pdfs(
+    out_dir: Path,
+    course: str,
+    course_title: str,
+    chapters: list[Chapter],
+    *,
+    author: str,
+    subtitle: str,
+    page_size: str = "kdp-6x9",
+) -> tuple[Path, Path]:
+    """Build KDP trim PDFs: with cover (preview) and interior (KDP manuscript)."""
+    profile = get_page_profile(page_size)
+    slug = page_size.replace("/", "-")
+    css_name = f"book-{slug}.css"
+
+    with_cover_html = write_html_book(
+        out_dir,
+        course,
+        course_title,
+        chapters,
+        author=author,
+        subtitle=subtitle,
+        page_size=page_size,
+        include_cover=True,
+        html_name=f"book-{slug}.html",
+        css_name=css_name,
+    )
+    interior_html = write_html_book(
+        out_dir,
+        course,
+        course_title,
+        chapters,
+        author=author,
+        subtitle=subtitle,
+        page_size=page_size,
+        include_cover=False,
+        html_name=f"book-{slug}-interior.html",
+        css_name=css_name,
+    )
+
+    with_cover_pdf = out_dir / f"{course}-{slug}.pdf"
+    interior_pdf = out_dir / f"{course}-{slug}-interior.pdf"
+    for stale in (with_cover_pdf, interior_pdf):
+        if stale.is_file():
+            stale.unlink()
+
+    print(f"  KDP trim: {profile['label']} — {profile['notes']}")
+    print(
+        "  layout: half-title → title → copyright → TOC → chapters → "
+        "about author → glossary → index (no interior bleed)"
+    )
+    build_pdf(with_cover_html, with_cover_pdf, kdp_finalize=True)
+    print(f"  wrote {with_cover_pdf.relative_to(ROOT)} (with cover · preview)")
+    build_pdf(interior_html, interior_pdf, kdp_finalize=True)
+    print(f"  wrote {interior_pdf.relative_to(ROOT)} (no cover · KDP manuscript)")
+    return with_cover_pdf, interior_pdf
 
 
 def build_course(
@@ -1224,75 +1400,117 @@ def build_course(
     skip_index: bool = True,
     author: str = AUTHOR_NAME,
     subtitle: str | None = None,
+    page_size: str = "a4",
+    kdp: bool = False,
 ) -> Path:
     course = course.strip().lower().rstrip("/")
     if course not in list_courses():
         die(f"unknown course '{course}'")
+    if kdp:
+        page_size = "kdp-6x9"
+        formats = set(formats) | {"pdf"}
+    try:
+        profile = get_page_profile(page_size)
+    except ValueError as exc:
+        die(str(exc))
 
     course_title, chapters, _course_dir = collect_chapters(course, skip_index=skip_index)
     sub = subtitle or f"A practical {course_title} course book for Cloud & DevOps engineers"
     out_dir = BOOKS / course
     out_dir.mkdir(parents=True, exist_ok=True)
-    for pattern in ("*.epub", "*.pdf"):
-        for p in out_dir.glob(pattern):
-            p.unlink()
-    for name in ("book.md", "book.html", "book.css"):
-        p = out_dir / name
-        if p.is_file():
-            p.unlink()
 
-    print(f"Assembling {len(chapters)} chapters for '{course_title}' (professional layout)…")
-    md_path = write_markdown_book(out_dir, course_title, chapters, author)
-    html_path = write_html_book(
-        out_dir,
-        course,
-        course_title,
-        chapters,
-        author=author,
-        subtitle=sub,
+    if kdp:
+        # Keep A4 free-download artefacts; only refresh KDP-named outputs.
+        for pattern in (f"{course}-kdp-*.pdf", "book-kdp-*.html", "book-kdp-*.css"):
+            for p in out_dir.glob(pattern):
+                p.unlink()
+    else:
+        for pattern in ("*.epub", "*.pdf"):
+            for p in out_dir.glob(pattern):
+                # Preserve previously built KDP PDFs when rebuilding A4.
+                if "-kdp-" in p.name:
+                    continue
+                p.unlink()
+        for name in ("book.md", "book.html", "book.css"):
+            p = out_dir / name
+            if p.is_file():
+                p.unlink()
+
+    print(
+        f"Assembling {len(chapters)} chapters for '{course_title}' "
+        f"({profile['label']} · professional layout)…"
     )
+    md_path = write_markdown_book(out_dir, course_title, chapters, author)
     print(f"  wrote {md_path.relative_to(ROOT)}")
-    print(f"  wrote {html_path.relative_to(ROOT)}")
 
-    if "epub" in formats:
-        epub_path = out_dir / f"{course}.epub"
+    if kdp:
         try:
-            build_epub(html_path, epub_path, course_title, chapters, out_dir, author)
-            print(f"  wrote {epub_path.relative_to(ROOT)} (ebooklib)")
+            build_kdp_pdfs(
+                out_dir,
+                course,
+                course_title,
+                chapters,
+                author=author,
+                subtitle=sub,
+                page_size=page_size,
+            )
         except Exception as exc:  # noqa: BLE001
-            print(f"  EPUB failed: {exc}", file=sys.stderr)
-            if which("pandoc"):
-                subprocess.run(
-                    [
-                        "pandoc",
-                        str(md_path),
-                        "-o",
-                        str(epub_path),
-                        "--toc",
-                        f"--metadata=title={course_title}",
-                        f"--metadata=author={author}",
-                        "--resource-path",
-                        str(out_dir),
-                    ],
-                    check=True,
-                )
-                print(f"  wrote {epub_path.relative_to(ROOT)} (pandoc fallback)")
+            print(f"  KDP PDF failed: {exc}", file=sys.stderr)
+            raise
+    else:
+        html_path = write_html_book(
+            out_dir,
+            course,
+            course_title,
+            chapters,
+            author=author,
+            subtitle=sub,
+            page_size=page_size,
+            include_cover=True,
+        )
+        print(f"  wrote {html_path.relative_to(ROOT)}")
 
-    if "pdf" in formats:
-        pdf_path = out_dir / f"{course}.pdf"
-        try:
-            build_pdf(html_path, pdf_path)
-            print(f"  wrote {pdf_path.relative_to(ROOT)} (weasyprint)")
-        except Exception as exc:  # noqa: BLE001
-            print(f"  PDF failed: {exc}", file=sys.stderr)
-            print(f"  HTML ready for print: {html_path.relative_to(ROOT)}", file=sys.stderr)
+        if "epub" in formats:
+            epub_path = out_dir / f"{course}.epub"
+            try:
+                build_epub(html_path, epub_path, course_title, chapters, out_dir, author)
+                print(f"  wrote {epub_path.relative_to(ROOT)} (ebooklib)")
+            except Exception as exc:  # noqa: BLE001
+                print(f"  EPUB failed: {exc}", file=sys.stderr)
+                if which("pandoc"):
+                    subprocess.run(
+                        [
+                            "pandoc",
+                            str(md_path),
+                            "-o",
+                            str(epub_path),
+                            "--toc",
+                            f"--metadata=title={course_title}",
+                            f"--metadata=author={author}",
+                            "--resource-path",
+                            str(out_dir),
+                        ],
+                        check=True,
+                    )
+                    print(f"  wrote {epub_path.relative_to(ROOT)} (pandoc fallback)")
+
+        if "pdf" in formats:
+            pdf_name = f"{course}.pdf" if page_size == "a4" else f"{course}-{page_size}.pdf"
+            pdf_path = out_dir / pdf_name
+            try:
+                build_pdf(html_path, pdf_path)
+                print(f"  wrote {pdf_path.relative_to(ROOT)} (weasyprint)")
+            except Exception as exc:  # noqa: BLE001
+                print(f"  PDF failed: {exc}", file=sys.stderr)
+                print(f"  HTML ready for print: {html_path.relative_to(ROOT)}", file=sys.stderr)
 
     # Feature checklist for operators
     figs = sum(len(c.figures) for c in chapters)
+    cover_note = "cover+interior KDP pair" if kdp else "cover"
     print(
-        "  features: cover, copyright, about-the-author, TOC, LOF, syntax highlighting, "
+        f"  features: {cover_note}, copyright, about-the-author, TOC, LOF, syntax highlighting, "
         "headers/footers/page numbers, chapter numbers, glossary, index, "
         f"QR labs ({len(chapters)}), try-it-yourself + callouts"
-        f" · figures={figs} · author={author}"
+        f" · figures={figs} · author={author} · page={page_size}"
     )
     return out_dir

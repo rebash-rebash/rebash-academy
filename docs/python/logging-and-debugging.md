@@ -167,8 +167,11 @@ Your inventory loader will run in CI. Platform asks for INFO lines on stderr for
 cd ~/rebash-python/lab10
 set -euo pipefail
 source .venv/bin/activate
+```
 
-cat > app_logging.py << 'PY'
+Create `app_logging.py`:
+
+```python
 from __future__ import annotations
 
 import logging
@@ -206,7 +209,12 @@ def run_demo(log_path: Path) -> None:
         raise TimeoutError("mock api timeout")
     except TimeoutError:
         log.exception("fetch failed host=%s", "web-01")
-PY
+```
+
+Run:
+
+```bash
+test -f app_logging.py
 ```
 
 **Expected output:** File `app_logging.py` created (no run yet).
@@ -261,8 +269,11 @@ PY
 cd ~/rebash-python/lab10
 set -euo pipefail
 source .venv/bin/activate
+```
 
-cat > maybe_debug.py << 'PY'
+Create `maybe_debug.py`:
+
+```python
 from __future__ import annotations
 
 import os
@@ -282,8 +293,11 @@ if __name__ == "__main__":
     # Default path: no breakpoint (REBASH_DEBUG unset)
     assert compute([1, 2, 3]) == 6
     print("maybe_debug ok")
-PY
+```
 
+Run:
+
+```bash
 REBASH_DEBUG=0 python maybe_debug.py | tee task3-debug.txt
 # Interactive demo (optional, skip in automation):
 # REBASH_DEBUG=1 python maybe_debug.py

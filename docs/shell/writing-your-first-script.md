@@ -167,16 +167,20 @@ Your team needs a tiny host check script for CI: it must accept a hostname argum
 
 #### Task 1 – Shebang, chmod, and a first successful run
 
-```bash
-cd ~/rebash-shell/lab02
-set -euo pipefail
+Create `hello.sh`:
 
-cat > hello.sh << 'EOF'
+```bash
 #!/usr/bin/env bash
 set -euo pipefail
 
 printf 'hello from %s\n' "$(hostname -s)" | tee hello.out
-EOF
+```
+
+Run:
+
+```bash
+cd ~/rebash-shell/lab02
+set -euo pipefail
 
 chmod +x hello.sh
 ./hello.sh
@@ -187,15 +191,14 @@ ls -l hello.sh | tee hello-perms.txt
 grep -q 'x' <<< "$(stat -c '%A' hello.sh)"
 ```
 
+
 **Expected output:** `hello.out` has a greeting; `shebang.txt` shows `#!/usr/bin/env bash`; `hello.sh` is executable.
 
 #### Task 2 – Arguments, usage message, and exit codes
 
-```bash
-cd ~/rebash-shell/lab02
-set -euo pipefail
+Create `hostcheck.sh`:
 
-cat > hostcheck.sh << 'EOF'
+```bash
 #!/usr/bin/env bash
 set -euo pipefail
 
@@ -212,7 +215,13 @@ target="$1"
 printf 'checking host=%s\n' "$target"
 printf 'ok host=%s\n' "$target" | tee "check-${target}.txt"
 exit 0
-EOF
+```
+
+Run:
+
+```bash
+cd ~/rebash-shell/lab02
+set -euo pipefail
 
 chmod +x hostcheck.sh
 
@@ -232,22 +241,36 @@ grep -q 'Usage:' usage.stderr
 test ! -s usage.stdout
 ```
 
+
 **Expected output:** `check-labhost.txt` exists; `usage_exit=2`; `usage.stderr` contains `Usage:`.
 
 #### Task 3 – Prove strict mode stops on failure
 
-```bash
-cd ~/rebash-shell/lab02
-set -euo pipefail
+Create `strict-demo.sh`:
 
-cat > strict-demo.sh << 'EOF'
+```bash
 #!/usr/bin/env bash
 set -euo pipefail
 
 echo "step=1" | tee strict-steps.txt
 false
 echo "step=2-should-not-run" | tee -a strict-steps.txt
-EOF
+```
+
+Create `loose-demo.sh`:
+
+```bash
+#!/bin/bash
+echo "loose-step=1" | tee loose-steps.txt
+false
+echo "loose-step=2" | tee -a loose-steps.txt
+```
+
+Run:
+
+```bash
+cd ~/rebash-shell/lab02
+set -euo pipefail
 
 chmod +x strict-demo.sh
 
@@ -261,12 +284,6 @@ grep -q 'step=1' strict-steps.txt
 grep -q 'step=2-should-not-run' strict-steps.txt && exit 1 || true
 
 # Contrast: without -e the second echo would run
-cat > loose-demo.sh << 'EOF'
-#!/bin/bash
-echo "loose-step=1" | tee loose-steps.txt
-false
-echo "loose-step=2" | tee -a loose-steps.txt
-EOF
 chmod +x loose-demo.sh
 set +e
 ./loose-demo.sh >/dev/null
@@ -279,6 +296,7 @@ tar -czf first-script-evidence.tgz \
   strict-exit.txt strict-steps.txt loose-steps.txt
 ls -l first-script-evidence.tgz | tee evidence-ls.txt
 ```
+
 
 **Expected output:** `strict_exit` is non-zero; `strict-steps.txt` has step 1 only; `loose-steps.txt` includes step 2; evidence archive exists.
 

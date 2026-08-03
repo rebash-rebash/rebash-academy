@@ -72,16 +72,15 @@ pip install 'httpx>=0.27,<1'
 ```
 
 ## Initial State — fixture path (required)
+Create `fixtures/repos.json`:
 
-```bash
-cat > fixtures/repos.json << 'EOF'
+```json
 [
   {"full_name": "acme/payments", "private": false, "default_branch": "main",
    "has_branch_protection": false, "has_codeowners": false, "archived": false},
   {"full_name": "acme/internal-lib", "private": true, "default_branch": "main",
    "has_branch_protection": true, "has_codeowners": true, "archived": false}
 ]
-EOF
 ```
 
 ## Task

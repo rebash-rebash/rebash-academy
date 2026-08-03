@@ -32,7 +32,7 @@ tags:
   - containers
   - oci
 author: Shaik Basha
-last_updated: "2026-07-31"
+last_updated: "2026-08-03"
 comments: false
 ---
 
@@ -135,22 +135,20 @@ You build or pull an image (layered filesystem plus config), then create a conta
 
 ## Hands-on Lab
 
-
-
 ### Objective
 
-Build or run a real Docker solution for **Introduction to Containers and Docker** and prove it with inspect/logs/HTTP.
+Verify Docker Engine is working, run a one-off Alpine container, and capture inspect evidence that shows how a container differs from a full virtual machine.
 
 ### Prerequisites
 
-- Docker Engine or Docker Desktop
-- Permission to run containers
+- Docker Engine or Docker Desktop installed and running
+- Permission to run `docker` without `sudo` (or use `sudo` consistently)
 
 ### Lab environment
 
 Workspace: `~/rebash-docker/module-01`
 
-Local Docker daemon. Clean up containers/images after the lab.
+Local Docker daemon on Ubuntu 22.04/24.04 or Docker Desktop. Remove lab containers before you finish.
 
 ```bash
 mkdir -p ~/rebash-docker/module-01 && cd ~/rebash-docker/module-01
@@ -158,77 +156,109 @@ mkdir -p ~/rebash-docker/module-01 && cd ~/rebash-docker/module-01
 
 ### Real-world scenario
 
-You are validating **Introduction to Containers and Docker** before it lands in CI. The change must be reproducible with copy-paste commands and leave no orphan containers.
+You join a platform team and need to confirm Docker works on a new laptop before onboarding tutorials. Your lead asks for `docker version` and `docker info` snippets plus proof that a container shares the host kernel (PID namespace, lightweight footprint) — not a separate guest OS like a VM.
 
 ### Step-by-step tasks
 
-#### Task 1 – Run and inspect a container
+#### Task 1 – Verify Engine and client versions
 
-Start from a known image, publish a port, and verify HTTP.
+Onboarding checklists start with version and daemon health.
+
+{% raw %}
+```bash
+cd ~/rebash-docker/module-01
+docker version | tee docker-version.txt
+docker info --format '{{ "{{" }}ServerVersion{{ "}}" }} {{ "{{" }}.OperatingSystem{{ "}}" }}' | tee docker-info-snippet.txt
+grep -q 'Server:' docker-version.txt
+test -s docker-info-snippet.txt
+```
+{% endraw %}
+
+**Expected output:** `docker-version.txt` lists Client and Server sections; `docker-info-snippet.txt` shows a Server version string.
+
+#### Task 2 – Run Alpine with a one-off command
+
+Containers start from an image and exit when the command finishes — unlike a VM you boot and log into.
 
 ```bash
-docker run -d --name rebash-lab -p 18080:80 nginx:alpine
-docker ps --filter name=rebash-lab
-curl -sI http://127.0.0.1:18080 | head -n 5 | tee headers.txt
-docker logs rebash-lab 2>&1 | head -n 10 | tee logs.txt
+cd ~/rebash-docker/module-01
+docker run --rm alpine:3.20 uname -a | tee alpine-uname.txt
+grep -q 'Linux' alpine-uname.txt
 ```
 
-**Expected output:** Container Up; HTTP 200 in headers.txt.
+**Expected output:** `alpine-uname.txt` contains a Linux kernel line (same kernel family as the host, not a separate guest OS).
 
-#### Task 2 – Inspect runtime config
+#### Task 3 – Inspect a short-lived container and record VM contrast facts
 
-Use inspect for status — production debugging rarely starts with guesswork.
+Run Alpine in the background, then inspect PID, image, and status — evidence that this is a process-isolated workload, not a hypervisor guest.
 
+{% raw %}
 ```bash
-docker inspect rebash-lab --format '{{ "{{" }}.State.Status{{ "}}" }} {{ "{{" }}.Config.Image{{ "}}" }}' | tee inspect.txt
-test -s inspect.txt
+cd ~/rebash-docker/module-01
+docker run -d --name rebash-mod01-facts alpine:3.20 sleep 300
+docker inspect rebash-mod01-facts --format 'Pid={{ "{{" }}.State.Pid{{ "}}" }} Image={{ "{{" }}.Config.Image{{ "}}" }} Status={{ "{{" }}.State.Status{{ "}}" }}' | tee container-facts.txt
+grep -E 'Pid=[0-9]+' container-facts.txt
+grep -q 'Status=running' container-facts.txt
+docker rm -f rebash-mod01-facts
 ```
+{% endraw %}
 
-**Expected output:** inspect.txt shows `running` and the nginx image.
+**Expected output:** `container-facts.txt` shows a non-zero PID, `alpine:3.20`, and `Status=running` before removal.
 
 ### Validation steps
 
-- [ ] Container or image behaves as Expected output describes
-- [ ] Ports respond or command output matches
-- [ ] Cleanup removes lab resources
+- [ ] `docker-version.txt` and `docker-info-snippet.txt` exist and are non-empty
+- [ ] `alpine-uname.txt` proves a container ran a command from `alpine:3.20`
+- [ ] `container-facts.txt` records PID, image, and status from inspect
 
 ### Common errors and fixes
 
 | Error | Cause | Fix |
 |-------|-------|-----|
-| port is already allocated | Previous lab left a container | `docker rm -f` the old name or change port |
-| permission denied | User not in docker group | Use rootless Docker or fix group membership |
-| manifest unknown | Bad tag | Pin a real tag such as `nginx:alpine` |
+| Cannot connect to the Docker daemon | Docker not running or wrong context | Start Docker Desktop or `sudo systemctl start docker`; run `docker context ls` |
+| permission denied on socket | User not in `docker` group | Add user to group and re-login, or prefix with `sudo` |
+| Unable to find image | No network or typo | Check connectivity; use pinned tag `alpine:3.20` |
 
 ### Challenge exercise
 
-Add a non-root USER (or Compose healthcheck) and prove it with inspect.
+Add cgroup evidence and a one-line VM contrast note to your facts file.
+
+Create `vm-contrast.txt`:
+
+```text
+Containers share the host kernel; cgroups limit this process tree. A VM runs a separate guest kernel under a hypervisor.
+```
+
+Run and merge:
+
+```bash
+cd ~/rebash-docker/module-01
+docker run --rm alpine:3.20 cat /proc/1/cgroup | head -n 3 | tee cgroup-snippet.txt
+cat vm-contrast.txt >> container-facts.txt
+grep -q 'shared kernel' container-facts.txt
+```
+
+**Expected output:** `cgroup-snippet.txt` shows cgroup paths; `container-facts.txt` ends with the contrast note.
 
 ### Learning outcomes
 
-- Executed a real Docker workflow
-- Captured evidence files
-- Removed disposable resources
+- Captured `docker version` and `docker info` evidence for onboarding
+- Ran a disposable Alpine container with a pinned tag
+- Used inspect to relate container PID, image, and status to the VM mental model
 
 ### Cleanup
 
 ```bash
-docker rm -f rebash-lab 2>/dev/null || true
-docker rmi rebash-lab:local 2>/dev/null || true
-docker compose down -v 2>/dev/null || true
+cd ~/rebash-docker/module-01
+docker rm -f rebash-mod01-facts 2>/dev/null || true
+docker rmi alpine:3.20 2>/dev/null || true
 ```
 
 ## Validation
 
-
-
-
-
-
-
 - [ ] Lab commands run under `~/rebash-docker/module-01/`
+- [ ] Evidence files (`docker-version.txt`, `container-facts.txt`) support container vs VM discussion
 - [ ] You can explain each Theory section in your own words
-- [ ] You used modern tooling where it applies to this topic
 - [ ] You can describe one production failure mode for this topic
 
 ## Code Walkthrough

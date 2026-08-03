@@ -29,7 +29,7 @@ tags:
   - dependencies
   - oci
 author: Shaik Basha
-last_updated: "2026-07-31"
+last_updated: "2026-08-03"
 comments: false
 ---
 
@@ -138,93 +138,211 @@ Prefer committing `Chart.lock` (and often the vendored `charts/*.tgz` in regulat
 
 ## Hands-on Lab
 
-
-
 ### Objective
 
-Create, lint, render, install, and uninstall a Helm chart demonstrating **Helm Chart Dependencies**.
+Compose a parent chart with a local file dependency on a child subchart, run `helm dependency update`, and prove rendered output includes resources from both charts.
 
 ### Prerequisites
 
-- helm CLI
-- kubectl + lab cluster
-- Ability to create namespaces
+- Helm 3.x (`helm version`)
+- kubectl optional for install
+- Writable workspace at `~/rebash-helm/module-06`
 
 ### Lab environment
 
-Workspace: `~/rebash-helm/module-06`
-
-Helm 3 against kind/minikube; release namespace `rebash-helm`.
+Workspace: `~/rebash-helm/module-06` on your workstation.
 
 ```bash
-mkdir -p ~/rebash-helm/module-06 && cd ~/rebash-helm/module-06
+mkdir -p ~/rebash-helm/module-06/rebash-parent/charts/rebash-lib/templates \
+  ~/rebash-helm/module-06/rebash-parent/templates && cd ~/rebash-helm/module-06
 ```
 
 ### Real-world scenario
 
-A team wants **Helm Chart Dependencies** packaged as a chart so GitOps can promote the same artefact across environments.
+Your application chart wraps a shared ConfigMap subchart maintained by another squad. Instead of copy-pasting YAML, you declare a `file://` dependency, vendor it with `helm dependency update`, and override subchart values from the parent `values.yaml`.
 
 ### Step-by-step tasks
 
-#### Task 1 – Create and lint a chart
+#### Task 1 – Create the child (library-style) subchart
 
-Scaffold a chart and fail the build on lint errors before install.
+Create `rebash-parent/charts/rebash-lib/Chart.yaml`:
 
-```bash
-helm version
-helm create labchart
-helm lint ./labchart | tee lint.txt
-helm template labchart ./labchart | egrep '^kind:' | sort | uniq -c | tee kinds.txt
+```yaml
+apiVersion: v2
+name: rebash-lib
+description: Shared ConfigMap subchart for REBASH lab
+type: application
+version: 0.1.0
+appVersion: "1.0"
 ```
 
-**Expected output:** lint reports no failures; kinds.txt lists Deployment/Service/etc.
+Create `rebash-parent/charts/rebash-lib/values.yaml`:
 
-#### Task 2 – Install with values override
-
-Prove values change rendered replicas, then install with wait.
-
-```bash
-kubectl create namespace rebash-helm --dry-run=client -o yaml | kubectl apply -f -
-cat > myvalues.yaml << 'EOF'
-replicaCount: 2
-EOF
-helm template labchart ./labchart -f myvalues.yaml | egrep 'replicas:' | head
-helm upgrade --install labchart ./labchart -n rebash-helm -f myvalues.yaml --wait --timeout 2m
-helm list -n rebash-helm
-kubectl get deploy -n rebash-helm
+```yaml
+configMessage: "hello from rebash-lib subchart"
 ```
 
-**Expected output:** Release deployed; Deployment shows 2 replicas (or Ready pods).
+Create `rebash-parent/charts/rebash-lib/templates/configmap.yaml`:
+
+{% raw %}
+```yaml
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ .Release.Name }}-lib-config
+data:
+  message: {{ .Values.configMessage | quote }}
+```
+{% endraw %}
+
+#### Task 2 – Parent chart with dependency declaration
+
+Create `rebash-parent/Chart.yaml`:
+
+```yaml
+apiVersion: v2
+name: rebash-parent
+description: Parent chart with local file dependency
+type: application
+version: 0.1.0
+appVersion: "1.27"
+dependencies:
+  - name: rebash-lib
+    version: 0.1.0
+    repository: "file://charts/rebash-lib"
+```
+
+Create `rebash-parent/values.yaml`:
+
+```yaml
+replicaCount: 1
+image:
+  repository: nginxinc/nginx-unprivileged
+  tag: "1.27-alpine"
+service:
+  port: 8080
+rebash-lib:
+  configMessage: "overridden from parent values"
+```
+
+Create `rebash-parent/templates/deployment.yaml`:
+
+{% raw %}
+```yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Release.Name }}-web
+spec:
+  replicas: {{ .Values.replicaCount }}
+  selector:
+    matchLabels:
+      app: {{ .Release.Name }}
+  template:
+    metadata:
+      labels:
+        app: {{ .Release.Name }}
+    spec:
+      containers:
+        - name: web
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+          ports:
+            - containerPort: {{ .Values.service.port }}
+```
+{% endraw %}
+
+Create `rebash-parent/templates/service.yaml`:
+
+{% raw %}
+```yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ .Release.Name }}-web
+spec:
+  ports:
+    - port: {{ .Values.service.port }}
+      targetPort: {{ .Values.service.port }}
+  selector:
+    app: {{ .Release.Name }}
+```
+{% endraw %}
+
+#### Task 3 – Dependency update, lint, and template
+
+```bash
+cd ~/rebash-helm/module-06/rebash-parent
+helm dependency update . | tee dep-update-m06.txt
+ls charts/ | tee charts-dir-m06.txt
+test -f charts/rebash-lib-0.1.0.tgz
+helm lint . | tee lint-m06.txt
+helm template parent-demo . --namespace rebash-helm-m06 | tee render-m06.yaml
+grep -E '^kind:' render-m06.yaml | sort | uniq -c | tee kinds-m06.txt
+grep -q 'kind: ConfigMap' render-m06.yaml
+grep -q 'overridden from parent values' render-m06.yaml
+grep -q 'kind: Deployment' render-m06.yaml
+```
+
+**Expected output:** `charts/rebash-lib-0.1.0.tgz` exists; rendered YAML includes ConfigMap with parent override message plus Deployment and Service.
+
+#### Task 4 – Optional install
+
+Create `namespace.yaml`:
+
+```yaml
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: rebash-helm-m06
+```
+
+```bash
+cd ~/rebash-helm/module-06
+if command -v helm >/dev/null && kubectl cluster-info >/dev/null 2>&1; then
+  kubectl apply -f namespace.yaml
+  helm upgrade --install parent-demo rebash-parent -n rebash-helm-m06 --wait --timeout 120s | tee install-m06.txt
+  kubectl get cm,deploy,svc -n rebash-helm-m06 | tee objects-m06.txt
+  kubectl get cm -n rebash-helm-m06 -o yaml | grep -A1 'message:' | tee cm-message-m06.txt
+else
+  echo "Skipping install — cluster unavailable" | tee install-m06.txt
+fi
+```
+
+**Expected output:** ConfigMap, Deployment, and Service exist in `rebash-helm-m06`; ConfigMap data shows parent override string.
 
 ### Validation steps
 
-- [ ] helm lint clean
-- [ ] Release listed in namespace
-- [ ] Uninstall removes the release
+- [ ] Parent `Chart.yaml` declares `file://` dependency
+- [ ] `helm dependency update` vendors `rebash-lib-0.1.0.tgz` under `charts/`
+- [ ] Rendered manifest includes subchart ConfigMap and parent workload objects
+- [ ] Parent values override subchart `configMessage`
+- [ ] Optional install succeeds in `rebash-helm-m06`
 
 ### Common errors and fixes
 
 | Error | Cause | Fix |
 |-------|-------|-----|
-| PENDING_INSTALL | Image pull / probes | `helm status` + `kubectl describe` |
-| lint failed | Template YAML break | Fix templates; re-run helm lint |
-| context deadline | Slow cluster | Increase --timeout or fix readiness |
+| `found in Chart.yaml, but missing in charts/` | Skipped dependency update | Run `helm dependency update` from parent directory |
+| Subchart values ignored | Wrong values key | Nest under subchart name: `rebash-lib.configMessage` |
+| `file://` path wrong | Relative path incorrect | Use `file://charts/rebash-lib` from parent chart root |
+| Editing unpacked tgz by hand | Manual drift | Change source under `charts/rebash-lib/` and re-run update |
 
 ### Challenge exercise
 
-Add a ConfigMap template driven by values and prove it with `helm get manifest`.
+Add a `condition: rebash-lib.enabled` to the dependency stanza and toggle the subchart off from parent values; prove ConfigMap disappears from `helm template` output.
 
 ### Learning outcomes
 
-- Packaged Kubernetes YAML as a chart
-- Overrode values safely
-- Cleaned up the release
+- Declared a local file dependency in `Chart.yaml`
+- Vendored subcharts with `helm dependency update`
+- Overrode subchart values from the parent release
+- Verified composed manifests include both parent and child resources
 
 ### Cleanup
 
 ```bash
-helm uninstall labchart -n rebash-helm 2>/dev/null || true
-kubectl delete namespace rebash-helm --ignore-not-found
+helm uninstall parent-demo -n rebash-helm-m06 2>/dev/null || true
+kubectl delete namespace rebash-helm-m06 --ignore-not-found
 ```
 
 ## Validation

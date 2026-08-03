@@ -234,19 +234,32 @@ set -euo pipefail
 DEFAULT_VIA="$(ip route show default 2>/dev/null | awk '/default/ {print; exit}')"
 PRIMARY_IF="$(ip -br a | awk '$1!="lo" && $2 ~ /UP/ {print $1; exit}')"
 PRIMARY_ADDR="$(ip -4 -o addr show dev "${PRIMARY_IF:-}" 2>/dev/null | awk '{print $4; exit}')"
+```
 
-cat > topology-facts.txt << EOF
-REBASH Networking Lab01 — topology facts
-hostname: $(hostname)
-primary_interface: ${PRIMARY_IF:-unknown}
-primary_ipv4_cidr: ${PRIMARY_ADDR:-none}
-default_route_line: ${DEFAULT_VIA:-none}
-notes:
-- Compare primary_interface class in interface-classification.txt
-- DNS resolvers are in resolvers.txt
-- This is a star/hub-style edge from the host's view: one uplink toward the gateway
-EOF
+Create `write-topology-facts.sh`:
 
+```bash
+#!/usr/bin/env bash
+set -euo pipefail
+DEFAULT_VIA="$(ip route show default 2>/dev/null | awk '/default/ {print; exit}')"
+PRIMARY_IF="$(ip -br a | awk '$1!="lo" && $2 ~ /UP/ {print $1; exit}')"
+PRIMARY_ADDR="$(ip -4 -o addr show dev "${PRIMARY_IF:-}" 2>/dev/null | awk '{print $4; exit}')"
+{
+  echo "REBASH Networking Lab01 — topology facts"
+  echo "hostname: $(hostname)"
+  echo "primary_interface: ${PRIMARY_IF:-unknown}"
+  echo "primary_ipv4_cidr: ${PRIMARY_ADDR:-none}"
+  echo "default_route_line: ${DEFAULT_VIA:-none}"
+  echo "notes:"
+  echo "- Compare primary_interface class in interface-classification.txt"
+  echo "- DNS resolvers are in resolvers.txt"
+  echo "- This is a star/hub-style edge from the host's view: one uplink toward the gateway"
+} > topology-facts.txt
+```
+
+```bash
+chmod +x write-topology-facts.sh
+./write-topology-facts.sh
 cat topology-facts.txt
 
 tar -czf networking-baseline.tgz \

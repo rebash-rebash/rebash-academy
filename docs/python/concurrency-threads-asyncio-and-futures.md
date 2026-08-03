@@ -151,11 +151,10 @@ Your health-check tool pings twenty internal endpoints every minute. A sequentia
 
 #### Task 1 – Local stub server and check helpers
 
-```bash
-cd ~/rebash-python/lab21
-set -euo pipefail
 
-cat > fanout_checks.py << 'EOF'
+Create `fanout_checks.py`:
+
+```python
 #!/usr/bin/env python3
 """Compare sequential vs ThreadPoolExecutor (and asyncio) localhost checks."""
 from __future__ import annotations
@@ -263,7 +262,13 @@ def main() -> int:
 
 if __name__ == "__main__":
     raise SystemExit(main())
-EOF
+```
+
+Run:
+
+```bash
+cd ~/rebash-python/lab21
+set -euo pipefail
 ```
 
 **Expected output:** File `fanout_checks.py` exists (run in Task 2).

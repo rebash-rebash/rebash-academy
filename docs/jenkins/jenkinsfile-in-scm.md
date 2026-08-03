@@ -1,8 +1,8 @@
 ---
 title: "Jenkinsfile in SCM"
-description: "Store a Jenkinsfile in Git, configure Pipeline from SCM, and use parameters and environment cleanly."
+description: "Store a Jenkinsfile in Git, configure Pipeline from SCM, use parameters and environment cleanly, and prepare for Multibranch."
 difficulty: intermediate
-estimated_time: "45–60 min"
+estimated_time: "50–70 min"
 technology: jenkins
 category: jenkins
 module: "Module 5 · Jenkinsfile in SCM"
@@ -20,301 +20,472 @@ prerequisites:
   - jenkins/pipeline-fundamentals-declarative
 next:
   - jenkins/agents-nodes-and-executors
+related:
+  - git/basic-git-workflow-add-commit-push
+  - jenkins/multibranch-pipelines-and-prs
 tags:
   - jenkins
   - scm
   - jenkinsfile
   - git
 author: Shaik Basha
-last_updated: "2026-07-31"
+last_updated: "2026-08-03"
 comments: false
 ---
-
 
 # Jenkinsfile in SCM
 
 ## Overview
 
+A Pipeline that lives only in the Jenkins UI cannot be reviewed in a pull request. **Pipeline from Source Control Management (SCM)** loads a **`Jenkinsfile`** from Git so every change is a commit. You will structure that file with **parameters** and **environment**, check it into a local Git repo, point a Pipeline job at it, and leave the layout Multibranch-ready.
 
-
-Move from inline Pipeline scripts to a **Jenkinsfile** in source control management (SCM).
-
-Pipeline-as-code means reviewers see delivery changes beside application changes. You will structure parameters and environment variables, check out from Git, and prepare for Multibranch later. Follow Pipeline best practices from the User Handbook.
-
-This is a core tutorial in **Module 5 · Jenkinsfile in SCM** of the REBASH Academy **Jenkins for Cloud & DevOps Engineers** series — written for Cloud, DevOps, Platform, and SRE engineers.
+This is **Tutorial 5** in **Module 5: Jenkinsfile in SCM** of the REBASH Academy **Jenkins for Cloud & DevOps Engineers** series — written for Cloud, DevOps, Platform, and Site Reliability Engineering (SRE) engineers.
 
 ## Prerequisites
 
-
-
-- Completed prior modules in this track where linked in frontmatter
-- [Git](../git/index.md) and [Docker](../docker/index.md) for lab workflows
-- Running Jenkins LTS from [Installing Jenkins LTS](installing-jenkins-lts.md) when a live controller is required
+- [Pipeline Fundamentals (Declarative)](pipeline-fundamentals-declarative.md)
+- Running Jenkins LTS with Git and Pipeline plugins
+- Git installed on your workstation (`git --version`)
+- Module 4 `Jenkinsfile` ideas (you will replace UI script with SCM)
 
 ## Learning Objectives
 
-
-
 By the end of this tutorial, you will be able to:
 
-- [ ] Commit a `Jenkinsfile` and point a job at Pipeline script from SCM
-- [ ] Use `parameters` and `environment` appropriately
-- [ ] Explain lightweight checkout vs full workspace needs
-- [ ] List Pipeline-as-code best practices for pull requests
+- [ ] Place a `Jenkinsfile` at the repository root (or a documented path)
+- [ ] Configure a Pipeline job with **Definition: Pipeline script from SCM**
+- [ ] Use `parameters` and `environment` without embedding secrets
+- [ ] Explain Multibranch readiness (same file, many branches)
+- [ ] Review Pipeline changes like application code
 
 ## Architecture
 
+Git holds the Jenkinsfile; the job checks out SCM and executes the Declarative definition.
 
-
-This topic’s control points and relationships are shown below.
-
-![Jenkinsfile in source control](../assets/excalidraw/jenkinsfile-scm.svg)
+![Jenkinsfile in SCM — Git checkout to Pipeline execution](../assets/excalidraw/jenkinsfile-scm.svg)
 
 ## Theory
 
-
-
 ### What it is
 
-A **Jenkinsfile** is the text file (usually at the repository root) that defines the Pipeline. Jobs can load **Pipeline script from SCM** (Git plugin) instead of storing Groovy in the job config. **Parameters** (`string`, `booleanParam`, `choice`) gather input for `workflow_dispatch`-style manual runs. **Environment** blocks set variables for stages; credentials should still come from the Credentials store, not plaintext env defaults.
+A **`Jenkinsfile`** is the text file that defines a Pipeline. **Pipeline script from SCM** tells Jenkins: clone this repository (branch/tag), then load `Jenkinsfile` (or `Jenkinsfile.groovy`, or a custom script path).
+
+Common Declarative additions in SCM:
+
+| Directive | Purpose |
+|-----------|---------|
+| `parameters { }` | String/boolean/choice inputs for manual or API builds |
+| `environment { }` | Environment variables for stages |
+| `options { }` | timestamps, durability, concurrent build policy |
+| `triggers { }` | cron / upstream (often replaced by webhooks in Multibranch) |
+
+**Checkout** is usually implicit when using Multibranch or `checkout scm` in Scripted; with a single-branch SCM Pipeline job, Jenkins checks out the configured branch before running the loaded script (exact behaviour depends on job type — Multibranch always binds `scm`).
 
 ### Why it matters
 
-Inline scripts drift between environments and bypass code review. SCM-backed Jenkinsfiles enable Multibranch, pull request builds, and shared ownership. Platform teams can require status checks on the Jenkinsfile the same way they do for application code.
+SCM is how you get code review, blame, revert, and Multibranch. Platform standards (“every service ships a Jenkinsfile”) only work when the file is in the repo. Parameters make rebuilds explicit (`DEPLOY_ENV=staging`). Environment blocks keep non-secret config visible; secrets still belong in the credentials store.
 
 ### How it works
 
-1. Place `Jenkinsfile` at the repo root (or a documented path).
-2. Create a Pipeline job → Pipeline script from SCM → Git → credentials if private.
-3. Set Script Path to `Jenkinsfile`.
-4. Add `parameters` and `environment` as needed; avoid secrets in the file.
-5. Push a change; confirm the job uses the new revision.
+1. Commit `Jenkinsfile` to Git (root is conventional).
+2. Create/configure a Pipeline job → **Pipeline script from SCM** → Git → repo URL + credentials if needed.
+3. Set branch specifier (`*/main` or `*/master`).
+4. Script path: `Jenkinsfile` unless you use a subdirectory monorepo layout.
+5. Build → Jenkins checks out → runs Declarative Pipeline.
+6. Change the file in a branch → review → merge → next build picks it up.
 
-Handbook: [Using a Jenkinsfile](https://www.jenkins.io/doc/book/pipeline/jenkinsfile/).
+**Multibranch readiness:** one `Jenkinsfile` at a stable path; avoid hard-coding a single branch name inside deploy logic without parameters/`when`; do not require UI-only steps that Multibranch cannot recreate.
+
+**Best practices:** keep stages readable; fail fast; no secrets in plain `environment`; prefer lightweight checkout options when repos are huge; document required Jenkins plugins in the README.
 
 ### Key concepts and comparisons
 
-| Practice | Why |
-|----------|-----|
-| Root `Jenkinsfile` | Discoverable default for Multibranch |
-| Parameters for manual toggles | Safer than editing job config |
-| Credential IDs in SCM | Secret values stay in Jenkins store |
-| Small stages | Faster feedback, clearer failures |
+| Definition mode | Pros | Cons |
+|-----------------|------|------|
+| Pipeline script (UI) | Fast demo | Not reviewable; drifts from Git |
+| Pipeline script from SCM | Reviewable; single branch | Still one job per branch unless Multibranch |
+| Multibranch Pipeline | Branch/PR discovery | Needs SCM permissions + indexing |
 
-Multibranch readiness: same Jenkinsfile works across branches when you avoid hard-coded branch names and use `env.BRANCH_NAME` carefully.
+| Parameter type | Example use |
+|----------------|-------------|
+| `string` | version override |
+| `booleanParam` | skip integration tests |
+| `choice` | deploy environment |
 
 ### Common pitfalls
 
-- Committing secrets or cloud keys in the Jenkinsfile.
-- Different Script Paths per environment without documentation.
-- Editing the job’s inline script after moving to SCM (two sources of truth).
-- Heavy `checkout` duplication when SCM already provided the workspace.
+- Leaving the real Pipeline in the UI while an unused `Jenkinsfile` sits in Git.
+- Putting passwords in `environment { SECRET = '...' }`.
+- Custom script path in monorepos without documenting it for Multibranch.
+- Checking in `Jenkinsfile` only on `develop` while the job tracks `main`.
+- Assuming Multibranch works without webhook/indexing (Module 7).
 
 ## Hands-on Lab
 
-
-
 ### Objective
 
-Configure a real Jenkins-facing artefact for **Jenkinsfile in SCM** (Compose controller and/or Jenkinsfile) you can run or import.
+Create a local Git repository with a parameterised Declarative `Jenkinsfile`, configure Jenkins **Pipeline script from SCM** against that repo (file:// or hosted), and prove a build uses the committed file.
 
 ### Prerequisites
 
-- Docker Engine for controller labs
-- Text editor / shell
+- Jenkins controller from Module 2
+- Git on the workstation
+- For `file://` remotes: Jenkins must be able to read the path (same machine / mounted path). If not, use a private GitHub/GitLab repo instead.
 
 ### Lab environment
 
 Workspace: `~/rebash-jenkins/module-05`
 
-Local Docker Compose Jenkins LTS where a live UI is needed; file-only Jenkinsfile labs otherwise.
-
 ```bash
 mkdir -p ~/rebash-jenkins/module-05 && cd ~/rebash-jenkins/module-05
+set -euo pipefail
+git --version | tee git-version.txt
 ```
+
+**Expected output:** Git version line printed.
 
 ### Real-world scenario
 
-Your organisation is standardising **Jenkinsfile in SCM**. You prototype on a lab controller, keep everything as files, and avoid building on the built-in node in production designs.
+Your service repo must own its CI definition. Reviewers rejected a UI-only Pipeline. You will put a `Jenkinsfile` in Git with a `TARGET` parameter and wire Jenkins to that repository.
 
 ### Step-by-step tasks
 
-#### Task 1 – Author a Declarative Jenkinsfile
+#### Task 1 – Create a Git repo with Jenkinsfile
 
-Pipeline-as-code is the production default — Declarative first.
+Commit and record:
 
 ```bash
-cat > Jenkinsfile << 'EOF'
+cd ~/rebash-jenkins/module-05
+set -euo pipefail
+
+rm -rf scm-app
+mkdir -p scm-app && cd scm-app
+git init -b main
+```
+
+Create `README.md`:
+
+```markdown
+# scm-app
+
+REBASH Jenkins Module 5 — Jenkinsfile in SCM demo.
+```
+
+Create `Jenkinsfile`:
+
+```groovy
 pipeline {
   agent any
-  options { timestamps() }
+  options {
+    timestamps()
+  }
+  parameters {
+    string(name: 'TARGET', defaultValue: 'local', description: 'Build target label')
+  }
+  environment {
+    APP_NAME = 'scm-app'
+  }
   stages {
-    stage('Build') {
+    stage('Checkout info') {
       steps {
-        sh 'mkdir -p dist && echo ok > dist/status.txt'
+        echo "Building ${env.APP_NAME} for TARGET=${params.TARGET}"
+        sh 'git rev-parse --short HEAD | tee commit.txt || echo "no-git-in-agent" | tee commit.txt'
+        sh 'ls -la'
       }
     }
     stage('Test') {
       steps {
-        sh 'test -f dist/status.txt && grep -q ok dist/status.txt'
+        sh 'test -f Jenkinsfile'
+        sh 'test -f README.md'
       }
     }
   }
   post {
-    always { archiveArtifacts artifacts: 'dist/**', allowEmptyArchive: true }
+    always {
+      echo "SCM Pipeline finished: ${currentBuild.currentResult}"
+    }
   }
 }
-EOF
-test -f Jenkinsfile && grep -n 'pipeline\|stages\|post' Jenkinsfile
 ```
 
-**Expected output:** Jenkinsfile contains pipeline/stages/post blocks.
-
-#### Task 2 – Validate structure locally
-
-Run the shell steps the Pipeline will execute so failures are cheap.
+Commit and record:
 
 ```bash
-mkdir -p dist && echo ok > dist/status.txt
-test -f dist/status.txt && grep -q ok dist/status.txt
-tar -cf evidence.tar Jenkinsfile dist
-ls -l evidence.tar
+git add README.md Jenkinsfile
+git -c user.email='rebash-lab@example.com' -c user.name='REBASH Lab' commit -m 'Add Declarative Jenkinsfile for Module 5'
+git log -1 --oneline | tee ../commit.txt
+pwd | tee ../repo-path.txt
 ```
 
-**Expected output:** Shell checks pass; evidence.tar created for the job upload story.
+**Expected output:** Commit hash in `commit.txt`; absolute repo path in `repo-path.txt`.
+
+#### Task 2 – Configure Pipeline from SCM in Jenkins
+
+1. Folder **rebash-demo** → **New Item** → `scm-pipeline` → **Pipeline**.
+2. **Pipeline** → Definition: **Pipeline script from SCM**.
+3. SCM: **Git**.
+4. Repository URL:
+   - Same host: `file:///home/<you>/rebash-jenkins/module-05/scm-app`  
+     (use the path from `repo-path.txt`; three slashes after `file:` is common for absolute paths)
+   - Or push to GitHub/GitLab and paste the HTTPS/SSH URL + credentials.
+5. Branch: `*/main`
+6. Script path: `Jenkinsfile`
+7. Save.
+
+Run:
+
+```bash
+cd ~/rebash-jenkins/module-05
+set -euo pipefail
+```
+
+Create `scm-job-config.yaml`:
+
+```yaml
+job: rebash-demo/scm-pipeline
+definition: pipeline_script_from_scm
+repo_path: fill_from_repo-path.txt
+repo_url: file://fill_from_repo-path.txt
+branch: '*/main'
+script_path: Jenkinsfile
+fallback: push scm-app to remote Git if file:// fails in Dockerised Jenkins
+```
+
+Validate and archive:
+
+```bash
+python3 -c "
+import yaml
+from pathlib import Path
+p = Path('repo-path.txt').read_text().strip()
+d = yaml.safe_load(open('scm-job-config.yaml'))
+d['repo_path'] = p
+d['repo_url'] = f'file://{p}'
+yaml.safe_dump(d, open('scm-job-config.yaml', 'w'), sort_keys=False)
+assert d['script_path'] == 'Jenkinsfile'
+print('scm-job-config.yaml OK')
+" | tee scm-config-validate.txt
+```
+
+**Expected output:** Config file with your path validates; job configured.
+
+#### Task 3 – Build with parameters and verify SCM load
+
+1. **Build with Parameters** → leave `TARGET=local` or set `TARGET=lab` → Build.
+2. Confirm console shows checkout / workspace listing and `TARGET=...`.
+3. Change `README.md`, commit, build again — prove a new commit is visible if `git rev-parse` works on the agent.
+
+Commit and record:
+
+```bash
+cd ~/rebash-jenkins/module-05/scm-app
+set -euo pipefail
+
+echo "touched $(date -u +%Y-%m-%dT%H:%M:%SZ)" >> README.md
+git add README.md
+git -c user.email='rebash-lab@example.com' -c user.name='REBASH Lab' commit -m 'Touch README for rebuild'
+git log -1 --oneline | tee ../second-commit.txt
+git rev-parse --short HEAD | tee ../head-after-touch.txt
+```
+
+Create `../expected-console-markers.txt`:
+
+```text
+Building scm-app for TARGET=
+SCM Pipeline finished:
+```
+
+Verify:
+
+```bash
+test -f ../second-commit.txt
+```
+
+**Expected output:** Second commit recorded; paste Console Output to `console.log` after build and grep for markers.
+
+#### Task 4 – Multibranch readiness checklist
+
+Run:
+
+```bash
+cd ~/rebash-jenkins/module-05
+set -euo pipefail
+```
+
+Create `multibranch-readiness.yaml`:
+
+```yaml
+jenkinsfile_at_repo_root: true
+declarative_structure: true
+no_ui_only_secrets: true
+parameters_use_params: true
+webhooks_branch_indexing: module_07
+pr_discovery_credentials: module_7
+hardcoded_prod_credential_ids: forbidden
+```
+
+Validate and archive:
+
+```bash
+python3 -c "
+import yaml
+with open('multibranch-readiness.yaml') as f:
+    d = yaml.safe_load(f)
+assert d['jenkinsfile_at_repo_root']
+assert not d['hardcoded_prod_credential_ids']
+print('multibranch-readiness.yaml OK')
+" | tee mb-ready-validate.txt
+
+tar -czf module-05-evidence.tgz scm-app/Jenkinsfile scm-app/README.md scm-job-config.yaml multibranch-readiness.yaml *.txt
+ls -l module-05-evidence.tgz | tee evidence.txt
+```
+
+**Expected output:** Archive listed.
 
 ### Validation steps
 
-- [ ] Artefacts from tasks exist
-- [ ] No secrets committed
-- [ ] Compose stack stopped if started
+- [ ] Git repo contains committed `Jenkinsfile`
+- [ ] Job uses **Pipeline script from SCM**, not a pasted UI script as source of truth
+- [ ] Parameterised build ran (or failure diagnosed from checkout errors)
+- [ ] Multibranch readiness YAML validates
 
 ### Common errors and fixes
 
 | Error | Cause | Fix |
 |-------|-------|-----|
-| port 8080 in use | Another Jenkins/lab | Change host port or stop the other container |
-| permission denied on volume | Podman/rootless path | Fix volume ownership or use named volumes |
-| agent any hangs | No executors | Attach an agent or enable a lab executor carefully |
+| `file://` not found inside container | Jenkins in Docker cannot see host path | Mount the repo into the controller container, or use a remote Git URL |
+| Authentication failed | Private remote without credentials | Add Username/Password or SSH key in Credentials |
+| Wrong default branch | Repo uses `master` | Fix branch specifier |
+| Old Pipeline still runs | Job still on UI script | Switch Definition to SCM and save |
 
 ### Challenge exercise
 
-Disable builds on the built-in node in your notes and document the agent label you would require instead.
+Add a `booleanParam(name: 'RUN_SLOW_TESTS', defaultValue: false)` and a stage with `when { expression { return params.RUN_SLOW_TESTS } }` that echoes `slow tests`. Commit, build twice (false/true), and capture skip behaviour with `grep -E 'skipped|slow tests' console.log | tee slow-test-evidence.txt`.
 
 ### Learning outcomes
 
-- Produced runnable Jenkins artefacts
-- Practised safe lab controller hygiene
+- Moved Pipeline definition into Git
+- Wired Jenkins to SCM
+- Used parameters and environment safely
+- Documented Multibranch readiness
 
 ### Cleanup
 
+Keep `scm-app` and the SCM job for Module 7 experiments. Do not commit real credentials into the repo.
+
 ```bash
-rm -f evidence.tar
-# Keep Jenkinsfile for SCM modules
+ls ~/rebash-jenkins/module-05
 ```
 
 ## Validation
 
-
-
-- [ ] Lab commands run under `~/rebash-jenkins/module-05/`
-- [ ] You can explain each Theory section in your own words
-- [ ] You used current Jenkins LTS / Pipeline practices where they apply
-- [ ] You can describe one production failure mode for this topic
+- [ ] Lab completed under `~/rebash-jenkins/module-05/`
+- [ ] You can explain UI script versus SCM definition
+- [ ] You can list two Multibranch readiness rules
+- [ ] You know why secrets do not belong in `environment`
 
 ## Code Walkthrough
 
-
-
-Production practice for **Jenkinsfile in SCM** always combines:
-
-1. Inspect before you change (status, plan, logs, dry-run)
-2. Prefer reversible, documented changes (Git, Jenkinsfile, JCasC)
-3. Capture evidence (console logs, plan artefacts) for handovers
-4. Prefer current LTS and supported plugins over legacy shortcuts
-5. Least privilege — escalate credentials only when required
-
-Keep runbooks short enough to follow under pressure. Automate checks; keep humans for judgement.
+1. **Commit the Jenkinsfile first** — then point Jenkins at it.
+2. **Parameters for humans and APIs** — defaults must be safe.
+3. **Environment for non-secrets** — credentials bindings for secrets later.
+4. **Stable script path** — root `Jenkinsfile` unless monorepo docs say otherwise.
+5. **Review Pipeline diffs** — treat them like production code.
 
 ## Security Considerations
 
-
-
-- Treat Jenkins credentials and cloud tokens as privileged — never commit them
-- Keep builds off the built-in node; isolate untrusted pull requests
-- Prefer short-lived auth (OIDC-style patterns, scoped RBAC) over long-lived keys
-- Validate blast radius before apply/deploy/delete operations
-- Collect audit logs; limit who can administer the controller
+- Never store API tokens in `environment` or the Git history.
+- Restrict who can change Jenkinsfiles on production branches.
+- Prefer least-privilege SCM credentials (read-only clone for CI).
+- Audit parameter abuse (`TARGET=prod`) with `when` and separate deploy jobs later.
+- Remember build logs inherit job read permissions.
 
 ## Common Mistakes
 
+!!! warning "Git has a Jenkinsfile but the job still uses Pipeline script"
+    Builds ignore Git. **Fix:** Definition → Pipeline script from SCM.
 
+!!! warning "Secrets in environment blocks"
+    They appear in logs and config snapshots. **Fix:** credentials store + `withCredentials` / credential-binding steps later.
 
-!!! warning "Secrets in Jenkinsfile"
-    Reference credential IDs; never commit tokens or kubeconfigs.
+!!! warning "Monorepo script path undocumented"
+    Multibranch cannot guess `services/foo/Jenkinsfile`. **Fix:** document Script Path and align Multibranch configuration.
 
-!!! warning "Two sources of truth"
-    After moving to SCM, remove inline scripts from the job.
-
-!!! warning "Hard-coded branches"
-    Prefer Multibranch or parameters over editing jobs per branch.
+!!! warning "Deploying from every branch without gates"
+    SCM makes it easy to run anything. **Fix:** `when` on branch + approvals for production.
 
 ## Best Practices
 
-
-
-- Encode **Jenkinsfile in SCM** changes as code and review them in pull requests
-- Prefer Jenkins LTS and pinned agent/tool versions
-- Keep builds off the controller; use labelled agents
-- Least privilege for credentials and cluster/cloud access
-- Destroy or stop lab resources; keep `~/rebash-jenkins/` notes for the track
+- One `Jenkinsfile` at the repo root for simple services.
+- Lightweight, readable stages; push shared logic to libraries (Module 9).
+- Safe parameter defaults.
+- README documents required plugins and agent labels.
+- Protect `main` with reviews before Pipeline changes merge.
 
 ## Troubleshooting
 
-
-
 | Symptom | Likely cause | Fix |
 |---------|--------------|-----|
-| Job stuck in queue | No matching agent/label or executors busy | Check nodes, labels, and executor counts |
-| Checkout / SCM failure | Credentials, URL, or permissions | Verify credential ID and repository access |
-| Pipeline CPS / script error | Syntax, sandbox, or library mismatch | Read error line; validate Jenkinsfile; pin library version |
-| Plugin / UI broken after update | Incompatible plugin set | Restore backup; disable suspect plugin on test controller |
-| Disk full on agent/controller | Workspaces or old builds | Clean workspaces; trim build retention |
+| `Jenkinsfile not found` | Wrong script path / branch | Verify path and branch specifier |
+| Checkout timeout | Network / DNS from controller | Fix proxy; use reachable Git host |
+| Parameter missing in UI | Need Build with Parameters after first load | Run once or enable parameters from SCM |
+| Old commit built | Caching / wrong branch | Check checkout section in console |
+| file:// works on host Jenkins only | Docker isolation | Remote Git or bind-mount |
 
 ## Summary
 
-
-
-**Jenkinsfile in SCM** is essential for Cloud and DevOps engineers operating Jenkins. Practise the lab until the inspection and change path is muscle memory, then continue the track.
+SCM is the source of truth for Pipelines. Parameters and environment make builds explicit; Multibranch readiness starts with a stable root `Jenkinsfile`. Next: [Agents, Nodes, and Executors](agents-nodes-and-executors.md).
 
 ## Interview Questions
 
+**1. Why store a Jenkinsfile in SCM instead of the job UI?**
 
+??? success "Reveal answer"
+    So Pipeline changes are versioned, reviewed, revertible, and reusable across branches. UI-only scripts drift and disappear if the job is deleted or the controller is lost.
 
-1. Why store the Jenkinsfile in SCM instead of the job config?
-2. What is Script Path in a Pipeline from SCM job?
-3. How should secrets be handled in a Jenkinsfile?
-4. What are parameters useful for?
-5. How does a root Jenkinsfile help Multibranch later?
+**2. What does “Pipeline script from SCM” configure?**
 
-!!! tip "Sample answer — question 1"
-    SCM storage makes Pipeline changes reviewable, branchable, and recoverable — the same as application code.
+??? success "Reveal answer"
+    The job clones a repository (and branch), then loads the Pipeline from a script path such as `Jenkinsfile` instead of using a script pasted into the job config.
 
-!!! tip "Sample answer — question 3"
-    Store secret material in the Jenkins Credentials store; bind with `withCredentials` or dedicated steps; commit only credential IDs.
+**3. How do `parameters` differ from `environment`?**
+
+??? success "Reveal answer"
+    Parameters are inputs to a specific build (often shown in Build with Parameters). Environment sets variables for the Pipeline run. Neither should hold long-lived secrets in plain text.
+
+**4. What makes a repository Multibranch-ready?**
+
+??? success "Reveal answer"
+    A stable Jenkinsfile path, Declarative structure that does not rely on UI-only config, and branch-aware deploy gates. Indexing/webhooks come next; the file layout must already be sound.
+
+**5. Why can `file://` repositories fail when Jenkins runs in Docker?**
+
+??? success "Reveal answer"
+    The path is on the host filesystem; the controller container cannot read it unless that path is mounted into the container. Use a Git remote Jenkins can clone, or mount the repo.
+
+**6. Where should production deploy credentials live?**
+
+??? success "Reveal answer"
+    In the Jenkins credentials store (preferably folder-scoped), injected at runtime — not in the Jenkinsfile or Git history.
+
+**7. What is a safe default for a deploy-related parameter?**
+
+??? success "Reveal answer"
+    A non-production value such as `local` or `staging`, with production requiring an explicit choice plus `when`/approval controls.
+
+**8. How should Pipeline changes be reviewed?**
+
+??? success "Reveal answer"
+    Through the same pull-request process as application code: diff the Jenkinsfile, check agent labels, credentials usage, and deploy gates before merge to the protected branch.
 
 ## Related Tutorials
 
-
-
-- [Course overview](index.md)
 - [Pipeline Fundamentals (Declarative)](pipeline-fundamentals-declarative.md)
 - [Agents, Nodes, and Executors](agents-nodes-and-executors.md)
+- [Multibranch Pipelines and Pull Requests](multibranch-pipelines-and-prs.md)
 
 ## References
 
-
-
-- [Using a Jenkinsfile](https://www.jenkins.io/doc/book/pipeline/jenkinsfile/)
-- [Pipeline best practices](https://www.jenkins.io/doc/book/pipeline/pipeline-best-practices/)
 - [Pipeline Syntax](https://www.jenkins.io/doc/book/pipeline/syntax/)
+- [Using a Jenkinsfile](https://www.jenkins.io/doc/book/pipeline/jenkinsfile/)
+- [Git Plugin documentation](https://plugins.jenkins.io/git/)

@@ -141,8 +141,11 @@ A developer asks to open a temporary port for a local diagnostic listener. You r
 ```bash
 cd ~/rebash-networking/lab26
 set -euo pipefail
+```
 
-cat > proposed-lab26.nft << 'EOF'
+Create `proposed-lab26.nft`:
+
+```nft
 # CHANGE REQUEST (lab26)
 # Ticket: LAB-26-LOCALHOST
 # Intent: Allow TCP 18090 only on loopback for a temporary diagnostic listener
@@ -167,15 +170,18 @@ table inet rebash_lab26 {
     iifname "lo" tcp dport 18090 accept
   }
 }
-EOF
+```
 
-cat > proposed-lab26.ufw.txt << 'EOF'
+Create `proposed-lab26.ufw.txt`:
+
+```text
 # UFW-style proposal (documentation artefact — not auto-applied in this lab)
 # ufw allow from 127.0.0.1 to 127.0.0.1 port 18090 proto tcp
 # ROLLBACK: ufw delete allow from 127.0.0.1 to 127.0.0.1 port 18090 proto tcp
 # NEVER in this lab: ufw deny 22 / ufw --force reset / default deny without console access
-EOF
+```
 
+```bash
 test -s proposed-lab26.nft && test -s proposed-lab26.ufw.txt
 ```
 
@@ -186,8 +192,11 @@ test -s proposed-lab26.nft && test -s proposed-lab26.ufw.txt
 ```bash
 cd ~/rebash-networking/lab26
 set -euo pipefail
+```
 
-cat > validate-firewall-change.sh << 'EOF'
+Create `validate-firewall-change.sh`:
+
+```bash
 #!/usr/bin/env bash
 set -euo pipefail
 FILE="${1:-proposed-lab26.nft}"
@@ -227,7 +236,9 @@ fi
 grep -q 'table inet rebash_lab26' "$FILE" || fail "expected isolated lab table name"
 pass "isolated lab table present"
 echo "validation_ok=1" | tee -a "$report"
-EOF
+```
+
+```bash
 chmod +x validate-firewall-change.sh
 ./validate-firewall-change.sh proposed-lab26.nft
 grep -q 'validation_ok=1' validation-report.txt

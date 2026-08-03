@@ -207,14 +207,19 @@ else
   echo "tcpdump not installed" | tee tcpdump-sample.txt
 fi
 
-cat > osi-layer-tool-map.txt << 'EOF'
+
+Create `osi-layer-tool-map.txt`:
+
+```text
 OSI layer | Name          | Lab command / evidence file           | What success means
 1-2       | Physical/Link | ip -br link  → l1l2-link.txt          | NIC present and UP
 3         | Network       | ping / ip route → l3-*.txt            | IP path or honest block
 4         | Transport     | ss -tuln → l4-ss-tuln.txt             | See listeners / ports
 7         | Application   | curl / dig → l7-*.txt                 | App protocol responds
 2-4       | Capture       | tcpdump → tcpdump-sample.txt          | Packets observed
-EOF
+```
+
+```bash
 cat osi-layer-tool-map.txt
 
 tar -czf osi-layer-evidence.tgz \

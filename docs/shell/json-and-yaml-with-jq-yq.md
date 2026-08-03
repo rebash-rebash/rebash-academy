@@ -143,11 +143,9 @@ A deploy job receives an app descriptor as JSON and a small Kubernetes-style YAM
 
 #### Task 1 – Sample files and jq asserts
 
-```bash
-cd ~/rebash-shell/lab14
-set -euo pipefail
+Create `app.json`:
 
-cat > app.json << 'EOF'
+```json
 {
   "service": {
     "name": "payments",
@@ -157,9 +155,11 @@ cat > app.json << 'EOF'
   "replicas": 2,
   "image": "ghcr.io/example/payments:1.4.2"
 }
-EOF
+```
 
-cat > app.yaml << 'EOF'
+Create `app.yaml`:
+
+```yaml
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -175,7 +175,13 @@ spec:
           image: ghcr.io/example/payments:1.4.2
           ports:
             - containerPort: 8080
-EOF
+```
+
+Run:
+
+```bash
+cd ~/rebash-shell/lab14
+set -euo pipefail
 
 jq empty app.json
 name=$(jq -r '.service.name' app.json)
@@ -196,6 +202,7 @@ image=$(jq -r '.image' app.json)
 [[ "$image" == "ghcr.io/example/payments:1.4.2" ]]
 echo "jq_asserts=OK" | tee jq-asserts.txt
 ```
+
 
 **Expected output:** `jq-fields.txt` lists the four fields; `jq-asserts.txt` says `OK`.
 

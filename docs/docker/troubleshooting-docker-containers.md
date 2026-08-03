@@ -29,7 +29,7 @@ tags:
   - docker
   - troubleshooting
 author: Shaik Basha
-last_updated: "2026-07-31"
+last_updated: "2026-08-03"
 comments: false
 ---
 
@@ -133,22 +133,18 @@ If a container will not stay up, `docker logs` and `docker inspect` (ExitCode, E
 
 ## Hands-on Lab
 
-
-
 ### Objective
 
-Build or run a real Docker solution for **Troubleshooting Docker Containers** and prove it with inspect/logs/HTTP.
+Deploy a deliberately broken container, diagnose failure with logs and inspect, fix the Dockerfile, and capture before/after exit-code evidence.
 
 ### Prerequisites
 
 - Docker Engine or Docker Desktop
-- Permission to run containers
+- Comfort reading `docker logs` and `docker inspect`
 
 ### Lab environment
 
 Workspace: `~/rebash-docker/module-16`
-
-Local Docker daemon. Clean up containers/images after the lab.
 
 ```bash
 mkdir -p ~/rebash-docker/module-16 && cd ~/rebash-docker/module-16
@@ -156,64 +152,120 @@ mkdir -p ~/rebash-docker/module-16 && cd ~/rebash-docker/module-16
 
 ### Real-world scenario
 
-You are validating **Troubleshooting Docker Containers** before it lands in CI. The change must be reproducible with copy-paste commands and leave no orphan containers.
+A deploy rolled out a new image tag; pods (containers) restart in a loop. Logs show `executable file not found`. You reproduce locally, identify the bad `CMD`, ship a fixed Dockerfile, and attach evidence for the post-incident review.
 
 ### Step-by-step tasks
 
-#### Task 1 – Run and inspect a container
+#### Task 1 – Create broken Dockerfile and capture failure
 
-Start from a known image, publish a port, and verify HTTP.
+Create `Dockerfile.broken`:
 
-```bash
-docker run -d --name rebash-lab -p 18080:80 nginx:alpine
-docker ps --filter name=rebash-lab
-curl -sI http://127.0.0.1:18080 | head -n 5 | tee headers.txt
-docker logs rebash-lab 2>&1 | head -n 10 | tee logs.txt
+```dockerfile
+FROM alpine:3.20
+COPY app.sh /app/app.sh
+RUN chmod +x /app/app.sh
+WORKDIR /app
+CMD ["/app/missing-binary.sh"]
 ```
 
-**Expected output:** Container Up; HTTP 200 in headers.txt.
-
-#### Task 2 – Inspect runtime config
-
-Use inspect for status — production debugging rarely starts with guesswork.
+Create `app.sh`:
 
 ```bash
-docker inspect rebash-lab --format '{{ "{{" }}.State.Status{{ "}}" }} {{ "{{" }}.Config.Image{{ "}}" }}' | tee inspect.txt
-test -s inspect.txt
+#!/bin/sh
+echo "rebash-trouble-lab ok"
 ```
 
-**Expected output:** inspect.txt shows `running` and the nginx image.
+Build and run the broken image:
+
+{% raw %}
+```bash
+cd ~/rebash-docker/module-16
+docker build -f Dockerfile.broken -t rebash-trouble-broken:1.0.0 .
+docker run --name rebash-trouble-broken rebash-trouble-broken:1.0.0 2>&1 | tee broken-run.txt || true
+docker inspect rebash-trouble-broken --format 'ExitCode={{ "{{" }}.State.ExitCode{{ "}}" }} Error={{ "{{" }}.State.Error{{ "}}" }}' | tee broken-inspect.txt
+grep -q 'ExitCode=127\|ExitCode=1' broken-inspect.txt || grep -qi 'no such file\|not found' broken-run.txt
+```
+{% endraw %}
+
+**Expected output:** Container exits non-zero; `broken-run.txt` or `broken-inspect.txt` references missing executable.
+
+#### Task 2 – Diagnose with logs and inspect
+
+Gather troubleshooting evidence:
+
+{% raw %}
+```bash
+cd ~/rebash-docker/module-16
+docker logs rebash-trouble-broken 2>&1 | tee broken-logs.txt || true
+docker inspect rebash-trouble-broken --format '{{ "{{" }}.Config.Cmd{{ "}}" }}' | tee broken-cmd.txt
+grep -q 'missing-binary' broken-cmd.txt
+```
+{% endraw %}
+
+**Expected output:** `broken-cmd.txt` shows the wrong CMD path `/app/missing-binary.sh`.
+
+#### Task 3 – Fix Dockerfile and prove recovery
+
+Create `Dockerfile`:
+
+```dockerfile
+FROM alpine:3.20
+COPY app.sh /app/app.sh
+RUN chmod +x /app/app.sh
+WORKDIR /app
+CMD ["/app/app.sh"]
+```
+
+Rebuild and compare exit codes:
+
+{% raw %}
+```bash
+cd ~/rebash-docker/module-16
+docker rm rebash-trouble-broken 2>/dev/null || true
+docker build -f Dockerfile -t rebash-trouble-fixed:1.0.0 .
+docker run --name rebash-trouble-fixed rebash-trouble-fixed:1.0.0 | tee fixed-run.txt
+docker inspect rebash-trouble-fixed --format 'ExitCode={{ "{{" }}.State.ExitCode{{ "}}" }}' | tee fixed-inspect.txt
+grep -q 'rebash-trouble-lab ok' fixed-run.txt
+grep -q 'ExitCode=0' fixed-inspect.txt
+```
+{% endraw %}
+
+**Expected output:** `fixed-run.txt` prints `rebash-trouble-lab ok`; `fixed-inspect.txt` shows `ExitCode=0`.
 
 ### Validation steps
 
-- [ ] Container or image behaves as Expected output describes
-- [ ] Ports respond or command output matches
-- [ ] Cleanup removes lab resources
+- [ ] Broken image fails with diagnosable error
+- [ ] Inspect reveals incorrect `Cmd`
+- [ ] Fixed image exits 0 and prints expected output
+- [ ] Before/after evidence files retained until cleanup
+- [ ] Cleanup removes containers and images
 
 ### Common errors and fixes
 
 | Error | Cause | Fix |
 |-------|-------|-----|
-| port is already allocated | Previous lab left a container | `docker rm -f` the old name or change port |
-| permission denied | User not in docker group | Use rootless Docker or fix group membership |
-| manifest unknown | Bad tag | Pin a real tag such as `nginx:alpine` |
+| Cannot reuse container name | Previous run left container | `docker rm rebash-trouble-broken` before re-run |
+| ExitCode 0 on broken image | Shell form masked error | Use exec-form `CMD ["path"]` as in lab |
+| `app.sh` not executable | Missing chmod in Dockerfile | Keep `RUN chmod +x` step |
+| Logs empty | Container never started | Check `State.Error` in inspect |
 
 ### Challenge exercise
 
-Add a non-root USER (or Compose healthcheck) and prove it with inspect.
+Introduce a second failure mode (wrong `ENTRYPOINT` + `CMD` combo), diagnose with `docker inspect .Config.Entrypoint`, and document the fix in `entrypoint-fix.txt`.
 
 ### Learning outcomes
 
-- Executed a real Docker workflow
-- Captured evidence files
-- Removed disposable resources
+- Reproduced a crash-loop caused by wrong `CMD`
+- Used logs and inspect to find root cause without guessing
+- Shipped a minimal Dockerfile fix and verified exit code 0
+- Captured before/after evidence suitable for incident records
 
 ### Cleanup
 
 ```bash
-docker rm -f rebash-lab 2>/dev/null || true
-docker rmi rebash-lab:local 2>/dev/null || true
-docker compose down -v 2>/dev/null || true
+docker rm -f rebash-trouble-broken rebash-trouble-fixed 2>/dev/null || true
+docker rmi rebash-trouble-broken:1.0.0 rebash-trouble-fixed:1.0.0 2>/dev/null || true
+rm -f ~/rebash-docker/module-16/*.txt
 ```
 
 ## Validation

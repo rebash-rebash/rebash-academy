@@ -164,16 +164,9 @@ Your team runs a nightly job that scans application log snippets on a jump serve
 
 Create sample logs (including one empty file), then count lines with a guarded glob.
 
+Create `count-logs.sh`:
+
 ```bash
-cd ~/rebash-shell/lab06
-set -euo pipefail
-
-printf 'error disk full\ninfo ok\n' > samples/app-a.log
-printf 'warn retry\n' > samples/app-b.log
-: > samples/empty.log
-printf 'not-a-log\n' > samples/readme.txt
-
-cat > count-logs.sh << 'EOF'
 #!/usr/bin/env bash
 set -euo pipefail
 shopt -s nullglob
@@ -194,7 +187,19 @@ for f in ./samples/*.log; do
 done
 
 test -s "$outdir/file-counts.txt"
-EOF
+```
+
+Run:
+
+```bash
+cd ~/rebash-shell/lab06
+set -euo pipefail
+
+printf 'error disk full\ninfo ok\n' > samples/app-a.log
+printf 'warn retry\n' > samples/app-b.log
+: > samples/empty.log
+printf 'not-a-log\n' > samples/readme.txt
+
 chmod +x count-logs.sh
 ./count-logs.sh ./out
 
@@ -202,24 +207,25 @@ grep -F 'app-a.log' out/file-counts.txt
 grep -F 'empty' out/skipped.txt
 ```
 
+
 **Expected output:** `out/file-counts.txt` lists `app-a.log` and `app-b.log` with line counts; `out/skipped.txt` mentions the empty file; `readme.txt` is not counted.
 
 #### Task 2 – `while read` stream and `break` on sentinel
 
 Build a host list and process lines until a `STOP` marker.
 
-```bash
-cd ~/rebash-shell/lab06
-set -euo pipefail
+Create `hosts.txt`:
 
-cat > hosts.txt << 'EOF'
+```text
 web01
 web02
 STOP
 web03
-EOF
+```
 
-cat > read-hosts.sh << 'EOF'
+Create `read-hosts.sh`:
+
+```bash
 #!/usr/bin/env bash
 set -euo pipefail
 outfile="${1:-./out/hosts-processed.txt}"
@@ -235,10 +241,18 @@ done < ./hosts.txt
 grep -q 'web01' "$outfile"
 grep -q 'web02' "$outfile"
 ! grep -q 'web03' "$outfile"
-EOF
+```
+
+Run:
+
+```bash
+cd ~/rebash-shell/lab06
+set -euo pipefail
+
 chmod +x read-hosts.sh
 ./read-hosts.sh
 ```
+
 
 **Expected output:** `out/hosts-processed.txt` has `web01` and `web02` only; `out/break-note.txt` records the break; `web03` is absent.
 
@@ -246,17 +260,9 @@ chmod +x read-hosts.sh
 
 Simulate a late “ready” flag, then pack proof files.
 
+Create `wait-ready.sh`:
+
 ```bash
-cd ~/rebash-shell/lab06
-set -euo pipefail
-
-rm -f ./ready.flag
-(
-  sleep 2
-  date -u +%Y-%m-%dT%H:%M:%SZ > ./ready.flag
-) &
-
-cat > wait-ready.sh << 'EOF'
 #!/usr/bin/env bash
 set -euo pipefail
 max=10
@@ -271,7 +277,20 @@ until [[ -f ./ready.flag ]]; do
 done
 printf 'ready attempts=%s\n' "$attempts" | tee ./out/until-ready.txt
 test -s ./ready.flag
-EOF
+```
+
+Run:
+
+```bash
+cd ~/rebash-shell/lab06
+set -euo pipefail
+
+rm -f ./ready.flag
+(
+  sleep 2
+  date -u +%Y-%m-%dT%H:%M:%SZ > ./ready.flag
+) &
+
 chmod +x wait-ready.sh
 ./wait-ready.sh
 
@@ -281,6 +300,7 @@ tar -czf out/loop-evidence.tgz \
   ready.flag
 ls -l out/loop-evidence.tgz | tee out/evidence-ls.txt
 ```
+
 
 **Expected output:** `out/until-ready.txt` shows a small attempt count; `out/loop-evidence.tgz` is not empty.
 

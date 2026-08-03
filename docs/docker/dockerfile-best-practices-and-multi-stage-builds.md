@@ -30,7 +30,7 @@ tags:
   - multi-stage
   - buildkit
 author: Shaik Basha
-last_updated: "2026-07-31"
+last_updated: "2026-08-03"
 comments: false
 ---
 
@@ -133,22 +133,20 @@ Declare a builder stage (`FROM golang:… AS build`) that compiles, then a runti
 
 ## Hands-on Lab
 
-
-
 ### Objective
 
-Build or run a real Docker solution for **Dockerfile Best Practices and Multi-Stage Builds** and prove it with inspect/logs/HTTP.
+Build single-stage and multi-stage images from explicit Dockerfiles, compare image sizes, and run the final image as a non-root user.
 
 ### Prerequisites
 
-- Docker Engine or Docker Desktop
-- Permission to run containers
+- Docker Engine or Docker Desktop with BuildKit enabled (default on recent installs)
+- Basic familiarity with `Dockerfile` instructions
 
 ### Lab environment
 
 Workspace: `~/rebash-docker/module-06`
 
-Local Docker daemon. Clean up containers/images after the lab.
+Two Dockerfiles live side by side for size comparison.
 
 ```bash
 mkdir -p ~/rebash-docker/module-06 && cd ~/rebash-docker/module-06
@@ -156,83 +154,128 @@ mkdir -p ~/rebash-docker/module-06 && cd ~/rebash-docker/module-06
 
 ### Real-world scenario
 
-You are validating **Dockerfile Best Practices and Multi-Stage Builds** before it lands in CI. The change must be reproducible with copy-paste commands and leave no orphan containers.
+Security review flagged a Go toolchain left in a production image. You refactor to a multi-stage build: compile in a builder stage, copy only the binary into a slim runtime, add a non-root `USER`, and attach size evidence for the change ticket.
 
 ### Step-by-step tasks
 
-#### Task 1 – Author Dockerfile and build
+#### Task 1 – Create single-stage and multi-stage Dockerfiles
 
-Images are the deployment unit — build a tagged local image.
+Create `app.sh`:
 
 ```bash
-cat > Dockerfile << 'EOF'
-FROM alpine:3.20 AS build
-WORKDIR /src
-RUN echo 'artefact' > app.txt
+#!/bin/sh
+echo 'rebash-mod06 artefact'
+```
+
+Create `Dockerfile.single`:
+
+```dockerfile
 FROM alpine:3.20
-COPY --from=build /src/app.txt /app.txt
-CMD ["cat", "/app.txt"]
-EOF
-docker build -t rebash-lab:local .
-docker image ls rebash-lab:local
+RUN apk add --no-cache bash
+WORKDIR /app
+COPY app.sh /app/app.sh
+RUN chmod +x /app/app.sh
+CMD ["/app/app.sh"]
 ```
 
-**Expected output:** Image `rebash-lab:local` listed with a recent CREATED time.
+Create `Dockerfile.multi`:
 
-#### Task 2 – Run and verify output
+```dockerfile
+FROM alpine:3.20 AS build
+RUN apk add --no-cache bash
+WORKDIR /src
+COPY app.sh /src/app.sh
+RUN chmod +x /src/app.sh && /src/app.sh > /src/out.txt
 
-Prove the runtime image does what the Dockerfile claims.
+FROM alpine:3.20
+RUN adduser -D -u 10001 appuser
+WORKDIR /app
+COPY --from=build /src/out.txt /app/out.txt
+USER appuser
+CMD ["cat", "/app/out.txt"]
+```
+
+**Expected output:** Three files exist in the lab directory.
+
+#### Task 2 – Build both tags and record sizes
+
+{% raw %}
+```bash
+cd ~/rebash-docker/module-06
+docker build -f Dockerfile.single -t rebash-mod06:single .
+docker build -f Dockerfile.multi -t rebash-mod06:multi .
+docker image ls --format 'table {{ "{{" }}.Repository{{ "}}" }}\t{{ "{{" }}.Tag{{ "}}" }}\t{{ "{{" }}.Size{{ "}}" }}' | grep rebash-mod06 | tee image-size-compare.txt
+grep -q 'rebash-mod06' image-size-compare.txt
+```
+{% endraw %}
+
+**Expected output:** `image-size-compare.txt` lists both tags with size columns (multi-stage is typically smaller or equal without bash in the final stage).
+
+#### Task 3 – Run multi-stage image and prove non-root USER
 
 ```bash
-docker run --rm --name rebash-lab rebash-lab:local | tee out.txt
-test "$(cat out.txt)" = 'artefact'
+cd ~/rebash-docker/module-06
+docker run --rm rebash-mod06:multi | tee multi-out.txt
+grep -q 'rebash-mod06 artefact' multi-out.txt
+docker run --rm rebash-mod06:multi id -u | tee multi-uid.txt
+grep -q '10001' multi-uid.txt
 ```
 
-**Expected output:** out.txt contains exactly `artefact`.
+**Expected output:** `multi-out.txt` prints the artefact line; `multi-uid.txt` shows UID `10001`.
 
 ### Validation steps
 
-- [ ] Container or image behaves as Expected output describes
-- [ ] Ports respond or command output matches
-- [ ] Cleanup removes lab resources
+- [ ] Both `rebash-mod06:single` and `rebash-mod06:multi` images built
+- [ ] `image-size-compare.txt` documents size difference
+- [ ] Multi-stage container runs as UID 10001 and prints expected output
 
 ### Common errors and fixes
 
 | Error | Cause | Fix |
 |-------|-------|-----|
-| port is already allocated | Previous lab left a container | `docker rm -f` the old name or change port |
-| permission denied | User not in docker group | Use rootless Docker or fix group membership |
-| manifest unknown | Bad tag | Pin a real tag such as `nginx:alpine` |
+| exec user process caused: permission denied | File not readable by `appuser` | Ensure copied artefact is world-readable or owned correctly |
+| COPY --from=build failed | Wrong stage name | Match `AS build` name in `COPY --from=build` |
+| apk: not found | Wrong base in stage | Use `alpine:3.20` consistently |
 
 ### Challenge exercise
 
-Add a non-root USER (or Compose healthcheck) and prove it with inspect.
+Add a `.dockerignore` excluding `*.txt`, rebuild multi-stage only, and append the new size line:
+
+Create `.dockerignore`:
+
+```text
+*.txt
+```
+
+{% raw %}
+```bash
+cd ~/rebash-docker/module-06
+docker build -f Dockerfile.multi -t rebash-mod06:multi-v2 .
+docker image ls rebash-mod06:multi-v2 --format '{{ "{{" }}.Size{{ "}}" }}' | tee multi-v2-size.txt
+test -s multi-v2-size.txt
+```
+{% endraw %}
+
+**Expected output:** `multi-v2-size.txt` contains a size string for the rebuilt image.
 
 ### Learning outcomes
 
-- Executed a real Docker workflow
-- Captured evidence files
-- Removed disposable resources
+- Contrasted single-stage and multi-stage Dockerfile layouts
+- Measured image sizes before promoting builds
+- Ran a final stage with an explicit non-root `USER`
 
 ### Cleanup
 
 ```bash
-docker rm -f rebash-lab 2>/dev/null || true
-docker rmi rebash-lab:local 2>/dev/null || true
-docker compose down -v 2>/dev/null || true
+cd ~/rebash-docker/module-06
+docker rmi rebash-mod06:single rebash-mod06:multi rebash-mod06:multi-v2 2>/dev/null || true
 ```
 
 ## Validation
 
-
-
-
-
-
-
 - [ ] Lab commands run under `~/rebash-docker/module-06/`
+- [ ] `image-size-compare.txt` and `multi-uid.txt` prove size and non-root goals
 - [ ] You can explain each Theory section in your own words
-- [ ] You used modern tooling where it applies to this topic
 - [ ] You can describe one production failure mode for this topic
 
 ## Code Walkthrough
