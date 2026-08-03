@@ -83,7 +83,7 @@ collections:
 
 Install command:
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 ansible-galaxy collection install -r collections/requirements.yml -p ./collections
 ```
 
@@ -134,7 +134,7 @@ Create `collections/requirements.yml`, install pinned collections into `./collec
 
 ### Lab environment
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 mkdir -p ~/rebash-ansible/module-10/collections
 cd ~/rebash-ansible/module-10
 ```
@@ -231,7 +231,7 @@ if __name__ == "__main__":
 
 Run validation:
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-ansible/module-10
 chmod +x scripts/validate-requirements.py
 python3 scripts/validate-requirements.py | tee validate-requirements.txt
@@ -267,7 +267,7 @@ all:
 
 Install collections (required — not optional):
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-ansible/module-10
 ansible-galaxy collection install -r collections/requirements.yml -p ./collections --force-with-deps | tee galaxy-install.txt
 test -d collections/ansible_collections/ansible/posix
@@ -321,7 +321,7 @@ Create `playbooks/read-inventory-csv.yml`:
 
 Run the playbook:
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-ansible/module-10
 ansible-playbook playbooks/read-inventory-csv.yml --syntax-check | tee syntax-check.txt
 ansible-playbook playbooks/read-inventory-csv.yml | tee playbook-run.txt
@@ -365,7 +365,7 @@ Extend `validate-requirements.py` to fail if any version string is exactly `*`. 
 
 ### Cleanup
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 rm -rf ~/rebash-ansible/module-10/reports
 # Optional: rm -rf ~/rebash-ansible/module-10/collections/ansible_collections
 ```

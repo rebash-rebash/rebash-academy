@@ -162,7 +162,7 @@ Workspace: `~/rebash-helm/module-11`
 
 Offline packaging; optional install namespace `rebash-helm-m11`.
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 mkdir -p ~/rebash-helm/module-11/prod-chart/templates && cd ~/rebash-helm/module-11
 ```
 
@@ -276,7 +276,7 @@ spec:
 
 Lint and prove labels, resources, and PDB render:
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-helm/module-11
 helm lint ./prod-chart | tee lint.txt
 helm template prod-demo ./prod-chart 2>&1 | tee render.txt
@@ -306,7 +306,7 @@ appVersion: "1.27.4"
 
 Package and capture artefact evidence:
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-helm/module-11
 helm package ./prod-chart | tee package.txt
 ls -1 prod-chart-*.tgz | tee package-list.txt
@@ -323,7 +323,7 @@ grep -q 'prod-chart-1.1.0.tgz' package-list.txt
 
 Install from the tarball to prove consumers can deploy the artefact:
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 kubectl create namespace rebash-helm-m11 --dry-run=client -o yaml | kubectl apply -f -
 helm upgrade --install prod-demo prod-chart-1.1.0.tgz \
   -n rebash-helm-m11 --wait --timeout 3m | tee install.txt
@@ -370,7 +370,7 @@ Create `prod-chart/values.schema.json`:
 }
 ```
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-helm/module-11
 helm lint ./prod-chart --values /dev/null 2>&1 | tee schema-lint.txt || true
 helm lint ./prod-chart | tee schema-lint-ok.txt
@@ -390,7 +390,7 @@ grep -q '0 chart(s) failed' schema-lint-ok.txt
 
 ### Cleanup
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 helm uninstall prod-demo -n rebash-helm-m11 2>/dev/null || true
 kubectl delete namespace rebash-helm-m11 --ignore-not-found
 rm -f ~/rebash-helm/module-11/prod-chart-*.tgz

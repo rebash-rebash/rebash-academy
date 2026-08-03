@@ -69,7 +69,7 @@ Backups copy data to safe storage; DR restores service within RPO/RTO; capacity 
 | RTO | Max acceptable downtime to recover |
 | Capacity | Headroom for growth and for backup storage |
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 tar -czf backup.tgz data/
 rsync -aH data/ backup-mirror/
 df -hT
@@ -115,7 +115,7 @@ Create sample app data, back it up with `tar` and `rsync`, delete the live data,
 
 Workspace: `~/rebash-linux/lab25`
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 mkdir -p ~/rebash-linux/lab25 && cd ~/rebash-linux/lab25
 set -euo pipefail
 sudo apt-get update -qq
@@ -135,7 +135,7 @@ A small app keeps critical config and upload files under one directory. Leadersh
 
 #### Task 1 – Create data and checksum manifest
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-linux/lab25
 set -euo pipefail
 
@@ -156,7 +156,7 @@ test -s checksums-before.txt
 
 #### Task 2 – Backup with tar and rsync
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-linux/lab25
 set -euo pipefail
 
@@ -174,7 +174,7 @@ test -f backups/appdata-mirror/conf/app.env
 
 #### Task 3 – Destroy, restore, verify, capacity + evidence
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-linux/lab25
 set -euo pipefail
 
@@ -247,7 +247,7 @@ Write `~/rebash-linux/lab25/backup-appdata.sh` that creates a timestamped `backu
 
 ### Cleanup
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-linux/lab25
 set -euo pipefail
 # Keep evidence; remove bulky trees if needed:

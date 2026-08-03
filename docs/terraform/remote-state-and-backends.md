@@ -157,7 +157,7 @@ Build a **network** stack and an **application** stack under `~/rebash-terraform
 
 ### Lab environment
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 mkdir -p ~/rebash-terraform/module-08-remote/{network,app} && cd ~/rebash-terraform/module-08-remote
 ```
 
@@ -231,7 +231,7 @@ output "cidr_label" {
 Run:
 
 {% raw %}
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-terraform/module-08-remote/network
 mkdir -p state
 terraform init
@@ -323,7 +323,7 @@ output "attached_network" {
 Run:
 
 {% raw %}
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-terraform/module-08-remote/app
 mkdir -p state
 terraform init
@@ -355,7 +355,7 @@ locals {
 Apply network, then re-plan app:
 
 {% raw %}
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-terraform/module-08-remote/network
 terraform apply -auto-approve
 cd ~/rebash-terraform/module-08-remote/app
@@ -377,7 +377,7 @@ echo "dependency task OK" | tee dependency-task-ok.txt
 Create `~/rebash-terraform/module-08-remote/remote-state-evidence.sh`:
 
 {% raw %}
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 #!/usr/bin/env bash
 set -euo pipefail
 NET=~/rebash-terraform/module-08-remote/network
@@ -393,7 +393,7 @@ echo "remote-state-evidence PASS" | tee remote-state-evidence-pass.txt
 
 Run:
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 chmod +x ~/rebash-terraform/module-08-remote/remote-state-evidence.sh
 ~/rebash-terraform/module-08-remote/remote-state-evidence.sh
 ```
@@ -437,7 +437,7 @@ Create `~/rebash-terraform/module-08-remote/app/backend-config.hcl` documenting 
 Validate app stack still passes:
 
 {% raw %}
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-terraform/module-08-remote/app
 terraform validate
 docker network inspect rebash-module-08-remote-net --format '{{.Name}}' | grep -q rebash-module-08-remote-net
@@ -458,7 +458,7 @@ echo "backend config challenge OK"
 
 ### Cleanup
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-terraform/module-08-remote/app && terraform destroy -auto-approve
 cd ~/rebash-terraform/module-08-remote/network && terraform destroy -auto-approve
 rm -f ~/rebash-terraform/module-08-remote/network/network-outputs.json network-task-ok.txt

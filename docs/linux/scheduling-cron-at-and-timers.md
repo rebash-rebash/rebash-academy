@@ -72,7 +72,7 @@ Schedulers trigger work later. Cron and `at` run commands directly; systemd time
 | `at` | One-shot “run this once later” |
 | systemd timer | Services already modelled as units; better journal integration |
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 crontab -l
 atq
 systemctl list-timers --all
@@ -131,7 +131,7 @@ Create a user cron job, an `at` job, and a systemd user-space **system** timer t
 
 Workspace: `~/rebash-linux/lab17`
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 mkdir -p ~/rebash-linux/lab17 && cd ~/rebash-linux/lab17
 set -euo pipefail
 whoami | tee admin-user.txt
@@ -157,7 +157,7 @@ Ops wants a small health stamp every minute for a practice app, a one-shot remin
 
 #### Task 1 – User crontab job with absolute paths
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-linux/lab17
 set -euo pipefail
 
@@ -201,7 +201,7 @@ grep cron-ok "$LOG" | tee cron-heartbeat-proof.txt
 
 #### Task 2 – One-shot `at` job
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-linux/lab17
 set -euo pipefail
 
@@ -230,7 +230,7 @@ grep -q at-ok at-job-proof.txt
 
 #### Task 3 – systemd service + timer
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-linux/lab17
 set -euo pipefail
 
@@ -323,7 +323,7 @@ Add `Persistent=true` to the timer (or create `rebash-lab17-persist.timer`) and 
 
 ### Cleanup
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-linux/lab17
 set -euo pipefail
 

@@ -165,7 +165,7 @@ Build a two-job workflow that uploads a build artefact, downloads it in a deploy
 
 ### Lab environment
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 mkdir -p ~/rebash-github-actions/module-06/{demo-app/dist,.github/workflows} && cd ~/rebash-github-actions/module-06
 set -euo pipefail
 ```
@@ -178,7 +178,7 @@ Release engineering requires build once, deploy many: the compile job uploads a 
 
 #### Task 1 – Create build output and requirements file
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-github-actions/module-06
 set -euo pipefail
 echo "app-version=2.4.1" > demo-app/dist/version.txt
@@ -193,7 +193,7 @@ requests==2.32.3
 
 Validate offline:
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-github-actions/module-06
 set -euo pipefail
 test -s demo-app/dist/version.txt
@@ -248,7 +248,7 @@ jobs:
 
 Validate offline:
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-github-actions/module-06
 set -euo pipefail
 grep -q 'upload-artifact@v4' .github/workflows/build-deploy-artifacts.yml
@@ -295,7 +295,7 @@ jobs:
 
 Validate offline (substitute your hash from `req-hash.txt` into the workflow file before parsing):
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-github-actions/module-06
 set -euo pipefail
 REQ_HASH=$(cat req-hash.txt)
@@ -311,7 +311,7 @@ python3 -c "import yaml; yaml.safe_load(open('.github/workflows/cache-pip.resolv
 
 #### Task 4 – Simulate artefact handoff locally
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-github-actions/module-06
 set -euo pipefail
 

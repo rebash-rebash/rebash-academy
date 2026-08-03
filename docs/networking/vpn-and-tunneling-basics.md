@@ -72,7 +72,7 @@ A VPN creates a protected path over an untrusted network. The **outer** packet g
 - **WireGuard** — simple keys, UDP, popular for modern overlays
 - **TLS-based VPN** (for example OpenVPN-style) — sometimes easier through strict egress
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 # Dynamic SOCKS proxy over SSH (remote-access style demo)
 ssh -D 1080 -N -f user@bastion.example.com
 ```
@@ -124,7 +124,7 @@ Prove a tunnel or VPN-like path on a practice Ubuntu VM: prefer `ssh -D` SOCKS a
 
 Workspace: `~/rebash-networking/lab20`
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 mkdir -p ~/rebash-networking/lab20 && cd ~/rebash-networking/lab20
 set -euo pipefail
 whoami | tee admin-user.txt
@@ -144,7 +144,7 @@ An engineer needs a safe way to reach an internal HTTP service without opening t
 
 #### Task 1 – Inventory and choose demo path
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-networking/lab20
 set -euo pipefail
 
@@ -172,7 +172,7 @@ echo "demo=${DEMO}" | tee demo-path.txt
 
 **Path A — SOCKS over SSH to localhost** (when sshd listens on 22):
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-networking/lab20
 set -euo pipefail
 
@@ -192,7 +192,7 @@ fi
 
 **Path B — WireGuard already up:**
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-networking/lab20
 set -euo pipefail
 
@@ -205,7 +205,7 @@ fi
 
 **Path C — Namespace GRE/veth tunnel:**
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-networking/lab20
 set -euo pipefail
 
@@ -249,7 +249,7 @@ fi
 
 #### Task 3 – Evidence pack
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-networking/lab20
 set -euo pipefail
 
@@ -295,7 +295,7 @@ Write `tunnel-check.sh` that: (1) prints whether port `11080` is listening, (2) 
 
 ### Cleanup
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-networking/lab20
 set -euo pipefail
 

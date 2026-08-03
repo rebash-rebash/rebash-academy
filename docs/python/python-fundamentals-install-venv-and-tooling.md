@@ -70,7 +70,7 @@ Python tooling sits between your shell and your scripts. The interpreter runs co
 
 **pip** is the package installer that ships with the venv. **uv** is a fast alternative that can create venvs and install packages. **Poetry** manages both dependencies and packaging for larger apps. Start with `venv` + `pip`; add uv or Poetry when the team standardises on them.
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 python3 -V
 python3 -m venv .venv
 source .venv/bin/activate
@@ -133,7 +133,7 @@ Create `~/rebash-python/lab01` with a Python 3.11+ venv, install a tiny package,
 
 Workspace: `~/rebash-python/lab01`
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 mkdir -p ~/rebash-python/lab01 && cd ~/rebash-python/lab01
 set -euo pipefail
 python3 -V | tee python-version.txt
@@ -153,7 +153,7 @@ Your team is starting a small inventory helper for a practice Ubuntu VM. Platfor
 
 #### Task 1 – Create and activate the virtual environment
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-python/lab01
 set -euo pipefail
 
@@ -173,7 +173,7 @@ grep -F '.venv' venv-python-path.txt
 
 #### Task 2 – Install a package and freeze requirements
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-python/lab01
 set -euo pipefail
 # shellcheck disable=SC1091
@@ -192,7 +192,7 @@ test -s requirements.txt
 
 #### Task 3 – Write and run a hello script
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-python/lab01
 set -euo pipefail
 # shellcheck disable=SC1091
@@ -226,7 +226,7 @@ if __name__ == "__main__":
 
 Run:
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 python hello.py | tee hello-output.txt
 grep -F 'Hello from REBASH' hello-output.txt
 grep -F '.venv' hello-output.txt
@@ -273,7 +273,7 @@ Add `check_env.py` that exits `0` only if (1) `sys.prefix` contains `.venv`, (2)
 
 ### Cleanup
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-python/lab01
 set -euo pipefail
 deactivate 2>/dev/null || true

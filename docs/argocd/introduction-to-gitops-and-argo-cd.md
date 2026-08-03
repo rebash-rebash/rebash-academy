@@ -157,7 +157,7 @@ Build a Kustomize manifest bundle under `~/rebash-argocd/module-01`, apply it to
 
 Workspace: `~/rebash-argocd/module-01` on your workstation.
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 kind create cluster --name rebash-argocd 2>/dev/null || true
 mkdir -p ~/rebash-argocd/module-01/base && cd ~/rebash-argocd/module-01
 export KUBECONFIG="$(kind get kubeconfig-path --name rebash-argocd 2>/dev/null || kind get kubeconfig --name rebash-argocd)"
@@ -254,7 +254,7 @@ metadata:
 
 Build and inspect rendered manifests:
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-argocd/module-01
 kubectl kustomize base | tee build-m01.yaml
 grep -q 'kind: Deployment' build-m01.yaml
@@ -271,7 +271,7 @@ echo "kustomize build: OK" | tee kustomize-validate.txt
 
 Apply namespace and application bundle:
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-argocd/module-01
 kubectl apply -f namespace.yaml | tee apply-ns-m01.txt
 kubectl apply -k base | tee apply-app-m01.txt
@@ -290,7 +290,7 @@ echo "live apply OK" | tee apply-summary-m01.txt
 
 Introduce drift, then re-apply from Git manifests:
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-argocd/module-01
 kubectl scale deployment rebash-gitops-demo -n rebash-argocd-m01 --replicas=2 | tee drift-scale-m01.txt
 kubectl get deployment rebash-gitops-demo -n rebash-argocd-m01 -o jsonpath='{.spec.replicas}{"\n"}' | tee drift-replicas-m01.txt
@@ -335,7 +335,7 @@ Add `overlays/dev/kustomization.yaml` that sets `replicas: 2` via a strategic me
 
 ### Cleanup
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 kubectl delete namespace rebash-argocd-m01 --ignore-not-found
 # Optional: kind delete cluster --name rebash-argocd
 rm -rf ~/rebash-argocd/module-01

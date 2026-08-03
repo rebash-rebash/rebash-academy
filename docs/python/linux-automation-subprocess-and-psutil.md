@@ -158,7 +158,7 @@ Build a small host probe under `~/rebash-python/lab13` that runs `uname` (and `i
 
 Workspace: `~/rebash-python/lab13`
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 mkdir -p ~/rebash-python/lab13 && cd ~/rebash-python/lab13
 set -euo pipefail
 python3 -m venv .venv
@@ -265,7 +265,7 @@ if __name__ == "__main__":
 
 Run:
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-python/lab13
 set -euo pipefail
 # shellcheck disable=SC1091
@@ -321,7 +321,7 @@ if __name__ == "__main__":
 
 Run:
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-python/lab13
 set -euo pipefail
 # shellcheck disable=SC1091
@@ -355,7 +355,7 @@ assert host["commands"][0]["ok"]
 
 Run:
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-python/lab13
 set -euo pipefail
 # shellcheck disable=SC1091
@@ -397,7 +397,7 @@ Extend `host_probe.py` with a `--json-path` CLI flag (use `argparse`) that write
 
 ### Cleanup
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-python/lab13
 set -euo pipefail
 deactivate 2>/dev/null || true

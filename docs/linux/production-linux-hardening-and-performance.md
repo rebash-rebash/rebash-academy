@@ -118,7 +118,7 @@ Capture a production-style audit snapshot, install lab sysctl and limits drop-in
 
 Workspace: `~/rebash-linux/lab24`
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 mkdir -p ~/rebash-linux/lab24 && cd ~/rebash-linux/lab24
 set -euo pipefail
 sudo apt-get update -qq
@@ -138,7 +138,7 @@ Security and platform teams ask for a baseline on a new Ubuntu app VM: time sync
 
 #### Task 1 – Audit snapshot
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-linux/lab24
 set -euo pipefail
 
@@ -159,7 +159,7 @@ free -h | tee free.txt
 
 #### Task 2 – Lab sysctl drop-in
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-linux/lab24
 set -euo pipefail
 
@@ -185,7 +185,7 @@ test "$(sysctl -n net.ipv4.ip_forward)" -eq 0
 
 #### Task 3 – Limits drop-in + evidence pack
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-linux/lab24
 set -euo pipefail
 
@@ -245,7 +245,7 @@ Create a systemd **service drop-in** directory for an existing unit you are allo
 
 ### Cleanup
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-linux/lab24
 set -euo pipefail
 sudo rm -f /etc/sysctl.d/99-rebash-lab24.conf

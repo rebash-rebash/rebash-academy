@@ -84,7 +84,7 @@ Packet flows, security groups, network policies, and service meshes are easier w
 4. **Link** delivers frames to the next hop on the local network.
 5. On the receiver, the path reverses up the stack to the listening application.
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 ss -tuln
 curl -v --max-time 8 -o /dev/null https://example.com
 ```
@@ -131,7 +131,7 @@ Build an OSI↔TCP/IP mapping artefact with concrete protocol examples, then cap
 
 Workspace: `~/rebash-networking/lab03`
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 mkdir -p ~/rebash-networking/lab03 && cd ~/rebash-networking/lab03
 set -euo pipefail
 hostname | tee hostname.txt
@@ -150,7 +150,7 @@ A new engineer asks whether “security groups are Layer 3 or Layer 4.” You pr
 
 #### Task 1 – Write the OSI↔TCP/IP mapping artefact
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-networking/lab03
 set -euo pipefail
 ```
@@ -171,7 +171,7 @@ Concrete walkthrough for HTTPS GET example.com:
 4. Link: frames to the local gateway MAC
 ```
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cat osi-tcpip-map.txt
 grep -E 'Application|Transport|Internet|Link' osi-tcpip-map.txt
 ```
@@ -182,7 +182,7 @@ grep -E 'Application|Transport|Internet|Link' osi-tcpip-map.txt
 
 #### Task 2 – Transport evidence with `ss -tuln`
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-networking/lab03
 set -euo pipefail
 
@@ -203,7 +203,7 @@ ip -br link | tee ip-br-link.txt
 
 #### Task 3 – Application evidence with `curl -v` and pack
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-networking/lab03
 set -euo pipefail
 
@@ -261,7 +261,7 @@ Create executable script `~/rebash-networking/lab03/stack-probe.sh` that: (1) wr
 
 ### Cleanup
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-networking/lab03
 set -euo pipefail
 # No persistent routes or firewall changes in the main lab

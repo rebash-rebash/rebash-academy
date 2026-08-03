@@ -126,7 +126,7 @@ Simulate a mini delivery chain: bare remote as forge, PR branch CI script that r
 
 Workspace: `~/rebash-git/related/cicd`
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 mkdir -p ~/rebash-git/related/cicd && cd ~/rebash-git/related/cicd
 set -euo pipefail
 ```
@@ -139,7 +139,7 @@ Service repo uses PR validation; merge to `main` produces deploy manifest consum
 
 #### Task 1 – Bare remote, app repo, feature branch
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-git/related/cicd
 set -euo pipefail
 rm -rf app remotes origin.git
@@ -181,7 +181,7 @@ echo "ci_validate=pass sha=$SHA"
 
 Run CI simulation and merge:
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-git/related/cicd/app
 set -euo pipefail
 chmod +x ci-validate.sh
@@ -202,7 +202,7 @@ cd ..
 
 Create `DEPLOY_MANIFEST.json` from the tagged commit SHA:
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-git/related/cicd/app
 set -euo pipefail
 git tag -a v0.1.0 -m 'Release v0.1.0'
@@ -251,7 +251,7 @@ Add `ci-plan.sh` that diffs `app.yaml` between `main` and feature SHA — simula
 
 ### Cleanup
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 ls ~/rebash-git/related/cicd/
 ```
 

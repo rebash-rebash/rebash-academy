@@ -63,7 +63,7 @@ Linux with systemd. HTTP probe may target `https://example.com` or a local servi
 
 ## Initial State
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 mkdir -p ~/rebash-lab-shell/health
 cd ~/rebash-lab-shell/health
 ```
@@ -72,7 +72,7 @@ cd ~/rebash-lab-shell/health
 
 ### Task 1 — Unit check
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 systemctl is-active ssh || systemctl is-active sshd || true
 ```
 
@@ -111,7 +111,7 @@ Document a user crontab line that runs every 5 minutes and appends logs.
 
 ## Cleanup
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 rm -rf ~/rebash-lab-shell
 ```
 

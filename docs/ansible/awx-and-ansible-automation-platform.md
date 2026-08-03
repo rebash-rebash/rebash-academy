@@ -129,7 +129,7 @@ Create the Ansible project layout AWX would sync (`site.yml`, inventories, roles
 
 Workspace: `~/rebash-ansible/module-15`
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 mkdir -p ~/rebash-ansible/module-15/{playbooks,inventories/staging,roles/common/{tasks,defaults}} && cd ~/rebash-ansible/module-15
 ```
 
@@ -202,7 +202,7 @@ Create `playbooks/site.yml`:
 
 #### Task 2 – Run site playbook (job template simulation)
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-ansible/module-15
 ansible-playbook playbooks/site.yml --syntax-check | tee syntax-check.txt
 ansible-playbook playbooks/site.yml | tee site-run.txt
@@ -237,7 +237,7 @@ job_template:
 
 Verify playbook path exists:
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-ansible/module-15
 test -f playbooks/site.yml
 test -f inventories/staging/hosts.yml
@@ -251,7 +251,7 @@ echo "job template ref OK" | tee jt-ref-ok.txt
 
 #### Task 4 – Idempotent re-run and evidence tarball
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-ansible/module-15
 ansible-playbook playbooks/site.yml | tee site-run2.txt
 grep -E 'changed=0|changed=1' site-run2.txt | tail -1 | tee idempotency-line.txt
@@ -297,7 +297,7 @@ Add `inventories/production/hosts.yml` with a different host entry and a `--chec
 
 ### Cleanup
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 rm -f ~/rebash-ansible/module-15/staging-marker.txt ~/rebash-ansible/module-15/module-15-evidence.tgz
 ```
 

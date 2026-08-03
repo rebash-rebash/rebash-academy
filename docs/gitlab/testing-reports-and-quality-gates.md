@@ -173,7 +173,7 @@ Workspace: `~/rebash-gitlab/module-13`
 
 File-first lab. Test reports upload on GitLab runners; this lab validates XML and pipeline structure locally.
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 mkdir -p ~/rebash-gitlab/module-13 && cd ~/rebash-gitlab/module-13
 set -euo pipefail
 ```
@@ -213,7 +213,7 @@ pytest>=8.0
 
 Run tests locally with JUnit output:
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-gitlab/module-13
 set -euo pipefail
 python3 -m pip install -q -r requirements-dev.txt
@@ -242,7 +242,7 @@ Create `fixtures/sample-junit.xml`:
 
 Validate the fixture:
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-gitlab/module-13
 set -euo pipefail
 grep -q 'test_add' fixtures/sample-junit.xml
@@ -293,7 +293,7 @@ unit-tests:
 
 Validate offline:
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-gitlab/module-13
 set -euo pipefail
 python3 -c "
@@ -327,7 +327,7 @@ echo 'module-13 testing lab passed'
 
 Run it:
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-gitlab/module-13
 set -euo pipefail
 chmod +x validate-tests.sh
@@ -369,7 +369,7 @@ Add an integration test job that `needs: [unit-tests]` and publishes a second JU
 
 ### Cleanup
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 rm -rf ~/rebash-gitlab/module-13/.pytest_cache ~/rebash-gitlab/module-13/**/__pycache__ 2>/dev/null || true
 ls ~/rebash-gitlab/module-13
 ```

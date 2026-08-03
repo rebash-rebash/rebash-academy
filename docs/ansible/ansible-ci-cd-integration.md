@@ -127,7 +127,7 @@ Create a minimal Ansible repo layout with a GitHub Actions workflow (syntax-chec
 
 Workspace: `~/rebash-ansible/module-14`
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 mkdir -p ~/rebash-ansible/module-14 && cd ~/rebash-ansible/module-14
 ansible --version | tee ansible-version.txt
 ```
@@ -192,7 +192,7 @@ interpreter_python = auto_silent
 
 Verify locally:
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-ansible/module-14
 ansible-playbook --syntax-check site.yml | tee local-syntax.txt
 ansible-playbook site.yml | tee local-apply.txt
@@ -257,7 +257,7 @@ jobs:
 
 Validate workflow YAML offline:
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-ansible/module-14
 python3 - <<'PY' | tee github-yaml-validate.txt
 import yaml
@@ -299,7 +299,7 @@ ansible-syntax-check:
 
 Validate offline:
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-ansible/module-14
 python3 - <<'PY' | tee gitlab-yaml-validate.txt
 import yaml
@@ -317,7 +317,7 @@ grep -q 'OK gitlab ci' gitlab-yaml-validate.txt
 
 #### Task 4 – Package CI evidence tarball
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-ansible/module-14
 tar -czf module-14-evidence.tgz \
   site.yml ansible.cfg inventories/ .github/ .gitlab-ci.yml \
@@ -360,7 +360,7 @@ Add an `ansible-lint` job (install `ansible-lint` via pip) that runs against `si
 
 ### Cleanup
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 rm -rf ~/rebash-ansible/module-14
 ```
 

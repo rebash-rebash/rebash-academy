@@ -83,7 +83,7 @@ Fresh or lightly used Ubuntu server. You will install packages and create lab pa
 
 ### Task 1 — Baseline card
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 hostnamectl | head -5
 timedatectl | grep -iE 'synchronized|NTP' || true
 systemctl is-system-running || true
@@ -95,7 +95,7 @@ systemctl is-system-running || true
 
 ### Task 2 — App on localhost
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 sudo mkdir -p /opt/rebash-lab/app
 sudo tee /opt/rebash-lab/app/server.py >/dev/null <<'EOF'
 #!/usr/bin/env python3
@@ -126,7 +126,7 @@ ss -tln | grep 18080
 
 ### Task 3 — nginx reverse proxy + TLS
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 sudo apt update
 sudo apt install -y nginx openssl
 sudo mkdir -p /etc/nginx/ssl /var/www/rebash-lab
@@ -172,7 +172,7 @@ curl -k -sS https://127.0.0.1/api/healthz
 
 ### Task 4 — Firewall posture (UFW)
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 sudo apt install -y ufw
 sudo ufw default deny incoming
 sudo ufw default allow outgoing
@@ -193,7 +193,7 @@ sudo ss -tuln | awk 'NR==1 || /:22 |:80 |:443 |:18080 /'
 
 ### Task 5 — Backup and restore proof
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 mkdir -p ~/rebash-lab-backups
 echo 'lab-state=1' | sudo tee /opt/rebash-lab/app/state.txt
 TS=$(date +%Y%m%d-%H%M%S)
@@ -235,7 +235,7 @@ sha256sum -c ~/rebash-lab-backups/app-$TS.sha256
 
 ## Cleanup
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 sudo kill "$(cat /var/tmp/rebash-lab-app.pid)" 2>/dev/null || true
 sudo rm -f /var/tmp/rebash-lab-app.pid /var/tmp/rebash-lab-app.log
 sudo rm -f /etc/nginx/sites-enabled/rebash-lab

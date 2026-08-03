@@ -74,7 +74,7 @@ Boot stages hand control from firmware to the kernel, then to systemd. After the
 
 **FHS** is the agreed directory layout under `/`. You do not need to memorise every path, but you must know the landmarks operators use every day.
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 systemctl get-default
 systemd-analyze
 ls -ld /etc /var /usr /home /tmp /run /boot
@@ -146,7 +146,7 @@ On a practice Ubuntu VM, inspect the boot path and default target, map critical 
 
 Workspace: `~/rebash-linux/lab02`
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 mkdir -p ~/rebash-linux/lab02 && cd ~/rebash-linux/lab02
 set -euo pipefail
 test -d /etc && test -d /var
@@ -165,7 +165,7 @@ A new Ubuntu VM takes a long time before SSH is ready. Platform asks you to meas
 
 #### Task 1 – Inspect boot and default target
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-linux/lab02
 set -euo pipefail
 
@@ -188,7 +188,7 @@ grep -E 'Startup finished|multi-user|graphical' analyze.txt || test -s analyze.t
 
 #### Task 2 – Map FHS landmarks and root mount
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-linux/lab02
 set -euo pipefail
 
@@ -216,7 +216,7 @@ test -s root-mount.txt
 
 #### Task 3 – Link boot files to FHS and pack evidence
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-linux/lab02
 set -euo pipefail
 
@@ -273,7 +273,7 @@ Create an executable script `~/rebash-linux/lab02/fhs-audit.sh` that checks thes
 
 ### Cleanup
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-linux/lab02
 # Keep boot-fhs-evidence.tgz and fhs-audit.sh if you created them.
 # rm -f *.txt fstab.copy boot-fhs-evidence.tgz

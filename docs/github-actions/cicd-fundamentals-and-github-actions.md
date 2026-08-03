@@ -166,7 +166,7 @@ Encode CI/CD stages and the GitHub Actions workflow lifecycle as validated YAML,
 
 Workspace: `~/rebash-github-actions/module-01`
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 mkdir -p ~/rebash-github-actions/module-01 && cd ~/rebash-github-actions/module-01
 set -euo pipefail
 pwd | tee pwd-start.txt
@@ -230,7 +230,7 @@ github_actions_mapping:
 
 Validate offline:
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-github-actions/module-01
 set -euo pipefail
 python3 -c "
@@ -280,7 +280,7 @@ stages:
 
 Validate offline:
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-github-actions/module-01
 set -euo pipefail
 python3 -c "
@@ -328,7 +328,7 @@ jobs:
 
 Validate offline:
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-github-actions/module-01
 set -euo pipefail
 mkdir -p .github/workflows
@@ -347,7 +347,7 @@ python3 -c "import yaml; yaml.safe_load(open('.github/workflows/ci.yml')); print
 
 Prove the `run:` block works locally, then bundle artefacts.
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-github-actions/module-01
 set -euo pipefail
 

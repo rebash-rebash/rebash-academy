@@ -52,7 +52,7 @@ httpx. **Estimated cost:** £0.
 
 ## Environment
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 mkdir -p ~/rebash-lab-python-monitor/{fixtures,out}
 cd ~/rebash-lab-python-monitor
 python3 -m venv .venv && source .venv/bin/activate
@@ -88,7 +88,7 @@ Create `fixtures/results.json`:
 
 ## Validation
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 python monitor_apis.py --targets targets.yaml --fixture fixtures/results.json; echo $?  # 1
 ```
 

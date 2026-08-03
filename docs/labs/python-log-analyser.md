@@ -77,7 +77,7 @@ Any Linux host or WSL2. Work under `~/rebash-lab-python`.
 
 ## Initial State
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 mkdir -p ~/rebash-lab-python/{logs,out}
 cd ~/rebash-lab-python
 python3 -m venv .venv
@@ -108,7 +108,7 @@ Create `logs/app-b.log`:
 
 ### Step 1 – Skeleton and venv check
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 which python
 python -c 'import sys; print(sys.version)'
 ```
@@ -156,7 +156,7 @@ Add `--input` / `--output` flags so the script is reusable in CI.
 
 ## Validation
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-lab-python
 source .venv/bin/activate
 python analyse_logs.py

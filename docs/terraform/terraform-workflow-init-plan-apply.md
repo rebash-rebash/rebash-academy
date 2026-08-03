@@ -93,7 +93,7 @@ The workflow moves from author-time configuration through CLI phases to provider
 
 #### Recommended local sequence
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 terraform fmt -recursive
 terraform init
 terraform validate
@@ -140,7 +140,7 @@ Useful flags:
 
 #### terraform fmt and validate
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 terraform fmt -recursive -check   # CI: fail if unformatted
 terraform validate                # after init
 ```
@@ -182,7 +182,7 @@ Build a Docker stack (network + nginx container), run the full **`fmt` → `init
 
 Workspace: `~/rebash-terraform/module-03`
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 mkdir -p ~/rebash-terraform/module-03 && cd ~/rebash-terraform/module-03
 ```
 
@@ -247,7 +247,7 @@ resource "docker_container" "web" {
 
 Run:
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-terraform/module-03
 terraform fmt -recursive
 terraform init | tee 01-init.txt
@@ -265,7 +265,7 @@ echo "validate OK" | tee validate-evidence.txt
 Run:
 
 {% raw %}
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-terraform/module-03
 terraform plan -out=tfplan -no-color | tee 03-plan.txt
 grep -q 'Plan:' 03-plan.txt
@@ -310,7 +310,7 @@ echo "workflow cycle OK" | tee workflow-evidence.txt
 Create `workflow-gate.sh`:
 
 {% raw %}
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 #!/usr/bin/env bash
 set -euo pipefail
 cd ~/rebash-terraform/module-03
@@ -327,7 +327,7 @@ echo "CI gate simulation OK"
 
 Run:
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 chmod +x ~/rebash-terraform/module-03/workflow-gate.sh
 ~/rebash-terraform/module-03/workflow-gate.sh | tee challenge-gate.txt
 ```
@@ -345,7 +345,7 @@ chmod +x ~/rebash-terraform/module-03/workflow-gate.sh
 
 ### Cleanup
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-terraform/module-03
 terraform destroy -auto-approve 2>/dev/null || true
 docker rm -f rebash-module-03-web 2>/dev/null || true

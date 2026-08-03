@@ -54,7 +54,7 @@ Python 3.12+, PyYAML. **Estimated cost:** £0.
 
 ## Environment
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 mkdir -p ~/rebash-lab-python-cicd/{steps,out}
 cd ~/rebash-lab-python-cicd
 python3 -m venv .venv && source .venv/bin/activate
@@ -84,7 +84,7 @@ def test_ok():
 
 Prepare remaining files:
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 mkdir -p tests
 ```
 
@@ -99,7 +99,7 @@ Create `cicd_run.py --config pipeline.yaml`:
 
 ## Validation
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 python cicd_run.py --config pipeline.yaml --dry-run
 python cicd_run.py --config pipeline.yaml; echo $?  # 0 if pytest present
 # Break a test and confirm exit 1

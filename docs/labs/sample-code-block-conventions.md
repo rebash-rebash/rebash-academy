@@ -43,7 +43,7 @@ Apply a tiny **Docker** Terraform stack and prove the container with CLI evidenc
 
 ### Lab environment
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 mkdir -p ~/rebash-labs/sample-code-blocks && cd ~/rebash-labs/sample-code-blocks
 ```
 
@@ -111,7 +111,7 @@ output "container_name" {
 Initialise and apply:
 
 {% raw %}
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-labs/sample-code-blocks
 terraform init
 terraform apply -auto-approve
@@ -132,7 +132,7 @@ grep -q 200 http-code.txt
 Inspect the container label set by Terraform:
 
 {% raw %}
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-labs/sample-code-blocks
 docker inspect -f '{{index .Config.Labels "rebash.sample"}}' rebash-sample-web | tee label.txt
 grep -q code-blocks label.txt
@@ -191,7 +191,7 @@ Add an output `network_name` and prove it with `terraform output` plus `docker n
 
 ### Cleanup
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-labs/sample-code-blocks
 terraform destroy -auto-approve
 rm -f docker-ps.txt http-code.txt label.txt output-name.txt
@@ -213,7 +213,7 @@ resource "docker_network" "lab" {
 }
 ```
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 terraform apply -auto-approve
 ```
 

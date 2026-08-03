@@ -180,7 +180,7 @@ Build a root module under `~/rebash-terraform/module-07` with validated variable
 
 Workspace: `~/rebash-terraform/module-07`
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 mkdir -p ~/rebash-terraform/module-07 && cd ~/rebash-terraform/module-07
 ```
 
@@ -313,7 +313,7 @@ bootstrap_token = "lab-token-dev-only"
 
 Run:
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-terraform/module-07
 terraform init
 terraform validate
@@ -331,7 +331,7 @@ echo "task1 OK" | tee task1-ok.txt
 Run:
 
 {% raw %}
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-terraform/module-07
 terraform apply tfplan
 terraform output
@@ -354,7 +354,7 @@ echo "task2 OK" | tee task2-ok.txt
 
 Run:
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-terraform/module-07
 export TF_VAR_environment=staging
 terraform plan -var='owner=ci-pipeline' | tee plan-staging.txt
@@ -374,7 +374,7 @@ echo "task3 OK" | tee task3-ok.txt
 Create `vars-evidence.sh`:
 
 {% raw %}
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 #!/usr/bin/env bash
 set -euo pipefail
 cd ~/rebash-terraform/module-07
@@ -390,7 +390,7 @@ echo "vars-evidence PASS" | tee vars-evidence-pass.txt
 
 Run:
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 chmod +x ~/rebash-terraform/module-07/vars-evidence.sh
 ~/rebash-terraform/module-07/vars-evidence.sh
 ```
@@ -430,7 +430,7 @@ bootstrap_token = "prod-challenge-token"
 
 Run a plan with `-var-file=prod.tfvars` and archive evidence:
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-terraform/module-07
 terraform plan -var-file=prod.tfvars | tee plan-prod.txt
 grep -q 'rebash-prod-svc' plan-prod.txt
@@ -450,7 +450,7 @@ echo "prod tfvars challenge OK"
 
 ### Cleanup
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-terraform/module-07
 terraform destroy -auto-approve
 rm -f tfplan plan.txt task*-ok.txt outputs.json service-name.txt docker-ps.txt \

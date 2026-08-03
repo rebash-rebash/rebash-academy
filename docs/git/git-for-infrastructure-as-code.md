@@ -125,7 +125,7 @@ Publish a minimal VPC module, tag `v0.1.0`, consume it from a root stack via Git
 
 Workspace: `~/rebash-git/module-13`
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 mkdir -p ~/rebash-git/module-13 && cd ~/rebash-git/module-13
 set -euo pipefail
 ```
@@ -179,7 +179,7 @@ Version with git tags v0.x.y
 
 Initialise the module repo:
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-git/module-13
 set -euo pipefail
 rm -rf module-s3 stack-app
@@ -199,7 +199,7 @@ cd ..
 
 #### Task 2 – Tag v0.1.0
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-git/module-13/module-s3
 set -euo pipefail
 git tag -a v0.1.0 -m 'Release v0.1.0 — initial bucket module'
@@ -240,7 +240,7 @@ v0.1.0
 
 Validate and commit:
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-git/module-13
 set -euo pipefail
 mkdir stack-app && cd stack-app
@@ -290,7 +290,7 @@ Bump module to v0.2.0 with a new optional variable; update stack MODULE_VERSION 
 
 ### Cleanup
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 ls ~/rebash-git/module-13/
 ```
 

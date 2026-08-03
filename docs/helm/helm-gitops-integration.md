@@ -162,7 +162,7 @@ Workspace: `~/rebash-helm/module-10`
 
 Offline Helm render; optional cluster for later Argo CD sync. Namespace for future deploys: `rebash-helm-m10`.
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 mkdir -p ~/rebash-helm/module-10/charts/rebash-app/templates \
   ~/rebash-helm/module-10/envs/dev \
   ~/rebash-helm/module-10/envs/prod \
@@ -260,7 +260,7 @@ spec:
 
 Lint the chart:
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-helm/module-10
 helm lint ./charts/rebash-app | tee lint.txt
 grep -q '0 chart(s) failed' lint.txt
@@ -305,7 +305,7 @@ resources:
 
 Render dev and prod offline and compare replica counts:
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-helm/module-10
 helm template rebash-app-dev ./charts/rebash-app -f envs/dev/values.yaml \
   | grep 'replicas:' | head -1 | tee dev-replicas.txt
@@ -351,7 +351,7 @@ spec:
 
 Validate the Application manifest and capture offline render evidence:
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-helm/module-10
 kubectl apply --dry-run=client -f argocd/application-dev.yaml 2>&1 | tee argocd-dryrun.txt || true
 helm template rebash-app-dev ./charts/rebash-app -f envs/dev/values.yaml \
@@ -404,7 +404,7 @@ spec:
     createNamespace: true
 ```
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-helm/module-10
 kubectl apply --dry-run=client -f flux/helmrelease-dev.yaml 2>&1 | tee flux-dryrun.txt || true
 helm template rebash-app-dev ./charts/rebash-app -f envs/dev/values.yaml | grep -q 'kind: Deployment'
@@ -425,7 +425,7 @@ helm template rebash-app-dev ./charts/rebash-app -f envs/dev/values.yaml | grep 
 
 No cluster resources are created in the offline path. If you installed manually for experimentation:
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 helm uninstall rebash-app-dev -n rebash-helm-m10 2>/dev/null || true
 kubectl delete namespace rebash-helm-m10 --ignore-not-found
 rm -rf ~/rebash-helm/module-10

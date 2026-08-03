@@ -136,7 +136,7 @@ Create `templates/motd.j2` with filters, conditionals, and a loop; render it via
 
 ### Lab environment
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 mkdir -p ~/rebash-ansible/module-09/playbooks/templates
 cd ~/rebash-ansible/module-09
 ```
@@ -211,7 +211,7 @@ Create `playbooks/render-motd.yml`:
 
 Run from lab root (Ansible resolves `templates/` next to the playbook under `playbooks/`):
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-ansible/module-09
 ansible-playbook playbooks/render-motd.yml --syntax-check | tee syntax-check.txt
 ansible-playbook playbooks/render-motd.yml | tee run-render.txt
@@ -228,7 +228,7 @@ grep -q 'api (port 8080)' /tmp/rebash-motd-rendered.txt
 
 Create `playbooks/render-motd-no-services.yml` by copying the first playbook and setting `show_services: false` in vars (edit the file in your editor). Run:
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-ansible/module-09
 ansible-playbook playbooks/render-motd-no-services.yml | tee run-no-svc.txt
 grep -q 'Services listing disabled' /tmp/rebash-motd-rendered.txt
@@ -240,7 +240,7 @@ grep -q 'Services listing disabled' /tmp/rebash-motd-rendered.txt
 
 #### Task 4 – Idempotency check
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-ansible/module-09
 ansible-playbook playbooks/render-motd.yml | tee run-idempotent.txt
 grep 'changed=' run-idempotent.txt | tail -1
@@ -281,7 +281,7 @@ Add a `validate` command to the template task using `/bin/true %s` as a stand-in
 
 ### Cleanup
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 rm -f /tmp/rebash-motd-rendered.txt
 # Keep ~/rebash-ansible/module-09 for portfolio review
 ```

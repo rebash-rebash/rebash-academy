@@ -61,7 +61,7 @@ Accounts sprawled across regions. Spreadsheet exports from the console are stale
 
 ## Environment
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 mkdir -p ~/rebash-lab-python-aws/{fixtures,out}
 cd ~/rebash-lab-python-aws
 python3 -m venv .venv && source .venv/bin/activate
@@ -94,7 +94,7 @@ Create `ec2_inventory.py`:
 
 ## Validation
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 python ec2_inventory.py --fixture fixtures/ec2.json
 python -c 'import json; d=json.load(open("out/inventory.json")); assert len(d)==2'
 ```

@@ -164,7 +164,7 @@ Workspace: `~/rebash-gitlab/module-06`
 
 File-first lab. Never commit real tokens — use placeholders only.
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 mkdir -p ~/rebash-gitlab/module-06 && cd ~/rebash-gitlab/module-06
 ```
 
@@ -222,7 +222,7 @@ deploy_staging:
 
 Validate offline:
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-gitlab/module-06
 python3 -c "
 import yaml
@@ -269,7 +269,7 @@ local_simulation:
 
 Validate:
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-gitlab/module-06
 python3 -c "
 import yaml
@@ -288,7 +288,7 @@ print('OK oidc-notes', o['oidc_provider']['audience'])
 
 Prove the script path without a real secret:
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-gitlab/module-06
 export AWS_REGION=ap-south-1
 export APP_ENV=staging

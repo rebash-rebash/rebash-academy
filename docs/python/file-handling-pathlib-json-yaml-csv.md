@@ -149,7 +149,7 @@ Create a sample host inventory, write it as JSON, YAML, and CSV under `~/rebash-
 
 Workspace: `~/rebash-python/lab07`
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 mkdir -p ~/rebash-python/lab07 && cd ~/rebash-python/lab07
 set -euo pipefail
 python3 -m venv .venv
@@ -171,7 +171,7 @@ Your team keeps a small host inventory for a practice environment. Ops wants the
 
 #### Task 1 – Write inventory with pathlib, JSON, YAML, and CSV
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-python/lab07
 set -euo pipefail
 source .venv/bin/activate
@@ -217,7 +217,7 @@ PY
 
 #### Task 2 – Round-trip validate JSON, YAML, and CSV
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-python/lab07
 set -euo pipefail
 source .venv/bin/activate
@@ -262,7 +262,7 @@ PY
 
 #### Task 3 – Evidence pack with shutil
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-python/lab07
 set -euo pipefail
 source .venv/bin/activate
@@ -320,7 +320,7 @@ Add a fourth host `cache-01` (`env=prod`, `ip=10.0.3.11`) to all three formats w
 
 ### Cleanup
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-python/lab07
 set -euo pipefail
 # Keep the evidence archive if you want it; otherwise remove lab artefacts:

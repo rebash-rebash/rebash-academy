@@ -117,7 +117,7 @@ Bootstrap an IaC-style repo where secrets and state are ignored, shell scripts u
 
 Workspace: `~/rebash-git/module-04`
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 mkdir -p ~/rebash-git/module-04 && cd ~/rebash-git/module-04
 set -euo pipefail
 ```
@@ -144,7 +144,7 @@ dist/
 
 Bootstrap the repo and verify ignores:
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-git/module-04
 set -euo pipefail
 rm -rf iac-repo
@@ -193,7 +193,7 @@ echo ok
 
 Commit and verify attributes:
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-git/module-04/iac-repo
 set -euo pipefail
 git add .gitattributes deploy.sh
@@ -212,7 +212,7 @@ cd ..
 
 If a secret was tracked, remove from index without deleting locally.
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-git/module-04/iac-repo
 set -euo pipefail
 # Simulate mistake: force-add then fix
@@ -263,7 +263,7 @@ Add `!.env.example` with safe placeholder values, track it, and prove `git check
 
 ### Cleanup
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 ls ~/rebash-git/module-04/
 ```
 

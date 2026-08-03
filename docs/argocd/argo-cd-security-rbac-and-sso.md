@@ -135,7 +135,7 @@ Apply a restricted AppProject and RBAC ConfigMap on a **kind** cluster, sync an 
 
 Runtime: **kind** cluster with Argo CD control plane — client dry-run alone is not sufficient for this lab.
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 kind create cluster --name rebash-argocd 2>/dev/null || true
 export KUBECONFIG="$(kind get kubeconfig --name rebash-argocd)"
 mkdir -p ~/rebash-argocd/module-11/{rbac,projects,apps} && cd ~/rebash-argocd/module-11
@@ -176,7 +176,7 @@ data:
 
 Apply and verify the default role:
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-argocd/module-11
 kubectl apply -f rbac/argocd-rbac-cm-patch.yaml | tee rbac-apply-m11.txt
 kubectl -n argocd get configmap argocd-rbac-cm \
@@ -228,7 +228,7 @@ spec:
 
 Apply and verify destination fence:
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-argocd/module-11
 kubectl apply -f projects/team-alpha-project.yaml | tee project-apply-m11.txt
 kubectl get appproject team-alpha -n argocd \
@@ -269,7 +269,7 @@ spec:
 
 Apply and wait for sync:
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-argocd/module-11
 kubectl apply -f apps/team-alpha-guestbook.yaml | tee app-apply-m11.txt
 kubectl wait --for=jsonpath='{.status.sync.status}'=Synced \
@@ -308,7 +308,7 @@ spec:
 
 Apply and capture the rejection:
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-argocd/module-11
 kubectl apply -f apps/team-alpha-bad-repo.yaml | tee bad-app-apply-m11.txt
 sleep 5
@@ -340,7 +340,7 @@ stringData:
   password: "<replace-with-PAT-from-vault>"
 ```
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 grep -q 'argocd.argoproj.io/secret-type: repository' projects/repo-credential-secret.example.yaml
 echo 'repo-secret-template: OK' | tee repo-secret-template-m11.txt
 ```
@@ -380,7 +380,7 @@ Extend `rbac/argocd-rbac-cm-patch.yaml` with a `readonly` role that may `get` al
 
 ### Cleanup
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 kubectl delete application team-alpha-guestbook team-alpha-bad-repo -n argocd --ignore-not-found
 kubectl delete appproject team-alpha -n argocd --ignore-not-found
 kubectl delete namespace rebash-argocd-m11 --ignore-not-found

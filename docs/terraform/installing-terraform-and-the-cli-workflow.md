@@ -110,7 +110,7 @@ Production teams document:
 
 Verify after install:
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 terraform version
 # Terraform v1.9.x
 # on linux_amd64
@@ -200,7 +200,7 @@ Install or verify Terraform, create a version-pinned root module with the **`kre
 
 Workspace: `~/rebash-terraform/module-02`
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 mkdir -p ~/rebash-terraform/module-02 && cd ~/rebash-terraform/module-02
 ```
 
@@ -228,7 +228,7 @@ echo "CLI evidence OK" | tee cli-evidence.txt
 
 Run:
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 chmod +x ~/rebash-terraform/module-02/install-check.sh
 ~/rebash-terraform/module-02/install-check.sh
 ```
@@ -275,7 +275,7 @@ resource "docker_network" "install_marker" {
 Run:
 
 {% raw %}
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-terraform/module-02
 terraform fmt -recursive
 terraform init | tee init-output.txt
@@ -317,7 +317,7 @@ echo "provider install evidence OK" | tee provider-evidence.txt
 Create `pin-report.sh`:
 
 {% raw %}
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 #!/usr/bin/env bash
 set -euo pipefail
 cd ~/rebash-terraform/module-02
@@ -337,7 +337,7 @@ docker network inspect rebash-module-02-net --format '{{.Name}}' | grep -q rebas
 
 Run:
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 chmod +x ~/rebash-terraform/module-02/pin-report.sh
 ~/rebash-terraform/module-02/pin-report.sh
 ```
@@ -355,7 +355,7 @@ chmod +x ~/rebash-terraform/module-02/pin-report.sh
 
 ### Cleanup
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-terraform/module-02
 terraform destroy -auto-approve
 rm -f terraform-version.txt terraform-version.json cli-evidence.txt \

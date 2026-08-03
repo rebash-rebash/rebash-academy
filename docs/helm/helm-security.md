@@ -158,7 +158,7 @@ Workspace: `~/rebash-helm/module-09`
 
 Helm 3 against kind/minikube; release namespace `rebash-helm-m09`.
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 mkdir -p ~/rebash-helm/module-09/secure-chart/templates && cd ~/rebash-helm/module-09
 ```
 
@@ -310,7 +310,7 @@ spec:
 
 Prove security settings in rendered output (offline):
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-helm/module-09
 helm lint ./secure-chart | tee lint.txt
 helm template secure-demo ./secure-chart 2>&1 | tee render.txt
@@ -346,7 +346,7 @@ stringData:
 
 Install and verify RBAC bindings:
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 kubectl create namespace rebash-helm-m09 --dry-run=client -o yaml | kubectl apply -f -
 kubectl apply -f external-secret.yaml
 helm upgrade --install secure-demo ./secure-chart \
@@ -410,7 +410,7 @@ networkPolicy:
   enabled: false
 ```
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-helm/module-09
 helm template secure-demo ./secure-chart --set networkPolicy.enabled=true | grep -q 'kind: NetworkPolicy'
 ```
@@ -428,7 +428,7 @@ helm template secure-demo ./secure-chart --set networkPolicy.enabled=true | grep
 
 ### Cleanup
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 helm uninstall secure-demo -n rebash-helm-m09 2>/dev/null || true
 kubectl delete namespace rebash-helm-m09 --ignore-not-found
 ```

@@ -164,7 +164,7 @@ Create a Deployment from YAML, scale replicas, trigger a rollout restart, inspec
 
 Workspace: `~/rebash-k8s/module-04`
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 mkdir -p ~/rebash-k8s/module-04 && cd ~/rebash-k8s/module-04
 ```
 
@@ -219,7 +219,7 @@ spec:
 
 Apply and verify:
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-k8s/module-04
 kubectl apply -f namespace.yaml
 kubectl apply -f web-deploy.yaml
@@ -267,7 +267,7 @@ spec:
 
 Scale and restart:
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-k8s/module-04
 kubectl apply -f web-deploy-scaled.yaml
 kubectl rollout status deployment/web -n rebash-m04 --timeout=180s
@@ -314,7 +314,7 @@ spec:
 
 Apply bad revision, observe failure, undo:
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-k8s/module-04
 kubectl apply -f web-deploy-bad.yaml
 kubectl rollout status deployment/web -n rebash-m04 --timeout=60s || true
@@ -358,7 +358,7 @@ After a successful rollout, change pod template label `version` to `v2` and imag
 
 ### Cleanup
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 kubectl delete namespace rebash-m04 --ignore-not-found --wait=true
 ```
 

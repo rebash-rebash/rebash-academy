@@ -159,7 +159,7 @@ Bootstrap a **kind** cluster, run a kubeconfig context checklist against it, app
 
 Workspace: `~/rebash-k8s/module-19`
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 mkdir -p ~/rebash-k8s/module-19 && cd ~/rebash-k8s/module-19
 kind create cluster --name rebash-m19 2>/dev/null || kind get clusters | grep -q rebash-m19
 kubectl cluster-info | tee cluster-info.txt
@@ -207,7 +207,7 @@ echo "Checklist complete. Review ${OUT} before targeting production contexts." |
 
 Run against your local context:
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-k8s/module-19
 chmod +x kubeconfig-context-check.sh
 ./kubeconfig-context-check.sh context-check.txt
@@ -236,7 +236,7 @@ metadata:
 
 Apply and capture managed-style metadata:
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-k8s/module-19
 kubectl apply -f namespace.yaml
 kubectl get ns rebash-managed-lab --show-labels | tee namespace-evidence.txt
@@ -251,7 +251,7 @@ grep -q 'local-kind' namespace-evidence.txt
 
 #### Task 4 – Pack evidence for review
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-k8s/module-19
 tar -czf module-19-managed-evidence.tgz \
   cluster-info.txt nodes-ready.txt context-check.txt \
@@ -296,7 +296,7 @@ Add one line to `node-provider-metadata.txt` explaining which field EKS would po
 
 ### Cleanup
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 kubectl delete namespace rebash-managed-lab --ignore-not-found --wait=true
 kind delete cluster --name rebash-m19 2>/dev/null || true
 rm -f ~/rebash-k8s/module-19/context-check.txt ~/rebash-k8s/module-19/namespace-evidence.txt ~/rebash-k8s/module-19/module-19-managed-evidence.tgz

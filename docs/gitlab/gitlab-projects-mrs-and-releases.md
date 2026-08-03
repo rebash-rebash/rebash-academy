@@ -167,7 +167,7 @@ Workspace: `~/rebash-gitlab/module-02`
 
 File-first lab. Push to GitLab only when you want MR and branch pipelines on a runner.
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 mkdir -p ~/rebash-gitlab/module-02 && cd ~/rebash-gitlab/module-02
 ```
 
@@ -195,7 +195,7 @@ Sample service for GitLab projects, merge requests, and releases.
 
 Verify the file exists:
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-gitlab/module-02
 test -s README.md
 head -3 README.md | tee readme-head.txt
@@ -229,7 +229,7 @@ branch_protection:
 
 Validate:
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-gitlab/module-02
 python3 -c "
 import yaml
@@ -294,7 +294,7 @@ release_job:
 
 Validate offline:
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-gitlab/module-02
 python3 -c "
 import yaml
@@ -314,7 +314,7 @@ print('OK', jobs)
 
 Prove the compliance job logic without a runner:
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-gitlab/module-02
 python3 -m py_compile src/app.py
 python3 src/app.py | tee branch-out.txt
@@ -356,7 +356,7 @@ Add `CHANGELOG.md` with a `## 0.1.0` section and extend `release_job` to `cat CH
 
 ### Cleanup
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 rm -f ~/rebash-gitlab/module-02/readme-head.txt ~/rebash-gitlab/module-02/branch-out.txt
 # Keep project files for module 03
 ```

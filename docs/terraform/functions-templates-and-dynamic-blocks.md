@@ -168,7 +168,7 @@ Render a service env file with **`templatefile`**, build tag maps with **`merge`
 
 ### Lab environment
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 mkdir -p ~/rebash-terraform/module-10/{templates,config} && cd ~/rebash-terraform/module-10
 ```
 
@@ -347,7 +347,7 @@ output "mount_count" {
 Run:
 
 {% raw %}
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-terraform/module-10
 terraform init
 terraform apply -auto-approve
@@ -399,7 +399,7 @@ output "critical_keys" {
 Run:
 
 {% raw %}
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-terraform/module-10
 terraform apply -auto-approve
 terraform output -raw replica_hint | tee replica-hint.txt
@@ -436,7 +436,7 @@ scrape_interval=30s
 Run:
 
 {% raw %}
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-terraform/module-10
 terraform plan -no-color | tee plan-third-mount.txt
 grep -q 'metrics.conf' plan-third-mount.txt
@@ -456,7 +456,7 @@ echo "task3 OK" | tee task3-ok.txt
 Create `expressions-evidence.sh`:
 
 {% raw %}
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 #!/usr/bin/env bash
 set -euo pipefail
 cd ~/rebash-terraform/module-10
@@ -471,7 +471,7 @@ echo "expressions-evidence PASS" | tee expressions-evidence-pass.txt
 
 Run:
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 chmod +x ~/rebash-terraform/module-10/expressions-evidence.sh
 ~/rebash-terraform/module-10/expressions-evidence.sh
 ```
@@ -503,7 +503,7 @@ chmod +x ~/rebash-terraform/module-10/expressions-evidence.sh
 Add `{ source = "config/secrets.conf", target = "/etc/app/secrets.conf" }` only when `var.environment == "prod"` using a conditional in locals, re-apply, and count prod-only mounts:
 
 {% raw %}
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-terraform/module-10
 # Extend locals with prod_config_mounts using conditional ? :
 terraform apply -auto-approve
@@ -526,7 +526,7 @@ echo "conditional mount challenge OK"
 
 ### Cleanup
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-terraform/module-10
 terraform destroy -auto-approve
 rm -rf rendered config task*-ok.txt replica-hint.txt prod-container.txt \

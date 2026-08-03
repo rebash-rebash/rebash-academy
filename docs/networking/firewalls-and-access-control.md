@@ -69,7 +69,7 @@ Policy is evaluated at one or more layers: cloud edge (security group / NACL), h
 
 A firewall rule matches fields such as direction, protocol, port, and source/destination, then **accepts** or **drops/rejects**. On Ubuntu, **UFW** is a simpler front end over iptables/nftables. **nftables** is the modern Linux packet filter. Cloud **security groups** are usually stateful virtual firewalls on Elastic Network Interfaces; **network ACLs** are often subnet-level and closer to stateless.
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 sudo ufw status verbose 2>/dev/null || true
 sudo nft list ruleset 2>/dev/null | head -n 40 || true
 ss -lntu | head
@@ -133,7 +133,7 @@ Inspect the host firewall safely, add a **temporary** allow for a localhost-only
 
 Workspace: `~/rebash-networking/lab14`
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 mkdir -p ~/rebash-networking/lab14 && cd ~/rebash-networking/lab14
 set -euo pipefail
 whoami | tee admin-user.txt
@@ -154,7 +154,7 @@ You must open a temporary diagnostics port for a local health probe on a practic
 
 #### Task 1 – Status first (and protect SSH)
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-networking/lab14
 set -euo pipefail
 
@@ -183,7 +183,7 @@ ss -lnt '( sport = :22 )' 2>/dev/null | tee ssh-listen.txt || true
 
 Use port **18080** so you do not collide with real web servers. Bind to `127.0.0.1` only.
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-networking/lab14
 set -euo pipefail
 
@@ -223,7 +223,7 @@ grep -q 'rebash-lab14-ok' curl-local.txt
 
 #### Task 3 – Remove lab rule and pack evidence
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-networking/lab14
 set -euo pipefail
 
@@ -286,7 +286,7 @@ Create script `sg-checklist.sh` that prints a three-line checklist comparing **h
 
 ### Cleanup
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-networking/lab14
 set -euo pipefail
 

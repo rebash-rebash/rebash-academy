@@ -116,7 +116,7 @@ Simulate three semver releases with annotated tags and auto-generated `release-n
 
 Workspace: `~/rebash-git/module-14`
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 mkdir -p ~/rebash-git/module-14 && cd ~/rebash-git/module-14
 set -euo pipefail
 ```
@@ -129,7 +129,7 @@ Internal CLI tool `rebash-deploy` ships semver tags; release manager produces no
 
 #### Task 1 – Initialise repo with version file
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-git/module-14
 set -euo pipefail
 rm -rf release-lab
@@ -153,7 +153,7 @@ Create `README.md`:
 
 Commit and tag:
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-git/module-14/release-lab
 set -euo pipefail
 git add .
@@ -185,7 +185,7 @@ Replace `VERSION` with:
 
 Commit and tag the minor release:
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-git/module-14/release-lab
 set -euo pipefail
 chmod +x cli.sh
@@ -211,7 +211,7 @@ Replace `VERSION` with:
 
 Commit and tag the patch:
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-git/module-14/release-lab
 set -euo pipefail
 git add cli.sh VERSION
@@ -227,7 +227,7 @@ grep -q 'v0.2.1' ../all-tags.txt
 
 #### Task 3 – Generate release notes artefact
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-git/module-14/release-lab
 set -euo pipefail
 {
@@ -280,7 +280,7 @@ Create `repo-layout.yaml` declaring `layout: monorepo` or `polyrepo` with `team_
 
 ### Cleanup
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 ls ~/rebash-git/module-14/release-lab
 ```
 

@@ -67,7 +67,7 @@ Client → DNS → TCP connect → TLS handshake (HTTPS) → HTTP request/respon
 
 An HTTP **request** has a method (`GET`, `POST`, `PUT`, `DELETE`, `HEAD`, …), a path, headers (`Host`, `User-Agent`, `Authorization`, …), and an optional body. A **response** has a **status code** (1xx–5xx), headers, and an optional body. **HTTPS** wraps that exchange in TLS so the path is encrypted and the server presents a **certificate** the client can verify.
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 curl -sI https://example.com | head
 ```
 
@@ -82,7 +82,7 @@ A **502 Bad Gateway** usually means the proxy could not get a valid response fro
 3. Send HTTP request (HTTP/1.1, HTTP/2, or HTTP/3 depending on stack).
 4. Read status + headers; then body if requested.
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 curl -vI https://example.com
 # Look for lines like: SSL connection using TLSv1.3 / … cipher …
 ```
@@ -124,7 +124,7 @@ Capture verbose HTTPS headers and TLS lines from `https://example.com`, optional
 
 Workspace: `~/rebash-networking/lab12`
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 mkdir -p ~/rebash-networking/lab12 && cd ~/rebash-networking/lab12
 set -euo pipefail
 whoami | tee admin-user.txt
@@ -146,7 +146,7 @@ Users report “the website is down.” You must show whether DNS works, whether
 
 #### Task 1 – curl verbose HTTPS headers and TLS
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-networking/lab12
 set -euo pipefail
 
@@ -171,7 +171,7 @@ test -s curl-example.tls.txt
 
 #### Task 2 – Optional local python http.server
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-networking/lab12
 set -euo pipefail
 
@@ -195,7 +195,7 @@ wait "$(cat http-server.pid)" 2>/dev/null || true
 
 #### Task 3 – Evidence pack + tiny compare script
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-networking/lab12
 set -euo pipefail
 ```
@@ -215,7 +215,7 @@ else
 fi
 ```
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 chmod +x http-evidence.sh
 ./http-evidence.sh | tee http-evidence-run.txt
 
@@ -260,7 +260,7 @@ Write `tls-summary.sh` that runs `curl -vI https://example.com` and prints only 
 
 ### Cleanup
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-networking/lab12
 set -euo pipefail
 kill "$(cat http-server.pid 2>/dev/null)" 2>/dev/null || true

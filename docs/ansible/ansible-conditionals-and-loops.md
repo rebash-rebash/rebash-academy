@@ -139,7 +139,7 @@ Build a localhost playbook that installs packages with `loop` + `when`, then dem
 
 ### Lab environment
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 mkdir -p ~/rebash-ansible/module-07/{playbooks,files}
 cd ~/rebash-ansible/module-07
 ```
@@ -195,7 +195,7 @@ Create `playbooks/conditionals-loops.yml`:
 
 Syntax-check and run:
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-ansible/module-07
 ansible-playbook playbooks/conditionals-loops.yml --syntax-check | tee syntax-check.txt
 ansible-playbook playbooks/conditionals-loops.yml | tee run-conditionals.txt
@@ -233,7 +233,7 @@ exit 0
 
 Make it executable:
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 chmod +x ~/rebash-ansible/module-07/files/wait-for-ready.sh
 rm -f /tmp/rebash-ready.counter
 ```
@@ -270,7 +270,7 @@ Create `playbooks/until-retry.yml`:
 
 Run and capture evidence:
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-ansible/module-07
 rm -f /tmp/rebash-ready.counter
 ansible-playbook playbooks/until-retry.yml | tee run-until.txt
@@ -284,7 +284,7 @@ grep -q 'STATUS=ready' run-until.txt
 
 #### Task 4 – Assert idempotency on second run
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-ansible/module-07
 ansible-playbook playbooks/until-retry.yml | tee run-until-idempotent.txt
 grep -q 'changed=0' run-until-idempotent.txt || grep -q 'changed=1' run-until-idempotent.txt
@@ -325,7 +325,7 @@ Create `playbooks/challenge-failed-when.yml` that runs `grep NONEXISTENT /etc/ho
 
 ### Cleanup
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 rm -f /tmp/rebash-ready.counter
 # Keep ~/rebash-ansible/module-07 for portfolio review
 ```

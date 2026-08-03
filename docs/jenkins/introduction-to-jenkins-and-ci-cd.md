@@ -143,7 +143,7 @@ Create a CI/CD stage map and a minimal Declarative `Jenkinsfile` under `~/rebash
 
 Workspace: `~/rebash-jenkins/module-01`
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 mkdir -p ~/rebash-jenkins/module-01 && cd ~/rebash-jenkins/module-01
 set -euo pipefail
 pwd | tee pwd-start.txt
@@ -165,7 +165,7 @@ Write a stage map that separates “prove the change” from “ship the change.
 
 Run:
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-jenkins/module-01
 set -euo pipefail
 ```
@@ -202,7 +202,7 @@ ownership:
 
 Validate and archive:
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 python3 -c "
 import yaml
 with open('ci-cd-stages.yaml') as f:
@@ -222,7 +222,7 @@ print('ci-cd-stages.yaml OK')
 
 Run:
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-jenkins/module-01
 set -euo pipefail
 ```
@@ -251,7 +251,7 @@ policy:
 
 Validate and archive:
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 python3 -c "
 import yaml
 with open('controller-agent.yaml') as f:
@@ -270,7 +270,7 @@ print('controller-agent.yaml OK')
 
 Run:
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-jenkins/module-01
 set -euo pipefail
 
@@ -310,7 +310,7 @@ pipeline {
 
 Verify:
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 test -f demo-app/Jenkinsfile
 grep -q 'pipeline {' demo-app/Jenkinsfile
 grep -q 'stages {' demo-app/Jenkinsfile
@@ -329,7 +329,7 @@ ls -l Jenkinsfile demo-app/Jenkinsfile | tee jenkinsfile-listing.txt
 
 Run:
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-jenkins/module-01
 set -euo pipefail
 ```
@@ -351,7 +351,7 @@ reference: https://www.jenkins.io/download/lts/
 
 Validate and archive:
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 python3 -c "
 import yaml
 with open('lts-policy.yaml') as f:
@@ -396,7 +396,7 @@ Extend `demo-app/Jenkinsfile` with a third stage named `Package placeholder` tha
 
 ### Cleanup
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 # Keep ~/rebash-jenkins/module-01 for Module 2 — no containers started in this lab
 ls ~/rebash-jenkins/module-01
 ```

@@ -66,7 +66,7 @@ Applications and units emit logs to journald and/or text files; logrotate manage
 
 **journald** stores binary, indexed logs. **syslog** daemons traditionally write text files such as `/var/log/syslog`. **logrotate** runs on a schedule (often daily via cron/timers) to rotate, compress, and delete old log files based on rules in `/etc/logrotate.conf` and `/etc/logrotate.d/`.
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 journalctl -xe
 journalctl -u ssh.service -n 20 --no-pager
 ls /var/log
@@ -110,7 +110,7 @@ Query journald, create a sample application log with a dedicated logrotate rule,
 
 Workspace: `~/rebash-linux/lab18`
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 mkdir -p ~/rebash-linux/lab18 && cd ~/rebash-linux/lab18
 set -euo pipefail
 test -n "$(command -v journalctl)"
@@ -130,7 +130,7 @@ A small app writes to `/var/log/rebash-lab18/app.log`. Disk alerts fired last mo
 
 #### Task 1 – Query journald
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-linux/lab18
 set -euo pipefail
 
@@ -150,7 +150,7 @@ grep -F 'rebash lab18 marker' journal-marker.txt
 
 #### Task 2 – Application log + logrotate rule
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-linux/lab18
 set -euo pipefail
 
@@ -182,7 +182,7 @@ grep -Ei 'rebash-lab18|app.log' logrotate-debug.txt
 
 #### Task 3 – Force rotation and evidence pack
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-linux/lab18
 set -euo pipefail
 
@@ -234,7 +234,7 @@ Write `/etc/logrotate.d/rebash-lab18-size` that rotates `/var/log/rebash-lab18/a
 
 ### Cleanup
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-linux/lab18
 set -euo pipefail
 sudo rm -f /etc/logrotate.d/rebash-lab18 /etc/logrotate.d/rebash-lab18-size

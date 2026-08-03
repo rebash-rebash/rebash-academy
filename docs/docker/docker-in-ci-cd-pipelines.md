@@ -153,7 +153,7 @@ Create a GitHub Actions workflow stub for Docker CI, a local `build-ci.sh` that 
 
 Workspace: `~/rebash-docker/module-15`
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 mkdir -p ~/rebash-docker/module-15/.github/workflows && cd ~/rebash-docker/module-15
 ```
 
@@ -198,7 +198,7 @@ jobs:
 
 Validate YAML locally:
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-docker/module-15
 python3 -c "import yaml, pathlib; yaml.safe_load(pathlib.Path('.github/workflows/docker-ci.yml').read_text()); print('yaml_ok')" | tee yaml-check.txt
 grep -q yaml_ok yaml-check.txt
@@ -226,7 +226,7 @@ echo "build-ci ok"
 
 Run the local pipeline:
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-docker/module-15
 chmod +x build-ci.sh
 ./build-ci.sh pr-local | tee ci-local.txt
@@ -242,7 +242,7 @@ grep -q 'build-ci ok' ci-local.txt
 Prove the image exists with expected metadata:
 
 {% raw %}
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-docker/module-15
 docker images rebash-cicd-lab --format '{{ "{{" }}.Repository{{ "}}" }}:{{ "{{" }}.Tag{{ "}}" }} {{ "{{" }}.ID{{ "}}" }}' | tee ci-images.txt
 grep -q 'rebash-cicd-lab:pr-local' ci-images.txt
@@ -284,7 +284,7 @@ Extend `build-ci.sh` to run Trivy when installed and fail on CRITICAL findings b
 
 ### Cleanup
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-docker/module-15
 docker rmi rebash-cicd-lab:pr-local rebash-cicd-lab:ci 2>/dev/null || true
 rm -f *.txt build-ci.sh Dockerfile

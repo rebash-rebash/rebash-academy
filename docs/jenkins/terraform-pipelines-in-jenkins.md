@@ -129,7 +129,7 @@ Create a Docker-backed Terraform module, run init/plan/apply/destroy in a Pipeli
 
 Workspace: `~/rebash-jenkins/module-14`
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 mkdir -p ~/rebash-jenkins/module-14 && cd ~/rebash-jenkins/module-14
 set -euo pipefail
 docker info | tee docker-info.txt
@@ -146,7 +146,7 @@ Platform requires every infrastructure change to show a Jenkins-stored plan befo
 
 Run:
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-jenkins/module-14
 set -euo pipefail
 
@@ -204,7 +204,7 @@ Requires Docker Engine; no cloud credentials.
 
 Run:
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 docker info >/dev/null
 terraform init | tee ../init.txt
 terraform validate | tee ../validate.txt
@@ -223,7 +223,7 @@ cd ..
 
 Run:
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-jenkins/module-14/tf-demo
 set -euo pipefail
 ```
@@ -304,7 +304,7 @@ pipeline {
 
 Verify:
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 # Repo root layout note: if job SCM root is module-14, paths above work when tf-demo nested
 grep -q 'terraform plan' Jenkinsfile
 grep -q 'input message' Jenkinsfile
@@ -319,7 +319,7 @@ grep -q 'input message' Jenkinsfile
 Create `pipeline-simulate.sh`:
 
 {% raw %}
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 #!/usr/bin/env bash
 set -euo pipefail
 cd "$(dirname "$0")/tf-demo"
@@ -338,7 +338,7 @@ echo pipeline_simulate_ok
 
 Run and archive evidence:
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-jenkins/module-14
 set -euo pipefail
 chmod +x pipeline-simulate.sh
@@ -354,7 +354,7 @@ grep -q pipeline_simulate_ok pipeline-simulate.txt
 
 Run:
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-jenkins/module-14
 set -euo pipefail
 ```
@@ -372,7 +372,7 @@ echo destroy_policy_ok
 
 Validate and archive:
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 chmod +x destroy-checks.sh
 ./destroy-checks.sh | tee destroy-checks.txt
 
@@ -415,7 +415,7 @@ Add a second Pipeline job `tf-plan-only` that sets `APPLY` default false and can
 
 ### Cleanup
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-jenkins/module-14/tf-demo
 terraform destroy -auto-approve 2>/dev/null || true
 docker rm -f rebash-jenkins-tf-lab 2>/dev/null || true

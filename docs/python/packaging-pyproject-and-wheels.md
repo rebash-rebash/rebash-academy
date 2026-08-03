@@ -142,7 +142,7 @@ Under `~/rebash-python/lab23`, create a small installable package with `pyprojec
 
 Workspace: `~/rebash-python/lab23`
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 mkdir -p ~/rebash-python/lab23 && cd ~/rebash-python/lab23
 set -euo pipefail
 python3 --version | tee python-version.txt
@@ -160,7 +160,7 @@ Your inventory classifier from the pytest tutorial needs to ship to other teams.
 
 #### Task 1 – Package layout and pyproject.toml
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-python/lab23
 set -euo pipefail
 
@@ -253,7 +253,7 @@ Create `hosts.json`:
 
 Run:
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 test -f src/rebash_invcheck/cli.py
 test -f pyproject.toml
 ```
@@ -264,7 +264,7 @@ test -f pyproject.toml
 
 #### Task 2 – Build the wheel
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-python/lab23
 set -euo pipefail
 
@@ -284,7 +284,7 @@ deactivate
 
 If `build` cannot be installed, fall back:
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-python/lab23
 set -euo pipefail
 python3 -m venv .build-venv
@@ -298,7 +298,7 @@ deactivate
 
 #### Task 3 – Install into a clean venv and run entry point
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-python/lab23
 set -euo pipefail
 
@@ -365,7 +365,7 @@ Add a `pyproject.toml` optional extra `[project.optional-dependencies] dev = ["p
 
 ### Cleanup
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-python/lab23
 set -euo pipefail
 rm -rf .build-venv .run-venv build *.egg-info src/*.egg-info

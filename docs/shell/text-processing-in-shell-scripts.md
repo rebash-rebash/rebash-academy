@@ -67,7 +67,7 @@ Raw text enters a pipeline: select (`grep`) → transform (`sed`) → field logi
 - **`sed`** — stream editor; common ops are substitute (`s/old/new/`) and delete lines.
 - **`awk`** — split each line into fields (`$1`, `$2`, …), filter, and print summaries.
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 grep -E 'ERROR|FATAL' app.log
 sed -E 's/Prod/prod/g' app.log
 awk -F' ' '/ERROR/ { print $1, $3 }' app.log
@@ -85,7 +85,7 @@ Manual scrolling does not scale in an incident. A scripted pipeline gives the sa
 4. **Compose in Bash** — redirect to `out/*.txt`, then assert with `test` / `grep -q`.
 5. **Fail loudly** — `set -euo pipefail` so a broken stage fails the script.
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 set -euo pipefail
 grep -E 'ERROR' sample.log \
   | sed -E 's/[[:space:]]+/ /g' \
@@ -134,7 +134,7 @@ Under `~/rebash-shell/lab10`, create sample logs, write `report.sh` that runs a 
 
 Workspace: `~/rebash-shell/lab10`
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 mkdir -p ~/rebash-shell/lab10/out ~/rebash-shell/lab10/fixtures
 cd ~/rebash-shell/lab10
 set -euo pipefail
@@ -168,7 +168,7 @@ Create `fixtures/app.log`:
 
 Run:
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-shell/lab10
 set -euo pipefail
 
@@ -223,7 +223,7 @@ printf 'report_ok=1\n' | tee out/report-ok.txt
 
 Run:
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-shell/lab10
 set -euo pipefail
 
@@ -238,7 +238,7 @@ chmod +x report.sh
 
 #### Task 3 – Extra pipeline view and evidence pack
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-shell/lab10
 set -euo pipefail
 
@@ -287,7 +287,7 @@ Extend `report.sh` into `report-window.sh` that accepts an optional ISO-ish pref
 
 ### Cleanup
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-shell/lab10
 # Keep fixtures/ and out/ for review, or:
 # rm -rf ~/rebash-shell/lab10

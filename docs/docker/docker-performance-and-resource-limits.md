@@ -147,7 +147,7 @@ Run a CPU/memory hungry container with `--memory` and `--cpus` limits, then prov
 
 Workspace: `~/rebash-docker/module-14`
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 mkdir -p ~/rebash-docker/module-14 && cd ~/rebash-docker/module-14
 ```
 
@@ -169,7 +169,7 @@ CMD ["stress-ng", "--vm", "1", "--vm-bytes", "200M", "--cpu", "2", "--timeout", 
 
 Build:
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-docker/module-14
 docker build -t rebash-perf-lab:1.0.0 .
 docker images rebash-perf-lab:1.0.0 | tee perf-build.txt
@@ -185,7 +185,7 @@ grep -q rebash-perf-lab perf-build.txt
 Apply cgroup limits at runtime:
 
 {% raw %}
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-docker/module-14
 docker run -d --name rebash-perf-18140 \
   --memory 256m \
@@ -205,7 +205,7 @@ grep -q rebash-perf-18140 perf-run.txt
 Capture configured limits and live usage:
 
 {% raw %}
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-docker/module-14
 docker inspect rebash-perf-18140 --format 'Memory={{ "{{" }}.HostConfig.Memory{{ "}}" }} NanoCpus={{ "{{" }}.HostConfig.NanoCpus{{ "}}" }}' | tee limits-inspect.txt
 grep -q 'Memory=268435456' limits-inspect.txt
@@ -248,7 +248,7 @@ Add `--memory-swap 256m` (disable swap) and compare OOM behaviour; record whethe
 
 ### Cleanup
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 docker rm -f rebash-perf-18140 2>/dev/null || true
 docker rmi rebash-perf-lab:1.0.0 2>/dev/null || true
 rm -f ~/rebash-docker/module-14/*.txt

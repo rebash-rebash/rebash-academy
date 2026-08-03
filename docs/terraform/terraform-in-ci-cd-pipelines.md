@@ -149,7 +149,7 @@ Author a GitHub Actions plan workflow and a local CI simulator script that runs 
 
 Workspace: `~/rebash-terraform/module-16`
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 mkdir -p ~/rebash-terraform/module-16/{.github/workflows,infra,scripts,artefacts} && cd ~/rebash-terraform/module-16
 ```
 
@@ -221,7 +221,7 @@ output "purpose" {
 
 Validate locally:
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-terraform/module-16/infra
 terraform init -backend=false | tee ../artefacts/init.log
 terraform validate | tee ../artefacts/validate.log
@@ -290,7 +290,7 @@ jobs:
 
 Verify YAML file exists:
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-terraform/module-16
 test -f .github/workflows/terraform-plan.yml
 grep -q 'terraform fmt -check' .github/workflows/terraform-plan.yml
@@ -306,7 +306,7 @@ grep -q 'upload-artifact' .github/workflows/terraform-plan.yml
 Create `scripts/simulate-ci.sh`:
 
 {% raw %}
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 #!/usr/bin/env bash
 set -euo pipefail
 
@@ -332,7 +332,7 @@ echo "simulate-ci: OK"
 
 Run the simulator:
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-terraform/module-16
 chmod +x scripts/simulate-ci.sh
 ./scripts/simulate-ci.sh | tee artefacts/simulate-ci.log
@@ -350,7 +350,7 @@ grep -q 'running' artefacts/container-ps.txt
 Re-run plan and apply saved artefact explicitly (merge simulation):
 
 {% raw %}
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-terraform/module-16/infra
 terraform plan -input=false -out=../artefacts/merge.tfplan | tee ../artefacts/plan-merge.log
 terraform apply -input=false ../artefacts/merge.tfplan | tee ../artefacts/apply-merge.log
@@ -394,7 +394,7 @@ Add `.github/workflows/terraform-apply.yml` with {% raw %}`push`{% endraw %} to 
 
 ### Cleanup
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-terraform/module-16/infra
 terraform destroy -auto-approve
 cd ~/rebash-terraform/module-16

@@ -146,7 +146,7 @@ Deploy a deliberately broken container, diagnose failure with logs and inspect, 
 
 Workspace: `~/rebash-docker/module-16`
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 mkdir -p ~/rebash-docker/module-16 && cd ~/rebash-docker/module-16
 ```
 
@@ -178,7 +178,7 @@ echo "rebash-trouble-lab ok"
 Build and run the broken image:
 
 {% raw %}
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-docker/module-16
 docker build -f Dockerfile.broken -t rebash-trouble-broken:1.0.0 .
 docker run --name rebash-trouble-broken rebash-trouble-broken:1.0.0 2>&1 | tee broken-run.txt || true
@@ -196,7 +196,7 @@ grep -q 'ExitCode=127\|ExitCode=1' broken-inspect.txt || grep -qi 'no such file\
 Gather troubleshooting evidence:
 
 {% raw %}
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-docker/module-16
 docker logs rebash-trouble-broken 2>&1 | tee broken-logs.txt || true
 docker inspect rebash-trouble-broken --format '{{ "{{" }}.Config.Cmd{{ "}}" }}' | tee broken-cmd.txt
@@ -223,7 +223,7 @@ CMD ["/app/app.sh"]
 Rebuild and compare exit codes:
 
 {% raw %}
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-docker/module-16
 docker rm rebash-trouble-broken 2>/dev/null || true
 docker build -f Dockerfile -t rebash-trouble-fixed:1.0.0 .
@@ -268,7 +268,7 @@ Introduce a second failure mode (wrong `ENTRYPOINT` + `CMD` combo), diagnose wit
 
 ### Cleanup
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 docker rm -f rebash-trouble-broken rebash-trouble-fixed 2>/dev/null || true
 docker rmi rebash-trouble-broken:1.0.0 rebash-trouble-fixed:1.0.0 2>/dev/null || true
 rm -f ~/rebash-docker/module-16/*.txt

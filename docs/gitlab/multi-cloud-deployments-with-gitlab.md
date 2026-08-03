@@ -172,7 +172,7 @@ Workspace: `~/rebash-gitlab/module-11`
 
 File-first lab. Push to GitLab only when cloud identity providers are configured.
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 mkdir -p ~/rebash-gitlab/module-11 && cd ~/rebash-gitlab/module-11
 set -euo pipefail
 ```
@@ -219,7 +219,7 @@ environments:
 
 Validate offline:
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-gitlab/module-11
 set -euo pipefail
 python3 -c "
@@ -288,7 +288,7 @@ deploy-gcp-stub:
 
 Validate offline:
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-gitlab/module-11
 set -euo pipefail
 python3 -c "
@@ -329,7 +329,7 @@ echo 'module-11 multi-cloud lab passed'
 
 Run it:
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-gitlab/module-11
 set -euo pipefail
 chmod +x validate-multi-cloud.sh
@@ -371,7 +371,7 @@ Add a `parallel: matrix` job that reads cloud names from `multi-cloud-oidc.yaml`
 
 ### Cleanup
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 ls ~/rebash-gitlab/module-11
 # Keep YAML for Module 12
 ```

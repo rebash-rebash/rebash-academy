@@ -63,7 +63,7 @@ Ubuntu or Fedora/RHEL-like lab VM.
 
 ## Initial State
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 mkdir -p ~/rebash-lab-shell/bootstrap
 cd ~/rebash-lab-shell/bootstrap
 printf '%s\n' curl jq git > packages.txt
@@ -118,7 +118,7 @@ command -v jq || true
 
 ## Cleanup
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 rm -rf ~/rebash-lab-shell
 ```
 

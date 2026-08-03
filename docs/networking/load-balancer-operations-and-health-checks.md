@@ -66,7 +66,7 @@ Clients hit the load balancer; the balancer probes backends and sends traffic on
 
 A load balancer distributes connections across backends. A **health check** periodically asks each backend if it is ready. Failed checks remove the target from the pool (after unhealthy thresholds). **Draining** stops new connections while in-flight requests finish.
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 curl -sS -o /dev/null -w '%{http_code}\n' http://127.0.0.1:8081/health
 ```
 
@@ -113,7 +113,7 @@ Start two local HTTP backends with `/health`, run a health-check script that cur
 
 Workspace: `~/rebash-networking/lab25`
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 mkdir -p ~/rebash-networking/lab25 && cd ~/rebash-networking/lab25
 set -euo pipefail
 whoami | tee admin-user.txt
@@ -132,7 +132,7 @@ Before changing a cloud target group, you rehearse health-check behaviour locall
 
 #### Task 1 – Create backends with /health
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-networking/lab25
 set -euo pipefail
 ```
@@ -202,7 +202,7 @@ grep -q '^ok B' health-b-initial.txt
 
 #### Task 2 – Health-check script across the pool
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-networking/lab25
 set -euo pipefail
 ```
@@ -210,7 +210,7 @@ set -euo pipefail
 Create `healthcheck.sh`:
 
 {% raw %}
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 #!/usr/bin/env bash
 set -euo pipefail
 OUT="${1:-pool-health.tsv}"
@@ -249,7 +249,7 @@ exit 0
 ```
 {% endraw %}
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 chmod +x healthcheck.sh
 
 ./healthcheck.sh pool-health.tsv \
@@ -264,7 +264,7 @@ test "$(cat summary.txt)" = "summary_unhealthy=0"
 
 #### Task 3 – Fail one backend and detect it
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-networking/lab25
 set -euo pipefail
 
@@ -329,7 +329,7 @@ Write `mini-lb.sh` that loops backends in order (round-robin) for `/` requests, 
 
 ### Cleanup
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-networking/lab25
 set -euo pipefail
 if [[ -f backend-a.pid ]]; then kill "$(cat backend-a.pid)" 2>/dev/null || true; fi

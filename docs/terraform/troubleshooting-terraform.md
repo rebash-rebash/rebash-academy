@@ -146,7 +146,7 @@ Reproduce and fix a configuration validate failure, demonstrate recreate behavio
 
 Workspace: `~/rebash-terraform/module-20`
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 mkdir -p ~/rebash-terraform/module-20/{configs,evidence,scripts}
 ```
 
@@ -197,7 +197,7 @@ resource "docker_container" "app" {
 
 Run validate and save failure output:
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-terraform/module-20/configs/broken
 terraform init -input=false
 terraform validate > ../../evidence/validate-before.txt 2>&1 || true
@@ -255,7 +255,7 @@ output "container_name" {
 
 Run validate:
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-terraform/module-20/configs/fixed
 terraform init -input=false
 terraform validate | tee ../../evidence/validate-after.txt
@@ -271,7 +271,7 @@ grep -q 'Success' ../../evidence/validate-after.txt
 Apply the fixed configuration:
 
 {% raw %}
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-terraform/module-20/configs/fixed
 terraform apply -auto-approve
 terraform state list | tee ../../evidence/state-list.txt
@@ -285,7 +285,7 @@ grep -q 'rebash-troubleshoot-1.0.0' ../../evidence/container-before-rm.txt
 Remove the resource from state without destroying the container:
 
 {% raw %}
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-terraform/module-20/configs/fixed
 terraform state rm docker_container.app
 terraform state list | tee ../../evidence/state-after-rm.txt
@@ -306,7 +306,7 @@ grep -q 'create' ../../evidence/plan-after-rm.txt
 Re-apply to restore consistent state (may require removing orphan container first):
 
 {% raw %}
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-terraform/module-20/configs/fixed
 docker rm -f rebash-troubleshoot-1.0.0 2>/dev/null || true
 terraform apply -auto-approve
@@ -355,7 +355,7 @@ moved {
 Plan and confirm move without destroy:
 
 {% raw %}
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-terraform/module-20/configs/fixed
 terraform plan -no-color | tee ../../evidence/plan-after-moved.txt
 grep -q 'workload' ../../evidence/plan-after-moved.txt
@@ -376,7 +376,7 @@ grep -q 'true' ../../evidence/container-still-running-after-moved.txt
 Create `scripts/triage.sh`:
 
 {% raw %}
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 #!/usr/bin/env bash
 set -euo pipefail
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
@@ -401,7 +401,7 @@ echo "Wrote $LOG"
 
 Run:
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 chmod +x ~/rebash-terraform/module-20/scripts/triage.sh
 ~/rebash-terraform/module-20/scripts/triage.sh ~/rebash-terraform/module-20/configs/fixed
 test -s ~/rebash-terraform/module-20/evidence/triage.log
@@ -445,7 +445,7 @@ Extend `scripts/triage.sh` to accept a second argument `strict` that exits non-z
 
 ### Cleanup
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-terraform/module-20/configs/fixed
 terraform destroy -auto-approve
 docker rm -f rebash-troubleshoot-1.0.0 2>/dev/null || true

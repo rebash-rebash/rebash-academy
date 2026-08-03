@@ -131,7 +131,7 @@ Calculate a `/24` → `/26` split with `ipcalc` and/or Python, verify interface 
 
 Workspace: `~/rebash-networking/lab05`
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 mkdir -p ~/rebash-networking/lab05 && cd ~/rebash-networking/lab05
 set -euo pipefail
 hostname | tee hostname.txt
@@ -151,7 +151,7 @@ Your team receives `192.168.10.0/24` for a small non-production VPC style lab pl
 
 #### Task 1 – Calculate with `ipcalc` when available
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-networking/lab05
 set -euo pipefail
 
@@ -176,7 +176,7 @@ fi
 
 #### Task 2 – Python `/24` → `/26` calculator (required artefact)
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-networking/lab05
 set -euo pipefail
 ```
@@ -236,7 +236,7 @@ if __name__ == "__main__":
     main()
 ```
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 chmod +x subnet_split.py
 python3 subnet_split.py | tee subnet-split-run.txt
 test "$(wc -l < subnet-split.txt | tr -d ' ')" -eq 4
@@ -250,7 +250,7 @@ grep -F '192.168.10.192/26' subnet-split.txt
 
 #### Task 3 – Compare with live `ip addr` prefixes (read-only) and pack evidence
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-networking/lab05
 set -euo pipefail
 
@@ -276,7 +276,7 @@ No ip addr add, no route changes, no cloud VPC edits.
 Compare planned /26 table in subnet-split.txt with any live prefixes above.
 ```
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 tar -czf subnetting-evidence.tgz \
   hostname.txt python-version.txt ipcalc-version.txt base-cidr.txt \
   ipcalc-base.txt ipcalc-subnets.txt \
@@ -320,7 +320,7 @@ Write `vlsm_plan.py` that takes a base `10.0.0.0/24` and allocates **unequal** s
 
 ### Cleanup
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-networking/lab05
 set -euo pipefail
 # Nothing to revert on the network stack if you followed the lab

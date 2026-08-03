@@ -86,7 +86,7 @@ Security groups, Kubernetes pod CIDRs, VPN tunnels, and allow-lists are all addr
 3. **Decide local vs remote** — same network prefix → neighbours; otherwise → gateway/route.
 4. **Classify** — compare the address to well-known ranges before you open firewall tickets.
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 ip -br a
 ip -4 addr show
 ping -c 2 127.0.0.1
@@ -129,7 +129,7 @@ Show IPv4 CIDR on interfaces, classify addresses as private/public/loopback/link
 
 Workspace: `~/rebash-networking/lab04`
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 mkdir -p ~/rebash-networking/lab04 && cd ~/rebash-networking/lab04
 set -euo pipefail
 hostname | tee hostname.txt
@@ -149,7 +149,7 @@ A security review asks: “List every IPv4 address on this jump host and mark wh
 
 #### Task 1 – Show IPv4 CIDR on interfaces
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-networking/lab04
 set -euo pipefail
 
@@ -169,7 +169,7 @@ test -s ipv4-cidrs.txt
 
 #### Task 2 – Private vs public classification script
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-networking/lab04
 set -euo pipefail
 ```
@@ -219,7 +219,7 @@ if __name__ == "__main__":
     sys.exit(main())
 ```
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 chmod +x classify_ipv4.py
 python3 classify_ipv4.py | tee classify-run.txt
 grep -E 'loopback|private|public|link-local' ipv4-classification.txt
@@ -231,7 +231,7 @@ grep -E 'loopback|private|public|link-local' ipv4-classification.txt
 
 #### Task 3 – Safe pings and evidence pack
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-networking/lab04
 set -euo pipefail
 
@@ -296,7 +296,7 @@ Extend `classify_ipv4.py` (or add `classify_ipv4_extra.py`) so it also reads add
 
 ### Cleanup
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-networking/lab04
 set -euo pipefail
 # No routes or firewall rules were added

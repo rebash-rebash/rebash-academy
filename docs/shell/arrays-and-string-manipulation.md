@@ -153,7 +153,7 @@ Under `~/rebash-shell/lab08`, build a script that creates an indexed array of se
 
 Workspace: `~/rebash-shell/lab08`
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 mkdir -p ~/rebash-shell/lab08/out
 cd ~/rebash-shell/lab08
 set -euo pipefail
@@ -198,7 +198,7 @@ grep -F 'svc=auth api' "$outdir/services-listed.txt"
 
 Run:
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-shell/lab08
 set -euo pipefail
 
@@ -240,7 +240,7 @@ grep -qx 'backup=billing-prod-backup.tar' "$outdir/backup-name.txt"
 
 Run:
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-shell/lab08
 set -euo pipefail
 
@@ -274,7 +274,7 @@ test "$(wc -l <"$outdir/artefact-names.txt" | tr -d ' ')" -eq 3
 
 Run:
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-shell/lab08
 set -euo pipefail
 
@@ -323,7 +323,7 @@ Write `assoc-lite.sh` that uses a Bash **associative** array (`declare -A ports`
 
 ### Cleanup
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-shell/lab08
 # Keep out/ for review, or: rm -rf ~/rebash-shell/lab08
 ```

@@ -90,7 +90,7 @@ Platform teams build wrappers once so every pipeline behaves the same. Parsing h
 4. **Gate** — CI fails on policy (for example unexpected destroys). Apply only with an explicit flag and human approval.
 5. **State** — `state list` / `state show` are read-sensitive; never print secrets from state into chat logs.
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 terraform fmt -check -recursive
 terraform init -backend=false
 terraform validate
@@ -135,7 +135,7 @@ Under `~/rebash-python/lab19`, create a Docker-provider Terraform module and a P
 
 Workspace: `~/rebash-python/lab19`
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 mkdir -p ~/rebash-python/lab19 && cd ~/rebash-python/lab19
 set -euo pipefail
 python3 --version | tee python-version.txt
@@ -192,7 +192,7 @@ output "container_id" {
 
 Run:
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-python/lab19
 set -euo pipefail
 mkdir -p tf
@@ -281,7 +281,7 @@ if __name__ == "__main__":
 Run:
 
 {% raw %}
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-python/lab19
 set -euo pipefail
 docker info >/dev/null
@@ -301,7 +301,7 @@ docker ps -a --filter name=rebash-python-lab19 --format '{{.Names}}' | tee post-
 Create `prove-lifecycle.sh`:
 
 {% raw %}
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 #!/usr/bin/env bash
 set -euo pipefail
 cd "$(dirname "$0")/tf"
@@ -319,7 +319,7 @@ echo lab19_lifecycle_ok
 
 Run:
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-python/lab19
 set -euo pipefail
 chmod +x prove-lifecycle.sh
@@ -369,7 +369,7 @@ Extend `tf_wrapper.py` so after apply it runs `docker ps --filter name=rebash-py
 
 ### Cleanup
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-python/lab19
 set -euo pipefail
 (cd tf && terraform destroy -auto-approve 2>/dev/null) || true

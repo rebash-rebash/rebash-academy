@@ -165,7 +165,7 @@ python3 hello.py | tee hello-out.txt
 
 **Forbidden:** simple/toy labs; validate-only or forever-optional apply; `null`/`local` stubs as the whole lab; note-taking only; `# TODO`; swapping titles on a generic `uname`/`ip` lab; Challenge = “write runbook.md”; creating files with `cat <<EOF` / `echo … > file` (ugly — show the file in a language fence instead).
 
-**Code fences (mandatory):** `title="filename"` on file fences; `title="Terminal"` on command fences; `!!! example "Expected output"` for success. Sample: `docs/labs/sample-code-block-conventions.md`.
+**Code fences (mandatory):** `title="filename"` on file fences; `{.bash .ra-terminal title="Terminal"}` on command fences; `!!! example "Expected output"` for success. Sample: `docs/labs/sample-code-block-conventions.md`.
 
 Details: `.cursor/prompts/tutorials/create_lab.md`.
 

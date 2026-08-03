@@ -137,7 +137,7 @@ Prepare a Multibranch-ready Git repo with two branches, document Multibranch job
 
 Workspace: `~/rebash-jenkins/module-07`
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 mkdir -p ~/rebash-jenkins/module-07 && cd ~/rebash-jenkins/module-07
 set -euo pipefail
 git --version | tee git-version.txt
@@ -153,7 +153,7 @@ Your team opens feature branches daily. Platform asks for Multibranch CI with PR
 
 Commit and record:
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-jenkins/module-07
 set -euo pipefail
 
@@ -202,7 +202,7 @@ REBASH Module 7 — Multibranch Pipeline demo.
 
 Commit and record:
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 git add Jenkinsfile README.md
 git -c user.email='rebash-lab@example.com' -c user.name='REBASH Lab' commit -m 'Add Multibranch Jenkinsfile on main'
 
@@ -226,7 +226,7 @@ Push `mb-demo` to GitHub/GitLab (private is fine). Then:
 
 Run:
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-jenkins/module-07
 set -euo pipefail
 ```
@@ -257,7 +257,7 @@ trust:
 
 Validate and archive:
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 python3 -c "
 import yaml
 with open('multibranch-config.yaml') as f:
@@ -277,7 +277,7 @@ Create the Multibranch item in the UI using your remote. **Scan Repository Now**
 
 Commit and record:
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-jenkins/module-07
 set -euo pipefail
 
@@ -301,7 +301,7 @@ Multibranch demo finished:
 
 Run:
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-jenkins/module-07
 set -euo pipefail
 ```
@@ -319,7 +319,7 @@ organisation_folder: after_single_repo_multibranch_stable
 
 Validate and archive:
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 python3 -c "
 import yaml
 with open('pr-isolation.yaml') as f:
@@ -367,7 +367,7 @@ Open a pull request from `feature/module-07` into `main` on your host. Enable PR
 
 Keep the Multibranch job for later modules. Delete orphaned experimental branches you no longer need.
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 ls ~/rebash-jenkins/module-07
 ```
 

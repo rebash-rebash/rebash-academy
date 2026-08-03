@@ -133,7 +133,7 @@ Under `~/rebash-python/lab04`, build `healthcheck.py` with helpers (defaults, kw
 
 Workspace: `~/rebash-python/lab04`
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 mkdir -p ~/rebash-python/lab04 && cd ~/rebash-python/lab04
 set -euo pipefail
 python3 -m venv .venv
@@ -155,7 +155,7 @@ Your team wants a tiny disk/CPU style health helper for a practice host metric f
 
 #### Task 1 – Implement helpers and main
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-python/lab04
 set -euo pipefail
 # shellcheck disable=SC1091
@@ -236,7 +236,7 @@ if __name__ == "__main__":
 
 Run:
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 test -f healthcheck.py
 ```
 
@@ -246,7 +246,7 @@ test -f healthcheck.py
 
 #### Task 2 – Exercise defaults, kwargs, and exit codes
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-python/lab04
 set -euo pipefail
 # shellcheck disable=SC1091
@@ -280,7 +280,7 @@ test "$(cat custom.code)" = "1"
 
 #### Task 3 – Pack evidence and negative usage
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-python/lab04
 set -euo pipefail
 # shellcheck disable=SC1091
@@ -331,7 +331,7 @@ Add `batch_check.py` that defines `run_many(hosts: list[str], used: list[int], *
 
 ### Cleanup
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-python/lab04
 set -euo pipefail
 deactivate 2>/dev/null || true

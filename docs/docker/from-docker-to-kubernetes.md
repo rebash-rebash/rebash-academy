@@ -110,7 +110,7 @@ A **Pod** is the smallest deployable unit in Kubernetes. Usually one Pod runs on
 
 Docker equivalent:
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 docker run -d --name api --network backend -e DB_HOST=db myapi:1.2.0
 ```
 
@@ -215,7 +215,7 @@ spec:
 
 **Namespaces** partition objects (`dev`, `staging`, `prod`). Docker has no direct match — closest is separate Compose project names or Swarm stack names.
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 kubectl create namespace staging
 kubectl get pods -n staging
 ```
@@ -309,7 +309,7 @@ Translate a `docker run` equivalent into Kubernetes Deployment and Service YAML,
 
 Workspace: `~/rebash-docker/from-docker-to-kubernetes`
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 mkdir -p ~/rebash-docker/from-docker-to-kubernetes && cd ~/rebash-docker/from-docker-to-kubernetes
 ```
 
@@ -323,7 +323,7 @@ Platform is migrating an edge API from `docker run` on a VM to Kubernetes. You d
 
 Reference command this lab replaces:
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 docker run -d --name rebash-k8s-18200 -p 18200:8080 \
   -e APP_ENV=lab \
   --restart unless-stopped \
@@ -363,7 +363,7 @@ HTTPServer(("0.0.0.0", 8080), H).serve_forever()
 
 Build locally for reference:
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-docker/from-docker-to-kubernetes
 docker build -t rebash-k8s-lab:1.0.0 .
 docker images rebash-k8s-lab:1.0.0 | tee docker-ref.txt
@@ -431,7 +431,7 @@ spec:
 
 Validate YAML:
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-docker/from-docker-to-kubernetes
 python3 -c "
 import yaml, pathlib
@@ -450,7 +450,7 @@ grep -q k8s_yaml_ok k8s-yaml-check.txt
 
 If kind is installed, load the image and apply:
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-docker/from-docker-to-kubernetes
 if command -v kind >/dev/null 2>&1; then
   kind create cluster --name rebash-k8s-lab 2>/dev/null || true
@@ -498,7 +498,7 @@ Add a ConfigMap for `APP_ENV` instead of a literal env value and mount it as env
 
 ### Cleanup
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 kind delete cluster --name rebash-k8s-lab 2>/dev/null || true
 docker rmi rebash-k8s-lab:1.0.0 2>/dev/null || true
 rm -f ~/rebash-docker/from-docker-to-kubernetes/*.txt

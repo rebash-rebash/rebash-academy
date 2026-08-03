@@ -71,7 +71,7 @@ A practical loop:
 5. **Action** — smallest safe change  
 6. **Proof** — symptom gone; evidence saved  
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 systemctl --failed
 journalctl -xe --no-pager | tail
 df -hT
@@ -113,7 +113,7 @@ Run a host fact pack, deploy a systemd unit that fails on purpose, diagnose it w
 
 Workspace: `~/rebash-linux/lab23`
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 mkdir -p ~/rebash-linux/lab23 && cd ~/rebash-linux/lab23
 set -euo pipefail
 date -Is | tee incident-start.txt
@@ -132,7 +132,7 @@ A practice “health writer” service should create `/var/tmp/rebash-lab23.ok` 
 
 #### Task 1 – Host fact pack
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-linux/lab23
 set -euo pipefail
 
@@ -153,7 +153,7 @@ ip -br a | tee ip.txt
 
 #### Task 2 – Break a unit on purpose and diagnose
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-linux/lab23
 set -euo pipefail
 
@@ -189,7 +189,7 @@ test "$(cat is-failed.txt)" = "failed"
 
 #### Task 3 – Fix forward, prove recovery, pack evidence
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-linux/lab23
 set -euo pipefail
 
@@ -265,7 +265,7 @@ Extend the unit into a simple **restarting service** (`Type=simple`) that loops 
 
 ### Cleanup
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-linux/lab23
 set -euo pipefail
 sudo systemctl disable --now rebash-lab23.service 2>/dev/null || true

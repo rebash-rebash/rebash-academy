@@ -120,7 +120,7 @@ Build a local "forge readiness" repo with Issue templates, `repo-settings.yaml` 
 
 Workspace: `~/rebash-git/module-09`
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 mkdir -p ~/rebash-git/module-09 && cd ~/rebash-git/module-09
 set -euo pipefail
 ```
@@ -158,7 +158,7 @@ Terraform VPC module — GitHub onboarding pending.
 
 Initialise the repo:
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-git/module-09
 set -euo pipefail
 rm -rf github-lab
@@ -213,7 +213,7 @@ echo 'settings_ok'
 
 Validate and commit:
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-git/module-09/github-lab
 set -euo pipefail
 chmod +x validate-settings.sh
@@ -230,7 +230,7 @@ cd ..
 
 #### Task 3 – Tag and release notes (local release simulation)
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-git/module-09/github-lab
 set -euo pipefail
 git tag -a v0.1.0 -m 'Initial lab release — Issue template and repo settings YAML'
@@ -288,7 +288,7 @@ If you have GitHub access: create a private sandbox repo, push this lab, open on
 
 ### Cleanup
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 ls ~/rebash-git/module-09/github-lab
 ```
 

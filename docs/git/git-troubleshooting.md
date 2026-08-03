@@ -116,7 +116,7 @@ Run three drills: detached HEAD rescue, auth diagnostics script, merge abort and
 
 Workspace: `~/rebash-git/module-16`
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 mkdir -p ~/rebash-git/module-16 && cd ~/rebash-git/module-16
 set -euo pipefail
 ```
@@ -129,7 +129,7 @@ On-call runbook requires engineers to prove they can recover from common Git fai
 
 #### Task 1 – Detached HEAD drill
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-git/module-16
 set -euo pipefail
 rm -rf trouble-lab
@@ -176,7 +176,7 @@ echo 'diagnose_complete'
 
 Run the script:
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-git/module-16
 set -euo pipefail
 chmod +x auth-diagnose.sh
@@ -192,7 +192,7 @@ cd ..
 
 #### Task 3 – Merge abort and recovery drill
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-git/module-16/trouble-lab
 set -euo pipefail
 git switch main
@@ -243,7 +243,7 @@ Start rebase, cause conflict, run `git rebase --abort`, verify original branch t
 
 ### Cleanup
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 ls ~/rebash-git/module-16/
 ```
 

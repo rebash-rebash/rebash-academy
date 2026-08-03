@@ -167,7 +167,7 @@ Practise declarative and imperative kubectl workflows: apply a Deployment from Y
 
 Workspace: `~/rebash-k8s/module-02-kubectl`
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 mkdir -p ~/rebash-k8s/module-02-kubectl && cd ~/rebash-k8s/module-02-kubectl
 ```
 
@@ -224,7 +224,7 @@ spec:
 
 Apply and wait:
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-k8s/module-02-kubectl
 kubectl apply -f namespace.yaml
 kubectl apply -f web-deploy.yaml
@@ -240,7 +240,7 @@ kubectl get deploy,pod -n rebash-m02-kubectl -o wide | tee apply-evidence.txt
 
 Inspect the running Pod the way you would during triage.
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-k8s/module-02-kubectl
 kubectl describe deployment web -n rebash-m02-kubectl | tee describe-deploy.txt
 kubectl logs -n rebash-m02-kubectl -l app=web --tail=20 | tee logs-web.txt
@@ -256,7 +256,7 @@ grep -qi nginx exec-curl.txt || test -s exec-curl.txt
 
 Learn schema with `explain`, then remove the workload declaratively.
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-k8s/module-02-kubectl
 kubectl explain deployment.spec.template.spec.containers.resources | head -n 15 | tee explain-resources.txt
 grep -q resources explain-resources.txt
@@ -297,7 +297,7 @@ Re-apply `web-deploy.yaml`, run `kubectl get deploy web -n rebash-m02-kubectl -o
 
 ### Cleanup
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 kubectl delete namespace rebash-m02-kubectl --ignore-not-found --wait=true
 ```
 

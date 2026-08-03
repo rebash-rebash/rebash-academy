@@ -91,7 +91,7 @@ Your job is to discover both through evidence.
 
 **Instructions:**
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 mkdir -p ~/rebash-lab-net
 cd ~/rebash-lab-net
 ```
@@ -121,7 +121,7 @@ class Handler(BaseHTTPRequestHandler):
 HTTPServer(("127.0.0.1", 18080), Handler).serve_forever()
 ```
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 chmod +x server.py
 python3 server.py >/tmp/rebash-status.log 2>&1 &
 echo $! > /tmp/rebash-status.pid
@@ -135,7 +135,7 @@ curl -sS -o /dev/null -w "%{http_code}\n" http://127.0.0.1:18080/healthz
 
 **Validation:**
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 ss -ltnp | grep 18080 || lsof -nP -iTCP:18080 -sTCP:LISTEN
 ```
 
@@ -149,7 +149,7 @@ You should see a LISTEN on `127.0.0.1:18080`.
 
 **Instructions:**
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 # Backup once
 sudo cp /etc/hosts /etc/hosts.rebash-lab.bak
 
@@ -180,7 +180,7 @@ curl -v --connect-timeout 3 http://status.rebash.lab:18080/healthz || true
 
 **Instructions:**
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 # Find the lab line
 grep -n 'status.rebash.lab' /etc/hosts
 
@@ -209,7 +209,7 @@ curl -sS -o /dev/null -w "%{http_code}\n" http://status.rebash.lab:18080/healthz
 
 **Linux (ufw or iptables):**
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 # Confirm DNS is healthy first
 getent hosts status.rebash.lab
 curl -sS -o /dev/null -w "%{http_code}\n" http://status.rebash.lab:18080/healthz
@@ -233,7 +233,7 @@ ss -ltn | grep 18080
 
 **Fix:**
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 if command -v ufw >/dev/null; then
   sudo ufw delete deny 18080/tcp || true
 else
@@ -246,7 +246,7 @@ curl -sS -o /dev/null -w "%{http_code}\n" http://status.rebash.lab:18080/healthz
 
 **macOS alternative (no pf):** stop the listener to simulate “security change took the port offline”, then restore:
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 kill "$(cat /tmp/rebash-status.pid)" 2>/dev/null || true
 curl -v --connect-timeout 2 http://status.rebash.lab:18080/healthz || true
 python3 ~/rebash-lab-net/server.py >/tmp/rebash-status.log 2>&1 &
@@ -296,7 +296,7 @@ Write three bullets:
 
 ## Cleanup
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 # Stop demo service
 kill "$(cat /tmp/rebash-status.pid)" 2>/dev/null || true
 rm -f /tmp/rebash-status.pid /tmp/rebash-status.log

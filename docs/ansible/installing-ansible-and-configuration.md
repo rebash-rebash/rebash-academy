@@ -115,7 +115,7 @@ interpreter_python = auto_silent
 
 Verify install:
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 ansible --version
 which ansible
 ansible-config dump | grep DEFAULT_INVENTORY
@@ -158,7 +158,7 @@ Install **ansible-core**, create project `ansible.cfg` and inventory, write `ver
 
 Workspace: `~/rebash-ansible/module-02`
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 mkdir -p ~/rebash-ansible/module-02 && cd ~/rebash-ansible/module-02
 ```
 
@@ -181,14 +181,14 @@ pipx list | tee ~/rebash-ansible/module-02/pipx-list.txt
 
 **Option B — pip user install:**
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 python3 -m pip install --user ansible-core
 python3 -m pip show ansible-core | tee ~/rebash-ansible/module-02/pip-show-ansible.txt
 ```
 
 Verify CLI:
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 ansible --version | tee ~/rebash-ansible/module-02/ansible-version.txt
 grep -qi 'ansible core' ~/rebash-ansible/module-02/ansible-version.txt
 echo "install OK" | tee ~/rebash-ansible/module-02/install-ok.txt
@@ -223,7 +223,7 @@ localhost ansible_connection=local
 
 Confirm config resolution:
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-ansible/module-02
 ansible-config dump --only-changed | tee ansible-config-dump.txt
 grep -q 'DEFAULT_HOST_KEY_CHECKING(/.*ansible.cfg)' ansible-config-dump.txt || \
@@ -296,7 +296,7 @@ echo "verify-ansible.sh PASS" | tee verify-pass.txt
 
 Run:
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-ansible/module-02
 chmod +x verify-ansible.sh
 ./verify-ansible.sh
@@ -328,7 +328,7 @@ cat ~/rebash-ansible/module-02/config/lab.conf | tee config-proof.txt
 
 Create `show-config-source.sh` that prints which file set `DEFAULT_INVENTORY`:
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 #!/usr/bin/env bash
 set -euo pipefail
 cd ~/rebash-ansible/module-02
@@ -339,7 +339,7 @@ echo "config source captured"
 
 Run and archive:
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 chmod +x ~/rebash-ansible/module-02/show-config-source.sh
 ~/rebash-ansible/module-02/show-config-source.sh | tee challenge-config.txt
 ```
@@ -359,7 +359,7 @@ chmod +x ~/rebash-ansible/module-02/show-config-source.sh
 
 Keep `ansible.cfg`, `inventory`, and scripts for later modules. Remove transient evidence only:
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-ansible/module-02
 rm -f verify-version.txt verify-ping.txt verify-config-head.txt verify-pass.txt \
   ansible-config-dump.txt inventory-from-cfg.json cfg-inventory-ok.txt \

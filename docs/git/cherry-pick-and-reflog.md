@@ -117,7 +117,7 @@ Create hotfix on `main`, cherry-pick to simulated release branch, deliberately h
 
 Workspace: `~/rebash-git/module-07/cherry-reflog-lab`
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 mkdir -p ~/rebash-git/module-07/cherry-reflog-lab
 set -euo pipefail
 ```
@@ -130,7 +130,7 @@ Security team patches `auth.yaml` on `main`. Release branch `release/v1` still s
 
 #### Task 1 – Setup main, release, and hotfix
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-git/module-07
 set -euo pipefail
 rm -rf cherry-reflog-lab && mkdir cherry-reflog-lab && cd cherry-reflog-lab
@@ -162,7 +162,7 @@ cd ..
 
 #### Task 2 – Mistaken hard reset
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-git/module-07/cherry-reflog-lab
 set -euo pipefail
 git switch main
@@ -183,7 +183,7 @@ cd ..
 
 #### Task 3 – Evidence pack
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-git/module-07/cherry-reflog-lab
 set -euo pipefail
 git log --oneline --all --graph | tee ../cherry-graph.txt
@@ -224,7 +224,7 @@ Create branch `recover-test`, make commit, delete branch with `git branch -D`, r
 
 ### Cleanup
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 ls ~/rebash-git/module-07/cherry-reflog-lab
 ```
 

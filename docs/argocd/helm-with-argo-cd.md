@@ -137,7 +137,7 @@ Build a minimal Helm chart locally, add environment value overlays, render with 
 
 ### Lab environment
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 mkdir -p ~/rebash-argocd/module-07/charts/rebash-guestbook/templates \
   ~/rebash-argocd/module-07/envs \
   ~/rebash-argocd/module-07/apps && cd ~/rebash-argocd/module-07
@@ -230,7 +230,7 @@ spec:
 
 Lint the chart:
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-argocd/module-07
 helm lint charts/rebash-guestbook | tee lint-m07.txt
 grep -q 'Lint OK' lint-m07.txt || grep -q '0 chart(s) failed' lint-m07.txt
@@ -262,7 +262,7 @@ guestbook:
 
 Render offline with merged values:
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-argocd/module-07
 helm template guestbook-dev charts/rebash-guestbook \
   -f envs/values-dev.yaml \
@@ -342,7 +342,7 @@ spec:
 
 Validate Application and rendered kinds:
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-argocd/module-07
 kubectl apply --dry-run=client -f apps/application-helm-local.yaml 2>&1 | tee app-helm-dryrun-m07.txt
 python3 -c "import yaml,sys; yaml.safe_load_all(open('render-staging-m07.yaml')); print('YAML OK')" | tee yaml-check-m07.txt
@@ -356,7 +356,7 @@ grep -q 'Deployment' kinds-m07.txt
 
 #### Task 4 – Apply Helm Application and prove sync
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-argocd/module-07
 cp -a ~/rebash-argocd/module-07 /tmp/rebash-argocd/ 2>/dev/null || true
 kubectl apply -f apps/application-helm-local.yaml | tee app-helm-apply-m07.txt
@@ -396,7 +396,7 @@ spec:
 
 Compare source types:
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-argocd/module-07
 grep 'repoURL:' apps/application-helm-local.yaml apps/application-helm-oci-stub.yaml | tee source-compare-m07.txt
 grep -q 'file://' source-compare-m07.txt
@@ -438,7 +438,7 @@ Add a third values file `envs/values-prod.yaml` with `replicaCount: 3` and an in
 
 ### Cleanup
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 kubectl delete application rebash-guestbook-local -n argocd --ignore-not-found
 kubectl delete namespace rebash-argocd-m07 --ignore-not-found
 ```

@@ -84,7 +84,7 @@ Most “cannot reach the database” tickets that are not DNS or firewall end up
 3. **Forward** — packet goes out the chosen device toward the next hop or local delivery.
 4. **Observe** — `ip route get 1.1.1.1` shows what the kernel would do for one destination.
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 ip route show
 ip route get 1.1.1.1
 ```
@@ -128,7 +128,7 @@ Document the main routing table, practise a temporary route **add/del inside a n
 
 Workspace: `~/rebash-networking/lab06`
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 mkdir -p ~/rebash-networking/lab06 && cd ~/rebash-networking/lab06
 set -euo pipefail
 hostname | tee hostname.txt
@@ -149,7 +149,7 @@ Before approving a VPC peering change, you document how a lab VM currently route
 
 #### Task 1 – Document the main routing table and route lookup
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-networking/lab06
 set -euo pipefail
 
@@ -175,7 +175,7 @@ ip route get 127.0.0.1 2>&1 | tee ip-route-get-localhost.txt
 
 This sandbox avoids breaking the host default route. Cleanup deletes the namespace (and its routes).
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-networking/lab06
 set -euo pipefail
 
@@ -218,7 +218,7 @@ echo "route_removed_ok" | tee netns-route-removed.txt
 
 #### Task 3 – Traceroute evidence (safe) and pack; keep cleanup ready
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-networking/lab06
 set -euo pipefail
 
@@ -278,7 +278,7 @@ Create executable script `~/rebash-networking/lab06/netns-route-lab.sh` that: cr
 
 ### Cleanup
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-networking/lab06
 set -euo pipefail
 

@@ -74,7 +74,7 @@ A multi-AZ VPC keeps the internet edge in public subnets and apps/data in privat
 
 A VPC (or VNet) is an isolated IP network you own inside a cloud region. You pick a CIDR (for example `10.0.0.0/16`), create **subnets** (often `/24` per tier per AZ), attach **route tables**, and control access with stateful filters (Security Groups / NSGs / VPC firewall rules) plus optional stateless NACLs.
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 # Read-only AWS example (never create paid resources in this tutorial)
 aws ec2 describe-vpcs --query 'Vpcs[].{Id:VpcId,Cidr:CidrBlock}' --output table
 ```
@@ -131,7 +131,7 @@ Collect **read-only** VPC / subnet / route-table evidence with AWS CLI if config
 
 Workspace: `~/rebash-networking/lab19`
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 mkdir -p ~/rebash-networking/lab19 && cd ~/rebash-networking/lab19
 set -euo pipefail
 whoami | tee admin-user.txt
@@ -151,7 +151,7 @@ Security asks for proof of your VPC layout before a peer review: which CIDRs, wh
 
 #### Task 1 – Choose path: AWS read-only or local simulation
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-networking/lab19
 set -euo pipefail
 
@@ -172,7 +172,7 @@ echo "lab19-path=${PATH_CHOICE}" | tee lab-path.txt
 
 Skip this task if `lab-path.txt` says `local`.
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-networking/lab19
 set -euo pipefail
 grep -q '=aws$' lab-path.txt
@@ -217,7 +217,7 @@ test -s vpcs.txt && test -s subnets.txt && test -s route-tables.json
 
 Skip this task if `lab-path.txt` says `aws`.
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-networking/lab19
 set -euo pipefail
 grep -q '=local$' lab-path.txt
@@ -279,7 +279,7 @@ sudo ip netns exec lab19-private ping -c 2 -W 2 10.19.1.10 | tee ping-private-to
 
 #### Task 3 – Evidence pack
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-networking/lab19
 set -euo pipefail
 
@@ -329,7 +329,7 @@ Extend the local simulation (or document from AWS evidence) with a short script 
 
 ### Cleanup
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-networking/lab19
 set -euo pipefail
 

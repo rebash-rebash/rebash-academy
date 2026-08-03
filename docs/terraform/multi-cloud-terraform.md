@@ -187,7 +187,7 @@ Build a multi-cloud **facade** with a **live AWS S3 bucket** (sandbox credential
 
 Workspace: `~/rebash-terraform/module-17`
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 mkdir -p ~/rebash-terraform/module-17/modules/{aws-storage,network/azure,network/gcp} && cd ~/rebash-terraform/module-17
 ```
 
@@ -335,7 +335,7 @@ provider "aws" {
 
 Run:
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-terraform/module-17
 aws sts get-caller-identity | tee artefacts/aws-identity.txt
 echo "aws identity OK" | tee artefacts/aws-ok.txt
@@ -486,7 +486,7 @@ output "gcp_network_name" {
 Apply and prove:
 
 {% raw %}
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-terraform/module-17
 mkdir -p artefacts
 terraform init | tee artefacts/init.log
@@ -526,7 +526,7 @@ Create `docs/live-apply.md`:
 
 Verify:
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-terraform/module-17
 grep -q 'Separate state' docs/live-apply.md
 terraform output -json | tee artefacts/outputs.json
@@ -568,7 +568,7 @@ Add `modules/storage/azure` outputting a Docker volume named `rebash-azure-vol` 
 
 ### Cleanup
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-terraform/module-17
 terraform destroy -auto-approve
 rm -rf .terraform artefacts

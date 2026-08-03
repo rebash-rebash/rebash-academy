@@ -120,7 +120,7 @@ Create a repo with shell `pre-commit` and `commit-msg` hooks that block unstaged
 
 Workspace: `~/rebash-git/related/hooks`
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 mkdir -p ~/rebash-git/related/hooks && cd ~/rebash-git/related/hooks
 set -euo pipefail
 ```
@@ -153,7 +153,7 @@ exit 0
 
 Bootstrap the repo:
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-git/related/hooks
 set -euo pipefail
 rm -rf hooks-lab
@@ -189,7 +189,7 @@ head -1 "$msg_file" | grep -qE '^(feat|fix|chore|docs|ci)(\(.+\))?: .+' || {
 
 Test rejection and acceptance:
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-git/related/hooks/hooks-lab
 set -euo pipefail
 chmod +x .git/hooks/commit-msg
@@ -228,7 +228,7 @@ repos:
 
 Commit and archive evidence:
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-git/related/hooks/hooks-lab
 set -euo pipefail
 git add .pre-commit-config.yaml
@@ -272,7 +272,7 @@ Add `pre-push` hook that runs `terraform validate` when `*.tf` changed — block
 
 ### Cleanup
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 ls ~/rebash-git/related/hooks/hooks-lab
 ```
 

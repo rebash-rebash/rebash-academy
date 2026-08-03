@@ -164,7 +164,7 @@ Workspace: `~/rebash-terraform/module-13`
 
 Local Terraform with Docker provider. No HCP organisation required — HCP concepts are theory; runs mirror remote-run discipline locally.
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 mkdir -p ~/rebash-terraform/module-13/artefacts && cd ~/rebash-terraform/module-13
 ```
 
@@ -314,7 +314,7 @@ Create `cloud.tf.example`:
 
 Initialise and validate:
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-terraform/module-13
 cp workspace.auto.tfvars.example workspace.auto.tfvars
 terraform init | tee artefacts/init.log
@@ -329,7 +329,7 @@ terraform validate | tee artefacts/validate.log
 
 Remote runs always produce a reviewable plan before apply. Mirror that locally.
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-terraform/module-13
 terraform plan -input=false -out=run.tfplan | tee artefacts/plan.log
 terraform show -no-color run.tfplan | tee artefacts/plan-review.txt
@@ -346,7 +346,7 @@ grep -q 'local_file.run_summary' artefacts/plan-review.txt
 Applying the exact plan binary is what HCP Terraform does after approval — not a fresh implicit plan.
 
 {% raw %}
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-terraform/module-13
 terraform apply -input=false run.tfplan | tee artefacts/apply.log
 terraform output -json | tee artefacts/outputs.json
@@ -381,7 +381,7 @@ Policies: require `managed_by = terraform` tag; deny public object storage.
 Verify the file exists:
 
 {% raw %}
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-terraform/module-13
 test -f docs/hcp-workspace-mapping.md
 grep -q 'platform-bootstrap-prod' docs/hcp-workspace-mapping.md
@@ -425,7 +425,7 @@ Add a `policies/tags-required.sentinel.example` comment sketch requiring `manage
 
 ### Cleanup
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-terraform/module-13
 terraform destroy -auto-approve
 rm -rf .terraform run.tfplan terraform.tfstate terraform.tfstate.backup artefacts

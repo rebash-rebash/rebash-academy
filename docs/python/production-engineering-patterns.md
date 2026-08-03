@@ -158,7 +158,7 @@ Build a small production-style CLI under `~/rebash-python/lab24` that uses struc
 
 Workspace: `~/rebash-python/lab24`
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 mkdir -p ~/rebash-python/lab24 && cd ~/rebash-python/lab24
 set -euo pipefail
 python3 --version | tee python-version.txt
@@ -334,7 +334,7 @@ if __name__ == "__main__":
 
 Run:
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-python/lab24
 set -euo pipefail
 python3 -m py_compile resilient_job.py
@@ -347,7 +347,7 @@ python3 -m py_compile resilient_job.py
 
 #### Task 2 – Dry-run, live run, and idempotent second run
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-python/lab24
 set -euo pipefail
 
@@ -371,7 +371,7 @@ grep -F 'event=idempotent_skip' run-idem.stderr
 
 #### Task 3 – Circuit open path and evidence pack
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-python/lab24
 set -euo pipefail
 
@@ -429,7 +429,7 @@ Add a `--job-id` CLI flag. Include `job_id` in every structured log line and ins
 
 ### Cleanup
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-python/lab24
 set -euo pipefail
 # Keep evidence if you want it for a portfolio; otherwise:

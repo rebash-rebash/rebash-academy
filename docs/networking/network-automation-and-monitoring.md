@@ -66,7 +66,7 @@ Probes and exporters feed metrics and alerts; humans keep runbooks next to thres
 
 Automation expresses desired network state in code. Monitoring continuously checks that the live path still matches intent. Synthetics hit a URL or TCP port from outside or from another VPC so you notice DNS, routing, and certificate failures that host CPU metrics miss.
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 # Minimal synthetic idea
 curl -o /dev/null -sS -w '%{http_code} %{time_total}\n' https://example.com
 ```
@@ -122,7 +122,7 @@ Write `net-probe.sh` that probes a target with `ping` and `curl`, records timest
 
 Workspace: `~/rebash-networking/lab23`
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 mkdir -p ~/rebash-networking/lab23 && cd ~/rebash-networking/lab23
 set -euo pipefail
 whoami | tee admin-user.txt
@@ -141,7 +141,7 @@ Your team lacks Prometheus for a small environment but still needs a cron-friend
 
 #### Task 1 – Create the probe script
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-networking/lab23
 set -euo pipefail
 ```
@@ -217,7 +217,7 @@ echo "OK: http=${http_code} latency=${time_total}s"
 rm -f /tmp/net-probe-ping.$$ /tmp/net-probe-curl-err.$$ /tmp/net-probe-alert.$$
 ```
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 chmod +x net-probe.sh
 ```
 
@@ -227,7 +227,7 @@ chmod +x net-probe.sh
 
 #### Task 2 – Run successful probe and inspect metrics
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-networking/lab23
 set -euo pipefail
 
@@ -245,7 +245,7 @@ grep -E 'timestamp|example.com' metrics.tsv >/dev/null
 
 #### Task 3 – Force a threshold alert
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-networking/lab23
 set -euo pipefail
 
@@ -298,7 +298,7 @@ Add a `-c` / cron mode note in script comments and a second check: fail if `ss -
 
 ### Cleanup
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-networking/lab23
 set -euo pipefail
 # Optional: rm -f monitoring-evidence.tgz metrics.tsv alert.log

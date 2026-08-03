@@ -88,7 +88,7 @@ Who can become root is one of the most important security decisions on a server.
 4. **Use sudo** — `sudo -l` shows your rules; `sudo -u otheruser command` runs a command as another user.
 5. **Edit sudo rules** — use only `visudo` (or `visudo -f /etc/sudoers.d/file`) so a syntax error does not lock you out.
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 sudo useradd -m -s /bin/bash appuser
 sudo usermod -aG sudo appuser          # Ubuntu example — the lab uses a tighter rule
 sudo visudo -f /etc/sudoers.d/99-lab   # always check syntax
@@ -135,7 +135,7 @@ On a practice Ubuntu VM, create a team group, one human lab user, one system ser
 
 Workspace: `~/rebash-linux/lab06`
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 mkdir -p ~/rebash-linux/lab06 && cd ~/rebash-linux/lab06
 set -euo pipefail
 whoami | tee admin-user.txt
@@ -158,7 +158,7 @@ Your team is setting up a new Ubuntu VM for a small application. Security asks f
 
 Create the accounts first. Add sudo rules only after that.
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-linux/lab06
 set -euo pipefail
 
@@ -193,7 +193,7 @@ grep -E 'rebash-alice|rebash-svc' /etc/passwd | tee passwd-snippet.txt
 
 Allow `rebash-alice` to run **only** `systemctl status` and `systemctl restart` for a sample service name. We check syntax and `sudo -l`. The service does not need to exist yet.
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-linux/lab06
 set -euo pipefail
 
@@ -223,7 +223,7 @@ grep -F 'systemctl' sudo-l-alice.txt
 
 Prove that alice is **not** full root, then pack the proof files.
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-linux/lab06
 set -euo pipefail
 
@@ -276,7 +276,7 @@ Create user `rebash-bob`, add him to `rebash-lab`, and add a **second** sudoers 
 
 ### Cleanup
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-linux/lab06
 set -euo pipefail
 

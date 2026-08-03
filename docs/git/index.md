@@ -83,7 +83,7 @@ Course diagrams (Excalidraw SVG):
 - `git-merge-process.svg` · `git-pr-lifecycle.svg` · `git-github-actions.svg`
 - `git-gitops-flow.svg` · `git-repository-architecture.svg`
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 python3 scripts/generate-excalidraw-svg.py
 ```
 

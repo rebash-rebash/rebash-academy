@@ -71,7 +71,7 @@ region="${REGION:-ap-south-1}"
 
 Expand with quotes in almost all ops code:
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 printf 'region=%s\n' "$region"
 ```
 
@@ -154,7 +154,7 @@ Under `~/rebash-shell/lab03`, prove quoting differences, use defaults and arithm
 
 Workspace: `~/rebash-shell/lab03`
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 mkdir -p ~/rebash-shell/lab03 && cd ~/rebash-shell/lab03
 set -euo pipefail
 whoami | tee lab-user.txt
@@ -198,7 +198,7 @@ wc -l < "$path_with_space" | tee line-count.txt
 
 Run:
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-shell/lab03
 set -euo pipefail
 
@@ -249,7 +249,7 @@ test "$remaining" -eq 2
 
 Run:
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-shell/lab03
 set -euo pipefail
 
@@ -301,7 +301,7 @@ grep -q 'child_LOCAL_ONLY=missing' child-env.txt
 
 Run:
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-shell/lab03
 set -euo pipefail
 
@@ -349,7 +349,7 @@ Write `config-summary.sh` that reads optional env vars `APP_NAME` (default `demo
 
 ### Cleanup
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-shell/lab03
 rm -f readonly-reassign.out
 # Keep evidence and demos, or remove the workspace:

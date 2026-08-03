@@ -64,7 +64,7 @@ By the end of this lab, you will be able to:
 
 Work on a host **you own**. Create a workspace:
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 mkdir -p ~/rebash-lab-linux-install
 cd ~/rebash-lab-linux-install
 ```
@@ -116,7 +116,7 @@ hostnamectl
 
 **Objective:** Confirm standard directories exist and understand their roles.
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 ls -ld / /bin /boot /dev /etc /home /opt /proc /sys /tmp /usr /var
 df -hT /
 ls /etc | head
@@ -127,7 +127,7 @@ Add a short note to `baseline.txt` listing which path holds configuration, logs,
 
 ### Task 4 — First-boot network check
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 ip -br a
 ip route
 ping -c 3 1.1.1.1 || ping -c 3 8.8.8.8
@@ -138,7 +138,7 @@ Append successful `ip -br a` and default route to `baseline.txt`.
 
 ### Task 5 — Package index sanity (optional but recommended)
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 sudo apt update
 sudo apt install -y tree curl
 tree -L 1 / | tee -a ~/rebash-lab-linux-install/baseline.txt
@@ -168,7 +168,7 @@ tree -L 1 / | tee -a ~/rebash-lab-linux-install/baseline.txt
 
 Keep the VM for later labs, or delete it if disposable:
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 # Local workspace only — safe to remove
 rm -rf ~/rebash-lab-linux-install
 ```

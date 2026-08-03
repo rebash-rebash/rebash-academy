@@ -164,7 +164,7 @@ Label a node, deploy a Pod with `nodeSelector`, and prove the scheduler placed i
 
 Workspace: `~/rebash-k8s/module-09` on kind or minikube.
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 mkdir -p ~/rebash-k8s/module-09 && cd ~/rebash-k8s/module-09
 ```
 
@@ -189,7 +189,7 @@ metadata:
 
 Apply the namespace and label the first worker node (safe on single-node kind/minikube labs):
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-k8s/module-09
 kubectl apply -f namespace.yaml
 NODE="$(kubectl get nodes -o jsonpath='{.items[0].metadata.name}')"
@@ -236,7 +236,7 @@ spec:
 
 Apply and wait for rollout:
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-k8s/module-09
 kubectl apply -f deployment.yaml
 kubectl rollout status deployment/batch-worker -n rebash-m09 --timeout=120s
@@ -250,7 +250,7 @@ kubectl rollout status deployment/batch-worker -n rebash-m09 --timeout=120s
 
 Prove the Pod landed on the labelled node:
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-k8s/module-09
 kubectl get pods -n rebash-m09 -o wide | tee schedule-wide.txt
 POD="$(kubectl get pod -n rebash-m09 -l app=batch-worker -o jsonpath='{.items[0].metadata.name}')"
@@ -291,7 +291,7 @@ Add `pod-anti-affinity` so two replicas of `batch-worker` prefer different nodes
 
 ### Cleanup
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 kubectl delete namespace rebash-m09 --ignore-not-found
 NODE="$(kubectl get nodes -o jsonpath='{.items[0].metadata.name}' 2>/dev/null || true)"
 if [ -n "$NODE" ]; then kubectl label node "$NODE" rebash.io/workload- 2>/dev/null || true; fi

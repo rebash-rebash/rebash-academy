@@ -154,7 +154,7 @@ Create a tiny project that emits JUnit XML, publish it from Pipeline, run a para
 
 Workspace: `~/rebash-jenkins/module-12`
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 mkdir -p ~/rebash-jenkins/module-12 && cd ~/rebash-jenkins/module-12
 set -euo pipefail
 ```
@@ -169,7 +169,7 @@ Your service must not deploy when unit tests fail. Managers want Jenkins test tr
 
 Run:
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-jenkins/module-12
 set -euo pipefail
 
@@ -222,7 +222,7 @@ cd ..
 
 Run:
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-jenkins/module-12/quality-demo
 set -euo pipefail
 ```
@@ -292,7 +292,7 @@ pipeline {
 
 Verify:
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 grep -q 'junit' Jenkinsfile
 grep -q 'parallel' Jenkinsfile
 ```
@@ -307,7 +307,7 @@ Create/run job `rebash-demo/quality-demo` (SCM or paste). Open the build → **T
 
 Run:
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-jenkins/module-12/quality-demo
 set -euo pipefail
 ```
@@ -340,7 +340,7 @@ echo failure_xml_ok
 
 Verify:
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 chmod +x failure-drill.sh
 ./failure-drill.sh | tee failure-drill.txt
 ```
@@ -364,7 +364,7 @@ pipeline {
 
 Verify:
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 grep -q generate_junit_fail Jenkinsfile.fail
 ```
 
@@ -376,7 +376,7 @@ grep -q generate_junit_fail Jenkinsfile.fail
 
 Run:
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-jenkins/module-12
 set -euo pipefail
 
@@ -415,7 +415,7 @@ post {
 
 Validate and archive:
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 grep -q publishHTML publish-html-snippet.groovy
 grep -q NOTIFY_STUB notify-stub.Jenkinsfile
 
@@ -456,7 +456,7 @@ Add `publishHTML` (if plugin installed) for `reports/html`. Fail the build when 
 
 ### Cleanup
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 ls ~/rebash-jenkins/module-12
 ```
 

@@ -158,7 +158,7 @@ Apply a production baseline in namespace `rebash-excellence-lab`: ResourceQuota,
 
 Workspace: `~/rebash-k8s/module-20`
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 mkdir -p ~/rebash-k8s/module-20 && cd ~/rebash-k8s/module-20
 ```
 
@@ -201,7 +201,7 @@ spec:
 
 Apply and verify:
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-k8s/module-20
 kubectl apply -f namespace.yaml
 kubectl apply -f resourcequota.yaml
@@ -287,7 +287,7 @@ spec:
 
 Apply and wait for Ready:
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-k8s/module-20
 kubectl apply -f deployment.yaml
 kubectl apply -f pdb.yaml
@@ -337,7 +337,7 @@ spec:
 
 Apply and list policies:
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-k8s/module-20
 kubectl apply -f networkpolicy.yaml
 kubectl get networkpolicy -n rebash-excellence-lab | tee netpol-evidence.txt
@@ -349,7 +349,7 @@ kubectl get networkpolicy -n rebash-excellence-lab | tee netpol-evidence.txt
 
 #### Task 4 – Package excellence evidence tarball
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-k8s/module-20
 kubectl get all,pdb,resourcequota,networkpolicy -n rebash-excellence-lab | tee excellence-status.txt
 kubectl describe deploy api -n rebash-excellence-lab | tee excellence-describe.txt
@@ -392,7 +392,7 @@ Add a `LimitRange` default for containers (128Mi memory request) and prove a Pod
 
 ### Cleanup
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 kubectl delete namespace rebash-excellence-lab --ignore-not-found --wait=true
 rm -f ~/rebash-k8s/module-20/*.txt ~/rebash-k8s/module-20/module-20-excellence-evidence.tgz
 ```

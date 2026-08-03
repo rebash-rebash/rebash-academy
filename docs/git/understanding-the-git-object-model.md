@@ -114,7 +114,7 @@ Build a tiny repo and inspect blob, tree, and commit objects with `cat-file` and
 
 Workspace: `~/rebash-git/module-01-objects`
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 mkdir -p ~/rebash-git/module-01-objects && cd ~/rebash-git/module-01-objects
 set -euo pipefail
 ```
@@ -127,7 +127,7 @@ An engineer claims “the file disappeared from Git.” You must prove whether t
 
 #### Task 1 – Create two commits with inspectable content
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-git/module-01-objects
 set -euo pipefail
 
@@ -151,7 +151,7 @@ cd ..
 
 #### Task 2 – Resolve HEAD and inspect commit → tree → blob
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-git/module-01-objects/demo
 set -euo pipefail
 
@@ -176,7 +176,7 @@ grep -q 'ConfigMap' ../blob.txt
 
 #### Task 3 – Show two blobs differ after the edit
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-git/module-01-objects/demo
 set -euo pipefail
 
@@ -218,7 +218,7 @@ Create an annotated tag `v0.1.0` on `HEAD` and run `git cat-file -p v0.1.0` to s
 
 ### Cleanup
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 ls ~/rebash-git/module-01-objects
 ```
 

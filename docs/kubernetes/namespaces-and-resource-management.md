@@ -226,7 +226,7 @@ Create a tenant namespace with ResourceQuota and LimitRange, deploy a constraine
 
 Workspace: `~/rebash-k8s/module-08-ns`
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 mkdir -p ~/rebash-k8s/module-08-ns && cd ~/rebash-k8s/module-08-ns
 ```
 
@@ -281,7 +281,7 @@ spec:
 
 Apply and inspect:
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-k8s/module-08-ns
 kubectl apply -f tenant-bootstrap.yaml
 kubectl describe quota team-quota -n rebash-m08-ns | tee quota-describe.txt
@@ -318,7 +318,7 @@ spec:
 
 Apply and verify usage:
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-k8s/module-08-ns
 kubectl apply -f allowed-pod.yaml
 kubectl wait --for=condition=Ready pod/api-one -n rebash-m08-ns --timeout=120s
@@ -376,7 +376,7 @@ spec:
 
 Apply second (should succeed), third (should fail):
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-k8s/module-08-ns
 kubectl apply -f second-pod.yaml
 kubectl wait --for=condition=Ready pod/api-two -n rebash-m08-ns --timeout=120s
@@ -419,7 +419,7 @@ Add `requests.cpu: "300m"` hard limit to the ResourceQuota, keep two Pods at 100
 
 ### Cleanup
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 kubectl delete namespace rebash-m08-ns --ignore-not-found --wait=true
 ```
 

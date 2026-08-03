@@ -67,7 +67,7 @@ Production charts · reusable templates · OCI publishing · multi-env values ·
 
 ## Diagrams
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 python3 scripts/generate-excalidraw-svg.py
 ```
 

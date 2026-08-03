@@ -208,7 +208,7 @@ Build a matrix CI workflow, a conditional deploy stub, and a reusable workflow p
 
 ### Lab environment
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 mkdir -p ~/rebash-github-actions/module-04/.github/workflows && cd ~/rebash-github-actions/module-04
 set -euo pipefail
 ```
@@ -251,7 +251,7 @@ jobs:
 
 Validate offline:
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-github-actions/module-04
 set -euo pipefail
 grep -q 'strategy:' .github/workflows/matrix-ci.yml
@@ -294,7 +294,7 @@ jobs:
 
 Validate offline:
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-github-actions/module-04
 set -euo pipefail
 grep -q "if: github.ref ==" .github/workflows/conditional-deploy.yml
@@ -352,7 +352,7 @@ jobs:
 
 Validate offline:
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-github-actions/module-04
 set -euo pipefail
 grep -q 'workflow_call' .github/workflows/reusable-deploy.yml
@@ -376,7 +376,7 @@ print('reusable OK')
 
 #### Task 4 – Simulate matrix outputs locally and archive
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-github-actions/module-04
 set -euo pipefail
 

@@ -161,7 +161,7 @@ Create a namespace and two Deployments with distinct label sets, then filter wor
 
 Workspace: `~/rebash-k8s/module-03-labels`
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 mkdir -p ~/rebash-k8s/module-03-labels && cd ~/rebash-k8s/module-03-labels
 ```
 
@@ -218,7 +218,7 @@ spec:
 
 Apply and wait:
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-k8s/module-03-labels
 kubectl apply -f namespace.yaml
 kubectl apply -f payments-deploy.yaml
@@ -264,7 +264,7 @@ spec:
 
 Apply and list all Pods:
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-k8s/module-03-labels
 kubectl apply -f storefront-deploy.yaml
 kubectl rollout status deployment/storefront-web -n rebash-m03-labels --timeout=120s
@@ -279,7 +279,7 @@ test "$(cat running-count.txt)" -ge 2
 
 #### Task 3 – Filter with label selectors
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-k8s/module-03-labels
 kubectl get pods -n rebash-m03-labels -l team=payments | tee selector-payments.txt
 kubectl get pods -n rebash-m03-labels -l tier=web | tee selector-web.txt
@@ -321,7 +321,7 @@ Add `environment: lab` to both pod templates, then list every Pod with `-l 'envi
 
 ### Cleanup
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 kubectl delete namespace rebash-m03-labels --ignore-not-found --wait=true
 ```
 

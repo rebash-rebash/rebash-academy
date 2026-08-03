@@ -118,7 +118,7 @@ Measure `dig` timing, build a SOA/NS check script for a domain, and capture `+st
 
 Workspace: `~/rebash-networking/lab24`
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 mkdir -p ~/rebash-networking/lab24 && cd ~/rebash-networking/lab24
 set -euo pipefail
 DOMAIN="${DOMAIN:-example.com}"
@@ -139,7 +139,7 @@ Before a blue/green cutover, SRE asks you to prove you can measure resolver late
 
 #### Task 1 – dig timing with +stats
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-networking/lab24
 set -euo pipefail
 DOMAIN="$(cut -d= -f2 domain.txt)"
@@ -158,7 +158,7 @@ test -s dig-a-stats.txt
 
 #### Task 2 – SOA/NS check script
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-networking/lab24
 set -euo pipefail
 DOMAIN="$(cut -d= -f2 domain.txt)"
@@ -203,7 +203,7 @@ else
 fi
 ```
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 chmod +x check-soa-ns.sh
 ./check-soa-ns.sh "$DOMAIN" .
 test -s soa-answer.txt && test -s ns-answer.txt && test -s ttl-risk.txt
@@ -215,7 +215,7 @@ test -s soa-answer.txt && test -s ns-answer.txt && test -s ttl-risk.txt
 
 #### Task 3 – Recursive vs authoritative comparison + evidence
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-networking/lab24
 set -euo pipefail
 DOMAIN="$(cut -d= -f2 domain.txt)"
@@ -269,7 +269,7 @@ Extend `check-soa-ns.sh` to loop all NS hosts from `ns-answer.txt` and write `ns
 
 ### Cleanup
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-networking/lab24
 set -euo pipefail
 # Query-only lab — keep evidence or remove:

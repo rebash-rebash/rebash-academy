@@ -81,7 +81,7 @@ Common operators:
 | `tee file` | Copy stdin to file and to stdout |
 | `<< EOF` | Here-document body until `EOF` |
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 printf 'data\n'
 printf 'progress\n' >&2
 ```
@@ -100,7 +100,7 @@ Monitoring and CI often capture stdout as the artefact and treat a zero exit as 
 
 Process substitution (`<(cmd)`) is a Bash feature that presents command output as a temporary file path — useful for `diff <(cmd1) <(cmd2)`. Prefer it when both sides are commands; use a here-document when you need literal multi-line text in the script.
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 diff -u <(printf 'a\n') <(printf 'b\n') || true
 ```
 
@@ -138,7 +138,7 @@ Under `~/rebash-shell/lab04`, separate stdout/stderr, use `tee` and pipes, prove
 
 Workspace: `~/rebash-shell/lab04`
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 mkdir -p ~/rebash-shell/lab04 && cd ~/rebash-shell/lab04
 set -euo pipefail
 whoami | tee lab-user.txt
@@ -169,7 +169,7 @@ printf 'progress: checks done\n' >&2
 
 Run:
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-shell/lab04
 set -euo pipefail
 
@@ -194,7 +194,7 @@ grep -q 'progress: checks done' merged.txt
 
 #### Task 2 – Pipes, tee, and pipefail
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-shell/lab04
 set -euo pipefail
 
@@ -235,7 +235,7 @@ Build `report.txt` from shell variables (same outcome as an unquoted here-docume
 
 Run:
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-shell/lab04
 set -euo pipefail
 
@@ -302,7 +302,7 @@ Write `probe.sh` that prints `RESULT=ok` or `RESULT=fail` on stdout, writes a ti
 
 ### Cleanup
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-shell/lab04
 rm -f diff-same.txt
 # Keep evidence archive and key logs, or:

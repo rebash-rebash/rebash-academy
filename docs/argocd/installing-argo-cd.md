@@ -77,7 +77,7 @@ Installation deploys the component map from Module 2 into namespace `argocd`. Yo
 
 Argo CD ships as plain Kubernetes YAML:
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 kubectl create namespace argocd
 kubectl apply -n argocd --server-side --force-conflicts \
   -f https://raw.githubusercontent.com/argoproj/argo-cd/stable/manifests/install.yaml
@@ -112,7 +112,7 @@ CLI installation options:
 
 Initial password retrieval:
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 kubectl -n argocd get secret argocd-initial-admin-secret \
   -o jsonpath="{.data.password}" | base64 -d; echo
 ```
@@ -155,7 +155,7 @@ Install Argo CD on kind or minikube with a verification script, wait for Ready p
 
 ### Lab environment
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 mkdir -p ~/rebash-argocd/module-03 && cd ~/rebash-argocd/module-03
 ```
 
@@ -184,7 +184,7 @@ metadata:
 
 Apply it:
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-argocd/module-03
 kubectl apply -f namespace.yaml | tee namespace-apply-m03.txt
 kubectl get namespace rebash-argocd-m03 | tee namespace-get-m03.txt
@@ -240,7 +240,7 @@ log "Install verification complete"
 
 Run the install:
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-argocd/module-03
 chmod +x install-argocd.sh
 ./install-argocd.sh
@@ -260,13 +260,13 @@ echo "install script: OK" | tee install-summary-m03.txt
 
 In one terminal, start port-forward:
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 kubectl port-forward svc/argocd-server -n argocd 8080:443
 ```
 
 In another terminal:
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-argocd/module-03
 ARGOCD_PASS="$(cat admin-password-m03.txt)"
 argocd login localhost:8080 --username admin --password "${ARGOCD_PASS}" --insecure | tee login-m03.txt
@@ -280,7 +280,7 @@ argocd cluster list | tee cluster-list-m03.txt
 
 #### Task 4 – Collect readiness evidence
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-argocd/module-03
 kubectl get crd applications.argoproj.io | tee crd-evidence-m03.txt
 kubectl get pods -n argocd --field-selector=status.phase=Running --no-headers | wc -l | tee running-pods-m03.txt
@@ -324,7 +324,7 @@ Download the HA manifest URL to `ha-install-ref.yaml` with `curl -Lo` (do not ap
 
 ### Cleanup
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 # Stop port-forward with Ctrl+C in that terminal
 kubectl delete namespace rebash-argocd-m03 --ignore-not-found
 kubectl delete namespace argocd --ignore-not-found

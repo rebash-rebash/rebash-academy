@@ -49,7 +49,7 @@ This site uses MkDocs macros (Jinja). GitHub Actions expressions (dollar-brace-b
 
 No. This course uses **Excalidraw** SVGs under `docs/assets/excalidraw/`. Regenerate with:
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 python3 scripts/generate-excalidraw-svg.py
 ```
 

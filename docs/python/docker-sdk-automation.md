@@ -138,7 +138,7 @@ Under `~/rebash-python/lab17`, inventory Docker with the SDK or CLI when availab
 
 Workspace: `~/rebash-python/lab17`
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 mkdir -p ~/rebash-python/lab17/fixtures && cd ~/rebash-python/lab17
 set -euo pipefail
 python3 -m venv .venv
@@ -195,7 +195,7 @@ Create `fixtures/images.json`:
 
 Run:
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-python/lab17
 set -euo pipefail
 echo "fixtures ok"
@@ -341,7 +341,7 @@ if __name__ == "__main__":
 
 Run:
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-python/lab17
 set -euo pipefail
 # shellcheck disable=SC1091
@@ -369,7 +369,7 @@ print("evidence ok")
 
 Run:
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-python/lab17
 set -euo pipefail
 # shellcheck disable=SC1091
@@ -420,7 +420,7 @@ Add a **dry-run cleanup plan** function that lists image tags from the inventory
 
 ### Cleanup
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-python/lab17
 deactivate 2>/dev/null || true
 # This lab does not remove host images/containers.

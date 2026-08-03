@@ -155,7 +155,7 @@ Deploy a deliberately broken Deployment in namespace `rebash-triage-lab`, diagno
 
 Workspace: `~/rebash-k8s/module-18`
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 mkdir -p ~/rebash-k8s/module-18 && cd ~/rebash-k8s/module-18
 ```
 
@@ -238,7 +238,7 @@ spec:
 
 Apply and confirm failure:
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-k8s/module-18
 set -euo pipefail
 kubectl apply -f namespace.yaml
@@ -255,7 +255,7 @@ kubectl get pods -n rebash-triage-lab -l app=web | tee before-pods.txt
 
 Gather the standard triage chain before changing manifests.
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-k8s/module-18
 kubectl get deploy,po,svc -n rebash-triage-lab -o wide | tee before-resources.txt
 kubectl describe deploy web -n rebash-triage-lab | tee before-describe.txt
@@ -319,7 +319,7 @@ spec:
 
 Apply fix and prove recovery:
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-k8s/module-18
 kubectl apply -f web-fixed.yaml
 kubectl rollout status deployment/web -n rebash-triage-lab --timeout=120s
@@ -334,7 +334,7 @@ grep -q '1/1' after-pods.txt
 
 #### Task 4 – Archive before/after evidence
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-k8s/module-18
 tar -czf module-18-triage-evidence.tgz namespace.yaml web-broken.yaml web-fixed.yaml before-*.txt after-*.txt
 ls -l module-18-triage-evidence.tgz
@@ -375,7 +375,7 @@ Introduce a second failure by setting `image: nginx:does-not-exist-1.27` in a co
 
 ### Cleanup
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 kubectl delete namespace rebash-triage-lab --ignore-not-found --wait=true
 rm -f ~/rebash-k8s/module-18/before-*.txt ~/rebash-k8s/module-18/after-*.txt ~/rebash-k8s/module-18/module-18-triage-evidence.tgz
 ```

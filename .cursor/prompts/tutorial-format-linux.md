@@ -124,7 +124,7 @@ Create `main.tf`:
 # file contents
 ```
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 terraform apply -auto-approve
 ```
 
@@ -132,7 +132,8 @@ terraform apply -auto-approve
     Apply succeeds; resource exists.
 ````
 
-- File fences: language + `title="filename"` (green file chrome)  
+- File fences: language + `title="filename"` (green file chrome)
+- Command fences: `{.bash .ra-terminal title="Terminal"}` (dark terminal chrome without JS)  
 - Command fences: `bash` + `title="Terminal"` (dark terminal chrome)  
 - Success: `!!! example "Expected output"` — not only `**Expected output:**`  
 - Review sample: `docs/labs/sample-code-block-conventions.md`  

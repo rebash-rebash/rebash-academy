@@ -141,7 +141,7 @@ Under `~/rebash-networking/lab29`, simulate a failed local dependency, run a tim
 
 Workspace: `~/rebash-networking/lab29`
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 mkdir -p ~/rebash-networking/lab29/{evidence,bin} && cd ~/rebash-networking/lab29
 set -euo pipefail
 whoami | tee evidence/operator.txt
@@ -166,7 +166,7 @@ On-call gets a page: “payments edge cannot reach dependency `dep.rebash.lab:18
 
 Do **not** start a listener on `18990`. Prove curl fails. Optionally start a control listener on `18991` so the bundle shows contrast.
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-networking/lab29
 set -euo pipefail
 
@@ -214,7 +214,7 @@ ss -lnt | tee evidence/ss-before-collect.txt
 
 Create `bin/collect-incident.sh` that writes a timeline and copies probe outputs into `bundle/`.
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-networking/lab29
 set -euo pipefail
 ```
@@ -275,7 +275,7 @@ echo "$STAMP" > "$BUNDLE/meta/collected-at-utc.txt"
 echo "bundle_ready=$BUNDLE"
 ```
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 chmod +x bin/collect-incident.sh
 ./bin/collect-incident.sh "$HOME/rebash-networking/lab29" | tee evidence/collect-run.txt
 test -s bundle/timeline.txt
@@ -291,7 +291,7 @@ test -s bundle/probes/curl-dep.err
 
 Classify severity from probe exit codes and write both JSON and text; pack the bundle.
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-networking/lab29
 set -euo pipefail
 ```
@@ -363,7 +363,7 @@ if dep_rc != 0 and ctl_rc == 0 and sev != "SEV-2":
     raise SystemExit("expected SEV-2 for dep-down control-up lab")
 ```
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 chmod +x bin/classify-severity.py
 python3 bin/classify-severity.py "$HOME/rebash-networking/lab29" | tee evidence/classify-run.txt
 grep -q '"severity": "SEV-2"' bundle/severity.json
@@ -410,7 +410,7 @@ Extend `bin/classify-severity.py` (or add `bin/classify-severity-v2.py`) so that
 
 ### Cleanup
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-networking/lab29
 set -euo pipefail
 

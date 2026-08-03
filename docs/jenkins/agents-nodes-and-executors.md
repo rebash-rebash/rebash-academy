@@ -139,7 +139,7 @@ Workspace: `~/rebash-jenkins/module-06`
 
 Reuse Module 2 Compose network when possible. Default controller URL `http://127.0.0.1:8080/`.
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 mkdir -p ~/rebash-jenkins/module-06 && cd ~/rebash-jenkins/module-06
 set -euo pipefail
 docker --version | tee docker-version.txt
@@ -157,7 +157,7 @@ In Jenkins: **Manage Jenkins → Nodes** → built-in node → set **Number of e
 
 Run:
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-jenkins/module-06
 set -euo pipefail
 ```
@@ -174,7 +174,7 @@ lab:
 
 Validate and archive:
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 python3 -c "
 import yaml
 with open('builtin-policy.yaml') as f:
@@ -205,7 +205,7 @@ In Jenkins UI:
 
 Run:
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-jenkins/module-06
 set -euo pipefail
 ```
@@ -228,7 +228,7 @@ docker run -d --name jenkins-agent \
 
 Verify:
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 chmod +x agent-launcher.sh
 ```
 
@@ -269,7 +269,7 @@ pipeline {
 
 Validate and archive:
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 test -f label-pipeline.Jenkinsfile
 python3 -c "
 import yaml
@@ -293,7 +293,7 @@ print('agent-node.yaml OK')
 
 Run:
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-jenkins/module-06
 set -euo pipefail
 ```
@@ -311,7 +311,7 @@ echo "agent run evidence OK"
 
 Verify:
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 chmod +x assert-agent.sh
 ```
 
@@ -330,7 +330,7 @@ Agent pipeline:
 
 Run:
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-jenkins/module-06
 set -euo pipefail
 ```
@@ -350,7 +350,7 @@ lab_jdk_entries: fill from UI if present
 
 Validate and archive:
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 python3 -c "
 import yaml
 with open('tools.yaml') as f:
@@ -397,7 +397,7 @@ Add a second label `heavy` on the same agent and a Pipeline stage that uses `age
 
 ### Cleanup
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 # Stop agent container when finished
 docker rm -f jenkins-agent 2>/dev/null || true
 # Keep controller volume; keep built-in executors at 0 if agent remains available

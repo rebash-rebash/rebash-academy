@@ -117,7 +117,7 @@ Simulate a platform repo: create `feature/add-healthcheck` and `fix/readiness-pr
 
 Workspace: `~/rebash-git/module-05`
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 mkdir -p ~/rebash-git/module-05 && cd ~/rebash-git/module-05
 set -euo pipefail
 ```
@@ -132,7 +132,7 @@ You maintain a Kubernetes manifest repo. Two engineers work in parallel — one 
 
 Create base manifest and branch for healthcheck work.
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-git/module-05
 set -euo pipefail
 rm -rf branch-lab
@@ -160,7 +160,7 @@ cd ..
 
 Switch to `main`, create `fix/readiness-probe`, commit fix independently.
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-git/module-05/branch-lab
 set -euo pipefail
 git switch main
@@ -182,7 +182,7 @@ cd ..
 
 Merge healthcheck feature; verify branch pointers; prepare evidence.
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-git/module-05/branch-lab
 set -euo pipefail
 git switch main
@@ -230,7 +230,7 @@ Document a one-page `branch-policy.md` in the repo listing allowed prefixes, max
 
 ### Cleanup
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 ls ~/rebash-git/module-05/branch-lab
 ```
 

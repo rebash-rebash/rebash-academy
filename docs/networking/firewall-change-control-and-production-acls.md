@@ -119,7 +119,7 @@ Write a proposed nft/ufw rule file with rollback comments, build a validation sc
 
 Workspace: `~/rebash-networking/lab26`
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 mkdir -p ~/rebash-networking/lab26 && cd ~/rebash-networking/lab26
 set -euo pipefail
 whoami | tee admin-user.txt
@@ -140,7 +140,7 @@ A developer asks to open a temporary port for a local diagnostic listener. You r
 
 #### Task 1 – Proposed rule file with rollback notes
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-networking/lab26
 set -euo pipefail
 ```
@@ -183,7 +183,7 @@ Create `proposed-lab26.ufw.txt`:
 # NEVER in this lab: ufw deny 22 / ufw --force reset / default deny without console access
 ```
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 test -s proposed-lab26.nft && test -s proposed-lab26.ufw.txt
 ```
 
@@ -193,7 +193,7 @@ test -s proposed-lab26.nft && test -s proposed-lab26.ufw.txt
 
 #### Task 2 – Validation script (syntax and safety checks)
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-networking/lab26
 set -euo pipefail
 ```
@@ -242,7 +242,7 @@ pass "isolated lab table present"
 echo "validation_ok=1" | tee -a "$report"
 ```
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 chmod +x validate-firewall-change.sh
 ./validate-firewall-change.sh proposed-lab26.nft
 grep -q 'validation_ok=1' validation-report.txt
@@ -254,7 +254,7 @@ grep -q 'validation_ok=1' validation-report.txt
 
 #### Task 3 – Temporary localhost apply, prove, evidence
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-networking/lab26
 set -euo pipefail
 
@@ -336,7 +336,7 @@ Extend `validate-firewall-change.sh` to require these comment headers: `Ticket:`
 
 ### Cleanup
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-networking/lab26
 set -euo pipefail
 

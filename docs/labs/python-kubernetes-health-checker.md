@@ -60,7 +60,7 @@ A payments namespace shows intermittent 502s. You need a scripted readiness roll
 
 ## Environment
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 mkdir -p ~/rebash-lab-python-k8s/{fixtures,out}
 cd ~/rebash-lab-python-k8s
 python3 -m venv .venv && source .venv/bin/activate
@@ -91,7 +91,7 @@ Create `k8s_health.py`:
 
 ## Validation
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 python k8s_health.py --fixture fixtures/pods.json
 python k8s_health.py --fixture fixtures/pods.json --fail-on-not-ready; echo $?  # 1
 ```

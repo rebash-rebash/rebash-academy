@@ -115,7 +115,7 @@ Create a feature branch with three WIP commits, rebase onto advanced `main`, squ
 
 Workspace: `~/rebash-git/module-07`
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 mkdir -p ~/rebash-git/module-07 && cd ~/rebash-git/module-07
 set -euo pipefail
 ```
@@ -130,7 +130,7 @@ Before opening a PR for a pipeline change, you rebase onto latest `main` and squ
 
 Three commits on feature; one new commit on main.
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-git/module-07
 set -euo pipefail
 rm -rf rebase-lab
@@ -163,7 +163,7 @@ cd ..
 
 Replay feature commits on top of lint commit.
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-git/module-07/rebase-lab
 set -euo pipefail
 git switch feature/oidc
@@ -182,7 +182,7 @@ cd ..
 
 Combine three WIP commits into one feat commit non-interactively.
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-git/module-07/rebase-lab
 set -euo pipefail
 export GIT_SEQUENCE_EDITOR="sed -i.bak '2,3s/^pick/squash/'"
@@ -231,7 +231,7 @@ Use `git rebase -i` to **reword** the squash commit message to include ticket `P
 
 ### Cleanup
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 ls ~/rebash-git/module-07/rebase-lab
 ```
 

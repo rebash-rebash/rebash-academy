@@ -153,7 +153,7 @@ Inspect the Helm CLI environment, register a chart repository, install a probe r
 
 Workspace: `~/rebash-helm/module-01-arch` on your workstation with a disposable **kind** cluster.
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 mkdir -p ~/rebash-helm/module-01-arch/probe/templates && cd ~/rebash-helm/module-01-arch
 kubectl cluster-info | tee cluster-info.txt
 ```
@@ -166,7 +166,7 @@ You are onboarding to a platform team that documents Helm architecture for audit
 
 #### Task 1 – Verify CLI and cluster context
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-helm/module-01-arch
 helm version | tee helm-version-m01arch.txt
 helm env | tee helm-env-m01arch.txt
@@ -182,7 +182,7 @@ grep -q Ready nodes-wide.txt
 
 #### Task 2 – Register a repository and list indexes
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-helm/module-01-arch
 helm repo add bitnami https://charts.bitnami.com/bitnami
 helm repo update | tee repo-update-m01arch.txt
@@ -230,7 +230,7 @@ data:
 
 Install and prove release metadata:
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-helm/module-01-arch
 kubectl apply -f namespace.yaml
 helm upgrade --install arch-probe probe -n rebash-helm-m01-arch --wait --timeout 120s | tee probe-install-m01arch.txt
@@ -250,7 +250,7 @@ grep -q 'sh.helm.release' release-secrets-m01arch.txt || test -s release-secrets
 
 Simulate a bad values override, observe failure, then recover:
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-helm/module-01-arch
 helm upgrade arch-probe probe -n rebash-helm-m01-arch --set replicaCount=not-a-number 2>helm-upgrade-fail-m01arch.txt || true
 grep -qi 'error\|invalid\|failed' helm-upgrade-fail-m01arch.txt
@@ -294,7 +294,7 @@ Add a `values.yaml` to `probe/` with `replicaCount: 1` and re-install with `helm
 
 ### Cleanup
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 helm uninstall arch-probe -n rebash-helm-m01-arch 2>/dev/null || true
 kubectl delete namespace rebash-helm-m01-arch --ignore-not-found
 helm repo remove bitnami 2>/dev/null || true

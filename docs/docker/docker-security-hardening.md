@@ -147,7 +147,7 @@ Build a hardened image with a non-root user, drop Linux capabilities, and run wi
 
 Workspace: `~/rebash-docker/module-11`
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 mkdir -p ~/rebash-docker/module-11 && cd ~/rebash-docker/module-11
 ```
 
@@ -186,7 +186,7 @@ while true; do printf 'HTTP/1.0 200 OK\r\nContent-Length: 2\r\n\r\nok' | nc -l -
 
 Build the image:
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-docker/module-11
 docker build -t rebash-sec-lab:1.0.0 .
 docker images rebash-sec-lab:1.0.0 | tee build-proof.txt
@@ -201,7 +201,7 @@ grep -q rebash-sec-lab build-proof.txt
 
 Run with production-style runtime hardening:
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-docker/module-11
 docker run -d --name rebash-sec-18110 \
   --read-only \
@@ -222,7 +222,7 @@ curl -sS http://127.0.0.1:18110/ | tee curl-sec.txt
 
 Capture security-relevant fields:
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-docker/module-11
 docker inspect rebash-sec-18110 --format 'User={{ "{{" }}.Config.User{{ "}}" }} CapDrop={{ "{{" }}.HostConfig.CapDrop{{ "}}" }} ReadonlyRootfs={{ "{{" }}.HostConfig.ReadonlyRootfs{{ "}}" }}' | tee inspect-sec.txt
 grep -q 'User=app' inspect-sec.txt
@@ -265,7 +265,7 @@ Add `HEALTHCHECK` using `wget` or a shell probe, rebuild, and capture `docker in
 
 ### Cleanup
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 docker rm -f rebash-sec-18110 2>/dev/null || true
 docker rmi rebash-sec-lab:1.0.0 2>/dev/null || true
 rm -f ~/rebash-docker/module-11/*.txt

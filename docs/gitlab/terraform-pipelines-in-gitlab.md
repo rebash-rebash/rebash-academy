@@ -163,7 +163,7 @@ Workspace: `~/rebash-gitlab/module-10`
 
 File-first lab. Push to GitLab only when you want a runner to execute jobs.
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 mkdir -p ~/rebash-gitlab/module-10 && cd ~/rebash-gitlab/module-10
 set -euo pipefail
 ```
@@ -219,7 +219,7 @@ output "url" {
 
 Init, validate, and plan against the Docker provider:
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-gitlab/module-10
 set -euo pipefail
 docker info >/dev/null
@@ -298,7 +298,7 @@ terraform-plan:
 
 Validate offline:
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-gitlab/module-10
 set -euo pipefail
 python3 -c "
@@ -321,7 +321,7 @@ grep -q 'hashicorp/terraform:1.5.7' .gitlab-ci.yml
 Create `pipeline-simulate.sh`:
 
 {% raw %}
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 #!/usr/bin/env bash
 set -euo pipefail
 python3 -c "import yaml; yaml.safe_load(open('.gitlab-ci.yml'))"
@@ -342,7 +342,7 @@ echo 'module-10 terraform lab passed'
 
 Run it:
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-gitlab/module-10
 set -euo pipefail
 chmod +x pipeline-simulate.sh
@@ -384,7 +384,7 @@ Add a manual `terraform-apply` job on the default branch that downloads the plan
 
 ### Cleanup
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-gitlab/module-10
 terraform destroy -input=false -auto-approve 2>/dev/null || true
 docker rm -f rebash-gitlab-tf-lab 2>/dev/null || true

@@ -140,7 +140,7 @@ Author three OIDC deploy workflow **stubs** (AWS, Azure, GCP), validate YAML off
 
 Workspace: `~/rebash-github-actions/module-10`
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 mkdir -p ~/rebash-github-actions/module-10/.github/workflows && cd ~/rebash-github-actions/module-10
 set -euo pipefail
 python3 --version | tee python-version.txt
@@ -183,7 +183,7 @@ jobs:
 
 Validate offline:
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-github-actions/module-10
 set -euo pipefail
 python3 -c "import yaml; yaml.safe_load(open('.github/workflows/deploy-aws-stub.yml')); print('aws stub OK')"
@@ -253,7 +253,7 @@ jobs:
 
 Validate offline:
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-github-actions/module-10
 set -euo pipefail
 python3 -c "
@@ -302,7 +302,7 @@ trust_subjects:
 
 Validate and archive:
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-github-actions/module-10
 set -euo pipefail
 python3 -c "
@@ -325,7 +325,7 @@ ls -l module-10-evidence.tgz | tee evidence.txt
 
 #### Task 4 – Validate permissions pattern across stubs
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-github-actions/module-10
 set -euo pipefail
 
@@ -370,7 +370,7 @@ Add a reusable workflow `cloud-login.yml` with `workflow_call` inputs for `cloud
 
 ### Cleanup
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 # Keep stubs under ~/rebash-github-actions/module-10 for portfolio review
 ls ~/rebash-github-actions/module-10/.github/workflows/
 ```

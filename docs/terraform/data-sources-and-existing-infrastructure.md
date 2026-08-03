@@ -161,7 +161,7 @@ Read a pre-existing Docker network and config file, call an **external** script 
 
 ### Lab environment
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 mkdir -p ~/rebash-terraform/module-11/{config,scripts} && cd ~/rebash-terraform/module-11
 ```
 
@@ -177,7 +177,7 @@ Your application stack must attach to a **platform-owned Docker network**, read 
 
 Create the platform network outside Terraform (simulating existing infrastructure):
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 docker network create rebash-platform-net | tee platform-net-create.txt
 grep -q 'rebash-platform-net' platform-net-create.txt
 ```
@@ -261,7 +261,7 @@ jq -n --arg owner "$owner_email" --arg service "$service" \
 
 Run:
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 chmod +x ~/rebash-terraform/module-11/scripts/read-owner.sh
 cd ~/rebash-terraform/module-11
 terraform init
@@ -331,7 +331,7 @@ output "container_name" {
 Run:
 
 {% raw %}
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-terraform/module-11
 terraform validate
 terraform apply -auto-approve
@@ -363,7 +363,7 @@ MAINTENANCE_WINDOW=sunday-02:00-04:00-utc
 Run:
 
 {% raw %}
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-terraform/module-11
 terraform plan -no-color | tee plan-after-config-change.txt
 grep -q '2.5.0' plan-after-config-change.txt
@@ -384,7 +384,7 @@ echo "task3 OK" | tee task3-ok.txt
 Create `data-evidence.sh`:
 
 {% raw %}
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 #!/usr/bin/env bash
 set -euo pipefail
 cd ~/rebash-terraform/module-11
@@ -399,7 +399,7 @@ echo "data-evidence PASS" | tee data-evidence-pass.txt
 
 Run:
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 chmod +x ~/rebash-terraform/module-11/data-evidence.sh
 ~/rebash-terraform/module-11/data-evidence.sh
 ```
@@ -450,7 +450,7 @@ output "nginx_image_id" {
 
 Apply and verify:
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-terraform/module-11
 terraform apply -auto-approve
 terraform output -raw owner_script_sha | grep -q .
@@ -471,7 +471,7 @@ echo "data challenge OK"
 
 ### Cleanup
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-terraform/module-11
 terraform destroy -auto-approve
 docker network rm rebash-platform-net 2>/dev/null || true

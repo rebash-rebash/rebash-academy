@@ -60,7 +60,7 @@ A merger imports three subscriptions. You need a normalised resource list before
 
 ## Environment
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 mkdir -p ~/rebash-lab-python-azure/{fixtures,out}
 cd ~/rebash-lab-python-azure
 python3 -m venv .venv && source .venv/bin/activate
@@ -85,7 +85,7 @@ Create `azure_inventory.py --fixture fixtures/resources.json` writing `out/inven
 
 ## Validation
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 python azure_inventory.py --fixture fixtures/resources.json
 test $(python -c 'import json; print(len(json.load(open("out/inventory.json"))))') -eq 3
 ```

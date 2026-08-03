@@ -69,7 +69,7 @@ LVM sits between physical disks and filesystems so you can grow logical volumes 
 | LV | Logical volume — block device you format and mount |
 | Swap | Backing for anonymous memory under RAM pressure |
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 sudo pvs; sudo vgs; sudo lvs
 swapon --show
 free -h
@@ -114,7 +114,7 @@ Build a loop-backed VG with a small LV, mount it, extend the LV using free VG sp
 
 Workspace: `~/rebash-linux/lab13`
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 mkdir -p ~/rebash-linux/lab13 && cd ~/rebash-linux/lab13
 set -euo pipefail
 sudo apt-get update -qq
@@ -136,7 +136,7 @@ An app data volume will need growth next month. You rehearse LVM create + online
 
 #### Task 1 – Loop PVs, VG, and LV
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-linux/lab13
 set -euo pipefail
 
@@ -167,7 +167,7 @@ echo 'before-extend' | sudo tee /mnt/rebash-lvm/note.txt >/dev/null
 
 #### Task 2 – Online extend LV + filesystem
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-linux/lab13
 set -euo pipefail
 
@@ -189,7 +189,7 @@ grep -F 'before-extend' note-after.txt
 
 #### Task 3 – Swap + monitoring signals + evidence
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-linux/lab13
 set -euo pipefail
 
@@ -241,7 +241,7 @@ Add a third loop file `pv3.img` (128 MiB), `pvcreate` + `vgextend rebashvg`, t
 
 ### Cleanup
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-linux/lab13
 set -euo pipefail
 

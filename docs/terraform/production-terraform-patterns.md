@@ -142,7 +142,7 @@ Build a production-style `modules/` + `live/dev` + `live/prod` layout with pinne
 
 Workspace: `~/rebash-terraform/module-19`
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 mkdir -p ~/rebash-terraform/module-19/{modules/greeting,live/dev,live/prod,scripts}
 ```
 
@@ -222,7 +222,7 @@ output "label" {
 
 Run module validation:
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-terraform/module-19/modules/greeting
 terraform init
 terraform validate
@@ -327,7 +327,7 @@ greeting = "hello-prod"
 
 Initialise and plan dev with a saved plan file:
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-terraform/module-19/live/dev
 terraform init
 terraform plan -out=tfplan
@@ -342,7 +342,7 @@ grep -q 'module.greeting.docker_container.greeting' ../../evidence/plan-dev.txt
 #### Task 3 – Apply dev with saved plan and prove container
 
 {% raw %}
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-terraform/module-19/live/dev
 terraform apply tfplan
 terraform output -raw label | tee ../../evidence/output-dev.txt
@@ -361,7 +361,7 @@ grep -q 'hello-dev' ../../evidence/dev-label.txt
 
 Initialise prod separately:
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-terraform/module-19/live/prod
 terraform init
 terraform plan -no-color | tee ../../evidence/plan-prod.txt
@@ -409,7 +409,7 @@ moved {
 Re-plan dev:
 
 {% raw %}
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-terraform/module-19/live/dev
 terraform plan -no-color | tee ../../evidence/plan-after-moved.txt
 grep -q 'has moved to' ../../evidence/plan-after-moved.txt || grep -q 'moved' ../../evidence/plan-after-moved.txt
@@ -426,7 +426,7 @@ docker ps --filter "name=greeting-dev" --format '{{.Names}}' | grep -q 'greeting
 Create `scripts/ci-validate.sh`:
 
 {% raw %}
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 #!/usr/bin/env bash
 set -euo pipefail
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
@@ -445,7 +445,7 @@ echo "CI validation complete — see evidence/plan-ci.txt"
 
 Run:
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 mkdir -p ~/rebash-terraform/module-19/evidence
 chmod +x ~/rebash-terraform/module-19/scripts/ci-validate.sh
 ~/rebash-terraform/module-19/scripts/ci-validate.sh
@@ -489,7 +489,7 @@ Add a `live/staging` root with its own tfvars and extend `scripts/ci-validate.sh
 
 ### Cleanup
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-terraform/module-19/live/dev && terraform destroy -auto-approve
 cd ~/rebash-terraform/module-19/live/prod && terraform destroy -auto-approve 2>/dev/null || true
 docker rm -f greeting-dev greeting-prod greeting-staging 2>/dev/null || true

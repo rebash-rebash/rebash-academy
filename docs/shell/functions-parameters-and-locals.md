@@ -139,7 +139,7 @@ Under `~/rebash-shell/lab07`, create `lib.sh` with `log`, `dump_args`, and `requ
 
 Workspace: `~/rebash-shell/lab07`
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 mkdir -p ~/rebash-shell/lab07/out
 cd ~/rebash-shell/lab07
 set -euo pipefail
@@ -208,7 +208,7 @@ set_local_name() {
 
 Run:
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-shell/lab07
 set -euo pipefail
 
@@ -253,7 +253,7 @@ printf 'require_ok=1\n' | tee "$outdir/require-ok.txt"
 
 Run:
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-shell/lab07
 set -euo pipefail
 
@@ -270,7 +270,7 @@ chmod +x main.sh
 
 #### Task 3 – Failure path and evidence pack
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-shell/lab07
 set -euo pipefail
 # shellcheck disable=SC1091
@@ -323,7 +323,7 @@ Add `retry()` to `lib.sh` with signature `retry <max> <command…>` that runs th
 
 ### Cleanup
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-shell/lab07
 # Keep out/ and scripts for review, or:
 # rm -rf ~/rebash-shell/lab07

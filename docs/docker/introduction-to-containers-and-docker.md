@@ -150,7 +150,7 @@ Workspace: `~/rebash-docker/module-01`
 
 Local Docker daemon on Ubuntu 22.04/24.04 or Docker Desktop. Remove lab containers before you finish.
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 mkdir -p ~/rebash-docker/module-01 && cd ~/rebash-docker/module-01
 ```
 
@@ -165,7 +165,7 @@ You join a platform team and need to confirm Docker works on a new laptop before
 Onboarding checklists start with version and daemon health.
 
 {% raw %}
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-docker/module-01
 docker version | tee docker-version.txt
 docker info --format '{{ "{{" }}ServerVersion{{ "}}" }} {{ "{{" }}.OperatingSystem{{ "}}" }}' | tee docker-info-snippet.txt
@@ -182,7 +182,7 @@ test -s docker-info-snippet.txt
 
 Containers start from an image and exit when the command finishes — unlike a VM you boot and log into.
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-docker/module-01
 docker run --rm alpine:3.20 uname -a | tee alpine-uname.txt
 grep -q 'Linux' alpine-uname.txt
@@ -197,7 +197,7 @@ grep -q 'Linux' alpine-uname.txt
 Run Alpine in the background, then inspect PID, image, and status — evidence that this is a process-isolated workload, not a hypervisor guest.
 
 {% raw %}
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-docker/module-01
 docker run -d --name rebash-mod01-facts alpine:3.20 sleep 300
 docker inspect rebash-mod01-facts --format 'Pid={{ "{{" }}.State.Pid{{ "}}" }} Image={{ "{{" }}.Config.Image{{ "}}" }} Status={{ "{{" }}.State.Status{{ "}}" }}' | tee container-facts.txt
@@ -237,7 +237,7 @@ Containers share the host kernel; cgroups limit this process tree. A VM runs a s
 
 Run and merge:
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-docker/module-01
 docker run --rm alpine:3.20 cat /proc/1/cgroup | head -n 3 | tee cgroup-snippet.txt
 cat vm-contrast.txt >> container-facts.txt
@@ -256,7 +256,7 @@ grep -q 'shared kernel' container-facts.txt
 
 ### Cleanup
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-docker/module-01
 docker rm -f rebash-mod01-facts 2>/dev/null || true
 docker rmi alpine:3.20 2>/dev/null || true

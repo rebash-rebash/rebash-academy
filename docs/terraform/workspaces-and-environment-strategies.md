@@ -75,7 +75,7 @@ One configuration code path; workspace selection switches which state file Terra
 
 **Workspaces** are named state instances for a single root module:
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 terraform workspace new dev
 terraform workspace new staging
 terraform workspace select dev
@@ -149,7 +149,7 @@ Create **dev** and **staging** workspaces, apply environment-specific **Docker c
 
 ### Lab environment
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 mkdir -p ~/rebash-terraform/module-12 && cd ~/rebash-terraform/module-12
 ```
 
@@ -248,7 +248,7 @@ output "container_ids" {
 
 Run:
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-terraform/module-12
 terraform init
 terraform validate
@@ -264,7 +264,7 @@ echo "config OK" | tee config-ok.txt
 Run:
 
 {% raw %}
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-terraform/module-12
 terraform workspace new dev
 terraform workspace select dev
@@ -289,7 +289,7 @@ echo "dev workspace OK" | tee dev-ws-ok.txt
 Run:
 
 {% raw %}
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-terraform/module-12
 terraform workspace new staging
 terraform workspace select staging
@@ -316,7 +316,7 @@ echo "staging workspace OK" | tee staging-ws-ok.txt
 Create `workspace-evidence.sh`:
 
 {% raw %}
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 #!/usr/bin/env bash
 set -euo pipefail
 cd ~/rebash-terraform/module-12
@@ -335,7 +335,7 @@ echo "workspace-evidence PASS" | tee workspace-evidence-pass.txt
 
 Run:
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 chmod +x ~/rebash-terraform/module-12/workspace-evidence.sh
 ~/rebash-terraform/module-12/workspace-evidence.sh
 ```
@@ -367,7 +367,7 @@ chmod +x ~/rebash-terraform/module-12/workspace-evidence.sh
 Add **`prod`** to `workspace_replicas` with value `3`, create workspace, apply, and verify without touching dev/staging containers:
 
 {% raw %}
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-terraform/module-12
 # Add prod = 3 to locals.workspace_replicas in locals.tf
 terraform workspace new prod
@@ -393,7 +393,7 @@ echo "prod workspace challenge OK"
 
 ### Cleanup
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-terraform/module-12
 terraform workspace select prod 2>/dev/null && terraform destroy -auto-approve || true
 terraform workspace select staging && terraform destroy -auto-approve

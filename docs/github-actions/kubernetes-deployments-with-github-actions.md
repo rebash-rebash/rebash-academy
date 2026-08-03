@@ -170,7 +170,7 @@ Create Kubernetes manifests, kubectl and Helm deploy workflow stubs, a rollback 
 
 ### Lab environment
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 mkdir -p ~/rebash-github-actions/module-08/{k8s,charts/demo-app/templates,.github/workflows} && cd ~/rebash-github-actions/module-08
 set -euo pipefail
 ```
@@ -243,7 +243,7 @@ spec:
 
 Validate offline:
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-github-actions/module-08
 set -euo pipefail
 grep -q 'kind: Deployment' k8s/deployment.yaml
@@ -296,7 +296,7 @@ jobs:
 
 Validate offline:
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-github-actions/module-08
 set -euo pipefail
 grep -q 'environment: staging' .github/workflows/k8s-deploy-kubectl.yml
@@ -388,7 +388,7 @@ jobs:
 
 Validate offline:
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-github-actions/module-08
 set -euo pipefail
 grep -q 'demo-app' charts/demo-app/Chart.yaml
@@ -436,7 +436,7 @@ echo 'rollback-check.sh OK'
 
 Run and archive:
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-github-actions/module-08
 set -euo pipefail
 chmod +x rollback-check.sh

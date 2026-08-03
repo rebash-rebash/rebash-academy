@@ -145,7 +145,7 @@ Create a `Host` dataclass with methods, `__post_init__` validation, and `to_dict
 
 Workspace: `~/rebash-python/lab09`
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 mkdir -p ~/rebash-python/lab09 && cd ~/rebash-python/lab09
 set -euo pipefail
 python3 -m venv .venv
@@ -165,7 +165,7 @@ Your inventory CLI will soon accept YAML hosts. Before wiring files, you model a
 
 #### Task 1 – Define Host dataclass with validation and methods
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-python/lab09
 set -euo pipefail
 source .venv/bin/activate
@@ -212,7 +212,7 @@ class Host:
 
 Run:
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 python -c "from host_model import Host; print(Host('web-01','prod','10.0.1.11').label())"
 ```
 
@@ -222,7 +222,7 @@ python -c "from host_model import Host; print(Host('web-01','prod','10.0.1.11').
 
 #### Task 2 – Serialise good hosts and reject bad ones
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-python/lab09
 set -euo pipefail
 source .venv/bin/activate
@@ -275,7 +275,7 @@ PY
 
 #### Task 3 – Reload dicts into Host objects
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-python/lab09
 set -euo pipefail
 source .venv/bin/activate
@@ -332,7 +332,7 @@ Add an optional field `tags: list[str]` with `field(default_factory=list)`. Reje
 
 ### Cleanup
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-python/lab09
 set -euo pipefail
 # rm -rf .venv __pycache__ *.py *.json *.txt

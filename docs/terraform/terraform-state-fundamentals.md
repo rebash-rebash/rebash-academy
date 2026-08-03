@@ -152,7 +152,7 @@ Apply a Docker stack, inspect and manipulate local state with official CLI comma
 
 Workspace: `~/rebash-terraform/module-08`
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 mkdir -p ~/rebash-terraform/module-08 && cd ~/rebash-terraform/module-08
 ```
 
@@ -218,7 +218,7 @@ output "container_name" {
 Run:
 
 {% raw %}
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-terraform/module-08
 terraform init
 terraform apply -auto-approve
@@ -267,7 +267,7 @@ output "container_name" {
 Move state to match renamed resource:
 
 {% raw %}
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-terraform/module-08
 terraform state mv docker_container.app docker_container.application
 terraform state list | tee state-list-after-mv.txt
@@ -297,7 +297,7 @@ Update the revision label in `main.tf`:
 Run:
 
 {% raw %}
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-terraform/module-08
 terraform plan -no-color | tee plan-drift.txt
 grep -E 'must be replaced|forces replacement|docker_container.application' plan-drift.txt
@@ -316,7 +316,7 @@ echo "task3 OK" | tee task3-ok.txt
 Create `state-evidence.sh`:
 
 {% raw %}
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 #!/usr/bin/env bash
 set -euo pipefail
 cd ~/rebash-terraform/module-08
@@ -331,7 +331,7 @@ echo "state-evidence PASS" | tee state-evidence-pass.txt
 
 Run:
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 chmod +x ~/rebash-terraform/module-08/state-evidence.sh
 ~/rebash-terraform/module-08/state-evidence.sh
 ```
@@ -363,7 +363,7 @@ chmod +x ~/rebash-terraform/module-08/state-evidence.sh
 Remove the network from state without deleting it from Docker:
 
 {% raw %}
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-terraform/module-08
 terraform state rm docker_network.app
 terraform state list | tee state-list-challenge.txt
@@ -386,7 +386,7 @@ echo "state rm challenge OK"
 
 ### Cleanup
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-terraform/module-08
 terraform destroy -auto-approve
 rm -f state-list.txt state-show-app.txt task*-ok.txt state-list-after-mv.txt \

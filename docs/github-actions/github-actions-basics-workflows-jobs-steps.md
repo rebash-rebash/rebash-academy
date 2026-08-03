@@ -194,7 +194,7 @@ Complete `.github/workflows/ci.yml` with checkout, environment variables, a cont
 
 ### Lab environment
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 mkdir -p ~/rebash-github-actions/module-02 && cd ~/rebash-github-actions/module-02
 set -euo pipefail
 ```
@@ -209,7 +209,7 @@ Your team’s first production workflow must run on every pull request to `main`
 
 Create the directory layout, then add the test script and README.
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-github-actions/module-02
 set -euo pipefail
 mkdir -p demo-app/tests .github/workflows

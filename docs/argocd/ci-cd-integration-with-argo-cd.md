@@ -122,7 +122,7 @@ Create `.github/workflows/gitops-promote.yml` (with GitHub expression escaping f
 
 Workspace: `~/rebash-argocd/module-14`
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 mkdir -p ~/rebash-argocd/module-14/{.github/workflows,config/clusters/dev,argocd,validation}
 cd ~/rebash-argocd/module-14
 ```
@@ -182,7 +182,7 @@ spec:
             - containerPort: 8080
 ```
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-argocd/module-14
 grep -q '1.0.0' config/clusters/dev/image-tag.txt
 python3 -c "import yaml; yaml.safe_load(open('config/clusters/dev/kustomization.yaml'))"
@@ -254,7 +254,7 @@ jobs:
 
 Validate workflow file exists and key steps present:
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-argocd/module-14
 grep -q 'workflow_dispatch' .github/workflows/gitops-promote.yml
 grep -q 'image_tag' .github/workflows/gitops-promote.yml
@@ -297,7 +297,7 @@ spec:
 
 Offline validate:
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-argocd/module-14
 python3 -c "import yaml; yaml.safe_load(open('argocd/application-dev.yaml'))" \
   && echo 'application: OK' | tee validation/application.txt
@@ -313,7 +313,7 @@ grep -q 'config/clusters/dev' argocd/application-dev.yaml
 
 Copy config to `/tmp` for local file repo if needed, apply Application, and verify sync:
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-argocd/module-14
 cp -a ~/rebash-argocd/module-14/config /tmp/rebash-argocd-module-14/ 2>/dev/null || true
 # Update argocd/application-dev.yaml repoURL to your Git remote or use file:// after copying to /tmp
@@ -361,7 +361,7 @@ Extend the workflow with a job that runs `kubectl kustomize config/clusters/dev`
 
 ### Cleanup
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 rm -rf ~/rebash-argocd/module-14
 ```
 

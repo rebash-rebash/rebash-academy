@@ -101,7 +101,7 @@ Many platform and SRE teams prefer Kustomize because output is plain YAML — ea
 
 Build locally:
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 kubectl kustomize ~/rebash-argocd/module-08/overlays/staging
 ```
 
@@ -147,7 +147,7 @@ Create a Kustomize base and staging overlay under `~/rebash-argocd/module-08`, p
 
 ### Lab environment
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 mkdir -p ~/rebash-argocd/module-08/base \
   ~/rebash-argocd/module-08/overlays/staging \
   ~/rebash-argocd/module-08/apps && cd ~/rebash-argocd/module-08
@@ -216,7 +216,7 @@ spec:
 
 Verify base build:
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-argocd/module-08
 kubectl kustomize base | tee build-base-m08.yaml
 grep -q 'kind: Deployment' build-base-m08.yaml
@@ -260,7 +260,7 @@ patches:
 
 Build staging overlay:
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-argocd/module-08
 kubectl kustomize overlays/staging | tee build-staging-m08.yaml
 grep 'name: stg-guestbook' build-staging-m08.yaml | tee name-prefix-m08.txt
@@ -326,7 +326,7 @@ spec:
 
 Validate Application and compare offline build:
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-argocd/module-08
 kubectl apply --dry-run=client -f apps/application-kustomize-staging.yaml 2>&1 | tee app-kust-dryrun-m08.txt
 python3 -c "import yaml; yaml.safe_load_all(open('build-staging-m08.yaml')); print('YAML OK')" | tee yaml-ok-m08.txt
@@ -341,7 +341,7 @@ grep 'environment: staging' build-staging-m08.yaml | head -1 | tee label-evidenc
 
 Register the lab path with Argo CD (file repo) — copy manifests to `/tmp` if using `file://` URLs:
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-argocd/module-08
 sudo mkdir -p /tmp/rebash-argocd && sudo cp -a ~/rebash-argocd/module-08 /tmp/rebash-argocd/ 2>/dev/null || \
   cp -a ~/rebash-argocd/module-08 /tmp/rebash-argocd/
@@ -391,7 +391,7 @@ Add `overlays/prod/` with `namePrefix: prod-`, three replicas, and a different `
 
 ### Cleanup
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 kubectl delete application rebash-kustomize-staging -n argocd --ignore-not-found
 kubectl delete namespace rebash-argocd-m08 --ignore-not-found
 ```

@@ -169,7 +169,7 @@ Workspace: `~/rebash-k8s/module-01-arch`
 
 Use a disposable **kind** cluster. Never target a shared production API server.
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 mkdir -p ~/rebash-k8s/module-01-arch && cd ~/rebash-k8s/module-01-arch
 kubectl cluster-info | tee cluster-info.txt
 kubectl get nodes | tee nodes-ready-check.txt
@@ -186,7 +186,7 @@ During a cluster health review, your lead asks you to prove which nodes exist, w
 
 Record node roles, versions, and runtime information.
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-k8s/module-01-arch
 kubectl get nodes -o wide | tee nodes-wide.txt
 kubectl get nodes -o jsonpath='{range .items[*]}{.metadata.name}{"\t"}{.status.nodeInfo.kubeletVersion}{"\t"}{.status.nodeInfo.containerRuntimeVersion}{"\n"}{end}' | tee node-runtime.txt
@@ -201,7 +201,7 @@ grep -q Ready nodes-wide.txt
 
 Identify control-plane and node agents running as Pods.
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-k8s/module-01-arch
 kubectl get pods -n kube-system -o wide | tee kube-system-pods.txt
 kubectl get pods -n kube-system -o custom-columns=NAME:.metadata.name,NODE:.spec.nodeName,STATUS:.status.phase | tee kube-system-summary.txt
@@ -238,7 +238,7 @@ test "$(wc -l < arch-evidence.txt)" -gt 10
 
 Run it:
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-k8s/module-01-arch
 chmod +x build-arch-evidence.sh
 ./build-arch-evidence.sh
@@ -277,7 +277,7 @@ Add one line per node to `arch-evidence.txt` showing which `kube-system` DaemonS
 
 ### Cleanup
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-k8s/module-01-arch
 # Evidence files are local only — no cluster resources to delete
 rm -f nodes-wide.txt node-runtime.txt kube-system-pods.txt kube-system-summary.txt control-plane-hits.txt arch-evidence-lines.txt

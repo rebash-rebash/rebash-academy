@@ -137,7 +137,7 @@ Run a deliberate failing Pipeline, triage it with shell checks, practise Replay 
 
 Workspace: `~/rebash-jenkins/module-16`
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 mkdir -p ~/rebash-jenkins/module-16 && cd ~/rebash-jenkins/module-16
 set -euo pipefail
 ```
@@ -152,7 +152,7 @@ Pager: “CI red across payments.” You need a triage checklist and an upgrade 
 
 Run:
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-jenkins/module-16
 set -euo pipefail
 ```
@@ -192,7 +192,7 @@ echo triage_checks_ok
 
 Verify:
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 chmod +x triage-checks.sh
 ```
 
@@ -205,7 +205,7 @@ expected failure for Module 16 triage
 
 Verify:
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 grep -q "sh 'false'" broken.Jenkinsfile
 ```
 
@@ -224,7 +224,7 @@ Create/run a lab job with `broken.Jenkinsfile`, paste Console Output to `console
 
 Run:
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-jenkins/module-16
 set -euo pipefail
 ```
@@ -247,7 +247,7 @@ pipeline {
 
 Verify:
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 diff -u broken.Jenkinsfile fixed.Jenkinsfile | tee replay-fix.diff
 grep -q "sh 'true'" fixed.Jenkinsfile
 printf 'replay_lesson=commit_fix_to_git_not_replay_only\n' | tee replay-lesson.txt
@@ -261,7 +261,7 @@ printf 'replay_lesson=commit_fix_to_git_not_replay_only\n' | tee replay-lesson.t
 
 Run:
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-jenkins/module-16
 set -euo pipefail
 ```
@@ -292,7 +292,7 @@ symptoms:
 
 Validate and archive:
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 python3 -c "
 import yaml
 with open('symptoms.yaml') as f:
@@ -310,7 +310,7 @@ print('symptoms.yaml OK')
 
 Run:
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-jenkins/module-16
 set -euo pipefail
 ```
@@ -339,7 +339,7 @@ safe_restart:
 
 Validate and archive:
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 python3 -c "
 import yaml
 with open('lts-upgrade-plan.yaml') as f:
@@ -384,7 +384,7 @@ Capture `java -jar jenkins-cli.jar … list-plugins` output into `plugins-before
 
 ### Cleanup
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 # Fix or delete the deliberately broken lab job
 ls ~/rebash-jenkins/module-16
 ```

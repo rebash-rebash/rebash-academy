@@ -148,7 +148,7 @@ Workspace: `~/rebash-docker/module-06`
 
 Two Dockerfiles live side by side for size comparison.
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 mkdir -p ~/rebash-docker/module-06 && cd ~/rebash-docker/module-06
 ```
 
@@ -202,7 +202,7 @@ CMD ["cat", "/app/out.txt"]
 #### Task 2 – Build both tags and record sizes
 
 {% raw %}
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-docker/module-06
 docker build -f Dockerfile.single -t rebash-mod06:single .
 docker build -f Dockerfile.multi -t rebash-mod06:multi .
@@ -217,7 +217,7 @@ grep -q 'rebash-mod06' image-size-compare.txt
 
 #### Task 3 – Run multi-stage image and prove non-root USER
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-docker/module-06
 docker run --rm rebash-mod06:multi | tee multi-out.txt
 grep -q 'rebash-mod06 artefact' multi-out.txt
@@ -254,7 +254,7 @@ Create `.dockerignore`:
 ```
 
 {% raw %}
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-docker/module-06
 docker build -f Dockerfile.multi -t rebash-mod06:multi-v2 .
 docker image ls rebash-mod06:multi-v2 --format '{{ "{{" }}.Size{{ "}}" }}' | tee multi-v2-size.txt
@@ -274,7 +274,7 @@ test -s multi-v2-size.txt
 
 ### Cleanup
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-docker/module-06
 docker rmi rebash-mod06:single rebash-mod06:multi rebash-mod06:multi-v2 2>/dev/null || true
 ```

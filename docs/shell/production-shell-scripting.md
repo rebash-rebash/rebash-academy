@@ -65,7 +65,7 @@ Production scripts sit between schedulers/CI and system tools. Flags, locks, and
 
 **ShellCheck** is a static analysis tool for shell scripts. It finds unquoted expansions, incorrect `cd` usage, and other bugs before runtime. An **idempotent** script can run twice and leave the system in the same intended state (for example `mkdir -p`, create a user only if missing). A **dry-run** flag prints actions without changing the system. A **lock** ensures only one instance runs critical work — commonly `flock` on a lock file, or `mkdir` as an atomic lock directory.
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 # Atomic lock with mkdir (works without flock)
 if ! mkdir /tmp/myjob.lock 2>/dev/null; then
   echo "another instance is running" >&2
@@ -138,7 +138,7 @@ Build `rotate-demo.sh` under `~/rebash-shell/lab17`: ShellCheck-friendly, with `
 
 Workspace: `~/rebash-shell/lab17`
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 mkdir -p ~/rebash-shell/lab17 && cd ~/rebash-shell/lab17
 set -euo pipefail
 bash --version | head -n1 | tee bash-version.txt
@@ -268,7 +268,7 @@ main "$@"
 
 Run:
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-shell/lab17
 set -euo pipefail
 
@@ -293,7 +293,7 @@ grep -F 'Exit codes:' help.txt
 
 #### Task 2 – Dry-run, real run, and RESULT line
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-shell/lab17
 set -euo pipefail
 
@@ -326,7 +326,7 @@ grep -F 'RESULT=status=noop;rotated=0' second-run-result.txt
 
 Hold the lock in the background and show the second instance exits `4`.
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-shell/lab17
 set -euo pipefail
 
@@ -388,7 +388,7 @@ Add an optional `--flock` mode that locks with `flock` on `${TARGET_DIR}/.rotate
 
 ### Cleanup
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-shell/lab17
 set -euo pipefail
 rm -rf demo-logs

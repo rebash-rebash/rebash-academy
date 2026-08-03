@@ -66,7 +66,7 @@ By the end of this lab, you will be able to:
 
 ## Environment
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 mkdir -p ~/rebash-lab-linux-ops/{bin,reports,logs}
 cd ~/rebash-lab-linux-ops
 ```
@@ -79,7 +79,7 @@ Empty toolkit directories.
 
 ### Task 1 — Disk check
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cat > bin/check-disk.sh <<'EOF'
 #!/usr/bin/env bash
 set -euo pipefail
@@ -102,7 +102,7 @@ chmod +x bin/check-disk.sh
 
 ### Task 2 — Memory and load checks
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cat > bin/check-mem.sh <<'EOF'
 #!/usr/bin/env bash
 set -euo pipefail
@@ -132,7 +132,7 @@ chmod +x bin/check-mem.sh bin/check-load.sh
 
 ### Task 3 — Failed units check
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cat > bin/check-units.sh <<'EOF'
 #!/usr/bin/env bash
 set -euo pipefail
@@ -152,7 +152,7 @@ chmod +x bin/check-units.sh
 
 ### Task 4 — Aggregator
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cat > bin/health-check.sh <<'EOF'
 #!/usr/bin/env bash
 set -uo pipefail
@@ -178,7 +178,7 @@ ls reports/
 The aggregator continues after individual check failures so one report captures all alerts.
 ### Task 5 — Cron schedule
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 crontab -l 2>/dev/null | grep -v rebash-lab-linux-ops > /tmp/cron.rebash || true
 echo "*/15 * * * * $HOME/rebash-lab-linux-ops/bin/health-check.sh >> $HOME/rebash-lab-linux-ops/logs/cron.log 2>&1" >> /tmp/cron.rebash
 crontab /tmp/cron.rebash
@@ -214,7 +214,7 @@ Document exit codes (`0` ok, `2` threshold/failure), how to run, and how to unin
 
 ## Cleanup
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 crontab -l 2>/dev/null | grep -v rebash-lab-linux-ops | crontab - || true
 rm -rf ~/rebash-lab-linux-ops
 ```

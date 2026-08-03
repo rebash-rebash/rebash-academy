@@ -135,7 +135,7 @@ Under `~/rebash-python/lab21`, run sequential versus `ThreadPoolExecutor` (and o
 
 Workspace: `~/rebash-python/lab21`
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 mkdir -p ~/rebash-python/lab21 && cd ~/rebash-python/lab21
 set -euo pipefail
 python3 --version | tee python-version.txt
@@ -268,7 +268,7 @@ if __name__ == "__main__":
 
 Run:
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-python/lab21
 set -euo pipefail
 ```
@@ -279,7 +279,7 @@ set -euo pipefail
 
 #### Task 2 – Run and assert timing evidence
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-python/lab21
 set -euo pipefail
 
@@ -307,7 +307,7 @@ PY
 
 #### Task 3 – Pack evidence
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-python/lab21
 set -euo pipefail
 
@@ -352,7 +352,7 @@ Add a `ProcessPoolExecutor` path that hashes large byte strings (CPU-bound) and 
 
 ### Cleanup
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-python/lab21
 set -euo pipefail
 # Server is daemonised per run and shut down in finally — nothing left listening

@@ -168,7 +168,7 @@ Create Deployment, Service, and Ingress manifests; validate them with dry-run; e
 
 Workspace: `~/rebash-k8s/module-06`
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 mkdir -p ~/rebash-k8s/module-06 && cd ~/rebash-k8s/module-06
 ```
 
@@ -228,7 +228,7 @@ spec:
 
 Apply and verify:
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-k8s/module-06
 kubectl apply -f namespace.yaml
 kubectl apply -f web-backend.yaml
@@ -267,7 +267,7 @@ spec:
 
 Validate before or after apply:
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-k8s/module-06
 kubectl apply --dry-run=client -f ingress.yaml | tee ingress-dry-run.txt
 kubectl apply -f ingress.yaml
@@ -301,7 +301,7 @@ spec:
 
 Apply and test (kind maps node ports to localhost):
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-k8s/module-06
 kubectl apply -f web-nodeport.yaml
 kubectl get svc web-nodeport -n rebash-m06 -o wide | tee nodeport.txt
@@ -342,7 +342,7 @@ Install ingress-nginx on kind, re-apply `ingress.yaml`, add `127.0.0.1 demo.lab.
 
 ### Cleanup
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 kubectl delete namespace rebash-m06 --ignore-not-found --wait=true
 ```
 

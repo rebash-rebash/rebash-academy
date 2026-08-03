@@ -118,7 +118,7 @@ Stash experimental pipeline edits, soft-reset an unpushed commit and recommit, t
 
 Workspace: `~/rebash-git/module-07` (subdir `undo-lab`)
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 mkdir -p ~/rebash-git/module-07/undo-lab && cd ~/rebash-git/module-07/undo-lab
 set -euo pipefail
 ```
@@ -131,7 +131,7 @@ You started risky pipeline edits, must switch to hotfix branch (stash). Locally 
 
 #### Task 1 – Stash and restore WIP
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-git/module-07
 set -euo pipefail
 rm -rf undo-lab && mkdir undo-lab && cd undo-lab
@@ -157,7 +157,7 @@ cd ..
 
 #### Task 2 – Soft reset unpushed commit
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-git/module-07/undo-lab
 set -euo pipefail
 git add deploy.yaml
@@ -179,7 +179,7 @@ cd ..
 
 Simulate bad deploy commit then revert.
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-git/module-07/undo-lab
 set -euo pipefail
 printf 'replicas: 99\n' > deploy.yaml
@@ -227,7 +227,7 @@ Create script `safe-undo.sh` that prints whether to use stash, reset, or revert 
 
 ### Cleanup
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 ls ~/rebash-git/module-07/undo-lab
 ```
 

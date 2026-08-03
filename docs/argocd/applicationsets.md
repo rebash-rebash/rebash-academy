@@ -160,7 +160,7 @@ Create an ApplicationSet with a **list** generator for dev and staging environme
 
 ### Lab environment
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 mkdir -p ~/rebash-argocd/module-09/overlays/{dev,staging} \
   ~/rebash-argocd/module-09/appsets && cd ~/rebash-argocd/module-09
 ```
@@ -245,7 +245,7 @@ spec:
 
 Verify overlays build:
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-argocd/module-09
 kubectl kustomize overlays/dev | grep 'replicas:' | tee dev-replicas-m09.txt
 kubectl kustomize overlays/staging | grep 'replicas:' | tee staging-replicas-m09.txt
@@ -392,7 +392,7 @@ if __name__ == "__main__":
 
 Run validation:
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-argocd/module-09
 mkdir -p scripts
 chmod +x scripts/validate_appset.py
@@ -409,7 +409,7 @@ kubectl apply --dry-run=client -f appsets/applicationset-list.yaml 2>&1 | tee ku
 
 Copy lab to `/tmp` for `file://` repo URL if needed, then apply:
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-argocd/module-09
 cp -a ~/rebash-argocd/module-09 /tmp/rebash-argocd/ 2>/dev/null || true
 kubectl apply -f appsets/applicationset-list.yaml | tee appset-apply-m09.txt
@@ -459,7 +459,7 @@ Author a **matrix** generator stub combining a two-element list (`dev`, `staging
 
 ### Cleanup
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 kubectl delete applicationset rebash-appset-list -n argocd --ignore-not-found
 kubectl delete application rebash-demo-dev rebash-demo-staging -n argocd --ignore-not-found
 kubectl delete namespace rebash-argocd-m09-dev rebash-argocd-m09-staging --ignore-not-found

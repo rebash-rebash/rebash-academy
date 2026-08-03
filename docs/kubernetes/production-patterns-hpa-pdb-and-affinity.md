@@ -186,7 +186,7 @@ Apply production-style manifests combining Deployment (with pod anti-affinity), 
 
 Workspace: `~/rebash-k8s/module-patterns` on a disposable lab cluster.
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 mkdir -p ~/rebash-k8s/module-patterns && cd ~/rebash-k8s/module-patterns
 ```
 
@@ -250,7 +250,7 @@ spec:
 
 Apply:
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-k8s/module-patterns
 kubectl apply -f namespace.yaml -f deployment.yaml
 kubectl rollout status deployment/payments-api -n rebash-m-patterns --timeout=120s
@@ -280,7 +280,7 @@ spec:
 
 Apply and verify:
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-k8s/module-patterns
 kubectl apply -f pdb.yaml
 kubectl get pdb payments-api-pdb -n rebash-m-patterns | tee patterns-pdb.txt
@@ -320,7 +320,7 @@ spec:
 
 Apply and describe:
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-k8s/module-patterns
 kubectl apply -f hpa.yaml
 kubectl get hpa,pdb,deploy -n rebash-m-patterns | tee patterns-objects.txt
@@ -363,7 +363,7 @@ Run `kubectl drain <node> --ignore-daemonsets --delete-emptydir-data` on a multi
 
 ### Cleanup
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 kubectl delete namespace rebash-m-patterns --ignore-not-found
 ```
 
@@ -396,7 +396,7 @@ Confirm the lab before moving on:
 
 
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 # HPA inspection
 kubectl autoscale deployment votestack-api --cpu-percent=70 --min=2 --max=10 -n votestack
 kubectl get hpa -n votestack -w

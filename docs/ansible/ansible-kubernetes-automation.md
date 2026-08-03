@@ -100,7 +100,7 @@ Typical flow:
 
 If the collection is missing in a restricted lab, fall back to:
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 kubectl apply -f manifests/ --dry-run=client
 ```
 
@@ -139,7 +139,7 @@ Create Kubernetes manifests and an Ansible playbook using `kubernetes.core.k8s` 
 
 Workspace: `~/rebash-ansible/module-13`
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 mkdir -p ~/rebash-ansible/module-13/{manifests,playbooks} && cd ~/rebash-ansible/module-13
 ansible --version | tee ansible-version.txt
 ```
@@ -208,7 +208,7 @@ spec:
 
 Validate YAML parses offline:
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-ansible/module-13
 python3 - <<'PY' | tee yaml-validate.txt
 import yaml, pathlib, sys
@@ -269,7 +269,7 @@ Create `playbooks/site-k8s.yml`:
 
 Install collection and run:
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-ansible/module-13
 ansible-galaxy collection install -r requirements.yml
 export KUBECONFIG="${KUBECONFIG:-$(kind get kubeconfig-path --name rebash-ansible 2>/dev/null || echo "$HOME/.kube/config")}"
@@ -288,7 +288,7 @@ echo "live apply OK" | tee apply-ok.txt
 
 #### Task 4 – Package evidence tarball
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-ansible/module-13
 tar -czf module-13-evidence.tgz \
   manifests/ playbooks/ requirements.yml \
@@ -331,7 +331,7 @@ Extend the playbook with `kubernetes.core.k8s_info` to assert the Deployment has
 
 ### Cleanup
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 kubectl delete namespace rebash-demo --ignore-not-found
 rm -rf ~/rebash-ansible/module-13
 ```

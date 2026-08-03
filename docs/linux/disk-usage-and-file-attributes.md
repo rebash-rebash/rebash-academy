@@ -72,7 +72,7 @@ Disk capacity is per **mount**. File attributes live on the **inode**. Tools rep
 | `du` | How much space does this **directory tree** use? |
 | `stat` / `ls -l` | Who owns it, what mode, what size and times? |
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 df -hT
 df -i
 du -sh ~
@@ -119,7 +119,7 @@ On a practice Ubuntu VM, build a sample directory tree, measure it with `du`, co
 
 Workspace: `~/rebash-linux/lab05`
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 mkdir -p ~/rebash-linux/lab05 && cd ~/rebash-linux/lab05
 set -euo pipefail
 whoami | tee lab-user.txt
@@ -138,7 +138,7 @@ On-call reports “disk almost full” on a practice app VM. Before you expand t
 
 #### Task 1 – Build a sample tree and measure with `du`
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-linux/lab05
 set -euo pipefail
 
@@ -165,7 +165,7 @@ test "$(du -sb sample-tree/logs | awk '{print $1}')" -gt "$(du -sb sample-tree/d
 
 #### Task 2 – Mount capacity with `df` (blocks and inodes)
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-linux/lab05
 set -euo pipefail
 
@@ -185,7 +185,7 @@ test -s df-i.txt
 
 #### Task 3 – File attributes with `stat` and evidence pack
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-linux/lab05
 set -euo pipefail
 
@@ -238,7 +238,7 @@ Write `~/rebash-linux/lab05/capacity-scan.sh` that: (1) prints `df -hT` for `.`,
 
 ### Cleanup
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-linux/lab05
 set -euo pipefail
 rm -rf sample-tree

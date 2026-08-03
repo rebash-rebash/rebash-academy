@@ -159,7 +159,7 @@ Create a **kind** cluster, configure the **kubernetes** provider, apply **namesp
 
 Workspace: `~/rebash-terraform/module-18`
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 mkdir -p ~/rebash-terraform/module-18/{manifests,artefacts} && cd ~/rebash-terraform/module-18
 ```
 
@@ -183,7 +183,7 @@ nodes:
 
 Run:
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-terraform/module-18
 kind create cluster --config kind-config.yaml | tee artefacts/kind-create.log
 kind export kubeconfig --name rebash-module-18 --kubeconfig artefacts/kubeconfig
@@ -324,7 +324,7 @@ output "deployment_name" {
 
 Run:
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-terraform/module-18
 terraform init | tee artefacts/init.log
 terraform validate | tee artefacts/validate.log
@@ -340,7 +340,7 @@ echo "provider config OK" | tee artefacts/provider-ok.txt
 
 Run:
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-terraform/module-18
 terraform apply -auto-approve -input=false | tee artefacts/apply.log
 kubectl --kubeconfig artefacts/kubeconfig get ns platform | tee artefacts/ns-platform.txt
@@ -382,7 +382,7 @@ Create `helm.tf.example`:
 
 Verify and capture evidence:
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-terraform/module-18
 grep -q 'Managed by GitOps' docs/gitops-boundary.md
 terraform state list | tee artefacts/state-list.txt
@@ -425,7 +425,7 @@ Scale the Deployment to 2 replicas via Terraform (`replicas: 2` in manifest), ap
 
 ### Cleanup
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-terraform/module-18
 terraform destroy -auto-approve
 kind delete cluster --name rebash-module-18

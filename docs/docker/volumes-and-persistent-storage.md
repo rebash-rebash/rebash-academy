@@ -144,7 +144,7 @@ Workspace: `~/rebash-docker/module-07/host-data`
 
 Named volume `rebash-mod07-data` and bind path `./bind-data` are created during the lab.
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 mkdir -p ~/rebash-docker/module-07/host-data && cd ~/rebash-docker/module-07/host-data
 ```
 
@@ -156,7 +156,7 @@ A stateful sidecar writes cache files that must survive container upgrades. You 
 
 #### Task 1 – Write to a named volume and recreate the container
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-docker/module-07/host-data
 docker volume create rebash-mod07-data | tee volume-create.txt
 docker run --rm --name rebash-mod07-writer -v rebash-mod07-data:/data alpine:3.20 \
@@ -172,7 +172,7 @@ grep -q 'rebash-persist-v1' volume-read-after.txt
 #### Task 2 – Inspect the named volume
 
 {% raw %}
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-docker/module-07/host-data
 docker volume inspect rebash-mod07-data --format 'Name={{ "{{" }}.Name{{ "}}" }} Mountpoint={{ "{{" }}.Mountpoint{{ "}}" }}' | tee volume-inspect.txt
 grep -q 'Name=rebash-mod07-data' volume-inspect.txt
@@ -193,7 +193,7 @@ bind-mount-ok
 
 Run with bind mount:
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-docker/module-07/host-data
 docker run --rm -v "$PWD/bind-data:/config:ro" alpine:3.20 cat /config/config.txt | tee bind-read.txt
 grep -q 'bind-mount-ok' bind-read.txt
@@ -221,7 +221,7 @@ grep -q 'bind-mount-ok' bind-read.txt
 
 Append a second line to the volume from a new container, then pack evidence:
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-docker/module-07/host-data
 docker run --rm -v rebash-mod07-data:/data alpine:3.20 \
   sh -c 'echo rebash-persist-v2 >> /data/cache.txt && wc -l /data/cache.txt' | tee volume-write-v2.txt
@@ -240,7 +240,7 @@ grep -q '2' volume-write-v2.txt
 
 ### Cleanup
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-docker/module-07/host-data
 docker volume rm rebash-mod07-data 2>/dev/null || true
 rm -rf bind-data 2>/dev/null || true

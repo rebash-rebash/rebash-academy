@@ -150,7 +150,7 @@ Build a small lab image, attach a placeholder SBOM JSON, run Trivy when availabl
 
 Workspace: `~/rebash-docker/module-12`
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 mkdir -p ~/rebash-docker/module-12 && cd ~/rebash-docker/module-12
 ```
 
@@ -191,7 +191,7 @@ if __name__ == "__main__":
 
 Build and smoke-test:
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-docker/module-12
 docker build -t rebash-scan-lab:1.0.0 .
 docker run -d --name rebash-scan-18120 -p 18120:5000 rebash-scan-lab:1.0.0
@@ -230,7 +230,7 @@ Create `sbom-placeholder.json`:
 Scan with Trivy if present; otherwise document packages via `docker inspect`:
 
 {% raw %}
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-docker/module-12
 if command -v trivy >/dev/null 2>&1; then
   trivy image --severity HIGH,CRITICAL --format table rebash-scan-lab:1.0.0 | tee scan-results.txt
@@ -267,7 +267,7 @@ echo "Scan gate passed (or fallback documented)"
 
 Run the gate:
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-docker/module-12
 chmod +x check-scan.sh
 ./check-scan.sh scan-results.txt sbom-placeholder.json | tee gate-result.txt
@@ -308,7 +308,7 @@ Export a real SBOM with `trivy image --format cyclonedx rebash-scan-lab:1.0.0 -o
 
 ### Cleanup
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 docker rm -f rebash-scan-18120 2>/dev/null || true
 docker rmi rebash-scan-lab:1.0.0 2>/dev/null || true
 rm -f ~/rebash-docker/module-12/*.txt

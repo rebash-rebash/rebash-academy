@@ -117,7 +117,7 @@ Build commit history where commit #5 introduces invalid pipeline timeout; bisect
 
 Workspace: `~/rebash-git/module-16/bisect-lab`
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 mkdir -p ~/rebash-git/module-16/bisect-lab && cd ~/rebash-git/module-16/bisect-lab
 set -euo pipefail
 ```
@@ -130,7 +130,7 @@ Deploy pipeline started timing out after a series of merges. Last green tag `v-g
 
 #### Task 1 – History with hidden bad commit
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-git/module-16
 set -euo pipefail
 rm -rf bisect-lab
@@ -174,7 +174,7 @@ fi
 
 Run bisect:
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-git/module-16/bisect-lab
 set -euo pipefail
 chmod +x test-timeout.sh
@@ -194,7 +194,7 @@ cd ..
 
 #### Task 3 – Evidence and verification
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-git/module-16/bisect-lab
 set -euo pipefail
 git show HEAD~3:pipeline.env | tee ../good-file.txt
@@ -237,7 +237,7 @@ Introduce skip case: one commit deletes `pipeline.env` — extend script to exit
 
 ### Cleanup
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-git/module-16/bisect-lab && git bisect reset 2>/dev/null || true
 ```
 

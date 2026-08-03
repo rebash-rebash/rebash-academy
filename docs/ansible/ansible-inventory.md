@@ -120,7 +120,7 @@ Ansible loads inventory from `-i` flag, `ansible.cfg` `inventory` setting, or an
 
 Useful commands:
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 ansible-inventory --list          # JSON merged view
 ansible-inventory --graph         # tree of groups
 ansible-inventory --host localhost
@@ -179,7 +179,7 @@ Create INI and YAML inventories with `group_vars` and `host_vars`, deploy tier-s
 
 Workspace: `~/rebash-ansible/module-03`
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 mkdir -p ~/rebash-ansible/module-03/{group_vars,host_vars} && cd ~/rebash-ansible/module-03
 ```
 
@@ -245,7 +245,7 @@ note: primary lab host
 
 List and validate:
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-ansible/module-03
 ansible-inventory -i inventory.ini --graph | tee inventory-graph-ini.txt
 ansible-inventory -i inventory.ini --list | tee inventory-list-ini.json
@@ -294,7 +294,7 @@ all:
 
 Compare listings:
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-ansible/module-03
 ansible-inventory -i inventory.yml --list | tee inventory-list-yml.json
 python3 -c "
@@ -355,7 +355,7 @@ Create `deploy-tier-configs.yml`:
 
 Run against INI inventory:
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-ansible/module-03
 ansible-playbook deploy-tier-configs.yml --syntax-check | tee syntax-tier.txt
 ansible-playbook deploy-tier-configs.yml | tee deploy-tier.txt
@@ -375,7 +375,7 @@ echo "tier deploy OK" | tee tier-deploy-ok.txt
 
 Rename breaks host-specific vars — simulate the mistake:
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-ansible/module-03
 mv host_vars/localhost.yml host_vars/localhost.yml.bak
 ansible-playbook deploy-tier-configs.yml --limit localhost | tee hostvars-miss.txt
@@ -409,7 +409,7 @@ echo "inventory-audit PASS" | tee inventory-audit-pass.txt
 
 Run:
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 chmod +x ~/rebash-ansible/module-03/inventory-audit.sh
 ~/rebash-ansible/module-03/inventory-audit.sh
 ```
@@ -439,7 +439,7 @@ chmod +x ~/rebash-ansible/module-03/inventory-audit.sh
 
 Add `group_vars/all.yml` with `managed_by: ansible`, re-run `deploy-tier-configs.yml`, and confirm `managed_by` appears in every tier config file under `tier-configs/`.
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-ansible/module-03
 ansible-playbook deploy-tier-configs.yml
 grep -l managed_by tier-configs/*.conf | wc -l | tee all-vars-count.txt
@@ -460,7 +460,7 @@ echo "all group_vars visible in tier configs"
 
 ### Cleanup
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-ansible/module-03
 rm -rf ~/rebash-ansible/module-03/tier-configs
 rm -f inventory-graph-ini.txt inventory-list-ini.json ini-merge-ok.txt \

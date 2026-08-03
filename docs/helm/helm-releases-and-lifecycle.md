@@ -161,7 +161,7 @@ Workspace: `~/rebash-helm/module-07`
 
 Helm 3 against kind/minikube; release namespace `rebash-helm-m07`.
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 mkdir -p ~/rebash-helm/module-07/lifecycle-chart/templates && cd ~/rebash-helm/module-07
 ```
 
@@ -246,7 +246,7 @@ spec:
 
 Lint and render:
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-helm/module-07
 helm lint ./lifecycle-chart | tee lint.txt
 helm template lifecycle-demo ./lifecycle-chart | grep -E '^kind:' | sort | uniq -c | tee kinds.txt
@@ -261,7 +261,7 @@ grep -q '0 chart(s) failed' lint.txt
 
 Install the first revision and capture status evidence.
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 kubectl create namespace rebash-helm-m07 --dry-run=client -o yaml | kubectl apply -f -
 helm upgrade --install lifecycle-demo ./lifecycle-chart \
   -n rebash-helm-m07 --wait --timeout 3m | tee install-rev1.txt
@@ -288,7 +288,7 @@ service:
 
 Upgrade and prove the replica change:
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-helm/module-07
 helm template lifecycle-demo ./lifecycle-chart -f rev2-values.yaml | grep 'replicas:' | head -1 | tee render-rev2.txt
 helm upgrade lifecycle-demo ./lifecycle-chart \
@@ -306,7 +306,7 @@ grep -q ' 2 ' history.txt
 
 Roll back and confirm the prior replica count returns.
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 helm rollback lifecycle-demo 1 -n rebash-helm-m07 --wait --timeout 3m | tee rollback.txt
 helm history lifecycle-demo -n rebash-helm-m07 | tee history-after-rollback.txt
 helm status lifecycle-demo -n rebash-helm-m07 | tee status-after-rollback.txt
@@ -348,7 +348,7 @@ service:
   port: 80
 ```
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-helm/module-07
 helm upgrade lifecycle-demo ./lifecycle-chart \
   -n rebash-helm-m07 -f bad-image-values.yaml --atomic --wait --timeout 2m 2>&1 | tee atomic-fail.txt || true
@@ -369,7 +369,7 @@ helm status lifecycle-demo -n rebash-helm-m07 | grep -E 'STATUS|REVISION' | tee 
 
 ### Cleanup
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 helm uninstall lifecycle-demo -n rebash-helm-m07 2>/dev/null || true
 kubectl delete namespace rebash-helm-m07 --ignore-not-found
 ```

@@ -169,7 +169,7 @@ Workspace: `~/rebash-gitlab/module-09` with manifests in `manifests/`
 
 File-first lab. YAML validates without a cluster; apply steps are optional.
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 mkdir -p ~/rebash-gitlab/module-09/manifests && cd ~/rebash-gitlab/module-09
 ```
 
@@ -224,7 +224,7 @@ spec:
 
 Validate manifests:
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-gitlab/module-09
 python3 -c "
 import yaml, pathlib
@@ -278,7 +278,7 @@ deploy_staging:
 
 Validate offline:
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-gitlab/module-09
 python3 -c "
 import yaml
@@ -297,7 +297,7 @@ print('OK k8s deploy stub')
 
 If `kubectl` is available:
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-gitlab/module-09
 kubectl apply -f manifests/ --dry-run=client | tee k8s-dryrun.txt
 grep -q 'deployment.apps/rebash-gitlab-lab' k8s-dryrun.txt
@@ -305,7 +305,7 @@ grep -q 'deployment.apps/rebash-gitlab-lab' k8s-dryrun.txt
 
 If no cluster is available:
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-gitlab/module-09
 python3 -c "
 import yaml, pathlib
@@ -349,7 +349,7 @@ Add `manifests/kustomization.yaml` listing both resources and change the deploy 
 
 ### Cleanup
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 rm -f ~/rebash-gitlab/module-09/k8s-dryrun.txt
 # Keep manifests/ and .gitlab-ci.yml for later modules
 ```

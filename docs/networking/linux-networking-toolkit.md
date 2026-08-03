@@ -75,7 +75,7 @@ Each tool interrogates a layer of the local stack and the path beyond. Your scri
 | `traceroute` / `tracepath` | Where does the path fail or slow down? |
 | `curl` | Does the application protocol succeed (HTTP status, TLS)? |
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 ip -br addr
 ip route
 ss -lntu
@@ -95,7 +95,7 @@ Incidents often mix DNS, firewall, and application failures. Without a toolkit o
 5. **App** — `curl -I` / `curl -v` to the URL.  
 6. **Pack** — tar the text outputs for the ticket.
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 curl -sS -o /dev/null -w '%{http_code}\n' https://example.com/
 ```
 
@@ -132,7 +132,7 @@ Build and run `netdiag.sh` that collects `ip`, `ss`, `dig`, path, and `curl` evi
 
 Workspace: `~/rebash-networking/lab15`
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 mkdir -p ~/rebash-networking/lab15 && cd ~/rebash-networking/lab15
 set -euo pipefail
 whoami | tee admin-user.txt
@@ -151,7 +151,7 @@ A teammate reports “the API is down”. You are on a jump host and must produc
 
 #### Task 1 – Manual toolkit pass
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-networking/lab15
 set -euo pipefail
 
@@ -184,7 +184,7 @@ curl -sSI --max-time 10 https://example.com/ 2>&1 | tee 07-curl-headers.txt || t
 
 #### Task 2 – Cohesive diagnostic script
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-networking/lab15
 set -euo pipefail
 ```
@@ -234,7 +234,7 @@ tar -czf "$OUT/../evidence.tgz" -C "$OUT" .
 ls -l "$OUT/../evidence.tgz"
 ```
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 chmod +x netdiag.sh
 ./netdiag.sh example.com https://example.com/ ./diag-out
 test -s evidence.tgz
@@ -247,7 +247,7 @@ ls -l evidence.tgz | tee evidence-ls.txt
 
 #### Task 3 – Quick asserts on the pack
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-networking/lab15
 set -euo pipefail
 
@@ -289,7 +289,7 @@ Extend `netdiag.sh` to accept `TARGET_HOST` and write an extra `ss -tn state est
 
 ### Cleanup
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-networking/lab15
 # Keep netdiag.sh and evidence.tgz for your notes; remove temp dir if desired:
 # rm -rf diag-out

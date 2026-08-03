@@ -75,7 +75,7 @@ A **process** is an instance of a running programme. Important fields include PI
 | `nohup` | Survive terminal hangup (ad hoc) |
 | systemd service | Supervised long-running work |
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 ps -eo pid,ppid,user,stat,pcpu,pmem,cmd --sort=-pcpu | head
 ```
 
@@ -132,7 +132,7 @@ On a practice Ubuntu VM, start lab worker processes, inspect them with `ps`, adj
 
 Workspace: `~/rebash-linux/lab09`
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 mkdir -p ~/rebash-linux/lab09 && cd ~/rebash-linux/lab09
 set -euo pipefail
 whoami | tee lab-user.txt
@@ -151,7 +151,7 @@ A batch “report” job was started in SSH and is still consuming CPU after the
 
 #### Task 1 – Start workers and inspect with ps
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-linux/lab09
 set -euo pipefail
 
@@ -175,7 +175,7 @@ grep -q "$W2" workers-ps.txt
 
 #### Task 2 – Renice and job-control style background proof
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-linux/lab09
 set -euo pipefail
 
@@ -200,7 +200,7 @@ awk 'NR==2 {exit !($2 == 15)}' worker3-nice.txt
 
 #### Task 3 – Graceful stop with TERM and evidence pack
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-linux/lab09
 set -euo pipefail
 
@@ -275,7 +275,7 @@ Write `~/rebash-linux/lab09/graceful-stop.sh` that: (1) starts `sleep 120` in th
 
 ### Cleanup
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-linux/lab09
 set -euo pipefail
 # Stop any leftover lab sleeps matching our pattern

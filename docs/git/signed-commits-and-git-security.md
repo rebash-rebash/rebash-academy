@@ -117,7 +117,7 @@ Generate SSH signing key, configure Git, create signed commit, and add `.gitleak
 
 Workspace: `~/rebash-git/module-15`
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 mkdir -p ~/rebash-git/module-15 && cd ~/rebash-git/module-15
 set -euo pipefail
 ```
@@ -130,7 +130,7 @@ DevSecOps mandates signed commits on platform repos and documents secret scannin
 
 #### Task 1 – SSH signing key (lab-only)
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-git/module-15
 set -euo pipefail
 rm -rf security-lab ~/.ssh/rebash-sign-key 2>/dev/null || true
@@ -154,7 +154,7 @@ cd ..
 
 #### Task 2 – Signed commit and verify
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-git/module-15/security-lab
 set -euo pipefail
 printf '# secure service\n' > README.md
@@ -197,7 +197,7 @@ echo 'scan_complete'
 
 Run scans and commit:
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-git/module-15/security-lab
 set -euo pipefail
 chmod +x secret-scan-checks.sh
@@ -242,7 +242,7 @@ Run `gitleaks detect --no-git -v` or `trufflehog filesystem .` on a dummy file c
 
 ### Cleanup
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 # Remove lab signing key when done:
 # rm -f ~/.ssh/rebash-sign-key ~/.ssh/rebash-sign-key.pub
 ls ~/rebash-git/module-15/security-lab

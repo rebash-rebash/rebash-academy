@@ -189,7 +189,7 @@ Create a multi-stage Dockerfile, `.dockerignore`, and a GHCR build workflow stub
 
 ### Lab environment
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 mkdir -p ~/rebash-github-actions/module-07/{app/dist,.github/workflows} && cd ~/rebash-github-actions/module-07
 set -euo pipefail
 ```
@@ -202,7 +202,7 @@ Your microservice must build a minimal nginx image on every merge to `main`, tag
 
 #### Task 1 – Create application stub and Dockerfile
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-github-actions/module-07
 set -euo pipefail
 echo '<html><body><h1>REBASH Module 7</h1></body></html>' > app/dist/index.html
@@ -229,7 +229,7 @@ EXPOSE 8080
 
 Validate offline:
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-github-actions/module-07
 set -euo pipefail
 grep -q 'USER nginx' Dockerfile
@@ -289,7 +289,7 @@ jobs:
 
 Validate offline:
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-github-actions/module-07
 set -euo pipefail
 grep -q 'docker/build-push-action@v6' .github/workflows/docker-build.yml
@@ -319,7 +319,7 @@ echo "validate-docker-pipeline: OK"
 
 Run it:
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-github-actions/module-07
 set -euo pipefail
 chmod +x validate-docker-pipeline.sh
@@ -332,7 +332,7 @@ chmod +x validate-docker-pipeline.sh
 
 #### Task 4 – Optional local Docker build and archive
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-github-actions/module-07
 set -euo pipefail
 

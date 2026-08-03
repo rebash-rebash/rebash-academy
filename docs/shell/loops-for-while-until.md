@@ -65,7 +65,7 @@ Loops sit between your script and the tools it calls. Input lists and streams en
 
 A **`for`** loop walks a fixed list, a range, or a glob. A **`while`** loop repeats while a test or command returns success (exit status 0). An **`until`** loop repeats while the test fails — useful for “wait until ready”. **`break`** leaves the nearest loop; **`continue`** skips the rest of the current iteration.
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 for host in web01 web02 web03; do
   printf 'check %s\n' "$host"
 done
@@ -145,7 +145,7 @@ Build a small batch processor under `~/rebash-shell/lab06` that: (1) loops over 
 
 Workspace: `~/rebash-shell/lab06`
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 mkdir -p ~/rebash-shell/lab06/samples ~/rebash-shell/lab06/out
 cd ~/rebash-shell/lab06
 set -euo pipefail
@@ -193,7 +193,7 @@ test -s "$outdir/file-counts.txt"
 
 Run:
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-shell/lab06
 set -euo pipefail
 
@@ -249,7 +249,7 @@ grep -q 'web02' "$outfile"
 
 Run:
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-shell/lab06
 set -euo pipefail
 
@@ -287,7 +287,7 @@ test -s ./ready.flag
 
 Run:
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-shell/lab06
 set -euo pipefail
 
@@ -341,7 +341,7 @@ Extend `count-logs.sh` into `count-logs-max.sh` that accepts a maximum line coun
 
 ### Cleanup
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-shell/lab06
 set -euo pipefail
 rm -f ready.flag

@@ -68,7 +68,7 @@ NAT sits on a boundary host or appliance. Outbound traffic is often SNAT/PAT’d
 
 **NAT** rewrites the IP header (and often the transport port) as packets cross a trust or address boundary. Private ranges such as `10.0.0.0/8`, `172.16.0.0/12`, and `192.168.0.0/16` commonly need SNAT to reach the public internet. **Port forwarding** is DNAT plus a matching filter allow so clients can reach `public_ip:port` and land on `private_ip:port`.
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 # Read-only — never invent rules from memory
 ip route show
 sudo iptables -t nat -L -n -v 2>/dev/null || sudo nft list ruleset 2>/dev/null | head -n 80
@@ -133,7 +133,7 @@ On a practice Ubuntu VM, collect **read-mostly** NAT and routing evidence under 
 
 Workspace: `~/rebash-networking/lab13`
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 mkdir -p ~/rebash-networking/lab13 && cd ~/rebash-networking/lab13
 set -euo pipefail
 whoami | tee admin-user.txt
@@ -155,7 +155,7 @@ Security asks how private application VMs reach the internet and how a staging w
 
 #### Task 1 – Read routes and NAT tables (safe)
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-networking/lab13
 set -euo pipefail
 
@@ -187,7 +187,7 @@ sysctl net.ipv4.ip_forward 2>/dev/null | tee ip-forward.txt || true
 
 This uses two network namespaces and a veth pair. It does **not** change your host default route. Skip if you lack `sudo` for `ip netns`.
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-networking/lab13
 set -euo pipefail
 
@@ -231,7 +231,7 @@ echo "namespaces removed" | tee ns-cleanup.txt
 
 #### Task 3 – Evidence pack and mental model notes
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-networking/lab13
 set -euo pipefail
 ```
@@ -245,7 +245,7 @@ Conntrack: remembers reverse mapping for replies.
 NAT is not a firewall — filter policy still required.
 ```
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 tar -czf nat-evidence.tgz \
   admin-user.txt ip-addr.txt ip-route.txt tools.txt \
   routing-snapshot.txt ip-forward.txt nat-mental-model.txt \
@@ -295,7 +295,7 @@ Write a short script `map-dnat.sh` that prints a table of “public port → pri
 
 ### Cleanup
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-networking/lab13
 set -euo pipefail
 

@@ -72,7 +72,7 @@ The shell keeps a **current working directory**. Commands resolve relative paths
 | View content | `cat`, `less`, `head`, `tail` |
 | Inspect | `stat`, `file`, `history` |
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 pwd
 ls -la
 mkdir -p project/src
@@ -93,7 +93,7 @@ Automation, deploys, and incident response all assume you can navigate and chang
 6. `cat` dumps a whole file; `less` pages; `head`/`tail` show ends (`tail -f` follows).
 7. `stat` shows inode metadata; `file` guesses content type; `history` lists past commands.
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cp -a src dest
 mv oldname newname
 head -n 20 app.log
@@ -142,7 +142,7 @@ Build a real mini project tree with copy/move/view/inspect operations, prove eac
 
 Workspace: `~/rebash-linux/lab03`
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 mkdir -p ~/rebash-linux/lab03 && cd ~/rebash-linux/lab03
 set -euo pipefail
 pwd | tee pwd-start.txt
@@ -161,7 +161,7 @@ You are preparing a small application directory on a jump host: README, config s
 
 #### Task 1 – Create a project tree and files
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-linux/lab03
 set -euo pipefail
 
@@ -198,7 +198,7 @@ test -d demo-app/logs
 
 #### Task 2 – Copy, move, view, and inspect
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-linux/lab03
 set -euo pipefail
 
@@ -228,7 +228,7 @@ grep -q 'demo-app' readme-cat.txt
 
 #### Task 3 – Safe delete proof, history snippet, evidence pack
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-linux/lab03
 set -euo pipefail
 
@@ -296,7 +296,7 @@ Run it once and keep the script as your stretch artefact.
 
 ### Cleanup
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-linux/lab03
 # Keep cli-fileops-evidence.tgz if you want it.
 # rm -rf demo-app *.txt cli-fileops-evidence.tgz

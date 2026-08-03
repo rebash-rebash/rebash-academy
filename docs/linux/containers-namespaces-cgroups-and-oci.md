@@ -130,7 +130,7 @@ On a practice Ubuntu VM, inspect namespaces and cgroups, create a short-lived us
 
 Workspace: `~/rebash-linux/lab22`
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 mkdir -p ~/rebash-linux/lab22 && cd ~/rebash-linux/lab22
 set -euo pipefail
 whoami | tee admin-user.txt
@@ -152,7 +152,7 @@ A Kubernetes node shows high disk use and occasional OOM kills. Before you blame
 
 #### Task 1 – Namespaces inventory and a safe unshare demo
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-linux/lab22
 set -euo pipefail
 
@@ -178,7 +178,7 @@ ls -l /proc/self/ns | tee self-ns.txt
 
 #### Task 2 – cgroup v2 paths and controllers
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-linux/lab22
 set -euo pipefail
 
@@ -207,7 +207,7 @@ grep -E 'MemTotal|MemAvailable' /proc/meminfo | tee meminfo-snip.txt
 
 #### Task 3 – OverlayFS, OCI runtime detection, optional engine
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-linux/lab22
 set -euo pipefail
 
@@ -285,7 +285,7 @@ Write `~/rebash-linux/lab22/ns-report.sh` that prints: count of namespaces from 
 
 ### Cleanup
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-linux/lab22
 set -euo pipefail
 # No persistent namespaces from the UTS demo

@@ -69,7 +69,7 @@ Any Linux host or WSL2. Work under `~/rebash-lab-shell`.
 
 ## Initial State
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 mkdir -p ~/rebash-lab-shell/{inbox,safe-target}
 cd ~/rebash-lab-shell
 printf 'x\n' > "inbox/my file.txt"
@@ -90,7 +90,7 @@ echo SUCCESS
 
 Run:
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 chmod +x cleanup-broken.sh
 ```
 
@@ -160,7 +160,7 @@ Run two copies in parallel to confirm locking.
 
 ## Cleanup
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 rm -rf ~/rebash-lab-shell
 ```
 

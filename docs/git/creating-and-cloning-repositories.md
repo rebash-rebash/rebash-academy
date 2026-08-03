@@ -124,7 +124,7 @@ comments: false
 
 Bootstrap a real project history.
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-git/module-03
 set -euo pipefail
 rm -rf app remotes clone
@@ -148,7 +148,7 @@ cd ..
 
 Bare remotes accept pushes like GitHub.
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-git/module-03
 set -euo pipefail
 git init --bare remotes/app.git
@@ -169,7 +169,7 @@ grep -q 'initial commit' bare-log.txt
 
 CI-style fresh checkout.
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-git/module-03
 set -euo pipefail
 git clone remotes/app.git clone

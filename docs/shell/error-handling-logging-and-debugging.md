@@ -69,7 +69,7 @@ Strict mode, traps, and logging sit between your script logic and the operator (
 
 A **`trap`** runs a function when a signal or special event happens. `trap on_err ERR` runs on command failure (with `set -E` so it also fires inside functions). `trap on_exit EXIT` always runs at the end for cleanup. **Logging** should go to stderr for humans and usually also to a rotating or dated file. **Debugging** uses `bash -x` (xtrace) so each command is printed before it runs.
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 set -euo pipefail
 set -E
 trap 'echo "ERR at line $LINENO" >&2' ERR
@@ -140,7 +140,7 @@ Build a small ops script under `~/rebash-shell/lab16` that uses strict mode, log
 
 Workspace: `~/rebash-shell/lab16`
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 mkdir -p ~/rebash-shell/lab16 && cd ~/rebash-shell/lab16
 set -euo pipefail
 bash --version | head -n1 | tee bash-version.txt
@@ -246,7 +246,7 @@ main "$@"
 
 Run:
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-shell/lab16
 set -euo pipefail
 
@@ -266,7 +266,7 @@ grep -F 'final_exit=0' preflight.log
 
 Run the failure mode and capture the exit code. Confirm the ERR/EXIT path logged the problem.
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-shell/lab16
 set -euo pipefail
 
@@ -290,7 +290,7 @@ test ! -s fail-stdout.txt || ! grep -q 'RESULT=ok' fail-stdout.txt
 
 Capture an xtrace of the success path, then pack proof files for the ticket.
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-shell/lab16
 set -euo pipefail
 
@@ -342,7 +342,7 @@ Extend `preflight.sh` (or add `preflight-retry.sh`) so a flaky check retries **t
 
 ### Cleanup
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-shell/lab16
 set -euo pipefail
 rm -f preflight.log fail-stdout.txt fail-stderr.txt trace-stdout.txt trace-xtrace.txt

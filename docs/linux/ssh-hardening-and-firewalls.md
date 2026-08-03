@@ -73,7 +73,7 @@ SSH hardening sits between the client and the host kernel. Keys authenticate the
 
 A **host firewall** decides which local ports accept connections. On Ubuntu, **UFW** is a simple front end to `nftables`/`iptables`. On RHEL-like systems, **firewalld** is common. Cloud security groups are a *separate* layer in front of the VM — both must allow SSH for remote access to work.
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 ss -lntp | grep -E ':22\b|sshd' || true
 sudo sshd -T | grep -Ei 'passwordauthentication|permitrootlogin|pubkeyauthentication|maxauthtries'
 sudo ufw status verbose 2>/dev/null || sudo firewall-cmd --list-all 2>/dev/null || true
@@ -143,7 +143,7 @@ On a practice Ubuntu VM, install a lab SSH key, apply a **safe** `sshd` drop-in 
 
 Workspace: `~/rebash-linux/lab20`
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 mkdir -p ~/rebash-linux/lab20 && cd ~/rebash-linux/lab20
 set -euo pipefail
 whoami | tee admin-user.txt
@@ -175,7 +175,7 @@ Security asks you to harden a new Ubuntu app VM before it goes on the public int
 
 Create a key used only for this lab, and capture what `sshd` is currently enforcing.
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-linux/lab20
 set -euo pipefail
 
@@ -208,7 +208,7 @@ ls -l "$KEY" "${KEY}.pub" | tee key-ls.txt
 
 Add only safe knobs. Do **not** disable passwords in this task.
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-linux/lab20
 set -euo pipefail
 
@@ -251,7 +251,7 @@ grep -E ':22\b|sshd' ss-after-reload.txt
 
 This task never enables UFW unless OpenSSH is already allowed.
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-linux/lab20
 set -euo pipefail
 
@@ -341,7 +341,7 @@ Write an executable script `~/rebash-linux/lab20/check-ssh-safe.sh` that exits *
 
 ### Cleanup
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-linux/lab20
 set -euo pipefail
 

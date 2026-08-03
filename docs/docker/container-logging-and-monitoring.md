@@ -147,7 +147,7 @@ Deploy a service with a Dockerfile `HEALTHCHECK`, collect logs with `docker logs
 
 Workspace: `~/rebash-docker/module-13`
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 mkdir -p ~/rebash-docker/module-13 && cd ~/rebash-docker/module-13
 ```
 
@@ -199,7 +199,7 @@ HTTPServer(("0.0.0.0", 8080), H).serve_forever()
 
 Build and run:
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-docker/module-13
 docker build -t rebash-log-lab:1.0.0 .
 docker run -d --name rebash-log-18130 -p 18130:8080 rebash-log-lab:1.0.0
@@ -217,7 +217,7 @@ grep -q ok curl-healthz.txt
 Collect stdout logs and one-shot resource snapshot:
 
 {% raw %}
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-docker/module-13
 docker logs rebash-log-18130 2>&1 | tee container-logs.txt
 grep -q 'startup service=rebash-log-lab' container-logs.txt
@@ -235,7 +235,7 @@ test -s stats-snapshot.txt
 Wait for the health probe to report healthy:
 
 {% raw %}
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-docker/module-13
 docker inspect rebash-log-18130 --format 'Health={{ "{{" }}.State.Health.Status{{ "}}" }} Status={{ "{{" }}.State.Status{{ "}}" }}' | tee health-inspect.txt
 grep -E 'Health=healthy|Health=starting' health-inspect.txt
@@ -276,7 +276,7 @@ Add a Compose file with `logging` driver options (`max-size`, `max-file`) and pr
 
 ### Cleanup
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 docker rm -f rebash-log-18130 2>/dev/null || true
 docker rmi rebash-log-lab:1.0.0 2>/dev/null || true
 rm -f ~/rebash-docker/module-13/*.txt

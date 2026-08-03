@@ -176,7 +176,7 @@ Workspace: `~/rebash-gitlab/module-16`
 
 File-first lab. Metrics export integrates with observability stacks when pushed to GitLab.
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 mkdir -p ~/rebash-gitlab/module-16 && cd ~/rebash-gitlab/module-16
 set -euo pipefail
 ```
@@ -220,7 +220,7 @@ PY
 
 Run with simulated variables:
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-gitlab/module-16
 set -euo pipefail
 chmod +x collect-pipeline-evidence.sh
@@ -261,7 +261,7 @@ alerts:
 
 Validate offline:
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-gitlab/module-16
 set -euo pipefail
 python3 -c "
@@ -306,7 +306,7 @@ collect-evidence:
 
 Validate offline:
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-gitlab/module-16
 set -euo pipefail
 python3 -c "
@@ -337,7 +337,7 @@ echo 'module-16 observability lab passed'
 
 Run it:
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-gitlab/module-16
 set -euo pipefail
 chmod +x validate-observability.sh
@@ -379,7 +379,7 @@ Extend `collect-pipeline-evidence.sh` to accept a second argument — path to a 
 
 ### Cleanup
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 rm -f ~/rebash-gitlab/module-16/evidence.json /tmp/evidence-check.json 2>/dev/null || true
 ls ~/rebash-gitlab/module-16
 ```

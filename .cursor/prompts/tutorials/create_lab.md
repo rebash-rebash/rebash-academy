@@ -142,7 +142,7 @@ Keep each task **straight and readable** — Microsoft Learn style:
 
 #### Canonical pattern (preferred)
 
-Use Material fence titles: files get `title="filename"`, commands get `title="Terminal"`.  
+Use Material fence titles: files get `title="filename"`, commands get `{.bash .ra-terminal title="Terminal"}` so dark terminal chrome works without JavaScript.  
 Put success criteria in `!!! example "Expected output"` (not only bold prose).  
 Always set a language tag. Optional: `linenums="1"` on long files (40+ lines).
 
@@ -159,7 +159,7 @@ print("hello from rebash")
 
 Run it:
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-<tech>/labNN
 python3 hello.py | tee hello-out.txt
 grep -q 'hello from rebash' hello-out.txt
@@ -190,7 +190,7 @@ volumes:
 
 Start and check:
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-jenkins/module-02
 docker compose up -d
 docker compose ps | tee compose-ps.txt

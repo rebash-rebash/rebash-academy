@@ -73,7 +73,7 @@ By the end of this lab, you will be able to:
 
 ## Environment
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 export LAB_PREFIX="rebash-docker-gate-$(whoami | tr '[:upper:]' '[:lower:]' | tr -cd 'a-z0-9-' | cut -c1-12)"
 mkdir -p ~/rebash-lab-docker-gate && cd ~/rebash-lab-docker-gate
 git init -b main
@@ -95,7 +95,7 @@ You will build a minimal Flask status API, containerise it, and wire a pipeline 
 
 **Instructions:**
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-lab-docker-gate
 
 mkdir -p app
@@ -142,7 +142,7 @@ docker build -t rebash-status:local . 2>/dev/null || echo "Local Docker optional
 **Instructions:**
 
 {% raw %}
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cat > .gitlab-ci.yml <<'EOF'
 stages:
   - build
@@ -219,7 +219,7 @@ git commit -m "feat: docker build, scan gate, manual staging deploy"
 
 **Instructions:**
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 git remote add origin "git@gitlab.com:YOUR_GROUP/${LAB_PREFIX}.git"
 git push -u origin main
 ```
@@ -240,7 +240,7 @@ Watch **build-image** and **scan-image** complete. **deploy-staging** should app
 
 Add a failing label to the Dockerfile:
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 sed -i.bak '/^CMD/i LABEL scan-override=fail' Dockerfile
 git add Dockerfile
 git commit -m "test: inject scan policy failure"
@@ -259,7 +259,7 @@ git push origin main
 
 **Instructions:**
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 git revert HEAD --no-edit
 git push origin main
 ```
@@ -348,7 +348,7 @@ Replace `scan-image` script with:
 
 Delete images from GitLab Container Registry and remove the lab project when finished.
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~ && rm -rf ~/rebash-lab-docker-gate
 ```
 

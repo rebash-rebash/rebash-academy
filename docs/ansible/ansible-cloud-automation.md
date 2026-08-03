@@ -93,7 +93,7 @@ Multi-cloud organisations standardise on Ansible for bootstrapping, drift remedi
 
 **AWS credential environment variables (common):**
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 export AWS_ACCESS_KEY_ID=...
 export AWS_SECRET_ACCESS_KEY=...
 export AWS_SESSION_TOKEN=...   # when using STS
@@ -142,7 +142,7 @@ Install cloud collections locally, create inventory and playbooks that provision
 
 ### Lab environment
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 mkdir -p ~/rebash-ansible/module-12/{inventory,playbooks,scripts}
 cd ~/rebash-ansible/module-12
 ```
@@ -210,7 +210,7 @@ host_key_checking = False
 
 Install collections:
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-ansible/module-12
 ansible-galaxy collection install -r collections/requirements.yml -p ./collections --force-with-deps | tee galaxy-install.txt
 ansible-galaxy collection list amazon.aws | tee collection-list-aws.txt
@@ -306,7 +306,7 @@ Create `templates/gcp-resource.json.j2`:
 
 Run playbook:
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-ansible/module-12
 mkdir -p templates
 ansible-playbook playbooks/provision-local-registry.yml --syntax-check
@@ -424,7 +424,7 @@ if __name__ == "__main__":
 
 Validate:
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-ansible/module-12
 chmod +x scripts/validate-cloud-matrix.py
 python3 scripts/validate-cloud-matrix.py | tee validate-matrix.txt
@@ -466,7 +466,7 @@ Add `requirements.yml` referencing the three cloud collections with pins, extend
 
 ### Cleanup
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 rm -f ~/rebash-ansible/module-12/run-stubs.txt ~/rebash-ansible/module-12/validate-matrix.txt
 # Keep stubs for portfolio review
 ```

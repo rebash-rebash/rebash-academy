@@ -171,7 +171,7 @@ Workspace: `~/rebash-k8s/module-01`
 
 Use a disposable local cluster. Never target a shared production API server.
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 mkdir -p ~/rebash-k8s/module-01 && cd ~/rebash-k8s/module-01
 ```
 
@@ -185,7 +185,7 @@ You join a platform team onboarding call. Before anyone deploys applications, yo
 
 Confirm client and server versions, node readiness, and API reachability.
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-k8s/module-01
 kubectl version --output=yaml | tee cluster-version.yaml
 kubectl get nodes -o wide | tee nodes-wide.txt
@@ -235,7 +235,7 @@ print("orchestration-facts.yaml: structure OK")
 
 Run validation:
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-k8s/module-01
 python3 validate-facts.py | tee validate-out.txt
 grep -q 'structure OK' validate-out.txt
@@ -283,7 +283,7 @@ spec:
 
 Apply and verify:
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-k8s/module-01
 kubectl apply -f namespace.yaml
 kubectl apply -f pause-pod.yaml
@@ -324,7 +324,7 @@ Add a fifth bullet to `why_orchestration` describing **declarative desired state
 
 ### Cleanup
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 kubectl delete namespace rebash-m01 --ignore-not-found --wait=true
 ```
 

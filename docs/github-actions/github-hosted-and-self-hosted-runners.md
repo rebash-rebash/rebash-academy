@@ -159,7 +159,7 @@ Produce a runner decision matrix as validated YAML for three application profile
 
 ### Lab environment
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 mkdir -p ~/rebash-github-actions/module-03/.github/workflows && cd ~/rebash-github-actions/module-03
 set -euo pipefail
 ```
@@ -201,7 +201,7 @@ rules:
 
 Validate offline:
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-github-actions/module-03
 set -euo pipefail
 python3 -c "
@@ -246,7 +246,7 @@ jobs:
 
 Validate offline:
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-github-actions/module-03
 set -euo pipefail
 grep -q 'runs-on: ubuntu-latest' .github/workflows/profile-a-hosted-ci.yml
@@ -284,7 +284,7 @@ jobs:
 
 Validate offline:
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-github-actions/module-03
 set -euo pipefail
 grep -q 'self-hosted' .github/workflows/profile-b-self-hosted-deploy.yml
@@ -310,7 +310,7 @@ Jobs must list ALL required labels in runs-on array.
 
 Validate and archive:
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-github-actions/module-03
 set -euo pipefail
 grep -q 'mandatory' label-contract.txt

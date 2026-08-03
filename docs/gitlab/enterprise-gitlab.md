@@ -176,7 +176,7 @@ Workspace: `~/rebash-gitlab/module-18`
 
 File-first lab. Compliance pipelines apply at the GitLab instance or group level when configured by administrators.
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 mkdir -p ~/rebash-gitlab/module-18/ci/compliance && cd ~/rebash-gitlab/module-18
 set -euo pipefail
 ```
@@ -215,7 +215,7 @@ audit:
 
 Validate offline:
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-gitlab/module-18
 set -euo pipefail
 python3 -c "
@@ -265,7 +265,7 @@ secret-pattern-scan:
 
 Validate offline:
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-gitlab/module-18
 set -euo pipefail
 python3 -c "
@@ -315,7 +315,7 @@ print("enterprise-lab-ok")
 
 Validate offline:
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-gitlab/module-18
 set -euo pipefail
 python3 -c "
@@ -348,7 +348,7 @@ echo 'module-18 enterprise lab passed'
 
 Run it:
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-gitlab/module-18
 set -euo pipefail
 chmod +x validate-enterprise.sh
@@ -390,7 +390,7 @@ Document how GitLab **Compliance pipelines** at the group level differ from proj
 
 ### Cleanup
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 rm -f ~/rebash-gitlab/module-18/app-out.txt 2>/dev/null || true
 ls ~/rebash-gitlab/module-18
 ```

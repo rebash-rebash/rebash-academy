@@ -135,7 +135,7 @@ On a practice Ubuntu VM, generate a lab-only Ed25519 key, enable passwordless SS
 
 Workspace: `~/rebash-linux/lab15`
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 mkdir -p ~/rebash-linux/lab15 && cd ~/rebash-linux/lab15
 set -euo pipefail
 whoami | tee admin-user.txt
@@ -160,7 +160,7 @@ A new engineer needs repeatable SSH access to a bastion: key-based login, a shor
 
 #### Task 1 – Generate lab key and install for localhost
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-linux/lab15
 set -euo pipefail
 
@@ -195,7 +195,7 @@ grep -q OK ssh-localhost.txt
 
 #### Task 2 – Client config Host alias
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-linux/lab15
 set -euo pipefail
 
@@ -237,7 +237,7 @@ grep -q CONFIG_OK ssh-alias.txt
 
 #### Task 3 – scp, rsync, and evidence pack
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-linux/lab15
 set -euo pipefail
 
@@ -302,7 +302,7 @@ Create a second key `rebash_lab_ed25519_b`, append its public key to `~/.ssh/aut
 
 ### Cleanup
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-linux/lab15
 set -euo pipefail
 

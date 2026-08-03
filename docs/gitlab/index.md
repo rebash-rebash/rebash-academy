@@ -76,7 +76,7 @@ Enterprise pipelines · autoscaling runners · GitLab Agent · Terraform automat
 
 ## Diagrams
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 python3 scripts/generate-excalidraw-svg.py
 ```
 

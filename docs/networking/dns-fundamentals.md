@@ -123,7 +123,7 @@ Query `example.com` with `dig` (A/AAAA/NS and optional `+trace`), compare result
 
 Workspace: `~/rebash-networking/lab10`
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 mkdir -p ~/rebash-networking/lab10 && cd ~/rebash-networking/lab10
 set -euo pipefail
 whoami | tee admin-user.txt
@@ -143,7 +143,7 @@ After a DNS provider change, one VM still hits the old site. You must show which
 
 #### Task 1 – Resolver config vs dig A/AAAA/NS
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-networking/lab10
 set -euo pipefail
 
@@ -168,7 +168,7 @@ grep -E '^;; (SERVER|Query time)|ANSWER SECTION' dig-a-full.txt || test -s dig-a
 
 #### Task 2 – Trace or stepwise path
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-networking/lab10
 set -euo pipefail
 
@@ -193,7 +193,7 @@ getent hosts example.com | tee getent-example.txt || true
 
 #### Task 3 – Evidence script
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-networking/lab10
 set -euo pipefail
 ```
@@ -219,7 +219,7 @@ OUT_DIR="$(cd "$(dirname "$0")" && pwd)"
 } | tee "$OUT_DIR/evidence-run.txt"
 ```
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 chmod +x dns-fundamentals-evidence.sh
 ./dns-fundamentals-evidence.sh
 test -s evidence-run.txt
@@ -269,7 +269,7 @@ Extend `dns-fundamentals-evidence.sh` to also print `resolvectl status 2>/dev/nu
 
 ### Cleanup
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-networking/lab10
 # Inspection-only — optional: rm -f dns-fundamentals-evidence.tgz *.txt
 ```

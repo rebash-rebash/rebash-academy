@@ -102,7 +102,7 @@ destination:
 
 CLI registration (typical ops flow):
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 argocd cluster add staging-context --name staging --yes
 ```
 
@@ -152,7 +152,7 @@ Create a cluster secret **template** with placeholders, an Application targeting
 
 ### Lab environment
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 mkdir -p ~/rebash-argocd/module-10/clusters \
   ~/rebash-argocd/module-10/apps \
   ~/rebash-argocd/module-10/manifests \
@@ -209,7 +209,7 @@ data:
 
 Validate template structure (reject if bearer token looks real — placeholder check):
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-argocd/module-10
 grep 'REPLACE_WITH' clusters/cluster-secret-template.yaml | tee placeholder-check-m10.txt
 grep 'argocd.argoproj.io/secret-type: cluster' clusters/cluster-secret-template.yaml
@@ -291,7 +291,7 @@ spec:
 
 Document server comparison:
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-argocd/module-10
 grep -h 'server:' apps/application-incluster.yaml apps/application-external-stub.yaml \
   clusters/cluster-secret-incluster-note.yaml | tee server-compare-m10.txt
@@ -371,7 +371,7 @@ if __name__ == "__main__":
 
 Run validation and apply in-cluster Application (required):
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-argocd/module-10
 chmod +x scripts/validate_multicluster.py
 python3 scripts/validate_multicluster.py . | tee validate-m10.txt
@@ -422,7 +422,7 @@ Create an Argo CD **Project** stub `apps/project-multicluster.yaml` with `destin
 
 ### Cleanup
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 kubectl delete application rebash-multicluster-incluster -n argocd --ignore-not-found
 kubectl delete namespace rebash-argocd-m10 --ignore-not-found
 # Do NOT delete cluster secrets you applied with real credentials via this lab template

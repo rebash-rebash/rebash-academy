@@ -147,7 +147,7 @@ Workspace: `~/rebash-docker/module-01-arch`
 
 Local Docker daemon. Evidence files only — no long-running containers required.
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 mkdir -p ~/rebash-docker/module-01-arch && cd ~/rebash-docker/module-01-arch
 ```
 
@@ -162,7 +162,7 @@ A developer reports “Docker is broken” after switching laptops. Before you r
 The CLI and daemon can differ; record both sides explicitly.
 
 {% raw %}
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-docker/module-01-arch
 docker version | tee docker-version.txt
 docker version --format 'Client={{ "{{" }}.Client.Version{{ "}}" }} Server={{ "{{" }}.Server.Version{{ "}}" }}' | tee version-split.txt
@@ -180,7 +180,7 @@ grep -q 'Server:' docker-version.txt
 `docker info` reveals runtime, cgroup driver, and storage driver — common root causes when containers fail to start.
 
 {% raw %}
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-docker/module-01-arch
 docker info | tee docker-info.txt
 docker info --format 'StorageDriver={{ "{{" }}.Driver{{ "}}" }} CgroupDriver={{ "{{" }}.CgroupDriver{{ "}}" }}' | tee info-drivers.txt
@@ -197,7 +197,7 @@ test -s info-drivers.txt
 
 Contexts route the CLI; `docker system df` shows image/container/volume pressure on the node.
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-docker/module-01-arch
 docker context ls | tee docker-contexts.txt
 docker system df | tee docker-system-df.txt
@@ -228,7 +228,7 @@ grep -E 'Images|Containers|Local Volumes' docker-system-df.txt
 Switch context temporarily (if a second context exists), re-run `docker context ls`, then switch back and append a one-line note to `docker-contexts.txt`.
 
 {% raw %}
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-docker/module-01-arch
 ALT="$(docker context ls --format '{{ "{{" }}.Name{{ "}}" }}' | grep -v "$(docker context show)" | head -n 1 || true)"
 if [ -n "$ALT" ]; then
@@ -254,7 +254,7 @@ echo "Active context after lab: $(docker context show)" | tee -a docker-contexts
 
 No containers were created. Remove evidence files if you do not need them:
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-docker/module-01-arch
 rm -f docker-version.txt version-split.txt docker-info.txt info-drivers.txt \
   docker-contexts.txt docker-contexts-alt.txt docker-system-df.txt 2>/dev/null || true

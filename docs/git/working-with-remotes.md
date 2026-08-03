@@ -118,7 +118,7 @@ Simulate origin + mirror remotes with bare repos, push feature branch, fetch/pru
 
 Workspace: `~/rebash-git/module-08`
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 mkdir -p ~/rebash-git/module-08 && cd ~/rebash-git/module-08
 set -euo pipefail
 ```
@@ -131,7 +131,7 @@ Your app repo pushes to GitHub (`origin`) and an internal mirror (`mirror`) for 
 
 #### Task 1 – Setup app, origin bare, mirror bare
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-git/module-08
 set -euo pipefail
 rm -rf app remotes origin.git mirror.git
@@ -159,7 +159,7 @@ cd ..
 
 #### Task 2 – Feature branch push and multi-fetch
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-git/module-08/app
 set -euo pipefail
 git switch -c feature/remote-demo
@@ -180,7 +180,7 @@ cd ..
 
 #### Task 3 – Delete remote branch and prune
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-git/module-08/app
 set -euo pipefail
 git push origin --delete feature/remote-demo
@@ -227,7 +227,7 @@ Add read-only remote `upstream` pointing at a third bare clone of initial commit
 
 ### Cleanup
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 ls ~/rebash-git/module-08/
 ```
 

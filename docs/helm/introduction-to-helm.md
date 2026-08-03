@@ -150,7 +150,7 @@ Author a minimal Helm chart by hand, lint and render it offline, then install a 
 
 Workspace: `~/rebash-helm/module-01` on your workstation; cluster optional until Task 4.
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 mkdir -p ~/rebash-helm/module-01/rebash-app/templates && cd ~/rebash-helm/module-01
 ```
 
@@ -255,7 +255,7 @@ spec:
 
 #### Task 3 – Lint and render (offline)
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-helm/module-01
 helm lint rebash-app | tee lint-m01.txt
 helm template demo rebash-app --namespace rebash-helm-m01 | tee render-m01.yaml
@@ -280,7 +280,7 @@ metadata:
   name: rebash-helm-m01
 ```
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-helm/module-01
 if command -v helm >/dev/null && kubectl cluster-info >/dev/null 2>&1; then
   kubectl apply -f namespace.yaml
@@ -328,7 +328,7 @@ Bump `replicaCount` to `2` in a separate `values-scale.yaml` file, re-run `helm 
 
 ### Cleanup
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 helm uninstall demo -n rebash-helm-m01 2>/dev/null || true
 kubectl delete namespace rebash-helm-m01 --ignore-not-found
 ```

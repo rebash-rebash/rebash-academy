@@ -139,7 +139,7 @@ Build `filter_inventory.py` under `~/rebash-python/lab03` that filters a sample 
 
 Workspace: `~/rebash-python/lab03`
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 mkdir -p ~/rebash-python/lab03 && cd ~/rebash-python/lab03
 set -euo pipefail
 python3 -m venv .venv
@@ -161,7 +161,7 @@ Operations keeps a flat inventory of hosts with environment tags. Nightly automa
 
 #### Task 1 – Sample inventory and filter script
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-python/lab03
 set -euo pipefail
 # shellcheck disable=SC1091
@@ -251,7 +251,7 @@ if __name__ == "__main__":
 
 Run:
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 test -f inventory.txt
 test -f filter_inventory.py
 ```
@@ -262,7 +262,7 @@ test -f filter_inventory.py
 
 #### Task 2 – Run filter and capture evidence
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-python/lab03
 set -euo pipefail
 # shellcheck disable=SC1091
@@ -280,7 +280,7 @@ grep -F 'probe_attempts=2' filter-output.txt
 
 #### Task 3 – match routing and continue/break checks
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-python/lab03
 set -euo pipefail
 # shellcheck disable=SC1091
@@ -326,7 +326,7 @@ if __name__ == "__main__":
 
 Run:
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 python route_status.py | tee route-output.txt
 grep -F 'active:run-checks|draining:no-new-traffic' route-output.txt
 
@@ -368,7 +368,7 @@ Add `filter_by_env.py` that reads `inventory.txt`, accepts an env name as `sys.a
 
 ### Cleanup
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-python/lab03
 set -euo pipefail
 deactivate 2>/dev/null || true

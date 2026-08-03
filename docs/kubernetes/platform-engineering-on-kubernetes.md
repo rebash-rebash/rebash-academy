@@ -156,7 +156,7 @@ Create a tiny PlatformContract CustomResourceDefinition (CRD) and sample custom 
 
 Workspace: `~/rebash-k8s/module-16`
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 mkdir -p ~/rebash-k8s/module-16 && cd ~/rebash-k8s/module-16
 ```
 
@@ -219,7 +219,7 @@ spec:
 
 Validate offline:
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-k8s/module-16
 set -euo pipefail
 python3 -c "import yaml; yaml.safe_load(open('platform-contract-crd.yaml')); print('CRD YAML OK')"
@@ -261,7 +261,7 @@ spec:
 
 Validate offline:
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-k8s/module-16
 set -euo pipefail
 python3 -c "
@@ -280,7 +280,7 @@ print('sample CR YAML OK')
 
 Install the extension API, wait for Established, then apply the sample contract.
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-k8s/module-16
 set -euo pipefail
 kubectl apply -f platform-contract-crd.yaml
@@ -300,7 +300,7 @@ kubectl get pc checkout-api -n rebash-platform-lab -o yaml | tee sample-pc.yaml
 
 Archive manifests and live object proof for handover.
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-k8s/module-16
 set -euo pipefail
 kubectl api-resources | grep -i platformcontract | tee api-resources.txt
@@ -343,7 +343,7 @@ Add a second PlatformContract with `tier: prod` and `replicas: 3`, then use `kub
 
 ### Cleanup
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 kubectl delete platformcontract checkout-api -n rebash-platform-lab --ignore-not-found
 kubectl delete namespace rebash-platform-lab --ignore-not-found --wait=true
 kubectl delete crd platformcontracts.platform.rebash.io --ignore-not-found

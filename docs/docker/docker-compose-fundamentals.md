@@ -109,7 +109,7 @@ A Compose file lists `services:` with images or build contexts, environment, por
 
 Compose v2 command shape:
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 docker compose version
 docker compose -f compose.yaml up -d
 ```
@@ -150,7 +150,7 @@ Workspace: `~/rebash-docker/module-09`
 
 Host port **18087** maps to the web service.
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 mkdir -p ~/rebash-docker/module-09 && cd ~/rebash-docker/module-09
 ```
 
@@ -200,7 +200,7 @@ volumes:
 
 #### Task 2 – Start stack and check status
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-docker/module-09
 docker compose up -d
 docker compose ps | tee compose-ps.txt
@@ -215,7 +215,7 @@ grep -q 'compose stack ok' compose-curl.txt
 
 #### Task 3 – Prove Redis volume and fetch logs
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-docker/module-09
 docker compose exec redis redis-cli PING | tee redis-ping.txt
 grep -q 'PONG' redis-ping.txt
@@ -257,7 +257,7 @@ Add under `web:` in `compose.yaml`:
 
 Reconcile and verify:
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-docker/module-09
 docker compose up -d
 docker compose ps | tee compose-ps-health.txt
@@ -276,7 +276,7 @@ grep -i 'healthy\|running' compose-ps-health.txt
 
 ### Cleanup
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-docker/module-09
 docker compose down -v
 docker rmi nginx:1.27-alpine redis:7.4-alpine 2>/dev/null || true

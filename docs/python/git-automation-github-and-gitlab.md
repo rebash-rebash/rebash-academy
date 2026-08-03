@@ -146,7 +146,7 @@ Under `~/rebash-python/lab16`, create a local Git repository with Python-driven 
 
 Workspace: `~/rebash-python/lab16`
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 mkdir -p ~/rebash-python/lab16 && cd ~/rebash-python/lab16
 set -euo pipefail
 python3 -m venv .venv
@@ -237,7 +237,7 @@ if __name__ == "__main__":
 
 Run:
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-python/lab16
 set -euo pipefail
 # shellcheck disable=SC1091
@@ -315,7 +315,7 @@ if __name__ == "__main__":
 
 Run:
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-python/lab16
 set -euo pipefail
 # shellcheck disable=SC1091
@@ -348,7 +348,7 @@ print("evidence ok")
 
 Run:
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-python/lab16
 set -euo pipefail
 # shellcheck disable=SC1091
@@ -396,7 +396,7 @@ Extend `local_git_lab.py` to create a branch `lab16/challenge`, commit a file `n
 
 ### Cleanup
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-python/lab16
 deactivate 2>/dev/null || true
 # rm -rf sample-repo .venv

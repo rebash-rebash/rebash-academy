@@ -141,7 +141,7 @@ Under `~/rebash-python/lab18`, list namespaces/pods when kubeconfig works; other
 
 Workspace: `~/rebash-python/lab18`
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 mkdir -p ~/rebash-python/lab18/manifests && cd ~/rebash-python/lab18
 set -euo pipefail
 python3 -m venv .venv
@@ -252,7 +252,7 @@ if __name__ == "__main__":
 
 Run:
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-python/lab18
 set -euo pipefail
 # shellcheck disable=SC1091
@@ -347,7 +347,7 @@ if __name__ == "__main__":
 
 Run:
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-python/lab18
 set -euo pipefail
 # shellcheck disable=SC1091
@@ -381,7 +381,7 @@ print("evidence ok")
 
 Run:
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-python/lab18
 set -euo pipefail
 # shellcheck disable=SC1091
@@ -429,7 +429,7 @@ Add a ConfigMap manifest (`rebash-lab18-config`) with two keys, validate it in `
 
 ### Cleanup
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-python/lab18
 deactivate 2>/dev/null || true
 # Do NOT kind delete cluster / kubectl delete ns from this lab.

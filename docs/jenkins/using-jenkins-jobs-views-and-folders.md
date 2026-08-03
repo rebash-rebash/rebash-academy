@@ -144,7 +144,7 @@ Workspace: `~/rebash-jenkins/module-03`
 
 Controller: `http://127.0.0.1:8080/` (adjust if you remapped ports).
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 mkdir -p ~/rebash-jenkins/module-03 && cd ~/rebash-jenkins/module-03
 set -euo pipefail
 curl -sS -o /dev/null -w "%{http_code}\n" http://127.0.0.1:8080/login | tee controller-login.txt
@@ -164,7 +164,7 @@ Two product squads will share one lab controller this quarter. You must create a
 
 Run:
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-jenkins/module-03
 set -euo pipefail
 
@@ -196,7 +196,7 @@ rules:
 
 Validate and archive:
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 python3 -c "
 import yaml
 with open('jobs-manifest.yaml') as f:
@@ -238,7 +238,7 @@ pipeline {
 
 Then record evidence locally:
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-jenkins/module-03
 set -euo pipefail
 ```
@@ -269,7 +269,7 @@ multibranch=first_class_pipeline
 
 Verify:
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 test -f hello-pipeline.Jenkinsfile
 grep -q 'pipeline_job=' pipeline-vs-freestyle.txt
 printf 'ui_job_created=rebash-demo/hello-pipeline\n' | tee ui-evidence.txt
@@ -289,7 +289,7 @@ In Jenkins:
 
 Run:
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-jenkins/module-03
 set -euo pipefail
 ```
@@ -306,7 +306,7 @@ jobs_visible:
 
 Validate and archive:
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 python3 -c "
 import yaml
 with open('views/course-labs.yaml') as f:
@@ -324,7 +324,7 @@ print('course-labs.yaml OK')
 
 Run:
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-jenkins/module-03
 set -euo pipefail
 ```
@@ -340,7 +340,7 @@ rule=reference credential IDs from Pipeline in later modules
 
 Validate and archive:
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 grep -q 'global=' credentials-paths.txt
 tar -czf module-03-evidence.tgz jobs-manifest.yaml views/course-labs.yaml hello-pipeline.Jenkinsfile pipeline-vs-freestyle.txt credentials-paths.txt folder-layout.txt ui-evidence.txt *.txt
 ls -l module-03-evidence.tgz | tee evidence.txt
@@ -381,7 +381,7 @@ Create a second folder `team-platform` and a Pipeline job `controller-health` th
 
 Keep the controller and `rebash-demo` folder for Module 4. Optionally delete failed experimental jobs only.
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 ls ~/rebash-jenkins/module-03
 # Controller: leave Compose running/stopped with volume intact
 ```

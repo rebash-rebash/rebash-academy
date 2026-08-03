@@ -140,7 +140,7 @@ Author a promotion workflow with staging and production environments (YAML stubs
 
 Workspace: `~/rebash-github-actions/module-15`
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 mkdir -p ~/rebash-github-actions/module-15/.github/workflows && cd ~/rebash-github-actions/module-15
 set -euo pipefail
 ```
@@ -206,7 +206,7 @@ jobs:
 
 Validate offline:
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-github-actions/module-15
 set -euo pipefail
 python3 -c "import yaml; yaml.safe_load(open('.github/workflows/promote.yml')); print('promote workflow OK')"
@@ -250,7 +250,7 @@ jobs:
 
 Validate offline:
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-github-actions/module-15
 set -euo pipefail
 python3 -c "import yaml; yaml.safe_load(open('.github/workflows/rollback.yml')); print('rollback workflow OK')"
@@ -291,7 +291,7 @@ github_environments:
 
 Validate offline:
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-github-actions/module-15
 set -euo pipefail
 python3 -c "
@@ -323,7 +323,7 @@ echo 'module-15 validation passed'
 
 Run and archive:
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-github-actions/module-15
 set -euo pipefail
 chmod +x validate-module-15.sh
@@ -367,7 +367,7 @@ Add `concurrency: group: production` with `cancel-in-progress: false` on product
 
 ### Cleanup
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 ls ~/rebash-github-actions/module-15/.github/workflows/
 ```
 

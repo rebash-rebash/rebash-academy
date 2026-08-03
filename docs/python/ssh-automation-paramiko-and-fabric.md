@@ -136,7 +136,7 @@ Under `~/rebash-python/lab20`, generate lab-only SSH keys, then prove connectivi
 
 Workspace: `~/rebash-python/lab20`
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 mkdir -p ~/rebash-python/lab20 && cd ~/rebash-python/lab20
 set -euo pipefail
 python3 -m venv .venv
@@ -161,7 +161,7 @@ You need a small inventory script that runs `uname -a` on jump hosts. Security a
 
 Create keys **only** under the lab directory. Do not touch `~/.ssh/id_*`.
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-python/lab20
 set -euo pipefail
 # shellcheck disable=SC1091
@@ -306,7 +306,7 @@ if __name__ == "__main__":
 
 Run:
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-python/lab20
 set -euo pipefail
 # shellcheck disable=SC1091
@@ -321,7 +321,7 @@ python -c 'import json; d=json.load(open("ssh-result.json")); assert d["ok"] is 
 
 #### Task 3 – Evidence and key hygiene note
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-python/lab20
 set -euo pipefail
 
@@ -372,7 +372,7 @@ Add `fabric_probe.py` that defines a Fabric `@task` (or a thin wrapper class if 
 
 ### Cleanup
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-python/lab20
 set -euo pipefail
 # Remove ONLY lab keys in this directory — never rm ~/.ssh/id_*

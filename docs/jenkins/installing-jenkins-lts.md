@@ -141,7 +141,7 @@ Start Jenkins LTS with Compose, capture the initial admin password, complete the
 
 Workspace: `~/rebash-jenkins/module-02`
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 mkdir -p ~/rebash-jenkins/module-02 && cd ~/rebash-jenkins/module-02
 set -euo pipefail
 docker version | tee docker-version.txt
@@ -162,7 +162,7 @@ Your team needs a disposable but realistic Jenkins LTS for Pipeline labs. You mu
 
 Run:
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-jenkins/module-02
 set -euo pipefail
 ```
@@ -188,7 +188,7 @@ volumes:
 
 Start and verify:
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 docker compose pull
 docker compose up -d
 docker compose ps | tee compose-ps.txt
@@ -201,7 +201,7 @@ docker compose logs --tail=40 jenkins | tee boot.log
 
 #### Task 2 – Wait for Jenkins and read the initial admin password
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-jenkins/module-02
 set -euo pipefail
 
@@ -237,7 +237,7 @@ In the browser (do not automate credentials into Git):
 
 Then capture non-secret evidence from the shell:
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-jenkins/module-02
 set -euo pipefail
 
@@ -256,7 +256,7 @@ grep -qE '^(200|403|503)$' http-login-code.txt 2>/dev/null || grep -qE '^(200|40
 
 #### Task 4 – Prove persistence across restart (keep volume)
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-jenkins/module-02
 set -euo pipefail
 
@@ -294,7 +294,7 @@ test -s volumes.txt
 
 Pin a specific LTS image digest or minor tag (for example check [Docker Hub tags](https://hub.docker.com/r/jenkins/jenkins/tags) and replace `lts-jdk17` with a dated tag in `compose.yaml`). Recreate the stack with `docker compose up -d --pull always` and prove the tag with:
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-jenkins/module-02
 docker compose images | tee images.txt
 grep jenkins images.txt
@@ -311,7 +311,7 @@ grep jenkins images.txt
 
 **Keep the controller for Modules 3+ (recommended):**
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-jenkins/module-02
 docker compose stop
 # volume jenkins_home retained
@@ -319,14 +319,14 @@ docker compose stop
 
 **Full lab reset (destroys JENKINS_HOME):**
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-jenkins/module-02
 docker compose down -v
 ```
 
 Remove `initialAdminPassword.txt` from shared machines after unlock:
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 rm -f ~/rebash-jenkins/module-02/initialAdminPassword.txt
 ```
 

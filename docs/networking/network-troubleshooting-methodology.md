@@ -77,7 +77,7 @@ A **troubleshooting methodology** is a repeatable path from symptom to root caus
 
 `HOSTALIASES` is a glibc environment variable. It points to a **file** (often under your lab directory) that maps an alias name to another name. Processes that honour it resolve `app.rebash.lab` without editing system `/etc/hosts`. That makes it safe for practice: the override lives only in the lab shell.
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 export HOSTALIASES="$HOME/rebash-networking/lab27/hostaliases"
 getent hosts app.rebash.lab
 ```
@@ -99,7 +99,7 @@ Random `ping` and “restart the pod” waste incidents. A fixed ladder keeps bl
 
 Never skip writing **expected vs actual** at each step. Change configuration only after the layer that failed is named.
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 # Pattern: capture, then decide
 ip -br addr | tee evidence/l1-addr.txt
 ip route get 127.0.0.1 | tee evidence/l3-route.txt
@@ -147,7 +147,7 @@ Under `~/rebash-networking/lab27`, start a local HTTP listener, inject a **lab-o
 
 Workspace: `~/rebash-networking/lab27`
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 mkdir -p ~/rebash-networking/lab27/{evidence,www} && cd ~/rebash-networking/lab27
 set -euo pipefail
 whoami | tee evidence/operator.txt
@@ -172,7 +172,7 @@ A small internal tool should answer on `http://app.rebash.lab:18780/`. After a c
 
 Serve a tiny page on loopback port **18780** only. Keep the process PID in the lab directory.
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-networking/lab27
 set -euo pipefail
 
@@ -199,7 +199,7 @@ grep -qx 'ok-lab27' evidence/curl-direct.txt
 
 Map `app.rebash.lab` with `HOSTALIASES` (file under the lab root). Point the client config at the **wrong port** `18781` so the failure is local and reversible.
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-networking/lab27
 set -euo pipefail
 ```
@@ -224,7 +224,7 @@ export HOSTALIASES="$HOME/rebash-networking/lab27/hostaliases"
 export APP_URL="http://app.rebash.lab:18780/"
 ```
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 # glibc HOSTALIASES: alias → canonical name (then normal resolution)
 set -a
 # shellcheck disable=SC1091
@@ -251,7 +251,7 @@ grep -Ei 'refused|Failed to connect|Connection reset|Could not|Couldn.t connect'
 
 Run a triage script that writes one evidence file per layer and a final `fault.txt`.
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-networking/lab27
 set -euo pipefail
 ```
@@ -334,7 +334,7 @@ grep -q 'ROOT_CAUSE=client_port_mismatch' "$EV/fault.txt"
 echo "triage_ok"
 ```
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 chmod +x triage-l1-l7.sh
 ./triage-l1-l7.sh "$HOME/rebash-networking/lab27" | tee evidence/triage-run.txt
 grep -q 'ROOT_CAUSE=client_port_mismatch' evidence/fault.txt
@@ -377,7 +377,7 @@ Write `fix-client.sh` that sources `client-good.env`, curls `APP_URL`, asserts t
 
 ### Cleanup
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-networking/lab27
 set -euo pipefail
 

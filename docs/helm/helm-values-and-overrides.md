@@ -152,7 +152,7 @@ Maintain base `values.yaml` plus environment overlays (`values-dev.yaml`, `value
 
 Workspace: `~/rebash-helm/module-05` on your workstation.
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 mkdir -p ~/rebash-helm/module-05/rebash-values/templates && cd ~/rebash-helm/module-05
 ```
 
@@ -264,7 +264,7 @@ ingress:
 
 #### Task 3 – Render and diff merge order
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-helm/module-05
 helm template vals-dev rebash-values -f values-dev.yaml --namespace rebash-helm-m05 | tee render-dev-m05.yaml
 helm template vals-prod rebash-values \
@@ -296,7 +296,7 @@ metadata:
   name: rebash-helm-m05
 ```
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-helm/module-05
 if command -v helm >/dev/null && kubectl cluster-info >/dev/null 2>&1; then
   kubectl apply -f namespace.yaml
@@ -345,7 +345,7 @@ Add `--set replicaCount=5` to the prod template command and show it overrides `v
 
 ### Cleanup
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 helm uninstall vals-prod -n rebash-helm-m05 2>/dev/null || true
 kubectl delete namespace rebash-helm-m05 --ignore-not-found
 ```

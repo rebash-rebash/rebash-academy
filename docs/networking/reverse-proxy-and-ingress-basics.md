@@ -72,7 +72,7 @@ Clients reach the proxy; the proxy selects a backend by Host/path and optionally
 | Load balancer | Distribute across many identical backends |
 | Ingress | Kubernetes API for L7 routing to Services |
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 curl -sS -H 'Host: app.lab.local' http://127.0.0.1:18080/
 ```
 
@@ -124,7 +124,7 @@ Run a backend on **18081**, reverse-proxy on **18080**, prove Host-header routin
 
 Workspace: `~/rebash-networking/lab17`
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 mkdir -p ~/rebash-networking/lab17 && cd ~/rebash-networking/lab17
 set -euo pipefail
 whoami | tee admin-user.txt
@@ -144,7 +144,7 @@ You must show a junior engineer why `curl` to an IP fails for a name-based vhost
 
 #### Task 1 – Backend that echoes Host
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-networking/lab17
 set -euo pipefail
 ```
@@ -172,7 +172,7 @@ HTTPServer.allow_reuse_address = True
 HTTPServer(("127.0.0.1", 18081), H).serve_forever()
 ```
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 python3 backend.py >backend.log 2>&1 &
 echo $! > backend.pid
 sleep 0.3
@@ -256,7 +256,7 @@ HTTPServer.allow_reuse_address = True
 HTTPServer(("127.0.0.1", 18080), P).serve_forever()
 ```
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-networking/lab17
 set -euo pipefail
 
@@ -301,7 +301,7 @@ grep -E 'no-vhost|404' via-proxy-miss.txt || grep -qv 'backend-ok' via-proxy-mis
 
 #### Task 3 – Evidence and Ingress mental model
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-networking/lab17
 set -euo pipefail
 ```
@@ -316,7 +316,7 @@ Kubernetes Ingress (simplified):
 Controller (nginx/traefik/etc.) renders reverse-proxy config — same Host proof as this lab.
 ```
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 tar -czf proxy-evidence.tgz \
   admin-user.txt tools.txt mode.txt \
   direct-backend.txt via-proxy-ok.txt via-proxy-miss.txt \
@@ -360,7 +360,7 @@ Add a second path rule (nginx `location /api/` or Python path check) that return
 
 ### Cleanup
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-networking/lab17
 set -euo pipefail
 

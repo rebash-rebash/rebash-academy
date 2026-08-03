@@ -156,7 +156,7 @@ Deploy nginx behind a ClusterIP Service, reach it by DNS from a debug Pod, and c
 
 Workspace: `~/rebash-k8s/module-05`
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 mkdir -p ~/rebash-k8s/module-05 && cd ~/rebash-k8s/module-05
 ```
 
@@ -225,7 +225,7 @@ spec:
 
 Apply and verify endpoints:
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-k8s/module-05
 kubectl apply -f namespace.yaml
 kubectl apply -f web-stack.yaml
@@ -258,7 +258,7 @@ spec:
 
 Apply and read result:
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-k8s/module-05
 kubectl apply -f debug-pod.yaml
 kubectl wait --for=condition=Ready pod/curl-debug -n rebash-m05 --timeout=120s
@@ -272,7 +272,7 @@ grep -q 200 curl-dns.txt
 
 #### Task 3 – EndpointSlice evidence
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-k8s/module-05
 kubectl get endpointslices -n rebash-m05 | tee endpointslices.txt
 kubectl get endpointslices -n rebash-m05 -o yaml | grep -E 'addresses:|ready:' | tee endpointslices-detail.txt
@@ -312,7 +312,7 @@ Scale Deployment to three replicas in `web-stack.yaml`, re-apply, and prove Endp
 
 ### Cleanup
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 kubectl delete namespace rebash-m05 --ignore-not-found --wait=true
 ```
 

@@ -221,7 +221,7 @@ Configure **default and aliased** `kreuzwerker/docker` providers, pin versions, 
 
 Workspace: `~/rebash-terraform/module-05`
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 mkdir -p ~/rebash-terraform/module-05 && cd ~/rebash-terraform/module-05
 ```
 
@@ -371,7 +371,7 @@ output "replica_container" {
 Run:
 
 {% raw %}
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-terraform/module-05
 terraform fmt -recursive
 terraform init | tee init.txt
@@ -395,7 +395,7 @@ echo "provider routing OK" | tee provider-evidence.txt
 
 Simulate a common mistake: temporarily remove `provider = docker.replica` from `docker_network.replica` in `main.tf` (comment the line or delete it), then run plan:
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-terraform/module-05
 terraform plan -no-color | tee plan-alias-bug.txt
 ```
@@ -408,7 +408,7 @@ Restore the line:
 
 Re-plan and confirm only the intended replica resources use the alias:
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-terraform/module-05
 terraform plan -detailed-exitcode -no-color | tee plan-alias-fixed.txt || ec=$?
 test "${ec:-0}" -eq 0
@@ -443,7 +443,7 @@ echo "alias fix OK" | tee alias-fix.txt
 Create `verify-alias.sh`:
 
 {% raw %}
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 #!/usr/bin/env bash
 set -euo pipefail
 cd ~/rebash-terraform/module-05
@@ -457,7 +457,7 @@ echo "alias state evidence OK"
 
 Run:
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 chmod +x ~/rebash-terraform/module-05/verify-alias.sh
 ~/rebash-terraform/module-05/verify-alias.sh | tee challenge-provider.txt
 ```
@@ -475,7 +475,7 @@ chmod +x ~/rebash-terraform/module-05/verify-alias.sh
 
 ### Cleanup
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-terraform/module-05
 terraform destroy -auto-approve
 rm -f init.txt apply.txt providers-mirror.txt provider-evidence.txt plan-alias-bug.txt \

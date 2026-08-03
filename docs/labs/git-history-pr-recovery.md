@@ -88,7 +88,7 @@ Nothing exists yet. You will create:
 
 **Instructions:**
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 rm -rf ~/rebash-lab-git
 mkdir -p ~/rebash-lab-git
 cd ~/rebash-lab-git
@@ -117,7 +117,7 @@ banner=All systems nominal
 
 Seed `main`:
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 git add README.md banner.txt
 git commit -m "Initial status banner config"
 git push -u origin main
@@ -130,7 +130,7 @@ cd ..
 
 **Validation:**
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 git --git-dir=origin.git log --oneline main
 ```
 
@@ -140,7 +140,7 @@ git --git-dir=origin.git log --oneline main
 
 **Instructions:**
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 git clone origin.git contributor
 cd ~/rebash-lab-git/contributor
 git config user.email 'dev@rebash.lab'
@@ -157,7 +157,7 @@ banner=Scheduled maintenance window — expect brief blips
 
 Commit and push the feature branch:
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 git add banner.txt
 git commit -m "Announce maintenance banner"
 git push -u origin feature/banner-maintenance
@@ -174,7 +174,7 @@ cd ..
 
 **Instructions:**
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-lab-git/maintainer
 git pull origin main
 ```
@@ -188,7 +188,7 @@ owner=platform
 
 Publish the metadata change:
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 git add banner.txt
 git commit -m "Add banner owner metadata"
 git push origin main
@@ -205,7 +205,7 @@ cd ..
 
 **Instructions:**
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-lab-git/contributor
 git fetch origin
 git rebase origin/main
@@ -213,7 +213,7 @@ git rebase origin/main
 
 Git should stop on `banner.txt`. Resolve deliberately:
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 # Inspect
 git status
 cat banner.txt
@@ -228,7 +228,7 @@ owner=platform
 
 Continue the rebase:
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 git add banner.txt
 git rebase --continue
 ```
@@ -241,7 +241,7 @@ If an editor opens for the commit message, save and close to accept the original
 
 **Validation:**
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 git log --oneline origin/main..HEAD
 cat banner.txt
 ```
@@ -257,7 +257,7 @@ You should see exactly one feature commit ahead of `main`, with both lines prese
 
 **Instructions:**
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-lab-git/contributor
 ```
 
@@ -269,7 +269,7 @@ API_TOKEN=lab-demo-token-do-not-ship
 
 Stage the mistake commit:
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 git add .env.local
 git commit -m "WIP local env"
 
@@ -278,7 +278,7 @@ git log --oneline -3
 
 **Recover (preferred for already-pushed commits in real life: revert).** Here the bad commit is only local tip — use reset, then keep a revert drill optional:
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 # Soft undo last commit, unstage, delete the secret file
 git reset --soft HEAD~1
 git restore --staged .env.local
@@ -305,7 +305,7 @@ git log --oneline origin/main..HEAD
 
 **Validation:**
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 git show --name-only --pretty=format: HEAD
 test ! -f .env.local && echo 'secret file removed from worktree'
 ```
@@ -321,7 +321,7 @@ test ! -f .env.local && echo 'secret file removed from worktree'
 
 **Instructions:**
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-lab-git/contributor
 git push --force-with-lease origin feature/banner-maintenance
 
@@ -335,7 +335,7 @@ git log --oneline --graph --decorate origin/main..origin/feature/banner-maintena
 
 **Validation (lease protection demo):**
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 # Simulate another push you have not fetched (optional)
 cd ~/rebash-lab-git
 git clone origin.git sneaky
@@ -355,7 +355,7 @@ git push --force-with-lease origin feature/banner-maintenance && echo 'UNEXPECTE
 
 Fetch and decide consciously (for the lab, reset to your recovered tip or rebase again). Simplest clean-up for the demo:
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-lab-git/contributor
 git fetch origin
 git reset --hard origin/feature/banner-maintenance
@@ -395,7 +395,7 @@ For a clean final state, re-checkout your known-good banner + gitignore commits 
 
 ## Cleanup
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 rm -rf ~/rebash-lab-git
 ```
 

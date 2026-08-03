@@ -57,7 +57,7 @@ Teams paste raw plan logs into Slack. You need a short resource-change summary f
 
 ## Environment
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 mkdir -p ~/rebash-lab-python-tf/{fixtures,out}
 cd ~/rebash-lab-python-tf
 python3 -m venv .venv && source .venv/bin/activate
@@ -85,7 +85,7 @@ Create `tfwrap.py`:
 
 ## Validation
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 python tfwrap.py summary --fixture fixtures/plan.json
 python -c 'import json; print(json.load(open("out/summary.json")))'
 ```

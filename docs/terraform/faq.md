@@ -25,7 +25,7 @@ Most module labs use the **`null`** and **`local`** providers so you can complet
 
 Labs assume **Terraform CLI 1.5+** (for `moved` blocks and modern test features). Install from [HashiCorp releases](https://developer.hashicorp.com/terraform/install) or your package manager:
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 terraform version
 # Terraform v1.9.x or newer recommended
 ```
@@ -77,7 +77,7 @@ Complete module tutorials first — each includes a topic-specific Hands-on Lab.
 
 No. This course uses **Excalidraw** SVGs under `docs/assets/excalidraw/`. Regenerate with:
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 python3 scripts/generate-excalidraw-svg.py
 ```
 

@@ -150,7 +150,7 @@ Define a ResourceQuota and LimitRange, run a Pod that fits within both, then pro
 
 Workspace: `~/rebash-k8s/module-08-quota` on a disposable kind or minikube cluster.
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 mkdir -p ~/rebash-k8s/module-08-quota && cd ~/rebash-k8s/module-08-quota
 ```
 
@@ -212,7 +212,7 @@ spec:
 
 Apply and describe the quota:
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-k8s/module-08-quota
 kubectl apply -f namespace.yaml -f resourcequota.yaml -f limitrange.yaml
 kubectl describe resourcequota billing-quota -n rebash-m08-quota | tee quota-describe.txt
@@ -248,7 +248,7 @@ spec:
 
 Apply and verify:
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-k8s/module-08-quota
 kubectl apply -f pod-ok.yaml
 kubectl wait --for=condition=Ready pod/billing-worker -n rebash-m08-quota --timeout=120s
@@ -285,7 +285,7 @@ spec:
 
 Attempt to apply and capture the rejection:
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-k8s/module-08-quota
 kubectl apply -f pod-over.yaml 2>&1 | tee quota-reject.txt || true
 kubectl get events -n rebash-m08-quota --field-selector involvedObject.name=billing-hog --sort-by=.lastTimestamp | tail -n 5 | tee quota-events.txt
@@ -325,7 +325,7 @@ Fill the quota with a second fitting Pod (`billing-worker-2` at 100m CPU), then 
 
 ### Cleanup
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 kubectl delete namespace rebash-m08-quota --ignore-not-found
 ```
 

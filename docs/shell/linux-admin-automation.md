@@ -62,7 +62,7 @@ Admin automation sits between operators (or schedulers) and host facts. The scri
 
 **Linux admin automation** uses shell scripts to perform (or prepare) common operations work: disk usage, service health, user inventory, log size checks, and backup wrappers. The tools are familiar — `df`, `du`, `getent`, `id`, `systemctl`, package managers — wrapped with `set -euo pipefail`, clear output, and safe defaults.
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 df -h /
 getent passwd | wc -l
 systemctl is-active ssh 2>/dev/null || true
@@ -127,7 +127,7 @@ Build a read-mostly host health script that checks disk usage, summarises users,
 
 Workspace: `~/rebash-shell/lab12`
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 mkdir -p ~/rebash-shell/lab12 && cd ~/rebash-shell/lab12
 set -euo pipefail
 hostname | tee hostname.txt
@@ -218,7 +218,7 @@ exit "$STATUS"
 
 Run:
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-shell/lab12
 set -euo pipefail
 
@@ -232,7 +232,7 @@ chmod +x host-health.sh
 
 #### Task 2 – Run the report and assert fields
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-shell/lab12
 set -euo pipefail
 
@@ -256,7 +256,7 @@ cp host-report.txt host-report-okpath.txt
 
 Force a failure without changing the real disk by lowering thresholds.
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-shell/lab12
 set -euo pipefail
 
@@ -309,7 +309,7 @@ Extend `host-health.sh` with a memory line using `/proc/meminfo` (`MemAvailable`
 
 ### Cleanup
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-shell/lab12
 set -euo pipefail
 # Keep the script and evidence if you want; otherwise:

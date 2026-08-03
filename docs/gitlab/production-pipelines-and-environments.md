@@ -175,7 +175,7 @@ Workspace: `~/rebash-gitlab/module-15`
 
 File-first lab. Environment approvals apply when pushed to GitLab.
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 mkdir -p ~/rebash-gitlab/module-15 && cd ~/rebash-gitlab/module-15
 set -euo pipefail
 ```
@@ -252,7 +252,7 @@ deploy-production:
 
 Validate offline:
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-gitlab/module-15
 set -euo pipefail
 python3 -c "
@@ -293,7 +293,7 @@ gitlab_environments:
 
 Validate offline:
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-gitlab/module-15
 set -euo pipefail
 python3 -c "
@@ -326,7 +326,7 @@ echo 'module-15 promotion lab passed'
 
 Run it:
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-gitlab/module-15
 set -euo pipefail
 chmod +x simulate-promote.sh
@@ -368,7 +368,7 @@ Add a `rollback-production` manual job that accepts a `PRIOR_DIGEST` variable an
 
 ### Cleanup
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 rm -f ~/rebash-gitlab/module-15/digest.txt 2>/dev/null || true
 ls ~/rebash-gitlab/module-15
 ```

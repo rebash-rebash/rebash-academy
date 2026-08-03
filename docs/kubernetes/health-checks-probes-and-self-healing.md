@@ -223,7 +223,7 @@ Deploy nginx with liveness and readiness probes on `/`, prove Ready replicas and
 
 Workspace: `~/rebash-k8s/module-probes`
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 mkdir -p ~/rebash-k8s/module-probes && cd ~/rebash-k8s/module-probes
 ```
 
@@ -297,7 +297,7 @@ spec:
 
 Apply and verify:
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-k8s/module-probes
 kubectl apply -f namespace.yaml
 kubectl apply -f web-probes.yaml
@@ -314,7 +314,7 @@ kubectl get endpoints web -n rebash-m-probes | tee endpoints-healthy.txt
 
 #### Task 2 – Exec probe check from Pod
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-k8s/module-probes
 POD=$(kubectl get pod -n rebash-m-probes -l app=web -o jsonpath='{.items[0].metadata.name}')
 kubectl exec -n rebash-m-probes "$POD" -- wget -qO- http://127.0.0.1/ | head -n 2 | tee probe-path-ok.txt
@@ -367,7 +367,7 @@ spec:
 
 Apply broken config, observe NotReady, restore good manifest:
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-k8s/module-probes
 kubectl apply -f web-probes-broken.yaml
 sleep 15
@@ -411,7 +411,7 @@ Add a `startupProbe` with `failureThreshold: 30` and `periodSeconds: 2` to `web-
 
 ### Cleanup
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 kubectl delete namespace rebash-m-probes --ignore-not-found --wait=true
 ```
 

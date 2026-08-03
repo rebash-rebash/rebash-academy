@@ -135,7 +135,7 @@ Simulate failure categories locally, build a diagnostic shell script that emits 
 
 Workspace: `~/rebash-github-actions/module-16`
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 mkdir -p ~/rebash-github-actions/module-16/.github/workflows && cd ~/rebash-github-actions/module-16
 set -euo pipefail
 ```
@@ -164,7 +164,7 @@ echo 'If step A and B fail, fix A first' | tee ladder-rule.txt
 
 Run it:
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-github-actions/module-16
 set -euo pipefail
 chmod +x simulate-failures.sh
@@ -219,7 +219,7 @@ echo 'troubleshoot.sh OK'
 
 Run it:
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-github-actions/module-16
 set -euo pipefail
 chmod +x troubleshoot.sh
@@ -263,7 +263,7 @@ jobs:
 
 Validate offline:
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-github-actions/module-16
 set -euo pipefail
 python3 -c "import yaml; yaml.safe_load(open('.github/workflows/diagnostics.yml')); print('diagnostics workflow OK')"
@@ -276,7 +276,7 @@ grep -q 'GITHUB_STEP_SUMMARY' .github/workflows/diagnostics.yml
 
 #### Task 4 – Lint workflows and bundle evidence
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-github-actions/module-16
 set -euo pipefail
 
@@ -324,7 +324,7 @@ Add a workflow job that deliberately fails auth check in a safe way (mock) and e
 
 ### Cleanup
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 ls ~/rebash-github-actions/module-16
 ```
 

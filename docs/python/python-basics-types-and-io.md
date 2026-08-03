@@ -139,7 +139,7 @@ Under `~/rebash-python/lab02`, build `parse_input.py` that reads a hostname argu
 
 Workspace: `~/rebash-python/lab02`
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 mkdir -p ~/rebash-python/lab02 && cd ~/rebash-python/lab02
 set -euo pipefail
 python3 -m venv .venv
@@ -161,7 +161,7 @@ A junior engineer wrote a host check that treated every string as truthy and pri
 
 #### Task 1 – Create the parser script
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-python/lab02
 set -euo pipefail
 # shellcheck disable=SC1091
@@ -230,7 +230,7 @@ if __name__ == "__main__":
 
 Run:
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 test -f parse_input.py
 ```
 
@@ -240,7 +240,7 @@ test -f parse_input.py
 
 #### Task 2 – Happy-path run with args and stdin
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-python/lab02
 set -euo pipefail
 # shellcheck disable=SC1091
@@ -258,7 +258,7 @@ grep -F 'ready=true' happy.txt
 
 #### Task 3 – Conversion asserts and negative tests
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-python/lab02
 set -euo pipefail
 # shellcheck disable=SC1091
@@ -328,7 +328,7 @@ Extend `parse_input.py` (or add `parse_input_v2.py`) so an optional third argume
 
 ### Cleanup
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-python/lab02
 set -euo pipefail
 deactivate 2>/dev/null || true

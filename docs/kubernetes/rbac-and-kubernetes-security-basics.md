@@ -156,7 +156,7 @@ Create a ServiceAccount, Role, and RoleBinding, then prove allowed and denied AP
 
 Workspace: `~/rebash-k8s/module-10` on a disposable lab cluster.
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 mkdir -p ~/rebash-k8s/module-10 && cd ~/rebash-k8s/module-10
 ```
 
@@ -191,7 +191,7 @@ metadata:
 
 Apply:
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-k8s/module-10
 kubectl apply -f namespace.yaml -f serviceaccount.yaml
 kubectl get sa invoice-reader -n rebash-m10 | tee sa-m10.txt
@@ -237,7 +237,7 @@ roleRef:
 
 Apply:
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-k8s/module-10
 kubectl apply -f role.yaml -f rolebinding.yaml
 kubectl get role,rolebinding -n rebash-m10 | tee rbac-m10.txt
@@ -266,7 +266,7 @@ spec:
       command: ["sh", "-c", "sleep 3600"]
 ```
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-k8s/module-10
 kubectl apply -f sample-pod.yaml
 SA="system:serviceaccount:rebash-m10:invoice-reader"
@@ -311,7 +311,7 @@ Add a second Role `event-reader` (`get`, `list` on `events`) and bind it to the 
 
 ### Cleanup
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 kubectl delete namespace rebash-m10 --ignore-not-found
 ```
 

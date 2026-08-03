@@ -53,7 +53,7 @@ Fixtures required; `google-cloud-compute` optional. **Estimated cost:** £0.
 
 ## Environment
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 mkdir -p ~/rebash-lab-python-gcp/{fixtures,out}
 cd ~/rebash-lab-python-gcp
 python3 -m venv .venv && source .venv/bin/activate
@@ -76,7 +76,7 @@ Create `fixtures/instances.json`:
 
 ## Validation
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 python gcp_inventory.py --fixture fixtures/instances.json
 python -c 'import json; assert len(json.load(open("out/missing_labels.json")))==1'
 ```

@@ -158,7 +158,7 @@ Create a batch Job and a CronJob from YAML, wait for Job completion, and capture
 
 Workspace: `~/rebash-k8s/module-04-ctl`
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 mkdir -p ~/rebash-k8s/module-04-ctl && cd ~/rebash-k8s/module-04-ctl
 ```
 
@@ -206,7 +206,7 @@ spec:
 
 Apply and wait for completion:
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-k8s/module-04-ctl
 kubectl apply -f namespace.yaml
 kubectl apply -f migrate-job.yaml
@@ -251,7 +251,7 @@ spec:
 
 Apply and verify schedule:
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-k8s/module-04-ctl
 kubectl apply -f cache-cronjob.yaml
 kubectl get cronjob cache-warm -n rebash-m04-ctl | tee cronjob.txt
@@ -294,7 +294,7 @@ spec:
 
 Apply and compare statuses:
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-k8s/module-04-ctl
 kubectl apply -f web-deploy.yaml
 kubectl get deploy,job,cronjob -n rebash-m04-ctl | tee controllers-summary.txt
@@ -333,7 +333,7 @@ Add a `concurrencyPolicy: Forbid` field to the CronJob manifest so overlapping r
 
 ### Cleanup
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 kubectl delete namespace rebash-m04-ctl --ignore-not-found --wait=true
 ```
 

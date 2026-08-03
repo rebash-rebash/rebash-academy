@@ -73,7 +73,7 @@ By the end of this lab, you will be able to:
 
 ## Environment
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 export LAB_PREFIX="rebash-ssm-s3-$(whoami | tr '[:upper:]' '[:lower:]' | tr -cd 'a-z0-9-' | cut -c1-12)"
 export AWS_REGION="${AWS_REGION:-eu-west-2}"
 export AWS_PAGER=""
@@ -99,7 +99,7 @@ You will create:
 
 **Instructions:**
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 aws s3api create-bucket --bucket "$BUCKET_NAME" \
   --create-bucket-configuration LocationConstraint="$AWS_REGION" 2>/dev/null \
   || aws s3api create-bucket --bucket "$BUCKET_NAME"
@@ -118,7 +118,7 @@ echo "BUCKET_NAME=$BUCKET_NAME" | tee ~/rebash-lab-ssm-s3.env
 
 **Validation:**
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 aws s3api head-bucket --bucket "$BUCKET_NAME" && echo "bucket exists"
 ```
 
@@ -206,7 +206,7 @@ echo "VPC_ID=$VPC_ID SUBNET_ID=$SUBNET_ID SG_ID=$SG_ID" | tee -a ~/rebash-lab-ss
 
 **Validation:**
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 source ~/rebash-lab-ssm-s3.env
 aws ec2 describe-security-groups --group-ids "$SG_ID" \
   --query 'SecurityGroups[0].IpPermissions' --output text
@@ -219,7 +219,7 @@ aws ec2 describe-security-groups --group-ids "$SG_ID" \
 
 **Instructions:**
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 source ~/rebash-lab-ssm-s3.env
 
 AMI_ID="$(aws ssm get-parameters --names /aws/service/ami-amazon-linux-latest/al2023-ami-kernel-default-x86_64 \
@@ -248,7 +248,7 @@ echo "INSTANCE_ID=$INSTANCE_ID" | tee -a ~/rebash-lab-ssm-s3.env
 
 **Instructions:**
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 source ~/rebash-lab-ssm-s3.env
 
 for i in $(seq 1 24); do
@@ -277,7 +277,7 @@ aws ssm describe-instance-information \
 
 **Instructions:**
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 source ~/rebash-lab-ssm-s3.env
 aws ssm start-session --target "$INSTANCE_ID"
 ```
@@ -304,7 +304,7 @@ exit
 
 Run a non-interactive command via SSM:
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 source ~/rebash-lab-ssm-s3.env
 
 aws ssm send-command \
@@ -333,7 +333,7 @@ aws ssm get-command-invocation --command-id "$CMD_ID" --instance-id "$INSTANCE_I
 
 **Validation from your workstation:**
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 aws s3 cp "s3://${BUCKET_NAME}/runs/artefact.json" -
 ```
 
@@ -343,7 +343,7 @@ aws s3 cp "s3://${BUCKET_NAME}/runs/artefact.json" -
 
 **Instructions:**
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 source ~/rebash-lab-ssm-s3.env
 aws ec2 describe-instances --instance-ids "$INSTANCE_ID" \
   --query 'Reservations[0].Instances[0].PublicIpAddress' --output text
@@ -371,7 +371,7 @@ PUB="$(aws ec2 describe-instances --instance-ids "$INSTANCE_ID" \
 
 **Instructions:**
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 source ~/rebash-lab-ssm-s3.env
 
 aws ec2 terminate-instances --instance-ids "$INSTANCE_ID"

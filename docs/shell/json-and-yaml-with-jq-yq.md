@@ -64,7 +64,7 @@ Scripts receive JSON/YAML from APIs or files, select fields with `jq`/`yq`, asse
 
 **JSON** is a structured text format with objects, arrays, strings, numbers, booleans, and null. **YAML** is indentation-based and often used for Kubernetes and Ansible; many YAML files map cleanly to JSON data models. **`jq`** reads JSON from a file or stdin and applies a filter (for example `.name`, `.spec.replicas`). **`yq`** applies similar expressions to YAML documents.
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 jq -r '.name' app.json
 yq -r '.metadata.name' app.yaml   # when yq v4 is installed
 ```
@@ -125,7 +125,7 @@ Create sample JSON and YAML, assert fields with `jq`, and parse YAML with `yq` w
 
 Workspace: `~/rebash-shell/lab14`
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 mkdir -p ~/rebash-shell/lab14 && cd ~/rebash-shell/lab14
 set -euo pipefail
 command -v jq | tee jq-path.txt
@@ -181,7 +181,7 @@ spec:
 
 Run:
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-shell/lab14
 set -euo pipefail
 
@@ -212,7 +212,7 @@ echo "jq_asserts=OK" | tee jq-asserts.txt
 
 #### Task 2 – Negative assert (must fail)
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-shell/lab14
 set -euo pipefail
 
@@ -231,7 +231,7 @@ test "$ec" -ne 0
 
 #### Task 3 – yq when installed, fallback otherwise
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-shell/lab14
 set -euo pipefail
 
@@ -325,7 +325,7 @@ Write `assert-app.sh` that takes a JSON file path as `$1`, asserts `.replicas >=
 
 ### Cleanup
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-shell/lab14
 set -euo pipefail
 # Keep samples/evidence if you want; otherwise:

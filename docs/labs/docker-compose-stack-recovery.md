@@ -79,7 +79,7 @@ You will create a **broken** Compose project on purpose, then triage it.
 
 **Objective:** Materialise the failing staging stack using create-file steps (no shell heredocs).
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 mkdir -p ~/rebash-lab-compose/{api,web} && cd ~/rebash-lab-compose
 ```
 
@@ -217,7 +217,7 @@ networks:
 
 **Validation:**
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 test -f compose.yaml && test -f api/server.py && echo "project ready" | tee task1-ready.txt
 ```
 
@@ -225,7 +225,7 @@ test -f compose.yaml && test -f api/server.py && echo "project ready" | tee task
 
 **Objective:** Capture evidence before editing.
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-lab-compose
 docker compose up -d --build
 docker compose ps
@@ -244,7 +244,7 @@ curl -sS http://127.0.0.1:18080/ || true
 
 **Objective:** Confirm DNS/name and token issues.
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 docker compose exec api wget -qO- http://127.0.0.1:8080/healthz || \
   docker compose exec api python -c "import urllib.request;print(urllib.request.urlopen('http://127.0.0.1:8080/healthz').read().decode())"
 docker compose exec web printenv | sort | grep -E 'API_|TOKEN' || true
@@ -297,7 +297,7 @@ networks:
 
 Recreate the stack:
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-lab-compose
 docker compose up -d --build
 docker compose ps | tee compose-fixed-ps.txt
@@ -309,7 +309,7 @@ docker compose ps | tee compose-fixed-ps.txt
 
 **Validation:**
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 curl -sS http://127.0.0.1:18080/healthz | tee web-health-fixed.txt
 curl -sS http://127.0.0.1:18080/ | tee web-root-fixed.txt
 grep -q rebash-status web-root-fixed.txt
@@ -333,7 +333,7 @@ API_TOKEN=lab-secret
 
 Update `compose.yaml` to use `env_file: [.env]` on both services instead of inline `API_TOKEN`, then recreate and capture proof:
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-lab-compose
 docker compose up -d --build
 curl -sS -o /dev/null -w "%{http_code}\n" http://127.0.0.1:18080/ | tee recovery-http-code.txt
@@ -369,7 +369,7 @@ test -s recovery-evidence.tar.gz
 
 ## Cleanup
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-lab-compose
 docker compose down -v --remove-orphans
 cd ~

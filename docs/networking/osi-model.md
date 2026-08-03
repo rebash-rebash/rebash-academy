@@ -138,7 +138,7 @@ Map real Linux tools to OSI layers on a practice Ubuntu VM, run layer-focused co
 
 Workspace: `~/rebash-networking/lab02`
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 mkdir -p ~/rebash-networking/lab02 && cd ~/rebash-networking/lab02
 set -euo pipefail
 hostname | tee hostname.txt
@@ -157,7 +157,7 @@ During an incident bridge, someone asks: “Is this Layer 3 or Layer 7?” You n
 
 #### Task 1 – Layer 1–3 checks with `ip` and `ping`
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-networking/lab02
 set -euo pipefail
 
@@ -176,7 +176,7 @@ ping -c 2 127.0.0.1 2>&1 | tee l3-ping-localhost.txt
 
 #### Task 2 – Layer 4 with `ss` and Layer 7 with `curl`
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-networking/lab02
 set -euo pipefail
 
@@ -201,7 +201,7 @@ fi
 
 If `tcpdump` is installed, capture a few packets while curling. Always write the layer mapping table (the required artefact).
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-networking/lab02
 set -euo pipefail
 

@@ -126,7 +126,7 @@ Contrast an ad-hoc folder timeline with a Git commit timeline for the same infra
 
 Workspace: `~/rebash-git/module-01`
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 mkdir -p ~/rebash-git/module-01 && cd ~/rebash-git/module-01
 set -euo pipefail
 ```
@@ -139,7 +139,7 @@ A platform team still shares “prod-firewall-rules-FINAL.docx” over chat. You
 
 #### Task 1 – Simulate change history without Git
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-git/module-01
 set -euo pipefail
 
@@ -160,7 +160,7 @@ cd ..
 
 #### Task 2 – Same change as Git commits
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-git/module-01
 set -euo pipefail
 
@@ -217,7 +217,7 @@ Add a third commit that *removes* the SSH allow line and use `git log -p -1` to 
 
 ### Cleanup
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 # Keep evidence; remove when finished:
 # rm -rf ~/rebash-git/module-01
 ls ~/rebash-git/module-01

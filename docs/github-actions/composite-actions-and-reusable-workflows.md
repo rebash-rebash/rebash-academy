@@ -133,7 +133,7 @@ Build a **composite action** (setup + validate marker file) and a **reusable wor
 
 Workspace: `~/rebash-github-actions/module-14`
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 mkdir -p ~/rebash-github-actions/module-14/.github/{actions/setup-lab,workflows} && cd ~/rebash-github-actions/module-14
 set -euo pipefail
 ```
@@ -178,7 +178,7 @@ runs:
 
 Validate offline:
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-github-actions/module-14
 set -euo pipefail
 python3 -c "import yaml; yaml.safe_load(open('.github/actions/setup-lab/action.yml')); print('composite action OK')"
@@ -191,7 +191,7 @@ grep -q 'using: composite' .github/actions/setup-lab/action.yml
 
 Note: The `action.yml` above uses GitHub expressions in the lab file on disk — in MkDocs the tutorial wraps those fences in raw Jinja blocks. For offline simulation, run the shell steps manually:
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 mkdir -p out && echo 'lab=module-14' > out/module-14.txt && test -s out/module-14.txt
 ```
 
@@ -235,7 +235,7 @@ jobs:
 
 Validate offline:
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-github-actions/module-14
 set -euo pipefail
 python3 -c "import yaml; yaml.safe_load(open('.github/workflows/ci-reusable.yml')); print('reusable workflow OK')"
@@ -269,7 +269,7 @@ jobs:
 
 Validate offline:
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-github-actions/module-14
 set -euo pipefail
 python3 -c "import yaml; yaml.safe_load(open('.github/workflows/caller.yml')); print('caller workflow OK')"
@@ -317,7 +317,7 @@ pinning:
 
 Validate and archive:
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-github-actions/module-14
 set -euo pipefail
 python3 -c "
@@ -368,7 +368,7 @@ Publish the reusable workflow pattern to a second folder `module-14-consumer/` w
 
 ### Cleanup
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 ls ~/rebash-github-actions/module-14/.github
 ```
 

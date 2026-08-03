@@ -217,7 +217,7 @@ Build a multi-file HCL root module that accepts **variables**, computes **locals
 
 Workspace: `~/rebash-terraform/module-04`
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 mkdir -p ~/rebash-terraform/module-04 && cd ~/rebash-terraform/module-04
 ```
 
@@ -374,7 +374,7 @@ extra_tags = {
 Run:
 
 {% raw %}
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-terraform/module-04
 terraform fmt -recursive
 terraform init | tee init.txt
@@ -416,7 +416,7 @@ echo "HCL lab OK" | tee hcl-evidence.txt
 Create `hcl-inspect.sh`:
 
 {% raw %}
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 #!/usr/bin/env bash
 set -euo pipefail
 cd ~/rebash-terraform/module-04
@@ -435,7 +435,7 @@ docker ps --filter name=payments-staging --format '{{.Names}}' | wc -l | grep -q
 
 Run:
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 chmod +x ~/rebash-terraform/module-04/hcl-inspect.sh
 ~/rebash-terraform/module-04/hcl-inspect.sh
 ```
@@ -453,7 +453,7 @@ chmod +x ~/rebash-terraform/module-04/hcl-inspect.sh
 
 ### Cleanup
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-terraform/module-04
 terraform destroy -auto-approve
 rm -f init.txt apply.txt outputs.json hcl-evidence.txt prefix.txt challenge-hcl.txt docker-ps.txt

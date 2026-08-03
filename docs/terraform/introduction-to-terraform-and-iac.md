@@ -116,7 +116,7 @@ Mental model: **configuration + state → plan → apply → updated state**.
 4. **Apply** — After approval, Terraform calls provider APIs in dependency order and writes new state.
 5. **Destroy** — `terraform destroy` removes managed resources in safe order (when you intentionally tear down).
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 # Conceptual daily loop (Module 3 goes deep on each command)
 terraform fmt -recursive
 terraform validate
@@ -196,7 +196,7 @@ Declare a **declarative Docker stack** (network + container) with the `kreuzwerk
 
 Workspace: `~/rebash-terraform/module-01`
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 mkdir -p ~/rebash-terraform/module-01 && cd ~/rebash-terraform/module-01
 ```
 
@@ -257,7 +257,7 @@ resource "docker_container" "web" {
 
 Run:
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-terraform/module-01
 terraform init | tee init-log.txt
 terraform plan -no-color | tee plan-log.txt
@@ -275,7 +275,7 @@ terraform apply -auto-approve | tee apply-log.txt
 Run:
 
 {% raw %}
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-terraform/module-01
 docker ps --filter name=rebash-module-01-web --format '{{.Names}} {{.Status}}' | tee docker-ps.txt
 grep -q 'rebash-module-01-web' docker-ps.txt
@@ -314,7 +314,7 @@ echo "iac docker proof OK" | tee iac-evidence.txt
 Create `declarative-proof.sh`:
 
 {% raw %}
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 #!/usr/bin/env bash
 set -euo pipefail
 cd ~/rebash-terraform/module-01
@@ -327,7 +327,7 @@ echo "declarative workflow proof complete"
 
 Run:
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 chmod +x ~/rebash-terraform/module-01/declarative-proof.sh
 ~/rebash-terraform/module-01/declarative-proof.sh | tee challenge-result.txt
 ```
@@ -346,7 +346,7 @@ chmod +x ~/rebash-terraform/module-01/declarative-proof.sh
 ### Cleanup
 
 {% raw %}
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-terraform/module-01
 terraform destroy -auto-approve
 docker ps -a --filter name=rebash-module-01-web --format '{{.Names}}' | grep -q . && docker rm -f rebash-module-01-web || true

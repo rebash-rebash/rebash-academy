@@ -235,7 +235,7 @@ Build a Docker stack combining **`count`**, **`for_each`**, **`depends_on`**, an
 
 Workspace: `~/rebash-terraform/module-06`
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 mkdir -p ~/rebash-terraform/module-06 && cd ~/rebash-terraform/module-06
 ```
 
@@ -365,7 +365,7 @@ resource "docker_container" "gateway" {
 Run:
 
 {% raw %}
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-terraform/module-06
 terraform fmt -recursive
 terraform init | tee init.txt
@@ -399,7 +399,7 @@ Add a label to `docker_container.gateway` in `main.tf` inside the resource block
 
 Run plan — `ignore_changes = [labels]` should suppress the diff:
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-terraform/module-06
 terraform plan -no-color | tee plan-ignore.txt
 grep -q 'No changes' plan-ignore.txt
@@ -409,7 +409,7 @@ echo "lifecycle ignore demo OK" | tee lifecycle-evidence.txt
 Simulate out-of-band failure — remove one zone container manually:
 
 {% raw %}
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 docker rm -f rebash-module-06-zone-b
 terraform plan -no-color | tee plan-drift.txt
 grep -q 'docker_container.zone_sidecar[1]' plan-drift.txt
@@ -482,7 +482,7 @@ resource "docker_container" "extra_service" {
 Apply the extension:
 
 {% raw %}
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-terraform/module-06
 terraform apply -auto-approve | tee challenge-apply.txt
 docker ps --filter name=rebash-module-06-scheduler --format '{{.Names}}' | grep -q scheduler
@@ -504,7 +504,7 @@ echo "for_each extension OK" | tee challenge-resource.txt
 
 ### Cleanup
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-terraform/module-06
 terraform destroy -auto-approve
 rm -f init.txt apply.txt state-list.txt plan-ignore.txt plan-drift.txt apply-fix.txt \

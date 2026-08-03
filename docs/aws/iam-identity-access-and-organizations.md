@@ -183,7 +183,7 @@ Workspace: `~/rebash-aws/module-02`
 
 Prefer `describe`/`list`/`get` APIs. Create resources only with an explicit destroy path.
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 mkdir -p ~/rebash-aws/module-02 && cd ~/rebash-aws/module-02
 ```
 
@@ -197,7 +197,7 @@ Security asks for evidence that **IAM, Identity Access, and Organizations** is c
 
 Every AWS change starts by knowing which account/role you are.
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 aws sts get-caller-identity | tee identity.json
 aws configure get region || true
 test -s identity.json
@@ -211,7 +211,7 @@ test -s identity.json
 
 Inventory the service surface related to this module.
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 aws ec2 describe-vpcs --query 'Vpcs[].{Id:VpcId,Cidr:CidrBlock}' --output table 2>/dev/null | tee vpcs.txt || true
 aws iam get-account-summary 2>/dev/null | tee iam-summary.json || true
 tee notes.txt << 'EOF'

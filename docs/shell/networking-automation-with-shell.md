@@ -68,7 +68,7 @@ Shell networking helpers call remote endpoints and local sockets, then write evi
 - **`dig` / `getent hosts`** — Domain Name System (DNS) lookups
 - **SSH / `scp` / `rsync`** — remote access and file sync (use with key hygiene; not the focus of the lab)
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 curl -fsS --connect-timeout 3 --max-time 10 -o /dev/null -w '%{http_code}\n' https://example.com
 ss -lntu
 ip -br addr
@@ -86,7 +86,7 @@ Deploy pipelines need a quick “is the service up?” check. Incidents need a t
 4. **DNS (optional)** — `getent hosts name` or `dig +short` when debugging names.  
 5. **Remote file ops** — `scp` / `rsync` for copies; keep keys and host-key policy under team standards.
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 for i in 1 2 3; do
   code=$(curl -fsS --connect-timeout 3 --max-time 10 \
     -o /dev/null -w '%{http_code}' "$URL") && break
@@ -137,7 +137,7 @@ Build `healthcheck.sh` that retries `curl` against a URL with timeouts, prove su
 
 Workspace: `~/rebash-shell/lab13`
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 mkdir -p ~/rebash-shell/lab13 && cd ~/rebash-shell/lab13
 set -euo pipefail
 command -v curl | tee curl-path.txt
@@ -201,7 +201,7 @@ exit 1
 
 Run:
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-shell/lab13
 set -euo pipefail
 
@@ -218,7 +218,7 @@ grep -q 'health=OK' health-result.txt
 
 #### Task 2 – Fail path with a bad URL
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-shell/lab13
 set -euo pipefail
 
@@ -240,7 +240,7 @@ grep -q 'health=FAIL' health-result-fail.txt
 
 #### Task 3 – ss/ip snapshot (read-only)
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-shell/lab13
 set -euo pipefail
 
@@ -300,7 +300,7 @@ Add optional header support: if `HEALTH_HEADER` is set (for example `X-Lab: reba
 
 ### Cleanup
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-shell/lab13
 set -euo pipefail
 # Keep evidence if you want; otherwise:

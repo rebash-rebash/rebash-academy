@@ -150,7 +150,7 @@ Workspace: `~/rebash-docker/module-08`
 
 Custom network `rebash-mod08-net`; host port **18086** for the web container.
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 mkdir -p ~/rebash-docker/module-08 && cd ~/rebash-docker/module-08
 ```
 
@@ -162,7 +162,7 @@ Two microservices on the same Docker host must talk over a private network with 
 
 #### Task 1 – Create custom bridge network
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-docker/module-08
 docker network create rebash-mod08-net | tee network-create.txt
 docker network ls --filter name=rebash-mod08-net | tee network-ls.txt
@@ -176,7 +176,7 @@ grep -q 'rebash-mod08-net' network-ls.txt
 #### Task 2 – Start web and client on the network
 
 {% raw %}
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-docker/module-08
 docker run -d --name rebash-mod08-web --network rebash-mod08-net -p 18086:80 nginx:1.27-alpine
 docker run -d --name rebash-mod08-client --network rebash-mod08-net alpine:3.20 sleep 600
@@ -193,7 +193,7 @@ grep rebash-mod08-client network-containers.txt
 #### Task 3 – DNS by name, host curl, and network inspect
 
 {% raw %}
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-docker/module-08
 docker exec rebash-mod08-client wget -qO- http://rebash-mod08-web/ | head -n 5 | tee client-to-web.txt
 grep -qi 'nginx' client-to-web.txt
@@ -226,7 +226,7 @@ grep rebash-mod08-web network-inspect-names.txt
 
 Add a second client that fails to resolve a name off-network — prove isolation by pinging the web IP from inside the client (should work) versus wrong hostname:
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-docker/module-08
 docker exec rebash-mod08-client ping -c 1 rebash-mod08-web | tee ping-dns.txt
 grep -q '1 packets transmitted' ping-dns.txt
@@ -244,7 +244,7 @@ grep -q '1 packets transmitted' ping-dns.txt
 
 ### Cleanup
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-docker/module-08
 docker rm -f rebash-mod08-web rebash-mod08-client 2>/dev/null || true
 docker network rm rebash-mod08-net 2>/dev/null || true

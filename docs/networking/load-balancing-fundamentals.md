@@ -125,7 +125,7 @@ Run two backends on ports **18081** and **18082**, put a balancer on **18080**, 
 
 Workspace: `~/rebash-networking/lab16`
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 mkdir -p ~/rebash-networking/lab16 && cd ~/rebash-networking/lab16
 set -euo pipefail
 whoami | tee admin-user.txt
@@ -146,7 +146,7 @@ Before buying a cloud load balancer, you prove the design on a laptop: two app i
 
 #### Task 1 – Two Python backends
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-networking/lab16
 set -euo pipefail
 ```
@@ -176,7 +176,7 @@ HTTPServer.allow_reuse_address = True
 HTTPServer(("127.0.0.1", PORT), H).serve_forever()
 ```
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 chmod +x backend.py
 python3 backend.py A 18081 >backend-a.log 2>&1 &
 echo $! > backend-a.pid
@@ -220,7 +220,7 @@ http {
 Create `rr-client.sh` (fallback when nginx is absent):
 
 {% raw %}
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 #!/usr/bin/env bash
 set -euo pipefail
 N="${1:-10}"
@@ -234,7 +234,7 @@ done
 ```
 {% endraw %}
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-networking/lab16
 set -euo pipefail
 
@@ -280,7 +280,7 @@ test "$(cat count-b.txt)" -ge 1
 
 #### Task 3 – Evidence pack
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-networking/lab16
 set -euo pipefail
 
@@ -328,7 +328,7 @@ Add an HTTP health note file `health-design.md` (short) listing: check path, int
 
 ### Cleanup
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-networking/lab16
 set -euo pipefail
 

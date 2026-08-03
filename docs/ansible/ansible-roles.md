@@ -140,7 +140,7 @@ Create a `common` role with defaults, tasks, handlers, a template, and a static 
 
 ### Lab environment
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 mkdir -p ~/rebash-ansible/module-08/{playbooks,roles/common/{defaults,vars,tasks,handlers,templates,files,meta}}
 cd ~/rebash-ansible/module-08
 ```
@@ -262,7 +262,7 @@ Create `playbooks/site.yml`:
 
 Syntax-check and run:
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-ansible/module-08
 ansible-playbook playbooks/site.yml --syntax-check | tee syntax-check.txt
 ansible-playbook playbooks/site.yml | tee run-site.txt
@@ -277,7 +277,7 @@ grep -q 'PLAY RECAP' run-site.txt
 
 #### Task 4 – Prove idempotency and handler behaviour
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-ansible/module-08
 ansible-playbook playbooks/site.yml | tee run-idempotent.txt
 grep -E 'changed=0|changed=1' run-idempotent.txt | tee changed-summary.txt
@@ -318,7 +318,7 @@ Add `roles/common/tasks/assert.yml` and `import_tasks: assert.yml` at the end of
 
 ### Cleanup
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 rm -f /tmp/rebash-motd.txt /tmp/rebash-baseline.txt /tmp/rebash-common-applied
 # Keep ~/rebash-ansible/module-08 for portfolio review
 ```

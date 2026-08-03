@@ -79,7 +79,7 @@ Service VIP to Pod endpoints (same idea as a load balancer pool):
 | Ingress / Gateway | L7 HTTP(S) routing to Services |
 | NetworkPolicy | Declarative allow-list for Pod traffic |
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 kubectl get pods -o wide
 kubectl get svc,endpoints
 kubectl get endpointslices
@@ -136,7 +136,7 @@ If `kubectl` can reach a cluster, gather Pod/Service/Endpoint evidence. Otherwis
 
 Workspace: `~/rebash-networking/lab18`
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 mkdir -p ~/rebash-networking/lab18 && cd ~/rebash-networking/lab18
 set -euo pipefail
 whoami | tee admin-user.txt
@@ -159,7 +159,7 @@ On-call asks whether a Service has endpoints after a deploy. You either inspect 
 
 #### Task 1 – Write reference manifests (always)
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-networking/lab18
 set -euo pipefail
 ```
@@ -204,7 +204,7 @@ spec:
   type: ClusterIP
 ```
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 # Structural validation without apply (works offline)
 python3 - << 'PY' | tee yaml-validate.txt
 import sys
@@ -230,7 +230,7 @@ fi
 
 #### Task 2 – Live inspect **or** offline endpoint story
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-networking/lab18
 set -euo pipefail
 
@@ -262,7 +262,7 @@ Empty endpoints ⇒ selector/labels mismatch or Pods not Ready.
 DNS name in-cluster: rebash-netdemo.<namespace>.svc.cluster.local
 ```
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
   cp endpoints-story.txt endpoints.txt
   echo "offline — no cluster destroy performed" | tee safety.txt
 fi
@@ -276,7 +276,7 @@ test -f mode.txt
 
 #### Task 3 – NetworkPolicy sample + evidence pack
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-networking/lab18
 set -euo pipefail
 ```
@@ -313,7 +313,7 @@ spec:
           port: 53
 ```
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 python3 - << 'PY' | tee netpol-validate.txt
 text = open("netpol-sample.yaml").read()
 assert "kind: NetworkPolicy" in text
@@ -371,7 +371,7 @@ Add `ingress-sample.yaml` with an Ingress for `host: netdemo.lab.local` → Serv
 
 ### Cleanup
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-networking/lab18
 set -euo pipefail
 # Safe cleanup: local files only. Do NOT destroy clusters.

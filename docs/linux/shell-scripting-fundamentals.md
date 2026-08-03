@@ -67,7 +67,7 @@ Scripts orchestrate existing Linux tools; safe defaults stop silent failures fro
 | `set -o pipefail` | Pipeline fails if any stage fails |
 | Exit code | `0` ok; non-zero means failure to callers |
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 #!/usr/bin/env bash
 set -euo pipefail
 echo "hello"
@@ -112,7 +112,7 @@ Write `hostcheck.sh` that validates an argument directory, checks disk free spac
 
 Workspace: `~/rebash-linux/lab-shell`
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 mkdir -p ~/rebash-linux/lab-shell && cd ~/rebash-linux/lab-shell
 set -euo pipefail
 bash --version | head -n 1 | tee bash-version.txt
@@ -190,7 +190,7 @@ test -x hostcheck.sh
 
 #### Task 2 – Successful run
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-linux/lab-shell
 set -euo pipefail
 
@@ -207,7 +207,7 @@ grep -F 'write_probe=ok' hostcheck-success.log
 
 #### Task 3 – Failure paths + evidence
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-linux/lab-shell
 set -euo pipefail
 
@@ -277,7 +277,7 @@ Extend `hostcheck.sh` with an optional third argument `--json` that prints a one
 
 ### Cleanup
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-linux/lab-shell
 set -euo pipefail
 rm -rf appdir

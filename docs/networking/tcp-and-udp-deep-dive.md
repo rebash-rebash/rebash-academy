@@ -68,7 +68,7 @@ TCP builds a connection with a three-way handshake before data. UDP sends datagr
 
 A **port** is a 16-bit number that identifies an application endpoint on a host. A **socket** is the local address + port (and for TCP, the remote pair) that the kernel tracks. **TCP** provides a byte stream with acknowledgements, retransmission, and congestion control. **UDP** provides datagrams with no built-in delivery guarantee — Domain Name System (DNS), QUIC, and many discovery protocols use it.
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 ss -lntu | head
 ```
 
@@ -82,7 +82,7 @@ ss -lntu | head
 
 **UDP:** no handshake. `ss -lu` shows listening UDP sockets; “connected” UDP is optional and means the kernel remembers a default peer.
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 # Listen TCP on localhost (lab uses explicit ports)
 nc -l 127.0.0.1 19090
 ```
@@ -124,7 +124,7 @@ Prove TCP and UDP behaviour on localhost with `nc`, inspect states with `ss`, an
 
 Workspace: `~/rebash-networking/lab09`
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 mkdir -p ~/rebash-networking/lab09 && cd ~/rebash-networking/lab09
 set -euo pipefail
 whoami | tee admin-user.txt
@@ -146,7 +146,7 @@ An API owner says “the load balancer is broken.” You must show whether anyth
 
 #### Task 1 – TCP listen / connect on localhost
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-networking/lab09
 set -euo pipefail
 
@@ -177,7 +177,7 @@ wait "$(cat tcp-server.pid)" 2>/dev/null || true
 
 #### Task 2 – UDP localhost demo
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-networking/lab09
 set -euo pipefail
 
@@ -204,7 +204,7 @@ wait "$(cat udp-server.pid)" 2>/dev/null || true
 
 #### Task 3 – curl timings + evidence pack
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-networking/lab09
 set -euo pipefail
 
@@ -258,7 +258,7 @@ Write `prove-states.sh` that: starts `nc -l 127.0.0.1 19092` in the background, 
 
 ### Cleanup
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-networking/lab09
 set -euo pipefail
 kill "$(cat tcp-server.pid 2>/dev/null)" 2>/dev/null || true

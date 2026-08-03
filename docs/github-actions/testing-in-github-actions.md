@@ -137,7 +137,7 @@ Build a Python sample app with unit and integration tests, author a matrix test 
 
 Workspace: `~/rebash-github-actions/module-12`
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 mkdir -p ~/rebash-github-actions/module-12/{app,tests/unit,tests/integration,.github/workflows} && cd ~/rebash-github-actions/module-12
 set -euo pipefail
 python3 --version | tee python-version.txt
@@ -184,7 +184,7 @@ pytest-cov>=4.0
 
 Run tests locally:
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-github-actions/module-12
 set -euo pipefail
 python3 -m pip install -q -r requirements-dev.txt
@@ -259,7 +259,7 @@ jobs:
 
 Validate offline:
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-github-actions/module-12
 set -euo pipefail
 python3 -c "import yaml; yaml.safe_load(open('.github/workflows/test.yml')); print('test workflow OK')"
@@ -286,7 +286,7 @@ echo 'module-12 test lab passed'
 
 Run it:
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-github-actions/module-12
 set -euo pipefail
 chmod +x validate-tests.sh
@@ -299,7 +299,7 @@ chmod +x validate-tests.sh
 
 #### Task 4 – Evidence archive
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-github-actions/module-12
 set -euo pipefail
 tar -czf module-12-evidence.tgz app tests requirements-dev.txt .github/workflows/test.yml *.txt validate-tests.sh
@@ -340,7 +340,7 @@ Add a `services:` block with `postgres:16` and rewrite the integration test to c
 
 ### Cleanup
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 rm -rf ~/rebash-github-actions/module-12/__pycache__ ~/rebash-github-actions/module-12/**/__pycache__ 2>/dev/null || true
 ls ~/rebash-github-actions/module-12
 ```

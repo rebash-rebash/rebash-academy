@@ -155,7 +155,7 @@ Deploy a hardened Pod with restrictive `securityContext` (non-root, no privilege
 
 Workspace: `~/rebash-k8s/module-10-hard` on a disposable lab cluster.
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 mkdir -p ~/rebash-k8s/module-10-hard && cd ~/rebash-k8s/module-10-hard
 ```
 
@@ -234,7 +234,7 @@ spec:
 
 Apply and wait:
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-k8s/module-10-hard
 kubectl apply -f namespace.yaml -f deployment.yaml
 kubectl rollout status deployment/web-secure -n rebash-m10-hard --timeout=120s
@@ -249,7 +249,7 @@ kubectl get pods -n rebash-m10-hard -l app=web-secure | tee secure-pods.txt
 
 Inspect the admitted Pod spec:
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-k8s/module-10-hard
 POD="$(kubectl get pod -n rebash-m10-hard -l app=web-secure -o jsonpath='{.items[0].metadata.name}')"
 kubectl get pod "$POD" -n rebash-m10-hard -o jsonpath='{.spec.containers[0].securityContext}' | tee security-context.json
@@ -287,7 +287,7 @@ spec:
 
 Apply and confirm admission:
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-k8s/module-10-hard
 kubectl apply -f networkpolicy.yaml
 kubectl get networkpolicy -n rebash-m10-hard | tee netpol-m10-hard.txt
@@ -326,7 +326,7 @@ Add a `readinessProbe` on `httpGet` port 8080 path `/` and capture `kubectl desc
 
 ### Cleanup
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 kubectl delete namespace rebash-m10-hard --ignore-not-found
 ```
 

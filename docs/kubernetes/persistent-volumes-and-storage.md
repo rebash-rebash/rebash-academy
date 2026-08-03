@@ -157,7 +157,7 @@ Provision a PVC, mount it in a Pod, write data, delete the Pod, recreate it, and
 
 Workspace: `~/rebash-k8s/module-07`
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 mkdir -p ~/rebash-k8s/module-07 && cd ~/rebash-k8s/module-07
 kubectl get storageclass | tee storageclasses.txt
 ```
@@ -219,7 +219,7 @@ spec:
 
 Apply and write:
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-k8s/module-07
 kubectl apply -f namespace.yaml
 kubectl apply -f pvc.yaml
@@ -260,7 +260,7 @@ spec:
 
 Recreate and verify same file:
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-k8s/module-07
 kubectl delete pod writer -n rebash-m07 --wait=true
 kubectl apply -f reader-pod.yaml
@@ -276,7 +276,7 @@ grep -F "$(echo "$TOKEN" | tail -n1)" read-log.txt
 
 #### Task 3 – PVC status evidence
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-k8s/module-07
 kubectl get pvc data -n rebash-m07 | tee pvc-bound.txt
 kubectl describe pvc data -n rebash-m07 | sed -n '/Status:/,/Events:/p' | tee pvc-describe.txt
@@ -315,7 +315,7 @@ Add `storageClassName: standard` explicitly to `pvc.yaml` (match your cluster’
 
 ### Cleanup
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 kubectl delete namespace rebash-m07 --ignore-not-found --wait=true
 ```
 

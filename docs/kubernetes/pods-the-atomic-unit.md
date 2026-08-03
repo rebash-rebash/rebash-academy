@@ -151,7 +151,7 @@ Create a Pod from YAML with labels and resource requests, prove it reaches Ready
 
 Workspace: `~/rebash-k8s/module-03`
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 mkdir -p ~/rebash-k8s/module-03 && cd ~/rebash-k8s/module-03
 ```
 
@@ -202,7 +202,7 @@ spec:
 
 Apply and verify:
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-k8s/module-03
 kubectl apply -f namespace.yaml
 kubectl apply -f pod.yaml
@@ -217,7 +217,7 @@ grep -q '1/1' pod-ready.txt
 
 #### Task 2 – Exec and capture evidence
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-k8s/module-03
 kubectl exec -n rebash-m03 web -- wget -qO- http://127.0.0.1/ | head -n 5 | tee exec-html.txt
 kubectl describe pod web -n rebash-m03 | sed -n '/Labels:/,/Conditions:/p' | tee pod-labels.txt
@@ -250,7 +250,7 @@ spec:
 
 Apply, wait for terminal phase, and record:
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-k8s/module-03
 kubectl delete pod web -n rebash-m03 --wait=true
 kubectl apply -f fail-pod.yaml
@@ -293,7 +293,7 @@ Create `sidecar-pod.yaml` with two containers sharing the Pod network (nginx + b
 
 ### Cleanup
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 kubectl delete namespace rebash-m03 --ignore-not-found --wait=true
 ```
 

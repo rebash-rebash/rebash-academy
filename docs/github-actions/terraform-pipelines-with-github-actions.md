@@ -131,7 +131,7 @@ Create a Docker-backed Terraform module, run init/plan/apply/destroy locally, au
 
 Workspace: `~/rebash-github-actions/module-09`
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 mkdir -p ~/rebash-github-actions/module-09/{.github/workflows,tf-demo} && cd ~/rebash-github-actions/module-09
 set -euo pipefail
 docker info | tee docker-info.txt
@@ -189,7 +189,7 @@ output "url" {
 
 Validate and plan locally:
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-github-actions/module-09/tf-demo
 set -euo pipefail
 docker info >/dev/null
@@ -255,7 +255,7 @@ jobs:
 
 Validate offline:
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-github-actions/module-09
 set -euo pipefail
 python3 -c "import yaml; yaml.safe_load(open('.github/workflows/terraform-plan.yml')); print('plan workflow OK')"
@@ -310,7 +310,7 @@ jobs:
 
 Validate offline:
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-github-actions/module-09
 set -euo pipefail
 python3 -c "import yaml; yaml.safe_load(open('.github/workflows/terraform-apply.yml')); print('apply workflow OK')"
@@ -327,7 +327,7 @@ grep -q 'terraform apply' .github/workflows/terraform-apply.yml
 Create `destroy-checks.sh`:
 
 {% raw %}
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 #!/usr/bin/env bash
 set -euo pipefail
 LAB_TTL_HOURS=24
@@ -355,7 +355,7 @@ echo 'destroy-checks passed'
 
 Run and archive:
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-github-actions/module-09
 set -euo pipefail
 chmod +x destroy-checks.sh
@@ -401,7 +401,7 @@ Add a `concurrency:` group keyed on {% raw %}`terraform-${{ github.ref }}`{% end
 
 ### Cleanup
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-github-actions/module-09/tf-demo
 terraform destroy -auto-approve 2>/dev/null || true
 docker rm -f rebash-gha-tf-lab 2>/dev/null || true

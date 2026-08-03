@@ -166,7 +166,7 @@ Author a minimal Helm chart (`Chart.yaml`, `values.yaml`, `templates/deployment.
 
 Workspace: `~/rebash-k8s/module-14` on your workstation with a disposable **kind** cluster.
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 mkdir -p ~/rebash-k8s/module-14/rebash-web/templates && cd ~/rebash-k8s/module-14
 kubectl cluster-info | tee cluster-info.txt
 kubectl get nodes | tee nodes-ready.txt
@@ -254,7 +254,7 @@ Create `rebash-web/templates/_helpers.tpl`:
 
 #### Task 3 – Lint and render offline
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-k8s/module-14
 helm lint rebash-web | tee helm-lint-m14.txt
 helm template rebash-web-demo rebash-web --namespace rebash-m14 | tee helm-template-m14.yaml
@@ -277,7 +277,7 @@ metadata:
   name: rebash-m14
 ```
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-k8s/module-14
 kubectl apply -f namespace.yaml
 helm upgrade --install rebash-web-demo rebash-web -n rebash-m14 --wait --timeout 120s | tee helm-install-m14.txt
@@ -320,7 +320,7 @@ Add a `Service` template exposing port 8080 and re-run `helm template`; verify S
 
 ### Cleanup
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 helm uninstall rebash-web-demo -n rebash-m14 2>/dev/null || true
 kubectl delete namespace rebash-m14 --ignore-not-found
 ```

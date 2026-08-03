@@ -63,7 +63,7 @@ Any Linux host under `~/rebash-lab-shell/rotate`.
 
 ## Initial State
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 mkdir -p ~/rebash-lab-shell/rotate/logs
 cd ~/rebash-lab-shell/rotate
 # Grow a fake log
@@ -115,7 +115,7 @@ ls -la logs/
 
 ## Cleanup
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 rm -rf ~/rebash-lab-shell
 ```
 

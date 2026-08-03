@@ -124,7 +124,7 @@ Create a deliberately broken playbook that fails `--syntax-check`, fix it, demon
 
 Workspace: `~/rebash-ansible/module-17`
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 mkdir -p ~/rebash-ansible/module-17/{inventories,playbooks} && cd ~/rebash-ansible/module-17
 ```
 
@@ -160,7 +160,7 @@ Create `playbooks/broken-site.yml` with an intentional YAML error (bad indent on
 
 Run syntax-check and save failure evidence:
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-ansible/module-17
 ansible-playbook --syntax-check -i inventories/lab playbooks/broken-site.yml \
   > syntax-before.txt 2>&1 || true
@@ -188,7 +188,7 @@ Create `playbooks/fixed-site.yml`:
 
 Run syntax-check on fixed playbook:
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-ansible/module-17
 ansible-playbook --syntax-check -i inventories/lab playbooks/fixed-site.yml \
   | tee syntax-after.txt
@@ -226,7 +226,7 @@ all:
 
 Run with verbosity and capture zero-host behaviour:
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-ansible/module-17
 ansible-playbook -i inventories/missing-app playbooks/needs-app-group.yml -vv \
   | tee inventory-miss.txt
@@ -250,7 +250,7 @@ all:
 
 Re-run:
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-ansible/module-17
 ansible-playbook -i inventories/with-app playbooks/needs-app-group.yml \
   | tee inventory-hit.txt
@@ -285,7 +285,7 @@ Create `playbooks/module-fail.yml`:
 
 Run with high verbosity:
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-ansible/module-17
 ansible-playbook -i inventories/lab playbooks/module-fail.yml -vvv \
   | tee module-fail-vvv.txt
@@ -299,7 +299,7 @@ grep -q 'this-binary-does-not-exist-rebash' module-fail-vvv.txt
 
 #### Task 5 – Package before/after evidence tarball
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-ansible/module-17
 tar -czf module-17-evidence.tgz \
   inventories/ playbooks/ \
@@ -343,7 +343,7 @@ Add a `block`/`rescue` wrapper around the failing command task that writes a one
 
 ### Cleanup
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 rm -rf ~/rebash-ansible/module-17
 ```
 

@@ -135,7 +135,7 @@ Build an inventory CLI (`invcli.py`) with argparse: `--help`, subcommands `list`
 
 Workspace: `~/rebash-python/lab12`
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 mkdir -p ~/rebash-python/lab12 && cd ~/rebash-python/lab12
 set -euo pipefail
 python3 -m venv .venv
@@ -155,7 +155,7 @@ Your team wants a tiny inventory helper for CI: `list` prints host names from a 
 
 #### Task 1 – Sample inventory and CLI skeleton
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-python/lab12
 set -euo pipefail
 source .venv/bin/activate
@@ -255,7 +255,7 @@ if __name__ == "__main__":
 
 Run:
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 test -f data/hosts.csv
 test -f invcli.py
 ```
@@ -266,7 +266,7 @@ test -f invcli.py
 
 #### Task 2 – Prove --help and happy-path subcommands
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-python/lab12
 set -euo pipefail
 source .venv/bin/activate
@@ -294,7 +294,7 @@ grep -F 'ok hosts=3' check-ok.txt
 
 #### Task 3 – Prove failure exit codes
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-python/lab12
 set -euo pipefail
 source .venv/bin/activate
@@ -344,7 +344,7 @@ Add a Typer (or Click) alternative `invcli_typer.py` with the same `list` and `c
 
 Example install:
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 python -m pip install 'typer>=0.12'
 ```
 
@@ -356,7 +356,7 @@ python -m pip install 'typer>=0.12'
 
 ### Cleanup
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-python/lab12
 set -euo pipefail
 # rm -rf .venv __pycache__ data *.py *.txt *.err

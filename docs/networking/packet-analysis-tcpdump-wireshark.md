@@ -75,7 +75,7 @@ A **TCP three-way handshake** is:
 
 If you see SYN with no SYN-ACK, the path or filter is dropping replies (or the server never got the SYN). If you see SYN then RST, something refused the connection. That is why capture follows the methodology ladder.
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 # List interfaces, then capture (example — lab uses lo and a fixed port)
 ip -br link
 sudo tcpdump -i lo -n -s 0 -w lab.pcap 'tcp port 18880'
@@ -94,7 +94,7 @@ Metrics say “error rate up.” Logs say “timeout.” Only a pcap proves whet
 5. **Read** — `tcpdump -n -r file.pcap` for a quick text view; `tshark -r file.pcap` for fields; Wireshark for deep click-through.  
 6. **Stop cleanly** — Ctrl+C; note packet counts; hash or list the file for the ticket.
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 sudo tcpdump -i lo -n -c 20 -w handshake.pcap 'tcp port 18880'
 tcpdump -n -r handshake.pcap 'tcp[tcpflags] & (tcp-syn|tcp-ack) != 0'
 ```
@@ -147,7 +147,7 @@ Under `~/rebash-networking/lab28`, start a localhost TCP service, capture the ha
 
 Workspace: `~/rebash-networking/lab28`
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 mkdir -p ~/rebash-networking/lab28/evidence && cd ~/rebash-networking/lab28
 set -euo pipefail
 whoami | tee evidence/operator.txt
@@ -171,7 +171,7 @@ Methodology shows a listener on the app port, but one client still fails. You ne
 
 Listen on `127.0.0.1:18880`. Prefer Python; fall back to `nc` if needed.
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-networking/lab28
 set -euo pipefail
 
@@ -207,7 +207,7 @@ test -s evidence/listen.txt
 
 Start `tcpdump` on loopback, then open a client connection so SYN / SYN-ACK / ACK appear in the pcap.
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-networking/lab28
 set -euo pipefail
 
@@ -246,7 +246,7 @@ ls -l evidence/lo-handshake.pcap | tee evidence/pcap-ls.txt
 
 Decode flags and write a summary for the ticket.
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-networking/lab28
 set -euo pipefail
 
@@ -316,7 +316,7 @@ Write `capture-once.sh` that: (1) starts a one-shot Python listener on `127.0.0.
 
 ### Cleanup
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-networking/lab28
 set -euo pipefail
 

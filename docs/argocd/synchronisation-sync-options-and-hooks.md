@@ -154,7 +154,7 @@ Create two declarative Applications — one with `prune: false` and one with `pr
 
 Workspace: `~/rebash-argocd/module-06` on your workstation.
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 mkdir -p ~/rebash-argocd/module-06/manifests ~/rebash-argocd/module-06/apps && cd ~/rebash-argocd/module-06
 ```
 
@@ -220,7 +220,7 @@ spec:
 
 Apply base manifests once so the namespace exists for offline testing:
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-argocd/module-06
 kubectl apply -f manifests/namespace.yaml
 kubectl apply --dry-run=client -f manifests/configmap-app.yaml -f manifests/deployment-demo.yaml | tee dryrun-base-m06.txt
@@ -312,7 +312,7 @@ spec:
 
 Validate Application YAML:
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-argocd/module-06
 kubectl apply --dry-run=client -f apps/application-local-no-prune.yaml 2>&1 | tee app-no-prune-dryrun-m06.txt
 kubectl apply --dry-run=client -f apps/application-local-prune.yaml 2>&1 | tee app-prune-dryrun-m06.txt
@@ -354,7 +354,7 @@ spec:
 
 Validate hook manifest:
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-argocd/module-06
 kubectl apply --dry-run=client -f manifests/hook-presync-job.yaml | tee hook-dryrun-m06.txt
 grep -q 'job.batch/rebash-presync-check' hook-dryrun-m06.txt
@@ -371,7 +371,7 @@ Adjust the `repoURL` in local Application manifests if your path differs from `f
 
 Apply Applications and prove sync status (Argo CD required):
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-argocd/module-06
 cp -a ~/rebash-argocd/module-06 /tmp/rebash-argocd/ 2>/dev/null || true
 kubectl apply -f apps/application-local-no-prune.yaml
@@ -389,7 +389,7 @@ echo "sync apply OK" | tee sync-apply-ok-m06.txt
 
 Demonstrate prune difference offline by removing `manifests/deployment-demo.yaml` from the tracked set and comparing spec:
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-argocd/module-06
 grep 'prune:' apps/application-local-no-prune.yaml | tee prune-false-m06.txt
 grep 'prune:' apps/application-local-prune.yaml | tee prune-true-m06.txt
@@ -432,7 +432,7 @@ Add a **PostSync** hook Job that writes a timestamp to a ConfigMap (working arte
 
 ### Cleanup
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 kubectl delete application rebash-sync-local-no-prune rebash-sync-local-prune -n argocd --ignore-not-found
 kubectl delete -f ~/rebash-argocd/module-06/manifests/ --ignore-not-found
 kubectl delete namespace rebash-argocd-m06 --ignore-not-found

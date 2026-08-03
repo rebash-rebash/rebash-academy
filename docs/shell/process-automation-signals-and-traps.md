@@ -62,7 +62,7 @@ Scripts sit between humans or schedulers and Linux processes. Signals ask the pr
 
 A **process** is a running program with a process ID (PID). **`ps`** lists processes. **`kill`** sends a signal to a PID (default is `TERM`). **`jobs`**, **`&`**, and **`wait`** manage background work started by the current shell. A **signal** is a small message from the kernel (for example Ctrl-C → `SIGINT`, stop request → `SIGTERM`). Bash **`trap`** runs a command or function when a named signal arrives, or when the shell exits (`EXIT`).
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 ps -o pid,ppid,stat,cmd
 kill -TERM "$pid"
 trap 'rm -rf "$WORKDIR"' EXIT
@@ -135,7 +135,7 @@ Build a Bash script that registers cleanup traps, starts a background sleeper, s
 
 Workspace: `~/rebash-shell/lab11`
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 mkdir -p ~/rebash-shell/lab11 && cd ~/rebash-shell/lab11
 set -euo pipefail
 bash --version | head -n1 | tee bash-version.txt
@@ -188,7 +188,7 @@ echo "workdir=$WORKDIR"
 
 Run:
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-shell/lab11
 set -euo pipefail
 
@@ -253,7 +253,7 @@ exit 0
 
 Run:
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-shell/lab11
 set -euo pipefail
 
@@ -271,7 +271,7 @@ chmod +x trap-demo.sh
 
 Assert the marker file and that the work directory was removed.
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-shell/lab11
 set -euo pipefail
 
@@ -338,7 +338,7 @@ Add a lock file `lab11.lock` that the script creates at start and removes in `cl
 
 ### Cleanup
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-shell/lab11
 set -euo pipefail
 rm -rf work work-int

@@ -149,7 +149,7 @@ Workspace: `~/rebash-docker/module-05/app`
 
 Host port **18085** is used for this build lab.
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 mkdir -p ~/rebash-docker/module-05/app && cd ~/rebash-docker/module-05/app
 ```
 
@@ -185,7 +185,7 @@ EXPOSE 80
 
 #### Task 2 – Build and tag the image
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-docker/module-05/app
 docker build -t rebash-mod05:local .
 docker image ls rebash-mod05:local | tee build-ls.txt
@@ -198,7 +198,7 @@ grep -q 'rebash-mod05' build-ls.txt
 
 #### Task 3 – Run and verify HTTP body
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-docker/module-05/app
 docker run -d --name rebash-mod05-web -p 18085:80 rebash-mod05:local
 curl -s http://127.0.0.1:18085/ | tee build-curl.txt
@@ -235,7 +235,7 @@ Create `.dockerignore`:
 
 Build and verify:
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-docker/module-05/app
 docker build -t rebash-mod05:v2 .
 docker rm -f rebash-mod05-web 2>/dev/null || true
@@ -256,7 +256,7 @@ echo 'v2 ok' | tee build-v2.txt
 
 ### Cleanup
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-docker/module-05/app
 docker rm -f rebash-mod05-web 2>/dev/null || true
 docker rmi rebash-mod05:local rebash-mod05:v2 2>/dev/null || true

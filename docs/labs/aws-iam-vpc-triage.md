@@ -78,7 +78,7 @@ By the end of this lab, you will be able to:
 
 Use a dedicated lab AWS account or a sandbox OU. Set a consistent prefix:
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 export LAB_PREFIX="rebash-iam-vpc-$(whoami | tr '[:upper:]' '[:lower:]' | tr -cd 'a-z0-9-' | cut -c1-12)"
 export AWS_REGION="${AWS_REGION:-eu-west-2}"
 export AWS_PAGER=""
@@ -106,7 +106,7 @@ Your job is to prove each layer with CLI evidence before fixing it.
 
 **Instructions:**
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 aws sts get-caller-identity --output table
 aws configure get region
 echo "LAB_PREFIX=$LAB_PREFIX AWS_REGION=$AWS_REGION"
@@ -119,7 +119,7 @@ echo "LAB_PREFIX=$LAB_PREFIX AWS_REGION=$AWS_REGION"
 
 **Validation:**
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 aws sts get-caller-identity --query 'Arn' --output text | grep -q 'arn:aws' && echo "identity OK"
 ```
 
@@ -170,7 +170,7 @@ echo "VPC_ID=$VPC_ID SUBNET_ID=$SUBNET_ID SG_ID=$SG_ID RTB_ID=$RTB_ID" | tee ~/r
 
 **Validation:**
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 source ~/rebash-lab-iam-vpc.env
 aws ec2 describe-route-tables --route-table-ids "$RTB_ID" \
   --query 'RouteTables[0].Routes[?DestinationCidrBlock==`0.0.0.0/0`].GatewayId' --output text | grep -q "$IGW_ID" && echo "default route OK"
@@ -182,7 +182,7 @@ aws ec2 describe-route-tables --route-table-ids "$RTB_ID" \
 
 **Instructions:**
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 source ~/rebash-lab-iam-vpc.env
 
 AMI_ID="$(aws ssm get-parameters --names /aws/service/ami-amazon-linux-latest/al2023-ami-kernel-default-x86_64 \
@@ -231,7 +231,7 @@ curl -sS -o /dev/null -w "HTTP %{http_code}\n" "http://${PUBLIC_IP}/"
 
 Create a restricted IAM user in the console (or via CLI) with **no** EC2 describe permissions — for example attach only `AWSSupportAccess` or a custom deny. Configure a second profile:
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 # Example profile name — adjust to your setup
 export AWS_PROFILE=lab-restricted
 aws sts get-caller-identity --output table
@@ -278,7 +278,7 @@ aws ec2 describe-instances --instance-ids "$INSTANCE_ID" \
 
 **Instructions:**
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 source ~/rebash-lab-iam-vpc.env
 aws ec2 revoke-security-group-ingress --group-id "$SG_ID" --protocol tcp --port 80 --cidr "${MY_IP}/32"
 sleep 5
@@ -295,7 +295,7 @@ curl -sS -o /dev/null -w "HTTP %{http_code}\n" --connect-timeout 5 "http://${PUB
 
 **Instructions:**
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 aws ec2 describe-security-groups --group-ids "$SG_ID" \
   --query 'SecurityGroups[0].IpPermissions[?FromPort==`80`]' --output table
 
@@ -331,7 +331,7 @@ curl -sS "http://${PUBLIC_IP}/"
 
 **Instructions:**
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 source ~/rebash-lab-iam-vpc.env
 aws ec2 delete-route --route-table-id "$RTB_ID" --destination-cidr-block 0.0.0.0/0
 sleep 5
@@ -348,7 +348,7 @@ curl -sS -o /dev/null -w "HTTP %{http_code}\n" --connect-timeout 5 "http://${PUB
 
 **Instructions:**
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 aws ec2 describe-route-tables --route-table-ids "$RTB_ID" \
   --query 'RouteTables[0].Routes[*].[DestinationCidrBlock,GatewayId,State]' --output table
 
@@ -368,7 +368,7 @@ aws ec2 describe-internet-gateways --filters "Name=attachment.vpc-id,Values=$VPC
 
 **Instructions:**
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 source ~/rebash-lab-iam-vpc.env
 aws ec2 create-route --route-table-id "$RTB_ID" --destination-cidr-block 0.0.0.0/0 \
   --gateway-id "$IGW_ID"
@@ -387,7 +387,7 @@ aws ec2 describe-instances --instance-ids "$INSTANCE_ID" \
 
 **Instructions:**
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 source ~/rebash-lab-iam-vpc.env
 
 aws ec2 terminate-instances --instance-ids "$INSTANCE_ID"

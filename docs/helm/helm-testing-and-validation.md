@@ -159,7 +159,7 @@ Workspace: `~/rebash-helm/module-08`
 
 Helm 3 against kind/minikube; release namespace `rebash-helm-m08`.
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 mkdir -p ~/rebash-helm/module-08/validate-chart/templates/tests && cd ~/rebash-helm/module-08
 ```
 
@@ -267,7 +267,7 @@ spec:
 
 Run lint and template with debug:
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-helm/module-08
 helm lint ./validate-chart | tee lint.txt
 helm template validate-demo ./validate-chart --debug 2>&1 | tee template-debug.txt
@@ -284,7 +284,7 @@ grep -q 'helm.sh/hook: test' template-debug.txt
 
 Prove the chart passes a server-side dry-run before any real apply.
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 kubectl create namespace rebash-helm-m08 --dry-run=client -o yaml | kubectl apply -f -
 helm upgrade --install validate-demo ./validate-chart \
   -n rebash-helm-m08 --dry-run --debug 2>&1 | tee dry-run.txt
@@ -299,7 +299,7 @@ grep -q 'STATUS: pending-install' dry-run.txt || grep -q 'dry run' dry-run.txt
 
 Install the release, wait for readiness, then execute chart tests.
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-helm/module-08
 helm upgrade --install validate-demo ./validate-chart \
   -n rebash-helm-m08 --wait --timeout 3m | tee install.txt
@@ -333,7 +333,7 @@ grep -q 'Succeeded' helm-test.txt || grep -qi 'completed' helm-test.txt
 
 Introduce a deliberate typo in `validate-chart/templates/deployment.yaml` (remove a closing brace from a raw Jinja block), capture the lint or template failure, then restore the file and prove the gate passes again:
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-helm/module-08
 helm lint ./validate-chart 2>&1 | tee lint-broken.txt || true
 helm template validate-demo ./validate-chart 2>&1 | tee template-broken.txt || true
@@ -354,7 +354,7 @@ grep -q '0 chart(s) failed' lint-fixed.txt
 
 ### Cleanup
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 helm uninstall validate-demo -n rebash-helm-m08 2>/dev/null || true
 kubectl delete namespace rebash-helm-m08 --ignore-not-found
 ```

@@ -136,7 +136,7 @@ Create a local Git repository with a parameterised Declarative `Jenkinsfile`, co
 
 Workspace: `~/rebash-jenkins/module-05`
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 mkdir -p ~/rebash-jenkins/module-05 && cd ~/rebash-jenkins/module-05
 set -euo pipefail
 git --version | tee git-version.txt
@@ -156,7 +156,7 @@ Your service repo must own its CI definition. Reviewers rejected a UI-only Pipel
 
 Commit and record:
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-jenkins/module-05
 set -euo pipefail
 
@@ -212,7 +212,7 @@ pipeline {
 
 Commit and record:
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 git add README.md Jenkinsfile
 git -c user.email='rebash-lab@example.com' -c user.name='REBASH Lab' commit -m 'Add Declarative Jenkinsfile for Module 5'
 git log -1 --oneline | tee ../commit.txt
@@ -238,7 +238,7 @@ pwd | tee ../repo-path.txt
 
 Run:
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-jenkins/module-05
 set -euo pipefail
 ```
@@ -257,7 +257,7 @@ fallback: push scm-app to remote Git if file:// fails in Dockerised Jenkins
 
 Validate and archive:
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 python3 -c "
 import yaml
 from pathlib import Path
@@ -283,7 +283,7 @@ print('scm-job-config.yaml OK')
 
 Commit and record:
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-jenkins/module-05/scm-app
 set -euo pipefail
 
@@ -303,7 +303,7 @@ SCM Pipeline finished:
 
 Verify:
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 test -f ../second-commit.txt
 ```
 
@@ -315,7 +315,7 @@ test -f ../second-commit.txt
 
 Run:
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-jenkins/module-05
 set -euo pipefail
 ```
@@ -334,7 +334,7 @@ hardcoded_prod_credential_ids: forbidden
 
 Validate and archive:
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 python3 -c "
 import yaml
 with open('multibranch-readiness.yaml') as f:
@@ -383,7 +383,7 @@ Add a `booleanParam(name: 'RUN_SLOW_TESTS', defaultValue: false)` and a stage wi
 
 Keep `scm-app` and the SCM job for Module 7 experiments. Do not commit real credentials into the repo.
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 ls ~/rebash-jenkins/module-05
 ```
 

@@ -121,7 +121,7 @@ Execution flow:
 
 Commands:
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 ansible-playbook site.yml --syntax-check
 ansible-playbook site.yml --list-tasks
 ansible-playbook site.yml --check
@@ -169,7 +169,7 @@ Create **`site.yml`** with config tasks, a notified handler, and tags; pass synt
 
 Workspace: `~/rebash-ansible/module-05`
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 mkdir -p ~/rebash-ansible/module-05/{files,group_vars} && cd ~/rebash-ansible/module-05
 ```
 
@@ -258,7 +258,7 @@ Create `site.yml`:
 
 Syntax-check:
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-ansible/module-05
 ansible-playbook site.yml --syntax-check | tee syntax-check.txt
 grep -qi 'playbook.*syntax ok' syntax-check.txt || grep -qi 'Syntax OK' syntax-check.txt || test ${PIPESTATUS[0]} -eq 0
@@ -271,7 +271,7 @@ echo "syntax OK" | tee syntax-ok.txt
 
 #### Task 2 – List tasks and run full playbook
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-ansible/module-05
 ansible-playbook site.yml --list-tasks | tee list-tasks.txt
 ansible-playbook site.yml | tee playbook-run1.txt
@@ -288,7 +288,7 @@ echo "run1 OK" | tee run1-ok.txt
 
 #### Task 3 – Tag-filtered second run (idempotency + handler silence)
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-ansible/module-05
 ansible-playbook site.yml --tags deploy | tee playbook-run2-tags.txt
 ansible-playbook site.yml | tee playbook-run3-idempotent.txt
@@ -322,7 +322,7 @@ echo "tags and idempotency OK" | tee run3-ok.txt
 
 Add a **`verify-playbook.sh`** script:
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 #!/usr/bin/env bash
 set -euo pipefail
 cd ~/rebash-ansible/module-05
@@ -347,7 +347,7 @@ echo "verify-playbook PASS" | tee verify-playbook-pass.txt
 
 ### Cleanup
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-ansible/module-05
 rm -rf ~/rebash-ansible/module-05/app
 rm -f syntax-check.txt syntax-ok.txt list-tasks.txt playbook-run*.txt run*-ok.txt \

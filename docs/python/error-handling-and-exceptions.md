@@ -121,7 +121,7 @@ Implement `try`/`except`/`else`/`finally`, a custom `InventoryError`, and a retr
 
 Workspace: `~/rebash-python/lab08`
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 mkdir -p ~/rebash-python/lab08 && cd ~/rebash-python/lab08
 set -euo pipefail
 python3 -m venv .venv
@@ -141,7 +141,7 @@ Inventory fetch is flaky. You need retries for transient errors, a custom except
 
 #### Task 1 – Custom exception with try/except/else/finally
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-python/lab08
 set -euo pipefail
 source .venv/bin/activate
@@ -179,7 +179,7 @@ def load_inventory(path: Path, cleanup_log: Path | None = None) -> str:
 
 Run:
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 python << 'PY'
 from pathlib import Path
 from inventory_errors import InventoryError, load_inventory
@@ -212,7 +212,7 @@ PY
 
 #### Task 2 – Retry helper with intentional fail path
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-python/lab08
 set -euo pipefail
 source .venv/bin/activate
@@ -255,7 +255,7 @@ def retry(
 
 Run:
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 python << 'PY'
 from pathlib import Path
 from retry_helper import RetryError, retry
@@ -292,7 +292,7 @@ PY
 
 #### Task 3 – CLI-style exit codes
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-python/lab08
 set -euo pipefail
 source .venv/bin/activate
@@ -344,7 +344,7 @@ if __name__ == "__main__":
 
 Run:
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 python run_check.py ok | tee task3-ok.txt
 test "$(python run_check.py ok >/dev/null; echo $?)" -eq 0
 test "$(python run_check.py missing >/dev/null 2>task3-missing.err; echo $?)" -eq 2
@@ -384,7 +384,7 @@ Extend `retry_helper.py` with a `on_retry` callback that appends one line per at
 
 ### Cleanup
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-python/lab08
 set -euo pipefail
 # rm -rf .venv __pycache__ *.py *.txt *.err

@@ -150,7 +150,7 @@ Build a **read-only** inventory tool under `~/rebash-python/lab15` that lists S3
 
 Workspace: `~/rebash-python/lab15`
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 mkdir -p ~/rebash-python/lab15/fixtures && cd ~/rebash-python/lab15
 set -euo pipefail
 python3 -m venv .venv
@@ -209,7 +209,7 @@ Create `fixtures/gcp-buckets.json`:
 
 Run:
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-python/lab15
 set -euo pipefail
 test -s fixtures/aws-buckets.json
@@ -318,7 +318,7 @@ if __name__ == "__main__":
 
 Run:
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-python/lab15
 set -euo pipefail
 # shellcheck disable=SC1091
@@ -352,7 +352,7 @@ print("evidence ok")
 
 Run:
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-python/lab15
 set -euo pipefail
 # shellcheck disable=SC1091
@@ -402,7 +402,7 @@ Add a `--provider aws|azure|gcp|all` flag (argparse) that filters the report, an
 
 ### Cleanup
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-python/lab15
 deactivate 2>/dev/null || true
 # No cloud resources were created by this lab.

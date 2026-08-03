@@ -113,7 +113,7 @@ Install sysstat, capture baseline `vmstat`/`iostat`/`sar` output, create a short
 
 Workspace: `~/rebash-linux/lab19`
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 mkdir -p ~/rebash-linux/lab19 && cd ~/rebash-linux/lab19
 set -euo pipefail
 sudo apt-get update -qq
@@ -134,7 +134,7 @@ Users say a practice API VM is slow. Before you resize the instance, you capture
 
 #### Task 1 – Baseline samples
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-linux/lab19
 set -euo pipefail
 
@@ -152,7 +152,7 @@ sar -d 1 3 | tee sar-d-before.txt 2>/dev/null || echo 'sar -d unavailable' | tee
 
 #### Task 2 – Controlled load + capture during load
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-linux/lab19
 set -euo pipefail
 
@@ -178,7 +178,7 @@ kill "$(cat cpu-load.pid)" 2>/dev/null || true
 
 #### Task 3 – After sample + evidence pack
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-linux/lab19
 set -euo pipefail
 
@@ -232,7 +232,7 @@ Write `~/rebash-linux/lab19/quick-host-check.sh` that prints timestamp, `uptime`
 
 ### Cleanup
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-linux/lab19
 set -euo pipefail
 rm -f load.bin cpu-load.pid dd-load.pid

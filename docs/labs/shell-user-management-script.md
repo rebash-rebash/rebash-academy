@@ -62,7 +62,7 @@ Linux VM where you may use `sudo` (or dry-run only).
 
 ## Initial State
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 mkdir -p ~/rebash-lab-shell/users/{bin,logs}
 cd ~/rebash-lab-shell/users
 ```
@@ -76,7 +76,7 @@ cd ~/rebash-lab-shell/users
 
 Create `bin/usermgr.sh` with subcommands: `list`, `create`, `disable`, and `help`:
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 #!/usr/bin/env bash
 set -euo pipefail
 LOG_DIR="${LOG_DIR:-$HOME/rebash-lab-shell/users/logs}"
@@ -101,7 +101,7 @@ esac
 
 Run:
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 chmod +x bin/usermgr.sh
 ```
 
@@ -145,7 +145,7 @@ Lock the account with `usermod -L` / `passwd -l` (or print the command in dry-ru
 
 ## Cleanup
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 rm -rf ~/rebash-lab-shell
 ```
 

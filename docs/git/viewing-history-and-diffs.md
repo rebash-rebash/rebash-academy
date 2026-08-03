@@ -120,7 +120,7 @@ Create a three-commit history with a branch merge, produce graph and diff artefa
 
 Workspace: `~/rebash-git/module-03`
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 mkdir -p ~/rebash-git/module-03/history-lab && cd ~/rebash-git/module-03/history-lab
 set -euo pipefail
 ```
@@ -135,7 +135,7 @@ An on-call engineer needs to know which commit raised the replica count in `depl
 
 Create a repo with three commits touching a deploy manifest.
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-git/module-03
 set -euo pipefail
 rm -rf history-lab
@@ -164,7 +164,7 @@ test "$(git rev-list --count HEAD)" -eq 3
 
 Export visual history and compare first vs last commit on the manifest.
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-git/module-03/history-lab
 set -euo pipefail
 git log --oneline --graph --decorate --all | tee ../history-graph.txt
@@ -183,7 +183,7 @@ git log -1 --format='%H %s' HEAD | tee ../history-head.txt
 
 Modify a line, inspect blame before commit, then compare cached diff.
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-git/module-03/history-lab
 set -euo pipefail
 printf 'replicas: 3\n' > k8s/deploy.yaml
@@ -232,7 +232,7 @@ Create a short-lived branch `hotfix/log-level`, change one line in `RUNBOOK.md`,
 
 ### Cleanup
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 ls ~/rebash-git/module-03/history-lab
 # rm -rf ~/rebash-git/module-03/history-lab  # optional
 ```

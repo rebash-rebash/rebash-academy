@@ -126,7 +126,7 @@ Create a broken Application (bad Git path), diagnose with kubectl/argocd CLI, fi
 
 Workspace: `~/rebash-argocd/module-16`
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 mkdir -p ~/rebash-argocd/module-16/{apps,scripts,validation}
 cd ~/rebash-argocd/module-16
 ```
@@ -190,7 +190,7 @@ if command -v argocd >/dev/null 2>&1; then
 fi
 ```
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-argocd/module-16
 chmod +x scripts/capture-app-state.sh
 python3 -c "import yaml; yaml.safe_load(open('apps/broken-application.yaml'))"
@@ -206,7 +206,7 @@ echo 'broken-app-yaml: OK' | tee validation/broken-yaml.txt
 
 When cluster available:
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-argocd/module-16
 kubectl apply -f apps/broken-application.yaml
 sleep 5
@@ -217,7 +217,7 @@ grep -E 'path|ComparisonError|Failed' validation/before-describe.txt || true
 
 Offline diagnosis checklist (no cluster):
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-argocd/module-16
 echo 'Diagnosis: spec.source.path typo clusters/devv' | tee validation/diagnosis.txt
 echo 'Fix: change path to clusters/dev' | tee -a validation/diagnosis.txt
@@ -254,7 +254,7 @@ spec:
       - CreateNamespace=true
 ```
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-argocd/module-16
 python3 -c "import yaml; yaml.safe_load(open('apps/fixed-application.yaml'))"
 grep -q 'clusters/dev' apps/fixed-application.yaml
@@ -264,7 +264,7 @@ kubectl apply --dry-run=client -f apps/fixed-application.yaml 2>&1 | tee validat
 
 When cluster available:
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 kubectl apply -f apps/fixed-application.yaml
 sleep 5
 ./scripts/capture-app-state.sh demo-api-broken argocd validation/after-state.txt
@@ -289,7 +289,7 @@ kubectl get pods -n demo-api-dev 2>/dev/null || true
 kubectl logs -n argocd -l app.kubernetes.io/name=argocd-application-controller --tail=20 2>/dev/null || true
 ```
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 chmod +x ~/rebash-argocd/module-16/scripts/triage-commands.sh
 echo 'triage-script: OK' | tee validation/triage-script.txt
 ```
@@ -324,7 +324,7 @@ Add a second broken manifest `apps/broken-destination.yaml` pointing at namespac
 
 ### Cleanup
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 kubectl delete application demo-api-broken -n argocd --ignore-not-found
 rm -rf ~/rebash-argocd/module-16
 ```

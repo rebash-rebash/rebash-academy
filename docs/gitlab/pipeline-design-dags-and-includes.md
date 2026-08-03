@@ -165,7 +165,7 @@ Workspace: `~/rebash-gitlab/module-05` with `templates/` and `generated/` subdir
 
 File-first lab. Push to GitLab only when you want includes resolved on the server.
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 mkdir -p ~/rebash-gitlab/module-05/{templates,generated,src} && cd ~/rebash-gitlab/module-05
 ```
 
@@ -218,7 +218,7 @@ Create `templates/test.yml`:
 
 Validate templates:
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-gitlab/module-05
 python3 -c "
 import yaml, pathlib
@@ -270,7 +270,7 @@ integration_test:
 
 Validate all YAML:
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-gitlab/module-05
 python3 -c "
 import yaml, pathlib
@@ -289,7 +289,7 @@ print('OK DAG needs chain')
 
 #### Task 4 – Simulate generated artefact paths locally
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-gitlab/module-05
 mkdir -p generated
 python3 -m py_compile src/app.py
@@ -335,7 +335,7 @@ Add `templates/build.yml` with a `.build_template` job that writes `generated/bu
 
 ### Cleanup
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 rm -rf ~/rebash-gitlab/module-05/generated
 rm -f ~/rebash-gitlab/module-05/dag-out.txt
 # Keep templates/ and .gitlab-ci.yml for module 06

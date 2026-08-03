@@ -70,14 +70,14 @@ By the end of this lab, you will be able to:
 
 Local Kubernetes (kind/minikube). Confirm:
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 kubectl cluster-info
 kubectl get nodes
 ```
 
 Workspace:
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 mkdir -p ~/rebash-lab-k8s && cd ~/rebash-lab-k8s
 ```
 
@@ -160,7 +160,7 @@ spec:
 
 Apply and confirm failure:
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-lab-k8s
 kubectl apply -f namespace.yaml
 kubectl apply -f web-broken.yaml
@@ -176,7 +176,7 @@ kubectl get pods -n rebash-triage-lab -l app=web
 
 Gather evidence before patching.
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-lab-k8s
 kubectl get deploy,po,svc -n rebash-triage-lab -o wide | tee before-resources.txt
 kubectl describe deploy web -n rebash-triage-lab | tee before-describe.txt
@@ -240,7 +240,7 @@ spec:
 
 Apply and verify Ready:
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-lab-k8s
 kubectl apply -f web-fixed.yaml
 kubectl rollout status deploy/web -n rebash-triage-lab --timeout=120s
@@ -253,7 +253,7 @@ kubectl get po -n rebash-triage-lab -l app=web | tee after-pods.txt
 
 ### Task 4 — Verify via Service and port-forward
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-lab-k8s
 kubectl port-forward -n rebash-triage-lab svc/web 18081:80 &
 PF_PID=$!

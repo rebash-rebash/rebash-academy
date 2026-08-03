@@ -147,7 +147,7 @@ Workspace: `~/rebash-docker/module-02`
 
 Local Docker daemon. The script stays in your lab folder for re-runs after upgrades.
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 mkdir -p ~/rebash-docker/module-02 && cd ~/rebash-docker/module-02
 ```
 
@@ -162,7 +162,7 @@ After provisioning a CI runner or engineer laptop, platform teams require a repe
 Create `verify-docker.sh`:
 
 {% raw %}
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 #!/usr/bin/env bash
 set -euo pipefail
 
@@ -185,7 +185,7 @@ OUT="${1:-verify-docker.log}"
 
 Make it executable and dry-run syntax:
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-docker/module-02
 chmod +x verify-docker.sh
 bash -n verify-docker.sh
@@ -199,7 +199,7 @@ bash -n verify-docker.sh
 
 Execute the script and assert the daemon responded.
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-docker/module-02
 ./verify-docker.sh verify-docker.log
 grep -q 'Server:' verify-docker.log
@@ -214,7 +214,7 @@ grep -q 'Hello from Docker' verify-docker.log
 
 Pin a small image for a second smoke test; record active context.
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-docker/module-02
 docker run --rm alpine:3.20 echo 'alpine smoke ok' | tee alpine-smoke.txt
 docker context show | tee active-context.txt
@@ -245,7 +245,7 @@ test -s active-context.txt
 Extend the script to fail fast when `docker info` reports `LiveRestoreEnabled` as false on a production checklist — append a grep check to `verify-docker.sh` after the info block:
 
 {% raw %}
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 docker info --format '{{ "{{" }}.LiveRestoreEnabled{{ "}}" }}' | tee liverestore.txt
 ```
 {% endraw %}
@@ -264,7 +264,7 @@ Re-run `./verify-docker.sh verify-docker-v2.log` and keep both logs.
 
 ### Cleanup
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-docker/module-02
 docker rmi hello-world alpine:3.20 2>/dev/null || true
 ```

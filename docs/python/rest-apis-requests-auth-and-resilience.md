@@ -159,7 +159,7 @@ Call `httpbin.org` (or `example.com`) with timeouts and retries, assert statuses
 
 Workspace: `~/rebash-python/lab14`
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 mkdir -p ~/rebash-python/lab14 && cd ~/rebash-python/lab14
 set -euo pipefail
 python3 -m venv .venv
@@ -236,7 +236,7 @@ if __name__ == "__main__":
 
 Run:
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-python/lab14
 set -euo pipefail
 # shellcheck disable=SC1091
@@ -305,7 +305,7 @@ if __name__ == "__main__":
 
 Run:
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-python/lab14
 set -euo pipefail
 # shellcheck disable=SC1091
@@ -417,7 +417,7 @@ print("evidence pack ok")
 
 Run:
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-python/lab14
 set -euo pipefail
 # shellcheck disable=SC1091
@@ -460,7 +460,7 @@ Add a `POST` to `https://httpbin.org/post` with a small JSON body `{"source":"la
 
 ### Cleanup
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-python/lab14
 deactivate 2>/dev/null || true
 # rm -rf .venv

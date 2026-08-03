@@ -166,7 +166,7 @@ Workspace: `~/rebash-gitlab/module-07`
 
 File-first lab. Local directories mimic runner cache and artefact paths.
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 mkdir -p ~/rebash-gitlab/module-07/src && cd ~/rebash-gitlab/module-07
 ```
 
@@ -257,7 +257,7 @@ deploy_stub:
 
 Validate offline:
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-gitlab/module-07
 python3 -c "
 import yaml
@@ -274,7 +274,7 @@ print('OK cache and artifacts')
 
 #### Task 3 – Simulate cache paths and artefact hand-off locally
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-gitlab/module-07
 mkdir -p .cache/pip dist
 echo "deps-ready" > dist/deps-status.txt
@@ -320,7 +320,7 @@ Add a `cache:policy: push` only on `install_deps` and document in a comment why 
 
 ### Cleanup
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 rm -rf ~/rebash-gitlab/module-07/.cache ~/rebash-gitlab/module-07/dist
 # Keep src/, requirements.txt, and .gitlab-ci.yml for module 08
 ```

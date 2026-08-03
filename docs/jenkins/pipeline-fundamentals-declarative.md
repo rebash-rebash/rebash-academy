@@ -178,7 +178,7 @@ Author a multi-stage Declarative Pipeline on disk, load it into a Pipeline job u
 
 Workspace: `~/rebash-jenkins/module-04`
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 mkdir -p ~/rebash-jenkins/module-04 && cd ~/rebash-jenkins/module-04
 set -euo pipefail
 curl -sS -o /dev/null -w "%{http_code}\n" http://127.0.0.1:8080/login | tee controller-login.txt
@@ -198,7 +198,7 @@ Your squad must replace a Freestyle “build and hope” job with a Declarative 
 
 Run:
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-jenkins/module-04
 set -euo pipefail
 ```
@@ -252,7 +252,7 @@ pipeline {
 
 Verify:
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 grep -q 'pipeline {' Jenkinsfile
 grep -q 'stage('\''Build'\'')' Jenkinsfile || grep -q 'stage("Build")' Jenkinsfile || grep -q "stage('Build')" Jenkinsfile
 grep -q 'post {' Jenkinsfile
@@ -275,7 +275,7 @@ In Jenkins:
 
 Run:
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-jenkins/module-04
 set -euo pipefail
 ```
@@ -292,7 +292,7 @@ next_module: jenkinsfile-in-scm
 
 Validate and archive:
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 python3 -c "
 import yaml
 with open('job-config.yaml') as f:
@@ -314,7 +314,7 @@ print('job-config.yaml OK')
 
 Run:
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-jenkins/module-04
 set -euo pipefail
 ```
@@ -344,7 +344,7 @@ echo "console markers OK"
 
 Verify:
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 chmod +x assert-console.sh
 
 # Local syntax sanity (not a Jenkins validator, but catches truncation)
@@ -362,7 +362,7 @@ Temporarily change the Test stage to `sh 'false'`, Save, Build Now, observe `fai
 
 Run:
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-jenkins/module-04
 set -euo pipefail
 
@@ -398,7 +398,7 @@ pipeline {
 
 Verify:
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 grep -q "sh 'false'" Jenkinsfile.fail
 grep -q 'Investigate console' Jenkinsfile.fail
 diff -q Jenkinsfile Jenkinsfile.good && echo 'good copy retained' | tee failure-drill.txt
@@ -439,7 +439,7 @@ Add a `parallel` test block under a `stage('Test')` with two steps `Unit` and `L
 
 Keep `declarative-basics` and the Module 2 volume. Remove only experimental failing jobs you no longer need.
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 ls ~/rebash-jenkins/module-04
 ```
 

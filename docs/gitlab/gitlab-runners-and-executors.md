@@ -167,7 +167,7 @@ Workspace: `~/rebash-gitlab/module-03`
 
 File-first lab. Push to GitLab only when tagged runners exist to claim jobs.
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 mkdir -p ~/rebash-gitlab/module-03 && cd ~/rebash-gitlab/module-03
 ```
 
@@ -203,7 +203,7 @@ policy:
 
 Validate:
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-gitlab/module-03
 python3 -c "
 import yaml
@@ -261,7 +261,7 @@ shell_deploy_stub:
 
 Validate offline:
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-gitlab/module-03
 python3 -c "
 import yaml
@@ -280,7 +280,7 @@ print('OK tagged jobs')
 
 Run the build script path without a runner:
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-gitlab/module-03
 python3 src/check.py | tee runner-out.txt
 python3 -c "print('build on docker executor')" | tee -a runner-out.txt
@@ -321,7 +321,7 @@ Add a `lint_mr` job tagged `docker-linux` with `rules: [{ if: $CI_PIPELINE_SOURC
 
 ### Cleanup
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 rm -f ~/rebash-gitlab/module-03/runner-out.txt
 # Keep runner-tags.yaml and .gitlab-ci.yml for module 04
 ```

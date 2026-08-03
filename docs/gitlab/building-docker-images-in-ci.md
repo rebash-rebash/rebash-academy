@@ -167,7 +167,7 @@ Workspace: `~/rebash-gitlab/module-08`
 
 File-first lab. YAML validates without Docker; build steps are optional locally.
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 mkdir -p ~/rebash-gitlab/module-08/src && cd ~/rebash-gitlab/module-08
 ```
 
@@ -196,7 +196,7 @@ CMD ["python", "app.py"]
 
 Verify Dockerfile syntax offline:
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-gitlab/module-08
 grep -q 'FROM python:3.12-alpine' Dockerfile
 grep -q 'COPY src/app.py' Dockerfile
@@ -237,7 +237,7 @@ docker_build:
 
 Validate offline:
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-gitlab/module-08
 python3 -c "
 import yaml
@@ -256,7 +256,7 @@ print('OK docker build stub')
 
 If Docker Engine is installed:
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-gitlab/module-08
 docker build -t rebash-module-08:lab .
 docker run --rm rebash-module-08:lab | tee docker-out.txt
@@ -265,7 +265,7 @@ grep -q 'docker-ci ok' docker-out.txt
 
 If Docker is not available, simulate the run path:
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-gitlab/module-08
 python3 src/app.py | tee docker-out.txt
 grep -q 'docker-ci ok' docker-out.txt
@@ -305,7 +305,7 @@ Add a `kaniko_build` job using `gcr.io/kaniko-project/executor:v1.23.2-debug` as
 
 ### Cleanup
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 docker rmi rebash-module-08:lab 2>/dev/null || true
 rm -f ~/rebash-gitlab/module-08/docker-out.txt
 # Keep Dockerfile and .gitlab-ci.yml for module 09

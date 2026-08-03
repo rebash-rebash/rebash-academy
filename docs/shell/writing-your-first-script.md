@@ -68,7 +68,7 @@ A shell script is a plain text file that:
 2. Contains commands, comments, and (later) functions  
 3. Ends with an exit status that callers can check  
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 #!/usr/bin/env bash
 set -euo pipefail
 
@@ -85,7 +85,7 @@ Ad-hoc history lines have no review trail, no stable exit status, and no safe pl
 
 **Make it runnable**
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 chmod +x greet.sh
 ./greet.sh          # needs execute bit + shebang
 bash greet.sh       # execute bit optional
@@ -104,7 +104,7 @@ bash greet.sh       # execute bit optional
 
 **Strict mode** (from this module onward):
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 set -euo pipefail
 ```
 
@@ -150,7 +150,7 @@ Build a small ops script under `~/rebash-shell/lab02` with shebang, execute bit,
 
 Workspace: `~/rebash-shell/lab02`
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 mkdir -p ~/rebash-shell/lab02 && cd ~/rebash-shell/lab02
 set -euo pipefail
 whoami | tee lab-user.txt
@@ -180,7 +180,7 @@ printf 'hello from %s\n' "$(hostname -s)" | tee hello.out
 
 Run:
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-shell/lab02
 set -euo pipefail
 
@@ -223,7 +223,7 @@ exit 0
 
 Run:
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-shell/lab02
 set -euo pipefail
 
@@ -274,7 +274,7 @@ echo "loose-step=2" | tee -a loose-steps.txt
 
 Run:
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-shell/lab02
 set -euo pipefail
 
@@ -337,7 +337,7 @@ Extend `hostcheck.sh` into `hostcheck-v2.sh` that requires **two** arguments (`h
 
 ### Cleanup
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-shell/lab02
 rm -f loose-demo.sh strict.stdout strict.stderr usage.stdout
 # Keep hostcheck.sh and the evidence archive for review, or:

@@ -63,7 +63,7 @@ Schedulers start your script on a timetable. The script writes evidence (a times
 
 **cron** runs commands on a repeating calendar (`minute hour day month weekday`). User crontabs are edited with `crontab -e` and listed with `crontab -l`. **`at`** runs a command once at a given time (`atq` lists, `atrm` removes). **systemd timers** pair a `.timer` unit with a `.service` unit; user timers live under `~/.config/systemd/user/`.
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 crontab -l
 systemctl --user list-timers
 atq
@@ -128,7 +128,7 @@ Create `stamp.sh` that writes UTC timestamps, schedule it with a **user crontab*
 
 Workspace: `~/rebash-shell/lab15`
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 mkdir -p ~/rebash-shell/lab15 && cd ~/rebash-shell/lab15
 set -euo pipefail
 whoami | tee runner.txt
@@ -162,7 +162,7 @@ echo "stamped=yes" >> "$LAB/stamp-run.log"
 
 Run:
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-shell/lab15
 set -euo pipefail
 
@@ -211,7 +211,7 @@ WantedBy=timers.target
 
 Run:
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-shell/lab15
 set -euo pipefail
 LAB="$HOME/rebash-shell/lab15"
@@ -254,7 +254,7 @@ fi
 
 #### Task 3 – Prove run, list jobs, prepare cleanup notes
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-shell/lab15
 set -euo pipefail
 
@@ -339,7 +339,7 @@ Add `stamp-once.sh` that uses `at` **if** `atd`/`at` works: schedule one run one
 
 ### Cleanup
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-shell/lab15
 set -euo pipefail
 LAB="$HOME/rebash-shell/lab15"

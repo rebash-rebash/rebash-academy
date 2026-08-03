@@ -146,7 +146,7 @@ Write a pod template YAML and a Declarative Pipeline that would run on Kubernete
 
 Workspace: `~/rebash-jenkins/module-13`
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 mkdir -p ~/rebash-jenkins/module-13 && cd ~/rebash-jenkins/module-13
 set -euo pipefail
 kubectl version --client | tee kubectl-client.txt || echo 'kubectl missing — YAML-only path' | tee kubectl-client.txt
@@ -162,7 +162,7 @@ Platform wants CI agents on Kubernetes next quarter. You must propose a pod temp
 
 Run:
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-jenkins/module-13
 set -euo pipefail
 
@@ -253,7 +253,7 @@ rules:
 
 Run:
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 kubectl apply --dry-run=client -f k8s/ci-pod-template.yaml | tee dry-run-pod.txt
 kubectl apply --dry-run=client -f k8s/jenkins-agent-rbac.yaml | tee dry-run-agent-rbac.txt || true
 ```
@@ -266,7 +266,7 @@ kubectl apply --dry-run=client -f k8s/jenkins-agent-rbac.yaml | tee dry-run-agen
 
 Run:
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-jenkins/module-13
 set -euo pipefail
 ```
@@ -311,7 +311,7 @@ pipeline {
 
 Verify:
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 # If plugin YAML expects only custom containers, adjust jnlp per your plugin docs
 grep -q 'kubernetes' Jenkinsfile
 grep -q 'Rollback' Jenkinsfile
@@ -325,7 +325,7 @@ grep -q 'Rollback' Jenkinsfile
 
 Run:
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-jenkins/module-13
 set -euo pipefail
 ```
@@ -367,7 +367,7 @@ kubectl -n "$NS" rollout history deploy/demo
 
 Verify:
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 chmod +x deploy-rollback.sh
 
 if kubectl cluster-info >/dev/null 2>&1; then
@@ -389,7 +389,7 @@ grep -q rollout deploy-rollback.sh
 
 Run:
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-jenkins/module-13
 set -euo pipefail
 ```
@@ -408,7 +408,7 @@ image_builds_prefer_kaniko_buildkit: true
 
 Validate and archive:
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 python3 -c "
 import yaml
 with open('k8s-cloud-checklist.yaml') as f:
@@ -453,7 +453,7 @@ Add a `helm` chart skeleton under `chart/` with `Chart.yaml` and a Deployment te
 
 ### Cleanup
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 # kind delete cluster --name rebash-jenkins  # if you created one
 ls ~/rebash-jenkins/module-13
 ```

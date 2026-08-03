@@ -194,7 +194,7 @@ Build a multi-service Compose application (API + web) with Dockerfiles, healthch
 
 Workspace: `~/rebash-docker/docker-capstone-and-next-steps`
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 mkdir -p ~/rebash-docker/docker-capstone-and-next-steps/{api,web} && cd ~/rebash-docker/docker-capstone-and-next-steps
 ```
 
@@ -320,7 +320,7 @@ services:
 
 Deploy:
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-docker/docker-capstone-and-next-steps
 docker compose up -d --build
 sleep 20
@@ -334,7 +334,7 @@ grep -q rebash-capstone capstone-ps.txt
 
 #### Task 3 – End-to-end proof and evidence tarball
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-docker/docker-capstone-and-next-steps
 curl -sS http://127.0.0.1:18210/healthz | tee capstone-web-health.txt
 curl -sS http://127.0.0.1:18210/ | tee capstone-web-root.txt
@@ -379,7 +379,7 @@ Add a non-root `USER` to both Dockerfiles, rebuild, and prove UID in `docker com
 
 ### Cleanup
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-docker/docker-capstone-and-next-steps
 docker compose down -v --remove-orphans
 docker rmi rebash-capstone-api:1.0.0 rebash-capstone-web:1.0.0 2>/dev/null || true
@@ -415,7 +415,7 @@ Confirm the lab before moving on:
 
 
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 # Smoke test (scripts/smoke-test.sh)
 curl -sf "$BASE_URL/api/health" | grep -q ok && curl -sf "$BASE_URL/" -o /dev/null
 

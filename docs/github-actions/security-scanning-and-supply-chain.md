@@ -133,7 +133,7 @@ Create a unified security workflow stub with CodeQL, Trivy filesystem scan, depe
 
 Workspace: `~/rebash-github-actions/module-11`
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 mkdir -p ~/rebash-github-actions/module-11/{.github/workflows,app} && cd ~/rebash-github-actions/module-11
 set -euo pipefail
 ```
@@ -217,7 +217,7 @@ jobs:
 
 Validate offline:
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-github-actions/module-11
 set -euo pipefail
 python3 -c "import yaml; yaml.safe_load(open('.github/workflows/security-scan.yml')); print('security workflow OK')"
@@ -273,7 +273,7 @@ echo "check-unpinned-actions: all uses lines SHA-pinned or official actions/*"
 
 Validate offline:
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-github-actions/module-11
 set -euo pipefail
 python3 -c "
@@ -321,7 +321,7 @@ echo 'module-11 validation passed'
 
 Run it:
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-github-actions/module-11
 set -euo pipefail
 mkdir -p sbom
@@ -335,7 +335,7 @@ chmod +x validate-security-lab.sh
 
 #### Task 4 – Evidence bundle
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-github-actions/module-11
 set -euo pipefail
 tar -czf module-11-evidence.tgz .github/workflows/security-scan.yml app/main.py action-pinning-policy.yaml check-unpinned-actions.sh validate-security-lab.sh
@@ -377,7 +377,7 @@ Add the floating-tag check from Task 2 as a job in `security-scan.yml` that runs
 
 ### Cleanup
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 # Retain lab under ~/rebash-github-actions/module-11
 ls ~/rebash-github-actions/module-11
 ```

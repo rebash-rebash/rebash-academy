@@ -97,7 +97,7 @@ Your job is to prove each layer with evidence before fixing it.
 
 **Instructions:**
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 mkdir -p ~/rebash-lab-edge/{backend-a,backend-b}
 cd ~/rebash-lab-edge
 ```
@@ -152,7 +152,7 @@ class Handler(BaseHTTPRequestHandler):
 HTTPServer(("127.0.0.1", 18082), Handler).serve_forever()
 ```
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 chmod +x backend-a/server.py backend-b/server.py
 python3 backend-a/server.py >/tmp/rebash-edge-a.log 2>&1 &
 echo $! > /tmp/rebash-edge-a.pid
@@ -181,7 +181,7 @@ ss -tlnp | grep -E '1808[12]'
 
 **Instructions:**
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 sudo apt update
 sudo apt install -y haproxy curl dig dnsutils
 ```
@@ -213,7 +213,7 @@ backend status_pool
     server backend_b 127.0.0.1:18082 check inter 2s fall 3 rise 2
 ```
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 sudo cp haproxy.cfg /etc/haproxy/haproxy.cfg
 sudo haproxy -c -f /etc/haproxy/haproxy.cfg
 sudo systemctl restart haproxy
@@ -229,7 +229,7 @@ ss -tlnp | grep 18080
 
 **Validation:**
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 for i in {1..6}; do curl -sS http://127.0.0.1:18080/healthz; echo; done
 ```
 
@@ -243,7 +243,7 @@ You should see alternating `"backend":"A"` and `"backend":"B"` responses (round-
 
 **Instructions:**
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 sudo cp /etc/hosts /etc/hosts.rebash-edge.bak
 grep -q 'edge.rebash.lab' /etc/hosts || echo '127.0.0.1 edge.rebash.lab' | sudo tee -a /etc/hosts
 
@@ -271,7 +271,7 @@ curl -sS http://edge.rebash.lab:18080/healthz
 
 **Instructions:**
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 # Baseline: both backends in rotation
 for i in {1..4}; do curl -sS http://edge.rebash.lab:18080/healthz; echo; done
 
@@ -302,7 +302,7 @@ ss -tlnp | grep -E '1808[12]' || true
 
 **5a — Wrong hosts entry:**
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 sudo sed -i.bak-edge '/edge.rebash.lab/d' /etc/hosts
 echo '127.0.0.99 edge.rebash.lab' | sudo tee -a /etc/hosts
 
@@ -320,7 +320,7 @@ curl -sS http://127.0.0.1:18080/healthz
 !!! warning "Console session required"
     Confirm you have console access before adding deny rules on cloud VMs.
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 # Restore correct hosts first if you ran 5a
 sudo sed -i.bak-edge '/edge.rebash.lab/d' /etc/hosts
 echo '127.0.0.1 edge.rebash.lab' | sudo tee -a /etc/hosts
@@ -352,7 +352,7 @@ ss -tlnp | grep 18080
 
 **Instructions:**
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 # Fix hosts
 sudo sed -i.bak-restore '/edge.rebash.lab/d' /etc/hosts
 echo '127.0.0.1 edge.rebash.lab' | sudo tee -a /etc/hosts
@@ -389,7 +389,7 @@ for i in {1..4}; do curl -sS http://edge.rebash.lab:18080/healthz; echo; done
 
 **Instructions:**
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 kill "$(cat /tmp/rebash-edge-a.pid)" 2>/dev/null || true
 kill "$(cat /tmp/rebash-edge-b.pid)" 2>/dev/null || true
 kill $(lsof -t -i:18081 -i:18082) 2>/dev/null || true

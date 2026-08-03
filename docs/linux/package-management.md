@@ -72,7 +72,7 @@ Repositories publish packages. The package manager resolves dependencies, instal
 
 Packages bring version metadata, dependencies, and a file inventory the OS can verify.
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 sudo apt-get update
 apt-cache policy curl
 dpkg -l curl
@@ -91,7 +91,7 @@ Manual binaries under `/usr/local` drift and are hard to patch. Unpatched kernel
 5. **Hold / pin** — stop a package from upgrading until you are ready (`apt-mark hold` on Ubuntu).
 6. **Remove** — `apt-get remove` (keep config) or `purge` (remove config too); clean unused deps with `autoremove`.
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 sudo apt-get install -y tree
 apt-mark showhold
 sudo apt-mark hold tree
@@ -138,7 +138,7 @@ On a practice Ubuntu VM, install `tree`, prove it with queries, place and remove
 
 Workspace: `~/rebash-linux/lab16`
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 mkdir -p ~/rebash-linux/lab16 && cd ~/rebash-linux/lab16
 set -euo pipefail
 whoami | tee admin-user.txt
@@ -159,7 +159,7 @@ Your team standardises a small diagnostic tool on bastion hosts. Change control 
 
 #### Task 1 – Update metadata and install `tree`
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-linux/lab16
 set -euo pipefail
 
@@ -177,7 +177,7 @@ test -x "$(command -v tree)"
 
 #### Task 2 – Query policy, files, and hold
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-linux/lab16
 set -euo pipefail
 
@@ -200,7 +200,7 @@ apt-get -s upgrade 2>/dev/null | tee apt-sim-upgrade.txt || true
 
 #### Task 3 – Unhold, remove, evidence pack
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-linux/lab16
 set -euo pipefail
 
@@ -267,7 +267,7 @@ Install `jq`, record `apt-cache policy jq` and `jq --version`, hold `jq`, prove 
 
 ### Cleanup
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-linux/lab16
 set -euo pipefail
 sudo apt-mark unhold tree 2>/dev/null || true

@@ -63,7 +63,7 @@ Host with outbound HTTPS allowed.
 
 ## Initial State
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 mkdir -p ~/rebash-lab-shell/certs
 cd ~/rebash-lab-shell/certs
 ```
@@ -72,7 +72,7 @@ cd ~/rebash-lab-shell/certs
 
 ### Task 1 — Fetch certificate end date
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 echo | openssl s_client -servername example.com -connect example.com:443 2>/dev/null \
   | openssl x509 -noout -enddate
 ```
@@ -109,7 +109,7 @@ Read hosts from `hosts.txt` and summarise.
 
 ## Cleanup
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 rm -rf ~/rebash-lab-shell
 ```
 

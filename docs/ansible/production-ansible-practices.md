@@ -110,7 +110,7 @@ ansible/
 
 Run staging:
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 ansible-playbook -i inventories/dev site.yml
 ```
 
@@ -147,7 +147,7 @@ Create a production-style repository layout with `inventories/dev` and `inventor
 
 Workspace: `~/rebash-ansible/module-16`
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 mkdir -p ~/rebash-ansible/module-16 && cd ~/rebash-ansible/module-16
 ```
 
@@ -161,7 +161,7 @@ Release engineering requires every Ansible repo to boot-strap with separated dev
 
 Run:
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-ansible/module-16
 mkdir -p inventories/{dev,prod} roles/baseline/{tasks,defaults} playbooks group_vars/all
 ```
@@ -277,7 +277,7 @@ collections:
 
 Run syntax-check against dev inventory:
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-ansible/module-16
 ansible-playbook --syntax-check -i inventories/dev site.yml | tee syntax-dev.txt
 ansible-playbook --syntax-check -i inventories/prod site.yml | tee syntax-prod.txt
@@ -291,7 +291,7 @@ grep -q 'playbook: site.yml' syntax-prod.txt
 
 #### Task 3 – Demonstrate live apply on dev inventory
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-ansible/module-16
 ansible-playbook -i inventories/dev site.yml | tee apply-dev.txt
 grep -q 'env=development' apply-dev.txt
@@ -328,7 +328,7 @@ Create `playbooks/canary.yml`:
 
 Syntax-check the canary playbook:
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-ansible/module-16
 ansible-playbook --syntax-check -i inventories/dev playbooks/canary.yml | tee syntax-canary.txt
 grep -q 'playbook: playbooks/canary.yml' syntax-canary.txt
@@ -340,7 +340,7 @@ grep -q 'playbook: playbooks/canary.yml' syntax-canary.txt
 
 #### Task 5 – Package production evidence tarball
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-ansible/module-16
 tar -czf module-16-evidence.tgz \
   ansible.cfg site.yml inventories/ roles/ playbooks/ group_vars/ \
@@ -383,7 +383,7 @@ Add `group_vars/prod/vault.yml` encrypted with Ansible Vault containing `db_pass
 
 ### Cleanup
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 rm -rf ~/rebash-ansible/module-16 /tmp/rebash-ansible-facts
 ```
 

@@ -150,7 +150,7 @@ Build a reusable **Docker label** module, gate it with `fmt` and `validate`, and
 
 Workspace: `~/rebash-terraform/module-14`
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 mkdir -p ~/rebash-terraform/module-14/modules/label && cd ~/rebash-terraform/module-14
 ```
 
@@ -247,7 +247,7 @@ output "container_name" {
 
 Format and validate the module:
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-terraform/module-14/modules/label
 terraform fmt -recursive
 terraform init -backend=false | tee ../../artefacts/init-label.log
@@ -307,7 +307,7 @@ run "invalid_environment_fails" {
 Run the test suite:
 
 {% raw %}
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 mkdir -p ~/rebash-terraform/module-14/artefacts
 cd ~/rebash-terraform/module-14/modules/label
 terraform test | tee ../../artefacts/test-results.log
@@ -368,7 +368,7 @@ output "container_name" {
 
 Simulate CI format check and validate the root:
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-terraform/module-14
 terraform fmt -check -recursive | tee artefacts/fmt-check.log
 terraform init -backend=false | tee artefacts/init-root.log
@@ -386,7 +386,7 @@ grep -q 'module.app_label.docker_container.labelled' artefacts/plan-root.log
 Create `scripts/ci-gates.sh`:
 
 {% raw %}
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 #!/usr/bin/env bash
 set -euo pipefail
 
@@ -409,7 +409,7 @@ echo "ci-gates: OK"
 
 Run it:
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-terraform/module-14
 chmod +x scripts/ci-gates.sh
 ./scripts/ci-gates.sh | tee artefacts/ci-gates.log
@@ -450,7 +450,7 @@ Add a fourth test run `plan_prod` with `environment = "prod"` and an assert that
 
 ### Cleanup
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-terraform/module-14/modules/label
 terraform test -destroy
 cd ~/rebash-terraform/module-14

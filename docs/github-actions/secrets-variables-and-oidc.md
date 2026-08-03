@@ -193,7 +193,7 @@ Encode the secrets hierarchy as YAML, write workflows referencing secrets and va
 
 ### Lab environment
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 mkdir -p ~/rebash-github-actions/module-05/.github/workflows ~/rebash-github-actions/module-05/oidc && cd ~/rebash-github-actions/module-05
 set -euo pipefail
 ```
@@ -239,7 +239,7 @@ rules:
 
 Validate offline:
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-github-actions/module-05
 set -euo pipefail
 python3 -c "
@@ -293,7 +293,7 @@ jobs:
 
 Validate offline:
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-github-actions/module-05
 set -euo pipefail
 grep -q 'vars.AWS_REGION' .github/workflows/deploy-with-secrets.yml
@@ -336,7 +336,7 @@ Create `oidc/aws-trust-policy.json`:
 
 Validate offline:
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-github-actions/module-05
 set -euo pipefail
 python3 -c "import json; d=json.load(open('oidc/aws-trust-policy.json')); assert d['Statement'][0]['Action']=='sts:AssumeRoleWithWebIdentity'; print('trust policy JSON OK')"
@@ -349,7 +349,7 @@ grep -q 'token.actions.githubusercontent.com' oidc/aws-trust-policy.json
 
 #### Task 4 – Simulate offline deploy check and archive
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-github-actions/module-05
 set -euo pipefail
 

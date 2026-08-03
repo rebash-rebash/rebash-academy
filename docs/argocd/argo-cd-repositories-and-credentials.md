@@ -164,7 +164,7 @@ Create a repository Secret template with placeholders for private Git, register 
 
 ### Lab environment
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 mkdir -p ~/rebash-argocd/module-05 && cd ~/rebash-argocd/module-05
 ```
 
@@ -198,7 +198,7 @@ stringData:
 
 Validate YAML without applying placeholders to cluster:
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-argocd/module-05
 kubectl apply --dry-run=client -f repository-private-template.yaml | tee repo-template-dryrun-m05.txt
 grep -q 'repository-private-github-template' repo-template-dryrun-m05.txt
@@ -250,7 +250,7 @@ spec:
 
 Apply:
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-argocd/module-05
 kubectl apply -f namespace.yaml
 kubectl apply -f application-public-repo.yaml | tee application-apply-m05.txt
@@ -263,7 +263,7 @@ kubectl get application rebash-public-repo-demo -n argocd | tee application-get-
 
 #### Task 3 – Prove repository connection and sync
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-argocd/module-05
 kubectl wait --for=jsonpath='{.status.sync.status}'=Synced \
   application/rebash-public-repo-demo -n argocd --timeout=300s | tee wait-synced-m05.txt
@@ -304,7 +304,7 @@ stringData:
 
 Validate offline:
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-argocd/module-05
 kubectl apply --dry-run=client -f repository-oci-template.yaml | tee oci-template-dryrun-m05.txt
 grep -q 'enableOCI' repository-oci-template.yaml
@@ -359,7 +359,7 @@ Create `repository-ssh-template.yaml` with `sshPrivateKey: |` placeholder block 
 
 ### Cleanup
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 kubectl delete application rebash-public-repo-demo -n argocd --ignore-not-found
 kubectl delete namespace rebash-argocd-m05 --ignore-not-found
 # Do not leave real credential secrets in argocd namespace

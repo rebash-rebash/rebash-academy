@@ -117,7 +117,7 @@ Verify Git, configure a **local** lab identity and defaults, detect SSH vs HTTPS
 
 Workspace: `~/rebash-git/module-02`
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 mkdir -p ~/rebash-git/module-02 && cd ~/rebash-git/module-02
 set -euo pipefail
 ```
@@ -130,7 +130,7 @@ A new starter’s first commits hit the company GitHub as `ubuntu@ip-10-0-0-5`. 
 
 #### Task 1 – Version and install check
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-git/module-02
 set -euo pipefail
 
@@ -150,7 +150,7 @@ test -s git-version.txt
 
 #### Task 2 – Local repo config (not global)
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-git/module-02
 set -euo pipefail
 
@@ -194,7 +194,7 @@ git config --local --get-regexp 'user\.|init\.defaultBranch|core\.editor' 2>/dev
 
 Run diagnostics and pack evidence:
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-git/module-02
 set -euo pipefail
 
@@ -246,7 +246,7 @@ Run `git config --global --get user.email` (read-only) and append `global_email=
 
 ### Cleanup
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 # Remove disposable lab key if you created id_ed25519_rebash_lab and will not use it:
 # rm -f ~/.ssh/id_ed25519_rebash_lab ~/.ssh/id_ed25519_rebash_lab.pub
 ls ~/rebash-git/module-02

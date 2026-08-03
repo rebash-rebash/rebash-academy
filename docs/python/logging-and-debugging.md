@@ -145,7 +145,7 @@ Configure logging to both stderr and a file, emit messages at multiple levels, p
 
 Workspace: `~/rebash-python/lab10`
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 mkdir -p ~/rebash-python/lab10 && cd ~/rebash-python/lab10
 set -euo pipefail
 python3 -m venv .venv
@@ -165,7 +165,7 @@ Your inventory loader will run in CI. Platform asks for INFO lines on stderr for
 
 #### Task 1 – Configure file + stderr logging
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-python/lab10
 set -euo pipefail
 source .venv/bin/activate
@@ -215,7 +215,7 @@ def run_demo(log_path: Path) -> None:
 
 Run:
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 test -f app_logging.py
 ```
 
@@ -225,7 +225,7 @@ test -f app_logging.py
 
 #### Task 2 – Run demo and prove log lines
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-python/lab10
 set -euo pipefail
 source .venv/bin/activate
@@ -271,7 +271,7 @@ PY
 
 #### Task 3 – Optional breakpoint behind a flag
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-python/lab10
 set -euo pipefail
 source .venv/bin/activate
@@ -343,7 +343,7 @@ Add a `RotatingFileHandler` (from `logging.handlers`) with `maxBytes=2000` and `
 
 ### Cleanup
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-python/lab10
 set -euo pipefail
 # rm -rf .venv __pycache__ *.py *.log* *.txt

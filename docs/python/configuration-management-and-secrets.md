@@ -140,7 +140,7 @@ Create YAML config, `.env.example`, `.gitignore`, and a loader that reads env + 
 
 Workspace: `~/rebash-python/lab11`
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 mkdir -p ~/rebash-python/lab11 && cd ~/rebash-python/lab11
 set -euo pipefail
 python3 -m venv .venv
@@ -162,7 +162,7 @@ You are building a small inventory API client for a practice environment. Non-se
 
 #### Task 1 – Config files without secrets
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-python/lab11
 set -euo pipefail
 source .venv/bin/activate
@@ -203,7 +203,7 @@ REBASH_LOG_LEVEL=DEBUG
 
 Run:
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 test -f config.yaml
 test -f .env.example
 grep -qx '.env' .gitignore
@@ -216,7 +216,7 @@ echo "task1 ok" | tee task1-ok.txt
 
 #### Task 2 – Loader with fail-if-missing secret
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-python/lab11
 set -euo pipefail
 source .venv/bin/activate
@@ -286,7 +286,7 @@ if __name__ == "__main__":
 
 Run:
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 python load_config.py | tee task2-success.txt
 grep -q "api_token_set" task2-success.txt
 if grep -q "lab-only-not-for-git" task2-success.txt; then
@@ -301,7 +301,7 @@ fi
 
 #### Task 3 – Prove missing secret fails
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-python/lab11
 set -euo pipefail
 source .venv/bin/activate
@@ -357,7 +357,7 @@ Extend `load_config.py` to also require `REBASH_API_TOKEN` to be at least 8 char
 
 ### Cleanup
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-python/lab11
 set -euo pipefail
 # shred or delete local secrets when finished

@@ -148,7 +148,7 @@ Workspace: `~/rebash-docker/module-03`
 
 Host port **18083** is reserved for this lab to avoid clashes with other modules.
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 mkdir -p ~/rebash-docker/module-03 && cd ~/rebash-docker/module-03
 ```
 
@@ -160,7 +160,7 @@ You deploy a sidecar nginx container on a jump server to serve a static health p
 
 #### Task 1 – Run detached with a unique name and published port
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-docker/module-03
 docker run -d --name rebash-cli-web -p 18083:80 nginx:1.27-alpine
 docker ps --filter name=rebash-cli-web --format 'table {{ "{{" }}.Names{{ "}}" }}\t{{ "{{" }}.Status{{ "}}" }}\t{{ "{{" }}.Ports{{ "}}" }}' | tee cli-ps.txt
@@ -175,7 +175,7 @@ grep -qi 'HTTP/' cli-headers.txt
 
 #### Task 2 – Logs and exec into the running container
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-docker/module-03
 docker logs rebash-cli-web 2>&1 | tail -n 15 | tee cli-logs.txt
 docker exec rebash-cli-web nginx -v 2>&1 | tee cli-exec-nginx-v.txt
@@ -188,7 +188,7 @@ grep -qi 'nginx' cli-exec-nginx-v.txt
 
 #### Task 3 – Stop, confirm exited, and remove
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-docker/module-03
 docker stop rebash-cli-web | tee cli-stop.txt
 docker ps -a --filter name=rebash-cli-web --format '{{ "{{" }}.Status{{ "}}" }}' | tee cli-status-after-stop.txt
@@ -219,7 +219,7 @@ docker rm rebash-cli-web | tee cli-rm.txt
 
 Re-run the lifecycle with `--rm` so removal is automatic after stop:
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-docker/module-03
 docker run -d --rm --name rebash-cli-auto -p 18084:80 nginx:1.27-alpine
 docker stop rebash-cli-auto
@@ -239,7 +239,7 @@ echo 'auto-removed ok' | tee cli-challenge.txt
 
 ### Cleanup
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-docker/module-03
 docker rm -f rebash-cli-web rebash-cli-auto 2>/dev/null || true
 docker rmi nginx:1.27-alpine 2>/dev/null || true

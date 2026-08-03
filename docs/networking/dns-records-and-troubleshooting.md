@@ -135,7 +135,7 @@ Query A/AAAA/MX/TXT/CNAME-related data for public names, deliberately observe **
 
 Workspace: `~/rebash-networking/lab11`
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 mkdir -p ~/rebash-networking/lab11 && cd ~/rebash-networking/lab11
 set -euo pipefail
 whoami | tee admin-user.txt
@@ -154,7 +154,7 @@ Marketing added a TXT verification record and mail still fails; someone else rep
 
 #### Task 1 – Record type sweep for example.com
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-networking/lab11
 set -euo pipefail
 
@@ -178,7 +178,7 @@ grep -E 'IN[[:space:]]+A|IN[[:space:]]+AAAA|IN[[:space:]]+MX|IN[[:space:]]+TXT|I
 
 #### Task 2 – Deliberate NXDOMAIN
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-networking/lab11
 set -euo pipefail
 
@@ -199,7 +199,7 @@ grep -E 'status: NOERROR' dig-noerror.txt
 
 #### Task 3 – Troubleshooting checklist script (working artefact)
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-networking/lab11
 set -euo pipefail
 ```
@@ -244,7 +244,7 @@ echo "If wrong IP: check TTL, CNAME chain, split-horizon"
 echo "If mail issue: verify MX priorities and related TXT (SPF)"
 ```
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 chmod +x dns-troubleshoot.sh
 
 ./dns-troubleshoot.sh example.com "$(cat nxdomain-name.txt)" | tee checklist-output.txt
@@ -291,7 +291,7 @@ Add a `CNAME` follow mode to `dns-troubleshoot.sh`: if `dig www.example.com CNAM
 
 ### Cleanup
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-networking/lab11
 # Optional: rm -f dns-records-evidence.tgz *.txt
 # Keep dns-troubleshoot.sh if you want it in your toolkit

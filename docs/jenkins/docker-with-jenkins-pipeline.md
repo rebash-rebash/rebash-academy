@@ -158,7 +158,7 @@ Create a small app repo with Dockerfile + Declarative Pipeline that runs tests i
 
 Workspace: `~/rebash-jenkins/module-08`
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 mkdir -p ~/rebash-jenkins/module-08 && cd ~/rebash-jenkins/module-08
 set -euo pipefail
 docker version | tee docker-version.txt
@@ -178,7 +178,7 @@ Your Node service must build in CI with the same image developers use locally. S
 
 Run:
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-jenkins/module-08
 set -euo pipefail
 
@@ -239,7 +239,7 @@ untrusted_pr_policy: no_host_socket_for_fork_prs
 
 Validate and archive:
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 python3 -c "
 import yaml
 with open('daemon-model.yaml') as f:
@@ -260,7 +260,7 @@ test -f docker-pipe-demo/Dockerfile
 
 Run:
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-jenkins/module-08/docker-pipe-demo
 set -euo pipefail
 ```
@@ -307,7 +307,7 @@ pipeline {
 
 Verify:
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 # Note: label expression may need editing to match your Module 6 labels
 grep -q 'docker {' Jenkinsfile
 grep -q 'docker build' Jenkinsfile
@@ -323,7 +323,7 @@ Wire this repo into Jenkins (Pipeline from SCM or Multibranch). Ensure the **Bui
 
 Run:
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-jenkins/module-08/docker-pipe-demo
 set -euo pipefail
 ```
@@ -351,7 +351,7 @@ pipeline {
 
 Verify:
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 test -f Jenkinsfile.dockerfile-agent
 ```
 
@@ -365,7 +365,7 @@ Create job `rebash-demo/dockerfile-agent-demo` using this script (SCM or paste) 
 
 Run:
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-jenkins/module-08
 set -euo pipefail
 ```
@@ -388,7 +388,7 @@ stage('Push image') {
 
 Validate and archive:
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 grep -q registry-ci registry-push.Jenkinsfile
 grep -q 'docker.withRegistry' registry-push.Jenkinsfile
 
@@ -436,7 +436,7 @@ Extend the Pipeline with a third stage that tags the image as `${IMAGE_NAME}:git
 
 ### Cleanup
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 docker rmi rebash/docker-pipe-demo:local 2>/dev/null || true
 # Remove BUILD_NUMBER tags created in Jenkins as needed
 ls ~/rebash-jenkins/module-08

@@ -129,7 +129,7 @@ Scaffold an `apps/` + `clusters/dev` GitOps layout, apply an Application and App
 
 Runtime: **kind** cluster with Argo CD — tarball-only validation is not sufficient for this lab.
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 kind create cluster --name rebash-argocd 2>/dev/null || true
 export KUBECONFIG="$(kind get kubeconfig --name rebash-argocd)"
 mkdir -p ~/rebash-argocd/module-15/{apps/demo-api/base,clusters/dev,argocd/bootstrap,scripts} \
@@ -198,7 +198,7 @@ spec:
 
 Verify base renders:
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-argocd/module-15
 kubectl kustomize apps/demo-api/base | grep -q 'kind: Deployment' && echo 'app-base: OK' | tee app-base-m15.txt
 ```
@@ -236,7 +236,7 @@ commonLabels:
 
 Verify overlay:
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-argocd/module-15
 kubectl kustomize clusters/dev | grep 'rebash-argocd-m15-dev' | tee kustomize-ns-m15.txt
 kubectl kustomize clusters/dev | grep -q 'kind: Deployment' && echo 'kustomize: OK' | tee kustomize-m15.txt
@@ -275,7 +275,7 @@ spec:
 
 Publish repo path and sync:
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-argocd/module-15
 cp -a ~/rebash-argocd/module-15 /tmp/rebash-argocd/ 2>/dev/null || true
 kubectl apply -f argocd/bootstrap/application-dev.yaml | tee app-apply-m15.txt
@@ -341,7 +341,7 @@ wc -l "${OUT}"
 
 Apply ApplicationSet and export (remove direct Application first so ApplicationSet owns `demo-api-dev`):
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-argocd/module-15
 kubectl delete application demo-api-dev -n argocd --ignore-not-found
 kubectl apply -f argocd/bootstrap/applicationset-clusters.yaml | tee appset-apply-m15.txt
@@ -388,7 +388,7 @@ Add `clusters/prod/kustomization.yaml` with a strategic merge patch setting `rep
 
 ### Cleanup
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 kubectl delete applicationset platform-clusters -n argocd --ignore-not-found
 kubectl delete application demo-api-dev -n argocd --ignore-not-found
 kubectl delete namespace rebash-argocd-m15-dev --ignore-not-found

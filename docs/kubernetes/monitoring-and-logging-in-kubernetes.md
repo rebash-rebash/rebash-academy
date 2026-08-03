@@ -155,7 +155,7 @@ Deploy a logging workload, collect Events and container logs into evidence files
 
 Workspace: `~/rebash-k8s/module-12` on a disposable lab cluster.
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 mkdir -p ~/rebash-k8s/module-12 && cd ~/rebash-k8s/module-12
 ```
 
@@ -215,7 +215,7 @@ spec:
 
 Apply:
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-k8s/module-12
 kubectl apply -f namespace.yaml -f deployment.yaml
 kubectl rollout status deployment/log-demo -n rebash-m12 --timeout=120s
@@ -246,7 +246,7 @@ echo "wrote evidence to $OUT"
 
 Run the script:
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-k8s/module-12
 chmod +x collect-evidence.sh
 ./collect-evidence.sh .
@@ -277,7 +277,7 @@ fi
 
 Run:
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-k8s/module-12
 chmod +x check-metrics.sh
 ./check-metrics.sh
@@ -317,7 +317,7 @@ Simulate a crash: change the container command to `exit 1`, re-apply, then captu
 
 ### Cleanup
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 kubectl delete namespace rebash-m12 --ignore-not-found
 ```
 

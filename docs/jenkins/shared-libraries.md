@@ -164,7 +164,7 @@ Create a Shared Library Git repository with a `vars/` step, document controller 
 
 Workspace: `~/rebash-jenkins/module-09`
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 mkdir -p ~/rebash-jenkins/module-09 && cd ~/rebash-jenkins/module-09
 set -euo pipefail
 ```
@@ -179,7 +179,7 @@ Three squads duplicate Slack notify and git metadata stages. Platform will publi
 
 Commit and record:
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-jenkins/module-09
 set -euo pipefail
 
@@ -235,7 +235,7 @@ steps:
 
 Commit and record:
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 git add vars src README.md
 git -c user.email='rebash-lab@example.com' -c user.name='REBASH Lab' commit -m 'Initial rebash-ci library with sayHello and ciMeta'
 git tag -a v0.1.0 -m 'v0.1.0'
@@ -259,7 +259,7 @@ pwd | tee ../lib-path.txt
 
 Run:
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-jenkins/module-09
 set -euo pipefail
 ```
@@ -277,7 +277,7 @@ implicit_load: false
 
 Validate and archive:
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 python3 -c "
 import yaml
 from pathlib import Path
@@ -299,7 +299,7 @@ print('library-config.yaml OK')
 
 Run:
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-jenkins/module-09
 set -euo pipefail
 
@@ -337,7 +337,7 @@ expected_console: Hello from rebash-ci Shared Library
 
 Verify:
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 grep -q lib-consumer consumer-job.yaml
 ```
 
@@ -351,7 +351,7 @@ Create/run `lib-consumer` and confirm console output.
 
 Run:
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-jenkins/module-09
 set -euo pipefail
 ```
@@ -368,7 +368,7 @@ rollback: retag_or_point_jobs_at_previous_tag
 
 Validate and archive:
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 python3 -c "
 import yaml
 with open('trust-policy.yaml') as f:
@@ -415,7 +415,7 @@ Add `vars/requireLabel.groovy` that errors if `env.NODE_LABELS` / label checks f
 
 Keep `rebash-ci` library config for later modules. Remove experimental consumer jobs if cluttered.
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 ls ~/rebash-jenkins/module-09
 ```
 

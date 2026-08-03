@@ -160,7 +160,7 @@ Author templates that use `if`, `range`, and `include`/`define` helpers, drive o
 
 Workspace: `~/rebash-helm/module-04` on your workstation.
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 mkdir -p ~/rebash-helm/module-04/rebash-tpl/templates && cd ~/rebash-helm/module-04
 ```
 
@@ -310,7 +310,7 @@ extraEnv:
     value: "on"
 ```
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-helm/module-04
 helm lint rebash-tpl | tee lint-m04.txt
 helm template tpl-off rebash-tpl --namespace rebash-helm-m04 | tee render-off-m04.yaml
@@ -337,7 +337,7 @@ metadata:
   name: rebash-helm-m04
 ```
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-helm/module-04
 if command -v helm >/dev/null && kubectl cluster-info >/dev/null 2>&1; then
   kubectl apply -f namespace.yaml
@@ -382,7 +382,7 @@ Add a `required` helper call so rendering fails when `ingress.enabled` is true b
 
 ### Cleanup
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 helm uninstall tpl-off -n rebash-helm-m04 2>/dev/null || true
 kubectl delete namespace rebash-helm-m04 --ignore-not-found
 ```

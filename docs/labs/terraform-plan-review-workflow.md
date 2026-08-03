@@ -83,7 +83,7 @@ Empty workspace. You will create the root module from scratch, then operate it a
 
 **Instructions:**
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 mkdir -p ~/rebash-lab-tf-plan && cd ~/rebash-lab-tf-plan
 
 cat > versions.tf <<'EOF'
@@ -192,7 +192,7 @@ EOF
 
 **Validation:**
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 test -f versions.tf && test -f main.tf && echo "scaffold OK"
 ```
 
@@ -202,7 +202,7 @@ test -f versions.tf && test -f main.tf && echo "scaffold OK"
 
 **Instructions:**
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 export TF_IN_AUTOMATION=1
 terraform fmt
 terraform init -input=false
@@ -216,7 +216,7 @@ terraform fmt -check
 
 **Validation:**
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 test -f .terraform.lock.hcl && terraform validate
 ```
 
@@ -226,7 +226,7 @@ test -f .terraform.lock.hcl && terraform validate
 
 **Instructions:**
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 terraform plan -input=false -out=tfplan
 terraform show -no-color tfplan | head -80
 ```
@@ -237,7 +237,7 @@ terraform show -no-color tfplan | head -80
 
 **Validation:**
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 test -f tfplan
 terraform show -json tfplan >/dev/null && echo "plan readable"
 ```
@@ -259,7 +259,7 @@ terraform show -json tfplan >/dev/null && echo "plan readable"
 
 Then introduce a deliberate surprise and re-plan:
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 # Reviewer asks for a clearer filename — change local only after discussing
 sed -i.bak 's/\${var.project}-\${var.environment}-banner.txt/\${var.project}-\${var.environment}-banner.v1.txt/' main.tf
 # macOS/BSD sed used -i.bak; on GNU sed you may use sed -i
@@ -283,7 +283,7 @@ terraform show -no-color tfplan | head -60
 
 **Instructions:**
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 terraform apply -input=false tfplan
 cat generated/rebash-lab-banner.v1.txt 2>/dev/null || cat generated/rebash-lab-banner.txt
 terraform output
@@ -297,7 +297,7 @@ If your sed path differs, `ls generated/` and `cat` the file that exists.
 
 **Validation:**
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 test -f "$(terraform output -raw banner_path)"
 terraform output -raw content_md5 | grep -E '^[a-f0-9]{32}$'
 ```
@@ -324,7 +324,7 @@ rm -f tfplan
 
 **Validation:**
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 test ! -f "$BANNER_FILE"
 ```
 
@@ -358,7 +358,7 @@ test ! -f "$BANNER_FILE"
 
 ## Cleanup
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-lab-tf-plan
 terraform destroy -input=false -auto-approve 2>/dev/null || true
 cd ~

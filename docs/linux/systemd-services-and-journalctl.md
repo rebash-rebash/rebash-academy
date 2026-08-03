@@ -72,7 +72,7 @@ A **unit** describes something systemd can manage. A **service** unit usually ha
 | `edit` / drop-in | Override without rewriting the whole unit |
 | `mask` | Make start impossible (stronger than disable) |
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 systemctl status cron.service
 systemctl cat cron.service
 journalctl -u cron.service -n 20 --no-pager
@@ -137,7 +137,7 @@ Create a local `rebash-lab.service` that writes a heartbeat line on a schedule-f
 
 Workspace: `~/rebash-linux/lab10`
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 mkdir -p ~/rebash-linux/lab10 && cd ~/rebash-linux/lab10
 set -euo pipefail
 whoami | tee lab-user.txt
@@ -158,7 +158,7 @@ Your team needs a tiny “sidecar” style helper on an Ubuntu app VM: a supervi
 
 #### Task 1 – Install unit and start the service
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-linux/lab10
 set -euo pipefail
 
@@ -210,7 +210,7 @@ systemctl status rebash-lab.service --no-pager | tee service-status.txt
 
 #### Task 2 – journalctl evidence and heartbeat file
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-linux/lab10
 set -euo pipefail
 
@@ -237,7 +237,7 @@ systemctl show rebash-lab.service -p FragmentPath -p DropInPaths -p MainPID \
 
 #### Task 3 – Drop-in override and evidence pack
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-linux/lab10
 set -euo pipefail
 
@@ -301,7 +301,7 @@ Add a second drop-in `20-security.conf` that sets `NoNewPrivileges=yes` for `reb
 
 ### Cleanup
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-linux/lab10
 set -euo pipefail
 

@@ -153,7 +153,7 @@ Workspace: `~/rebash-docker/module-10`
 
 Local Docker daemon only — no cloud registry login required.
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 mkdir -p ~/rebash-docker/module-10 && cd ~/rebash-docker/module-10
 ```
 
@@ -176,7 +176,7 @@ CMD ["cat", "/version.txt"]
 Build with a semver tag and a local alias:
 
 {% raw %}
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-docker/module-10
 docker build -t rebash-registry-lab:1.0.0 -t rebash-registry-lab:local .
 docker images rebash-registry-lab --format '{{ "{{" }}.Repository{{ "}}" }}:{{ "{{" }}.Tag{{ "}}" }} {{ "{{" }}.ID{{ "}}" }}' | tee image-tags.txt
@@ -193,7 +193,7 @@ grep -q 'rebash-registry-lab:1.0.0' image-tags.txt
 Capture `Id` and `RepoDigests` (often empty until a registry push) and save a tarball:
 
 {% raw %}
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-docker/module-10
 docker inspect rebash-registry-lab:1.0.0 --format 'Id={{ "{{" }}.Id{{ "}}" }} RepoDigests={{ "{{" }}.RepoDigests{{ "}}" }}' | tee digest-id.txt
 docker save rebash-registry-lab:1.0.0 -o rebash-registry-lab-1.0.0.tar
@@ -211,7 +211,7 @@ ls -lh rebash-registry-lab-1.0.0.tar | tee tar-size.txt
 Remove local tags, reload from the tarball, and confirm the same `Id`:
 
 {% raw %}
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-docker/module-10
 ORIG_ID="$(grep -o 'Id=sha256:[a-f0-9]*' digest-id.txt | cut -d= -f2)"
 docker rmi rebash-registry-lab:1.0.0 rebash-registry-lab:local 2>/dev/null || true
@@ -259,7 +259,7 @@ Run `registry:2.8` as `rebash-local-registry` on host port `50100`, push `rebash
 
 ### Cleanup
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-docker/module-10
 docker rm -f rebash-local-registry 2>/dev/null || true
 docker rmi rebash-registry-lab:1.0.0 rebash-registry-lab:local rebash-registry-lab:offline 2>/dev/null || true

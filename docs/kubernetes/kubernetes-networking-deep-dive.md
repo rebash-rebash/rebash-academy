@@ -166,7 +166,7 @@ Deploy a backend Service with Endpoints, prove CoreDNS resolution from a client 
 
 Workspace: `~/rebash-k8s/module-11` on a disposable lab cluster.
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 mkdir -p ~/rebash-k8s/module-11 && cd ~/rebash-k8s/module-11
 ```
 
@@ -232,7 +232,7 @@ spec:
 
 Apply and check Endpoints:
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-k8s/module-11
 kubectl apply -f namespace.yaml -f backend.yaml -f service.yaml
 kubectl rollout status deployment/api-backend -n rebash-m11 --timeout=120s
@@ -265,7 +265,7 @@ spec:
 
 Apply and test DNS plus HTTP:
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-k8s/module-11
 kubectl apply -f client-pod.yaml
 kubectl wait --for=condition=Ready pod/net-client -n rebash-m11 --timeout=120s
@@ -325,7 +325,7 @@ spec:
 
 Test policy effect (skip deny test if your CNI does not enforce policies):
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-k8s/module-11
 kubectl apply -f networkpolicy-deny.yaml
 if kubectl exec -n rebash-m11 net-client -- wget -qO- --timeout=3 http://api-svc 2>netpol-deny.txt; then
@@ -372,7 +372,7 @@ Add a label `tier: frontend` to the client Pod and tighten the allow policy to r
 
 ### Cleanup
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 kubectl delete namespace rebash-m11 --ignore-not-found
 ```
 

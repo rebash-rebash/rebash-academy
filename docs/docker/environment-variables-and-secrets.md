@@ -161,7 +161,7 @@ For local Compose without Swarm, common patterns:
 
 Mount credentials from the host without putting them in the image:
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 docker run -v /secure/path/db-password.txt:/run/secrets/db-password:ro myapp
 ```
 
@@ -205,7 +205,7 @@ Create `.env.example` and a Compose stack using `env_file`, then prove configura
 
 Workspace: `~/rebash-docker/environment-variables-and-secrets`
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 mkdir -p ~/rebash-docker/environment-variables-and-secrets && cd ~/rebash-docker/environment-variables-and-secrets
 ```
 
@@ -262,7 +262,7 @@ CMD ["python", "app.py"]
 
 Copy the example env locally (never commit `.env`):
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-docker/environment-variables-and-secrets
 cp .env.example .env
 sed -i.bak 's/replace-me-locally/lab-only-token-18180/' .env 2>/dev/null || \
@@ -291,7 +291,7 @@ services:
 
 Start and verify HTTP without dumping secrets:
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-docker/environment-variables-and-secrets
 docker compose up -d --build
 curl -sS http://127.0.0.1:18180/config | tee config-safe.txt
@@ -308,7 +308,7 @@ grep -qv 'lab-only-token' config-safe.txt
 Confirm variables are injected without echoing values:
 
 {% raw %}
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-docker/environment-variables-and-secrets
 CID="$(docker compose ps -q api)"
 docker inspect "$CID" --format '{{ "{{" }}range .Config.Env{{ "}}" }}{{ "{{" }}.{{ "}}" }}{{ "{{" }}println{{ "}}" }}{{ "{{" }}end{{ "}}" }}' | grep -E '^APP_ENV=|^LOG_LEVEL=|^API_TOKEN=' | sed 's/API_TOKEN=.*/API_TOKEN=<redacted>/' | tee env-keys.txt
@@ -351,7 +351,7 @@ Move `API_TOKEN` to a Docker Swarm secret or bind-mounted file (`/run/secrets/ap
 
 ### Cleanup
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-docker/environment-variables-and-secrets
 docker compose down -v --remove-orphans
 docker rmi rebash-env-lab:1.0.0 2>/dev/null || true
@@ -401,7 +401,7 @@ Confirm the lab before moving on:
 
 Applications should read secrets from files when available, falling back only in development:
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 #!/bin/sh
 set -eu
 if [ -f /run/secrets/database_url ]; then

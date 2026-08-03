@@ -93,7 +93,7 @@ Your job is to discover the breakage through logs — do not skip ahead by readi
 
 **Instructions:**
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 sudo useradd --system --home /opt/rebash-api --shell /usr/sbin/nologin rebash-api 2>/dev/null || true
 sudo mkdir -p /opt/rebash-api/bin /var/lib/rebash-api
 sudo tee /opt/rebash-api/bin/server.py >/dev/null <<'EOF'
@@ -128,7 +128,7 @@ sudo chown -R rebash-api:rebash-api /opt/rebash-api /var/lib/rebash-api
 
 **Validation:**
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 sudo -u rebash-api test -x /opt/rebash-api/bin/server.py && echo "binary OK"
 ```
 
@@ -140,7 +140,7 @@ sudo -u rebash-api test -x /opt/rebash-api/bin/server.py && echo "binary OK"
 
 **Instructions:**
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 sudo tee /etc/systemd/system/rebash-api.service >/dev/null <<'EOF'
 [Unit]
 Description=REBASH demo API
@@ -171,7 +171,7 @@ sudo systemctl status rebash-api.service --no-pager || true
 
 **Validation:**
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 systemctl is-failed rebash-api.service || systemctl is-active rebash-api.service
 ```
 
@@ -185,7 +185,7 @@ You should see `failed` (or brief `activating` then fail).
 
 **Instructions:**
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 systemctl status rebash-api.service --no-pager -l
 journalctl -u rebash-api.service -n 50 --no-pager
 journalctl -u rebash-api.service -p err..alert --no-pager | tail -20
@@ -207,7 +207,7 @@ ls -la /opt/rebash-api /opt/rebash-api/bin
 
 **Instructions:**
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 sudo tee /etc/systemd/system/rebash-api.service >/dev/null <<'EOF'
 [Unit]
 Description=REBASH demo API
@@ -240,7 +240,7 @@ sudo systemctl status rebash-api.service --no-pager -l
 
 **Validation:**
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 systemctl is-active rebash-api.service
 curl -sS http://127.0.0.1:8080/healthz
 ```
@@ -253,7 +253,7 @@ Expected JSON includes `"status":"ok"`.
 
 **Instructions:**
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 sleep 3
 systemctl is-active rebash-api.service
 journalctl -u rebash-api.service -n 20 --no-pager
@@ -294,7 +294,7 @@ curl -sS http://127.0.0.1:8080/ | head -c 200; echo
 
 ## Cleanup
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 sudo systemctl disable --now rebash-api.service || true
 sudo rm -f /etc/systemd/system/rebash-api.service
 sudo systemctl daemon-reload

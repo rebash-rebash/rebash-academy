@@ -3,7 +3,7 @@
 
 Conventions:
   - Create `file.ext`: → next fence gets title="file.ext" (basename)
-  - Untitled bash/sh/shell/console/zsh fences → title="Terminal"
+  - Untitled bash/sh/shell/console/zsh fences → {.lang .ra-terminal title="Terminal"}
   - **Expected output:** … → !!! example "Expected output" admonition
 
 Skips books/ and leaves already-titled fences alone.
@@ -219,7 +219,14 @@ def migrate_fences(text: str) -> tuple[str, int]:
 
         # Preserve other attrs; inject title
         attrs = rest.strip()
-        if attrs:
+        # Terminal chrome needs .ra-terminal on the fence (CSS works without JS)
+        if title == "Terminal":
+            lang_cls = lang.lower() if lang else "bash"
+            if attrs:
+                new_open = f"``` {{.{lang_cls} .ra-terminal title=\"Terminal\"}} {attrs}\n"
+            else:
+                new_open = f"``` {{.{lang_cls} .ra-terminal title=\"Terminal\"}}\n"
+        elif attrs:
             new_open = f"```{lang} title=\"{title}\" {attrs}\n" if lang else f"``` title=\"{title}\" {attrs}\n"
         else:
             new_open = f"```{lang} title=\"{title}\"\n" if lang else f"``` title=\"{title}\"\n"

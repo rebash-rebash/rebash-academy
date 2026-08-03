@@ -77,7 +77,7 @@ A **target** is a synchronisation point (a named goal state). A **timer** is a u
 | cron | Simple per-user tables; ubiquitous |
 | systemd timer | Dependencies, journal, jitter, unit hardening |
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 systemctl get-default
 systemctl list-timers --all
 systemd-analyze
@@ -136,7 +136,7 @@ Inspect the default target and boot analysis, create a lab oneshot service activ
 
 Workspace: `~/rebash-linux/lab11`
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 mkdir -p ~/rebash-linux/lab11 && cd ~/rebash-linux/lab11
 set -euo pipefail
 whoami | tee lab-user.txt
@@ -156,7 +156,7 @@ Your platform team wants a small housekeeping job every few minutes on app VMs �
 
 #### Task 1 – Inspect targets and boot analysis
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-linux/lab11
 set -euo pipefail
 
@@ -178,7 +178,7 @@ test -s analyze-blame.txt
 
 #### Task 2 – Create oneshot service + timer
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-linux/lab11
 set -euo pipefail
 
@@ -228,7 +228,7 @@ grep -q 'rebash-lab-timer.timer' list-timers.txt
 
 #### Task 3 – Trigger once, prove journal, pack evidence
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-linux/lab11
 set -euo pipefail
 
@@ -289,7 +289,7 @@ Add `RandomizedDelaySec=30` to the lab timer via a drop-in directory `rebash-lab
 
 ### Cleanup
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-linux/lab11
 set -euo pipefail
 

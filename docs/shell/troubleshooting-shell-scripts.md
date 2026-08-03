@@ -81,7 +81,7 @@ Troubleshooting is a loop: reproduce → isolate → fix → verify. Traces (`ba
 5. **Fix** — smallest correct change; keep strict mode.
 6. **Verify** — before/after evidence; add a regression assert when useful.
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 export PS4='+${BASH_SOURCE[0]}:${LINENO}: '
 env -i PATH=/usr/bin:/bin HOME="$HOME" bash -x ./script.sh args
 ```
@@ -130,7 +130,7 @@ Start from a **broken** inventory script under `~/rebash-shell/lab18`, capture i
 
 Workspace: `~/rebash-shell/lab18`
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 mkdir -p ~/rebash-shell/lab18 && cd ~/rebash-shell/lab18
 set -euo pipefail
 bash --version | head -n1 | tee bash-version.txt
@@ -180,7 +180,7 @@ exit 0
 
 Run:
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-shell/lab18
 set -euo pipefail
 
@@ -271,7 +271,7 @@ main "$@"
 
 Run:
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-shell/lab18
 set -euo pipefail
 
@@ -301,7 +301,7 @@ grep -F 'RESULT=status=nomatch' after-nomatch-out.txt | tee after-nomatch-snip.t
 
 Prove the fixed script still works under a cron-like environment, then pack before/after proof.
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-shell/lab18
 set -euo pipefail
 
@@ -361,7 +361,7 @@ Add `inventory-fixed.sh` support for a `--pipefail-demo` flag that runs `false |
 
 ### Cleanup
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-shell/lab18
 set -euo pipefail
 rm -rf "sample data"

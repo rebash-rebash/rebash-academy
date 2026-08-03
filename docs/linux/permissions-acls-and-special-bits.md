@@ -69,7 +69,7 @@ Permissions sit between identity (UID/GID) and the filesystem. Mode bits, ACLs, 
 
 POSIX permissions use three classes. Directories need the execute bit to **traverse** (enter) the path. ACLs add entries such as `user:alice:rwx`. Sticky (`+t`) on a directory restricts unlinking to the file owner (plus root). SUID on an executable runs it as the file owner; SGID runs as the file group. SGID on a directory often makes new files inherit the directory’s group.
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 ls -l
 stat -c '%A %U %G %n' file
 umask
@@ -121,7 +121,7 @@ On a practice Ubuntu VM, create a shared project directory with correct group mo
 
 Workspace: `~/rebash-linux/lab07`
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 mkdir -p ~/rebash-linux/lab07 && cd ~/rebash-linux/lab07
 set -euo pipefail
 sudo apt-get update -qq
@@ -142,7 +142,7 @@ Your team shares a deploy drop folder on a practice VM. Security wants: (1) grou
 
 #### Task 1 – Group, users, and POSIX modes
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-linux/lab07
 set -euo pipefail
 
@@ -171,7 +171,7 @@ getent group rebash-perm | tee group-rebash-perm.txt
 
 #### Task 2 – ACL for the contractor (read-only)
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-linux/lab07
 set -euo pipefail
 
@@ -194,7 +194,7 @@ grep -F 'user:rebash-contractor:r' getfacl-shared.txt
 
 #### Task 3 – Sticky drop box and evidence pack
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-linux/lab07
 set -euo pipefail
 
@@ -257,7 +257,7 @@ Add a **default ACL** on `/opt/rebash-perm/shared` so new files grant `rebash-co
 
 ### Cleanup
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-linux/lab07
 set -euo pipefail
 

@@ -74,7 +74,7 @@ Names in directories point to inodes. Hard links share one inode. Symlinks store
 | Symlink | Special file holding a path string |
 | Mount point | Directory where another filesystem is attached |
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 ls -li
 ln file hardlink
 ln -s /etc/hosts hosts.link
@@ -94,7 +94,7 @@ Deploy tools often create `current` → `releases/2026-08-02`. If the symlink br
 4. `readlink` / `readlink -f` show or fully resolve the target.
 5. `mount` / `findmnt` show how devices and bind mounts attach to directories; persist with `/etc/fstab` or systemd `.mount` units (by UUID preferred).
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 echo hello > a.txt
 ln a.txt b.txt
 ls -li a.txt b.txt
@@ -145,7 +145,7 @@ On a practice Ubuntu VM, prove path types, hard links, symlinks, and mounts with
 
 Workspace: `~/rebash-linux/lab04`
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 mkdir -p ~/rebash-linux/lab04 && cd ~/rebash-linux/lab04
 set -euo pipefail
 rm -rf pathlab
@@ -165,7 +165,7 @@ Your team deploys an app by unpacking a release directory and flipping a `curren
 
 #### Task 1 – Absolute vs relative paths
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-linux/lab04/pathlab
 set -euo pipefail
 
@@ -197,7 +197,7 @@ test -s ~/rebash-linux/lab04/abs-path.txt
 
 #### Task 2 – Inodes, hard links, and symlinks
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-linux/lab04/pathlab
 set -euo pipefail
 
@@ -227,7 +227,7 @@ grep -q 'payload' releases/v1/data-hard.bin
 
 #### Task 3 – Mounts, inode capacity, evidence pack
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-linux/lab04
 set -euo pipefail
 
@@ -288,7 +288,7 @@ Create `pathlab/releases/v2/app.txt` with content `v2 app`, then atomically repo
 
 ### Cleanup
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-linux/lab04
 # rm -rf pathlab *.txt paths-links-evidence.tgz
 ```

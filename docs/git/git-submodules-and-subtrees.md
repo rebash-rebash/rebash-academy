@@ -121,7 +121,7 @@ Create parent repo with local bare submodule remote, add submodule for a mini Te
 
 Workspace: `~/rebash-git/related/submodules`
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 mkdir -p ~/rebash-git/related/submodules && cd ~/rebash-git/related/submodules
 set -euo pipefail
 ```
@@ -134,7 +134,7 @@ Platform monorepo embeds `modules/vpc` submodule from internal bare remote; CI m
 
 #### Task 1 – Create module bare remote and parent with submodule
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-git/related/submodules
 set -euo pipefail
 rm -rf mod-repo parent-app clone-test remotes
@@ -169,7 +169,7 @@ cd ..
 
 #### Task 2 – Clone with recurse-submodules
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-git/related/submodules
 set -euo pipefail
 git clone --recurse-submodules parent-app clone-test
@@ -185,7 +185,7 @@ cd ..
 
 #### Task 3 – Bump submodule and subtree vendor stub
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-git/related/submodules/mod-repo
 set -euo pipefail
 echo '# v2 note' >> vpc/main.tf
@@ -239,7 +239,7 @@ Run `git clone` **without** `--recurse-submodules`, observe empty dir, fix with 
 
 ### Cleanup
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 ls ~/rebash-git/related/submodules/
 ```
 

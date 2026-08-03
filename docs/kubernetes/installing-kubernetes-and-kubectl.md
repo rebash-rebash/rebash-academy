@@ -169,7 +169,7 @@ Workspace: `~/rebash-k8s/module-02`
 
 Use a disposable local cluster. Never target a shared production API server.
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 mkdir -p ~/rebash-k8s/module-02 && cd ~/rebash-k8s/module-02
 ```
 
@@ -221,7 +221,7 @@ spec:
 
 Make executable and run:
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-k8s/module-02
 chmod +x verify-cluster.sh
 ./verify-cluster.sh | tee verify-run.txt
@@ -245,7 +245,7 @@ metadata:
 
 Apply namespace and confirm context still works:
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-k8s/module-02
 kubectl apply -f namespace.yaml
 kubectl config view --minify -o jsonpath='{.contexts[0].context.cluster}{"\n"}{.contexts[0].context.user}{"\n"}' | tee context-details.txt
@@ -281,7 +281,7 @@ spec:
 
 Validate with server dry-run when your cluster supports it:
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-k8s/module-02
 kubectl apply --dry-run=server -f probe-pod.yaml | tee server-dry-run.txt
 grep -E 'created|configured|unchanged|dry run' server-dry-run.txt
@@ -319,7 +319,7 @@ Extend `verify-cluster.sh` to accept an expected context name as `$1` and exit n
 
 ### Cleanup
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 kubectl delete namespace rebash-m02 --ignore-not-found --wait=true
 ```
 

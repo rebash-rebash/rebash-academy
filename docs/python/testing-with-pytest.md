@@ -138,7 +138,7 @@ Under `~/rebash-python/lab22`, implement a small host inventory module and pytes
 
 Workspace: `~/rebash-python/lab22`
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 mkdir -p ~/rebash-python/lab22 && cd ~/rebash-python/lab22
 set -euo pipefail
 python3 -m venv .venv
@@ -161,7 +161,7 @@ Your team maintains a tiny inventory helper that loads host JSON and classifies 
 
 #### Task 1 – Inventory module
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-python/lab22
 set -euo pipefail
 # shellcheck disable=SC1091
@@ -230,7 +230,7 @@ Create `sample-hosts.json`:
 
 Run:
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 python - << 'PY'
 from pathlib import Path
 from inventory import load_hosts, summarise
@@ -244,7 +244,7 @@ PY
 
 #### Task 2 – pytest suite with fixture and mock
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-python/lab22
 set -euo pipefail
 # shellcheck disable=SC1091
@@ -322,7 +322,7 @@ def test_fetch_remote_status_mocked() -> None:
 
 Run:
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 python -m pytest -q | tee pytest-q.txt
 grep -E 'passed|failed' pytest-q.txt
 ```
@@ -333,7 +333,7 @@ grep -E 'passed|failed' pytest-q.txt
 
 #### Task 3 – Evidence (optional coverage)
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-python/lab22
 set -euo pipefail
 # shellcheck disable=SC1091
@@ -393,7 +393,7 @@ python -m pytest -q   # must still be green without the env var (integration ski
 
 ### Cleanup
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-python/lab22
 set -euo pipefail
 rm -rf .venv .pytest_cache .coverage htmlcov

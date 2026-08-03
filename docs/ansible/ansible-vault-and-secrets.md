@@ -68,7 +68,7 @@ Vault encrypts YAML on disk; Ansible decrypts in memory on the control node duri
 
 **Ansible Vault** applies symmetric encryption to whole files or embedded strings (`!vault |` blocks). Common commands:
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 ansible-vault create secrets.yml
 ansible-vault encrypt secrets.yml
 ansible-vault edit secrets.yml
@@ -135,7 +135,7 @@ Create `group_vars/all/secrets.yml` in plaintext, encrypt with `ansible-vault` u
 
 ### Lab environment
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 mkdir -p ~/rebash-ansible/module-11/{playbooks,group_vars/all,inventory}
 cd ~/rebash-ansible/module-11
 ```
@@ -182,7 +182,7 @@ rebash-lab-vault
 
 Restrict permissions:
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-ansible/module-11
 chmod 600 .vault_pass
 grep -qxF '.vault_pass' .gitignore
@@ -190,7 +190,7 @@ grep -qxF '.vault_pass' .gitignore
 
 #### Task 3 – Encrypt secrets
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-ansible/module-11
 ansible-vault encrypt group_vars/all/secrets.yml --vault-password-file .vault_pass | tee encrypt-log.txt
 head -1 group_vars/all/secrets.yml | tee vault-header.txt
@@ -203,7 +203,7 @@ grep -q 'ANSIBLE_VAULT' vault-header.txt
 
 View without permanent decrypt:
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-ansible/module-11
 ansible-vault view group_vars/all/secrets.yml --vault-password-file .vault_pass | tee vault-view.txt
 grep -q 'vault_db_user' vault-view.txt
@@ -260,7 +260,7 @@ Create `playbooks/use-secrets.yml`:
 
 Run with vault password file:
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-ansible/module-11
 ansible-playbook playbooks/use-secrets.yml --vault-password-file .vault_pass | tee run-vault.txt
 grep -q 'PLAY RECAP' run-vault.txt
@@ -274,7 +274,7 @@ grep -q 'lab-only-not-production' run-vault.txt && echo 'FAIL secret in log' && 
 
 #### Task 5 – Rekey demonstration (rotation habit)
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-ansible/module-11
 echo 'rebash-lab-vault-rotated' > .vault_pass.new
 chmod 600 .vault_pass.new
@@ -318,7 +318,7 @@ Split secrets into `group_vars/all/vault.yml` (encrypted) and `group_vars/all/ma
 
 ### Cleanup
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 rm -f /tmp/rebash-vault-proof.txt ~/rebash-ansible/module-11/.vault_pass.new
 # Remove lab dir when finished; never push .vault_pass or plaintext secrets
 ```

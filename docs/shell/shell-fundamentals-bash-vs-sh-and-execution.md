@@ -70,7 +70,7 @@ A shell is a **command interpreter**. It reads text from a keyboard or a script 
 | dash | `/bin/dash` (often linked as `/bin/sh`) | POSIX-focused; common as `sh` on Ubuntu |
 | zsh | `/usr/bin/zsh` | Popular interactive shell; not required here |
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 echo "$BASH_VERSION"          # set only when the interpreter is Bash
 readlink -f /bin/sh           # often .../dash on Ubuntu
 ls -l /bin/sh
@@ -89,7 +89,7 @@ DevOps work mixes three worlds: your laptop terminal, remote SSH sessions, and h
 
 `source script.sh` (or `. script.sh`) runs in the **current** shell. That loads functions into your session, but `exit` or `cd` inside the file also affect your live terminal. Prefer a separate process (`./script.sh` or `bash script.sh`) for jobs.
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 echo "options=$-"
 # Interactive Bash often includes 'i' in $-
 bash -c 'echo noninteractive options=$-'
@@ -135,7 +135,7 @@ On Ubuntu, fingerprint Bash vs `sh`/dash, compare interactive and non-interactiv
 
 Workspace: `~/rebash-shell/lab01`
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 mkdir -p ~/rebash-shell/lab01 && cd ~/rebash-shell/lab01
 whoami | tee lab-user.txt
 bash --version | head -n1 | tee bash-version.txt
@@ -194,7 +194,7 @@ fi
 
 Run:
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-shell/lab01
 
 chmod +x bash-only.sh sh-posix.sh
@@ -219,7 +219,7 @@ test -s bashism-error.txt
 Capture `$-` and a small environment sample from your current shell and from a non-interactive `bash -c` child.
 
 {% raw %}
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-shell/lab01
 
 {
@@ -255,7 +255,7 @@ grep -q 'options_interactive=' fingerprint-interactive.txt
 
 Simulate a minimal environment like many schedulers: only `/usr/bin` and `/bin`. Show that a command on an extended PATH can disappear.
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-shell/lab01
 
 # Record full PATH and where common tools resolve
@@ -322,7 +322,7 @@ Create `interpreter-report.sh` that accepts one argument (a script path), prints
 
 ### Cleanup
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-shell/lab01
 rm -f bashism-under-sh.sh bashism-sh.out
 # Keep evidence archive and fingerprint files for review, or remove all:

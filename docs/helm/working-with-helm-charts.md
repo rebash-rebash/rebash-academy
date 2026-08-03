@@ -147,7 +147,7 @@ Build a complete application chart layout — `Chart.yaml`, `values.yaml`, `_hel
 
 Workspace: `~/rebash-helm/module-03` on your workstation.
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 mkdir -p ~/rebash-helm/module-03/rebash-platform/templates && cd ~/rebash-helm/module-03
 ```
 
@@ -297,7 +297,7 @@ Check pods:
 
 #### Task 3 – Lint, template, and kind inventory
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-helm/module-03
 helm lint rebash-platform | tee lint-m03.txt
 helm template platform-demo rebash-platform --namespace rebash-helm-m03 | tee render-m03.yaml
@@ -323,7 +323,7 @@ metadata:
   name: rebash-helm-m03
 ```
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-helm/module-03
 if command -v helm >/dev/null && kubectl cluster-info >/dev/null 2>&1; then
   kubectl apply -f namespace.yaml
@@ -369,7 +369,7 @@ Add a `templates/configmap.yaml` driven by `values.yaml` key `configMessage`, re
 
 ### Cleanup
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 helm uninstall platform-demo -n rebash-helm-m03 2>/dev/null || true
 kubectl delete namespace rebash-helm-m03 --ignore-not-found
 ```

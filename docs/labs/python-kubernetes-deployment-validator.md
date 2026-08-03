@@ -51,7 +51,7 @@ PyYAML. **Estimated cost:** £0.
 
 ## Environment
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 mkdir -p ~/rebash-lab-python-deploy/{manifests,out}
 cd ~/rebash-lab-python-deploy
 python3 -m venv .venv && source .venv/bin/activate
@@ -97,7 +97,7 @@ Create `validate_deployment.py` that walks containers and reports missing probes
 
 ## Validation
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 python validate_deployment.py manifests/good.yaml; echo $?  # 0
 python validate_deployment.py manifests/bad.yaml; echo $?   # 2
 ```

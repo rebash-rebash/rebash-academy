@@ -120,7 +120,7 @@ Apply notification triggers and templates on a **kind** cluster, subscribe an Ap
 
 Runtime: **kind** cluster with Argo CD — offline YAML parsing alone is not sufficient for this lab.
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 kind create cluster --name rebash-argocd 2>/dev/null || true
 export KUBECONFIG="$(kind get kubeconfig --name rebash-argocd)"
 mkdir -p ~/rebash-argocd/module-12/{notifications,apps} && cd ~/rebash-argocd/module-12
@@ -186,7 +186,7 @@ data:
 
 Apply and verify the controller reloads config:
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-argocd/module-12
 kubectl apply -f notifications/argocd-notifications-cm.yaml | tee notif-cm-apply-m12.txt
 kubectl get configmap argocd-notifications-cm -n argocd \
@@ -247,7 +247,7 @@ spec:
 
 Apply Secret and Application, wait for initial sync:
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-argocd/module-12
 kubectl apply -f notifications/argocd-notifications-secret-lab.yaml | tee notif-secret-apply-m12.txt
 kubectl apply -f apps/demo-notify.yaml | tee app-apply-m12.txt
@@ -292,7 +292,7 @@ spec:
 
 Apply broken manifest and capture failure state:
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-argocd/module-12
 kubectl apply -f apps/demo-notify-broken.yaml | tee broken-app-apply-m12.txt
 sleep 15
@@ -313,7 +313,7 @@ grep -Ei 'demo-notify|sync-failed|trigger|notify' notif-controller-logs-m12.txt 
 
 Restore the working Application manifest:
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-argocd/module-12
 kubectl apply -f apps/demo-notify.yaml | tee fixed-app-apply-m12.txt
 kubectl wait --for=jsonpath='{.status.sync.status}'=Synced \
@@ -359,7 +359,7 @@ Add a generic webhook service entry and an `on-deployed` trigger that fires only
 
 ### Cleanup
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 kubectl delete application demo-notify -n argocd --ignore-not-found
 kubectl delete secret argocd-notifications-secret -n argocd --ignore-not-found
 kubectl delete namespace rebash-argocd-m12 --ignore-not-found

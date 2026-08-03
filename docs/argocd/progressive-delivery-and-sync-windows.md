@@ -131,7 +131,7 @@ Deploy a health-aware Application on a **kind** cluster with an AppProject sync 
 
 Runtime: **kind** cluster with Argo CD — offline scripts alone are not sufficient for this lab.
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 kind create cluster --name rebash-argocd 2>/dev/null || true
 export KUBECONFIG="$(kind get kubeconfig --name rebash-argocd)"
 mkdir -p ~/rebash-argocd/module-13/{windows,manifests,apps} && cd ~/rebash-argocd/module-13
@@ -181,7 +181,7 @@ spec:
 
 Apply and verify sync window configuration:
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-argocd/module-13
 kubectl apply -f windows/platform-project.yaml | tee project-apply-m13.txt
 kubectl get appproject platform-prod -n argocd \
@@ -278,7 +278,7 @@ spec:
 
 Register local repo path and apply:
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-argocd/module-13
 cp -a ~/rebash-argocd/module-13 /tmp/rebash-argocd/ 2>/dev/null || true
 kubectl apply -f apps/demo-api-prod.yaml | tee app-apply-m13.txt
@@ -329,7 +329,7 @@ spec:
 
 Replace the good manifest and sync:
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-argocd/module-13
 cp manifests/deployment-demo-broken.yaml manifests/deployment-demo.yaml
 cp -a ~/rebash-argocd/module-13 /tmp/rebash-argocd/ 2>/dev/null || true
@@ -350,7 +350,7 @@ grep -Ei 'Degraded|Progressing|Missing|Invalid' broken-health-m13.txt
 
 Roll back to the first (good) revision in history:
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-argocd/module-13
 argocd app history demo-api-prod | tee history-before-rollback-m13.txt
 argocd app rollback demo-api-prod 0 | tee rollback-action-m13.txt
@@ -397,7 +397,7 @@ Add an Argo Rollout manifest stub under `manifests/rollout-demo.yaml` (canary st
 
 ### Cleanup
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 kubectl delete application demo-api-prod -n argocd --ignore-not-found
 kubectl delete appproject platform-prod -n argocd --ignore-not-found
 kubectl delete namespace rebash-argocd-m13 --ignore-not-found

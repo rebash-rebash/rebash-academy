@@ -166,7 +166,7 @@ Create a GitOps repository layout (`apps/demo` + `clusters/dev`), a CI workflow 
 
 Workspace: `~/rebash-k8s/module-15`
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 mkdir -p ~/rebash-k8s/module-15/{apps/demo,clusters/dev,.github/workflows}
 cd ~/rebash-k8s/module-15
 ```
@@ -238,7 +238,7 @@ spec:
 
 Validate offline:
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-k8s/module-15
 set -euo pipefail
 python3 -c "
@@ -283,7 +283,7 @@ metadata:
 
 Render and validate:
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-k8s/module-15
 set -euo pipefail
 if command -v kustomize >/dev/null 2>&1; then
@@ -337,7 +337,7 @@ jobs:
 
 Validate offline (no cluster required):
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-k8s/module-15
 set -euo pipefail
 python3 -c "import yaml; yaml.safe_load(open('.github/workflows/k8s-manifest-dry-run.yml')); print('workflow YAML OK')"
@@ -353,7 +353,7 @@ grep -q 'kubectl kustomize clusters/dev' .github/workflows/k8s-manifest-dry-run.
 
 Apply the GitOps dev overlay to your lab cluster and prove Ready.
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-k8s/module-15
 set -euo pipefail
 kubectl apply -k clusters/dev
@@ -399,7 +399,7 @@ Add a `ConfigMap` generator in `clusters/dev/kustomization.yaml` that sets `LOG_
 
 ### Cleanup
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 kubectl delete namespace rebash-gitops-lab --ignore-not-found --wait=true
 rm -f ~/rebash-k8s/module-15/clusters/dev/rendered.yaml ~/rebash-k8s/module-15/gitops-evidence.txt ~/rebash-k8s/module-15/module-15-gitops-evidence.tgz
 ```

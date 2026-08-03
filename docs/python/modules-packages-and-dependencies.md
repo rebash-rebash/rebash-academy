@@ -91,7 +91,7 @@ Copy-pasted helpers drift. Broken `sys.path.insert` hacks work on one laptop and
 5. **Pin third-party deps** — `requirements.txt`  
 6. **Run** — `python run_greet.py` inside the venv  
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 export PYTHONPATH=.
 python -c "from mypkg.greet import hello; print(hello('lab'))"
 ```
@@ -135,7 +135,7 @@ Create `~/rebash-python/lab06` with package `mypkg/`, prove imports via `PYTHONP
 
 Workspace: `~/rebash-python/lab06`
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 mkdir -p ~/rebash-python/lab06 && cd ~/rebash-python/lab06
 set -euo pipefail
 python3 -m venv .venv
@@ -157,7 +157,7 @@ Your team is splitting a single `tools.py` into a small internal library so inve
 
 #### Task 1 – Package layout and PYTHONPATH import
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-python/lab06
 set -euo pipefail
 # shellcheck disable=SC1091
@@ -215,7 +215,7 @@ if __name__ == "__main__":
 
 Run:
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 # PYTHONPATH makes the project root importable without install
 export PYTHONPATH=.
 python -c "from mypkg.greet import hello; assert hello('lab') == 'hello lab'"
@@ -230,7 +230,7 @@ grep -F 'HELLO PLATFORM' path-run.txt
 
 #### Task 2 – Editable install with pyproject.toml
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-python/lab06
 set -euo pipefail
 # shellcheck disable=SC1091
@@ -259,7 +259,7 @@ include = ["mypkg*"]
 
 Run:
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 python -m pip install --upgrade pip
 python -m pip install -e .
 python -c "import mypkg, rich; from mypkg.greet import hello; print(hello('editable')); print('rich-ok', rich.__name__)" | tee editable-run.txt
@@ -278,7 +278,7 @@ grep -F 'hello ci' editable-runner.txt
 
 #### Task 3 – Freeze requirements and evidence
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-python/lab06
 set -euo pipefail
 # shellcheck disable=SC1091
@@ -293,7 +293,7 @@ rich==13.9.4
 
 Run:
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 python -m pip freeze | tee requirements-full.txt
 grep -E '^rich==' requirements.txt
 
@@ -349,7 +349,7 @@ Add `mypkg/hosts.py` with `normalize_hosts(names: list[str]) -> list[str]` that 
 
 ### Cleanup
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-python/lab06
 set -euo pipefail
 # shellcheck disable=SC1091

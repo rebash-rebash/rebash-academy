@@ -48,6 +48,6 @@ Follow the course in order:
 
 ## Diagrams
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 python3 scripts/generate-excalidraw-svg.py
 ```

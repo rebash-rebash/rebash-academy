@@ -118,7 +118,7 @@ Create a 512 MiB disk image, attach it as a loop device, partition and format 
 
 Workspace: `~/rebash-linux/lab12`
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 mkdir -p ~/rebash-linux/lab12 && cd ~/rebash-linux/lab12
 set -euo pipefail
 sudo apt-get update -qq
@@ -139,7 +139,7 @@ A new empty data volume will be attached to an app VM later. Before you touch a 
 
 #### Task 1 – Create disk image and attach loop device
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-linux/lab12
 set -euo pipefail
 
@@ -157,7 +157,7 @@ echo "Using loop device: $LOOP"
 
 #### Task 2 – Partition, format, and capture UUID
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-linux/lab12
 set -euo pipefail
 LOOP="$(cat loop-device.txt)"
@@ -187,7 +187,7 @@ echo "$UUID" | tee uuid.txt
 
 #### Task 3 – Mount by UUID, prove write, evidence pack
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-linux/lab12
 set -euo pipefail
 UUID="$(cat uuid.txt)"
@@ -240,7 +240,7 @@ Unmount `/mnt/rebash-lab12`, remount using the **LABEL** (`rebashlab12`) instead
 
 ### Cleanup
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-linux/lab12
 set -euo pipefail
 

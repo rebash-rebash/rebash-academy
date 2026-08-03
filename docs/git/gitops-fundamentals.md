@@ -123,7 +123,7 @@ Create GitOps repo skeleton with `apps/` base manifest and `clusters/dev/` overl
 
 Workspace: `~/rebash-git/module-12`
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 mkdir -p ~/rebash-git/module-12 && cd ~/rebash-git/module-12
 set -euo pipefail
 ```
@@ -169,7 +169,7 @@ resources:
 
 Initialise the GitOps repo:
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-git/module-12
 set -euo pipefail
 rm -rf gitops-lab
@@ -204,7 +204,7 @@ images:
 
 Commit the overlay:
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-git/module-12/gitops-lab
 set -euo pipefail
 git add clusters/
@@ -234,7 +234,7 @@ echo 'layout_ok'
 
 Promote the dev tag and validate:
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-git/module-12/gitops-lab
 set -euo pipefail
 sed -i.bak 's/1.0.0-dev.1/1.0.0-dev.2/' clusters/dev/apps/payments/kustomization.yaml
@@ -284,7 +284,7 @@ Add `clusters/prod/apps/payments/` with tag `1.0.0`, extend `gitops-sync-check.s
 
 ### Cleanup
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 ls ~/rebash-git/module-12/gitops-lab
 ```
 

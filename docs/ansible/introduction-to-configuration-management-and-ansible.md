@@ -111,7 +111,7 @@ Mental model: **inventory + playbook → control node → connection → module 
 4. Ansible copies module code, runs it, collects **changed/ok/failed** status, and optionally gathers facts.
 5. Handlers run once at the end if notified (e.g. restart nginx after config change).
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 # Ad-hoc connectivity check (after install — Module 2)
 ansible localhost -m ping -c local
 ```
@@ -158,7 +158,7 @@ Create inventory and a baseline playbook under `~/rebash-ansible/module-01`, app
 
 Workspace: `~/rebash-ansible/module-01`
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 mkdir -p ~/rebash-ansible/module-01/{files,group_vars} && cd ~/rebash-ansible/module-01
 ```
 
@@ -235,7 +235,7 @@ Create `baseline.yml`:
 
 Syntax-check and apply:
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-ansible/module-01
 ansible-playbook baseline.yml --syntax-check | tee syntax-check.txt
 ansible-playbook baseline.yml | tee playbook-run.txt
@@ -251,7 +251,7 @@ cat ~/rebash-ansible/module-01/lab/onboarding.txt | tee onboarding-proof.txt
 
 #### Task 2 – Prove connectivity and inventory merge
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-ansible/module-01
 ansible -i inventory.ini local -m ping | tee ping-local.txt
 ansible-inventory -i inventory.ini --host localhost | tee host-localhost.json
@@ -281,7 +281,7 @@ Create `needs-local-group.yml`:
 
 Run with the broken group (inventory has `local`, not `labhosts`):
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-ansible/module-01
 ansible-playbook needs-local-group.yml | tee inventory-miss.txt
 grep -Ei 'skipping.*no hosts matched|0 hosts' inventory-miss.txt
@@ -289,7 +289,7 @@ grep -Ei 'skipping.*no hosts matched|0 hosts' inventory-miss.txt
 
 Fix the play — edit `needs-local-group.yml` and change `hosts: labhosts` to `hosts: local`. Re-run:
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-ansible/module-01
 ansible-playbook needs-local-group.yml | tee inventory-hit.txt
 grep -q 'labhosts task ran' inventory-hit.txt || grep -q 'PLAY RECAP' inventory-hit.txt
@@ -302,7 +302,7 @@ echo "inventory fix OK" | tee inventory-fix-ok.txt
 
 #### Task 4 – Idempotent second apply
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-ansible/module-01
 ansible-playbook baseline.yml | tee playbook-run2.txt
 grep -E 'changed=0|changed=1' playbook-run2.txt | tail -1 | tee idempotency-line.txt
@@ -343,7 +343,7 @@ Add a task to `baseline.yml` that runs `ansible -m command -a "test -f {{ lab_ro
 
 ### Cleanup
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-ansible/module-01
 ansible-playbook -i inventory.ini -e '{"lab_root":"~/rebash-ansible/module-01/lab"}' \
   -c local localhost -m file -a "path=~/rebash-ansible/module-01/lab state=absent" 2>/dev/null || \

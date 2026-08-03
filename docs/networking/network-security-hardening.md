@@ -66,7 +66,7 @@ Hardening control points sit at the edge, the host, and the trust boundaries bet
 
 Hardening reduces **attack surface**: fewer public listeners, tighter allow lists, safer kernel network defaults, and encrypted admin paths. Practical Zero Trust means you do not trust “inside the VPC” alone — you still authenticate and segment.
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 ss -lntu
 sysctl net.ipv4.ip_forward net.ipv4.conf.all.accept_redirects
 ```
@@ -114,7 +114,7 @@ On a practice Ubuntu VM, read key network sysctl values, check where `sshd` list
 
 Workspace: `~/rebash-networking/lab21`
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 mkdir -p ~/rebash-networking/lab21 && cd ~/rebash-networking/lab21
 set -euo pipefail
 whoami | tee admin-user.txt
@@ -133,7 +133,7 @@ Security asks for a quick network exposure baseline on a new Ubuntu VM before it
 
 #### Task 1 – Read network sysctl baseline
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-networking/lab21
 set -euo pipefail
 
@@ -160,7 +160,7 @@ test -s sysctl-net.txt
 
 #### Task 2 – Check sshd listen addresses
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-networking/lab21
 set -euo pipefail
 
@@ -185,7 +185,7 @@ test -s sshd-listen-check.txt
 
 #### Task 3 – Listening ports inventory script
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-networking/lab21
 set -euo pipefail
 ```
@@ -216,7 +216,7 @@ if ss -lntu | grep -E '0\.0\.0\.0:(3306|5432|6379|27017)\b' >/dev/null 2>&1; the
 fi
 ```
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 chmod +x inventory-listeners.sh
 ./inventory-listeners.sh listeners-inventory.txt
 test -s listeners-inventory.txt
@@ -260,7 +260,7 @@ Extend `inventory-listeners.sh` to write a second file `listeners.csv` with colu
 
 ### Cleanup
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-networking/lab21
 set -euo pipefail
 # Read-mostly lab — nothing to revert on the host firewall

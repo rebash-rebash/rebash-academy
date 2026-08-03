@@ -126,7 +126,7 @@ Inventory plugins via UI and CLI, install or verify a harmless plugin state, def
 
 Workspace: `~/rebash-jenkins/module-10`
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 mkdir -p ~/rebash-jenkins/module-10 && cd ~/rebash-jenkins/module-10
 set -euo pipefail
 curl -sS -o /dev/null -w "%{http_code}\n" http://127.0.0.1:8080/login | tee controller.txt
@@ -146,7 +146,7 @@ Before a platform review you must show a plugin inventory, prove CLI access work
 
 Run:
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-jenkins/module-10
 set -euo pipefail
 ```
@@ -164,7 +164,7 @@ branch-api
 
 Verify:
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 # If token exported, capture plugin list head
 if [[ -n "${JENKINS_USER:-}" && -n "${JENKINS_TOKEN:-}" ]]; then
   java -jar jenkins-cli.jar -s "$JENKINS_URL" -auth "$JENKINS_USER:$JENKINS_TOKEN" list-plugins \
@@ -185,7 +185,7 @@ grep -q workflow-aggregator plugins.txt
 
 Verify:
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-jenkins/module-10
 set -euo pipefail
 
@@ -212,7 +212,7 @@ java -jar jenkins-cli.jar -s "$JENKINS_URL" -auth "$JENKINS_USER:$JENKINS_TOKEN"
 
 Verify:
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 chmod +x cli-commands.sh
 
 if [[ -n "${JENKINS_USER:-}" && -n "${JENKINS_TOKEN:-}" ]]; then
@@ -233,7 +233,7 @@ Manage Jenkins → Tools → review JDK installations. Add a JDK entry named `jd
 
 Run:
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-jenkins/module-10
 set -euo pipefail
 ```
@@ -269,7 +269,7 @@ pipeline {
 
 Validate and archive:
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 python3 -c "
 import yaml
 with open('tools.yaml') as f:
@@ -288,7 +288,7 @@ grep -q "tools { jdk" Jenkinsfile.tools
 
 Run:
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-jenkins/module-10
 set -euo pipefail
 ```
@@ -311,7 +311,7 @@ echo restart_timeout; exit 1
 
 Validate and archive:
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 chmod +x restart-checks.sh
 
 curl -sS -o /dev/null -w "%{http_code}\n" http://127.0.0.1:8080/login | tee after-restart.txt || true

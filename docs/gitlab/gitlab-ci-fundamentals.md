@@ -172,7 +172,7 @@ Workspace: `~/rebash-gitlab/module-01`
 
 File-first lab. Push to GitLab only when you want a runner to execute jobs.
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 mkdir -p ~/rebash-gitlab/module-01/src && cd ~/rebash-gitlab/module-01
 ```
 
@@ -193,7 +193,7 @@ print("ok")
 
 Verify the script runs:
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-gitlab/module-01
 python3 src/app.py | tee app-out.txt
 grep -q '^ok$' app-out.txt
@@ -229,7 +229,7 @@ test:
 
 Validate offline:
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-gitlab/module-01
 python3 -c "
 import yaml
@@ -248,7 +248,7 @@ print('OK', sorted(k for k in d if k != 'stages'))
 
 Run the same commands the runner would execute:
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-gitlab/module-01
 python3 -m py_compile src/app.py
 python3 src/app.py | tee simulate-out.txt
@@ -289,7 +289,7 @@ Add a top-level `default:` block with `image: python:3.12-alpine` and remove dup
 
 ### Cleanup
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 rm -f ~/rebash-gitlab/module-01/app-out.txt ~/rebash-gitlab/module-01/simulate-out.txt
 # Keep src/ and .gitlab-ci.yml for the next module
 ```

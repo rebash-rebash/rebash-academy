@@ -119,7 +119,7 @@ Create a repository with a sample `validate.yml` workflow that runs shell valida
 
 Workspace: `~/rebash-git/module-11`
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 mkdir -p ~/rebash-git/module-11 && cd ~/rebash-git/module-11
 set -euo pipefail
 ```
@@ -142,7 +142,7 @@ terraform {
 
 Initialise the repo:
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-git/module-11
 set -euo pipefail
 rm -rf actions-lab
@@ -206,7 +206,7 @@ jobs:
 
 Commit the workflow:
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-git/module-11/actions-lab
 set -euo pipefail
 git add .github/workflows/validate.yml
@@ -223,7 +223,7 @@ cd ..
 
 Simulate CI checks without GitHub using shell and optional Python.
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-git/module-11/actions-lab
 set -euo pipefail
 terraform fmt -check -recursive 2>/dev/null || terraform fmt -recursive && terraform fmt -check -recursive
@@ -274,7 +274,7 @@ Add a `workflow_dispatch` trigger and a `concurrency` group keyed on `${ github.
 
 ### Cleanup
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 ls ~/rebash-git/module-11/actions-lab
 ```
 

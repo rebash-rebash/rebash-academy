@@ -168,7 +168,7 @@ Workspace: `~/rebash-gitlab/module-04`
 
 File-first lab. Push to GitLab only when you want to inspect `$CI_*` values on a runner.
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 mkdir -p ~/rebash-gitlab/module-04/src && cd ~/rebash-gitlab/module-04
 ```
 
@@ -189,7 +189,7 @@ print(APP_NAME)
 
 Run locally:
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-gitlab/module-04
 python3 src/app.py | tee app-name.txt
 grep -q 'rebash-syntax-lab' app-name.txt
@@ -248,7 +248,7 @@ test:
 
 Validate offline:
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-gitlab/module-04
 python3 -c "
 import yaml
@@ -268,7 +268,7 @@ print('OK syntax lab')
 
 Reproduce the artefact hand-off without a runner:
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-gitlab/module-04
 python3 -m py_compile src/app.py
 echo "lint ok for rebash-syntax-lab" > lint-report.txt
@@ -311,7 +311,7 @@ Add `interruptible: true` to `lint` and `test` so newer pipeline runs cancel out
 
 ### Cleanup
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 rm -f ~/rebash-gitlab/module-04/app-name.txt ~/rebash-gitlab/module-04/lint-report.txt ~/rebash-gitlab/module-04/test-out.txt
 # Keep src/ and .gitlab-ci.yml for module 05
 ```

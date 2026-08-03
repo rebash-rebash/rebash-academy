@@ -121,7 +121,7 @@ Research three workflows, commit `branch-strategy.yaml` with decision matrix fie
 
 Workspace: `~/rebash-git/module-17`
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 mkdir -p ~/rebash-git/module-17 && cd ~/rebash-git/module-17
 set -euo pipefail
 ```
@@ -180,7 +180,7 @@ review_date: '2027-02-01'
 
 Validate the strategy file:
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-git/module-17
 set -euo pipefail
 rm -rf governance-lab
@@ -235,7 +235,7 @@ gitops:
 
 Commit the policy sample:
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-git/module-17/governance-lab
 set -euo pipefail
 grep -q 'require_signed_commits' SAMPLE_BRANCH_POLICY.yaml
@@ -274,7 +274,7 @@ echo 'policy_ok'
 
 Run validation and archive evidence:
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-git/module-17/governance-lab
 set -euo pipefail
 chmod +x validate-policy.sh
@@ -319,7 +319,7 @@ Add `rulesets_mapping` keys to `branch-strategy.yaml` mapping each policy rule t
 
 ### Cleanup
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 ls ~/rebash-git/module-17/governance-lab
 ```
 

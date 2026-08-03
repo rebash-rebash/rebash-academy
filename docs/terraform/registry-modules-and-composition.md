@@ -161,7 +161,7 @@ Compose **`cloudposse/label/null`** from the public Registry with a local **Dock
 
 ### Lab environment
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 mkdir -p ~/rebash-terraform/module-09-registry/modules/service && cd ~/rebash-terraform/module-09-registry
 ```
 
@@ -249,7 +249,7 @@ output "label_id" {
 
 Run:
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-terraform/module-09-registry/modules/service
 terraform init
 terraform validate
@@ -335,7 +335,7 @@ output "container_id" {
 
 Run:
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-terraform/module-09-registry
 terraform init
 terraform plan | tee registry-plan.txt
@@ -354,7 +354,7 @@ echo "registry plan OK" | tee registry-plan-ok.txt
 Run:
 
 {% raw %}
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-terraform/module-09-registry
 terraform apply -auto-approve
 terraform output -raw standard_id | tee standard-id.txt
@@ -378,7 +378,7 @@ echo "registry apply OK" | tee registry-apply-ok.txt
 Create `registry-evidence.sh`:
 
 {% raw %}
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 #!/usr/bin/env bash
 set -euo pipefail
 cd ~/rebash-terraform/module-09-registry
@@ -393,7 +393,7 @@ echo "registry-evidence PASS" | tee registry-evidence-pass.txt
 
 Run:
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 chmod +x ~/rebash-terraform/module-09-registry/registry-evidence.sh
 ~/rebash-terraform/module-09-registry/registry-evidence.sh
 ```
@@ -425,7 +425,7 @@ chmod +x ~/rebash-terraform/module-09-registry/registry-evidence.sh
 Pin an exact patch version (`version = "0.25.0"`), add a second `module "catalog_service"` with `name = "catalog"`, apply, and prove two distinct containers:
 
 {% raw %}
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-terraform/module-09-registry
 terraform init -upgrade
 terraform apply -auto-approve
@@ -448,7 +448,7 @@ echo "two-service challenge OK"
 
 ### Cleanup
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-terraform/module-09-registry
 terraform destroy -auto-approve
 rm -f registry-plan.txt registry-plan-ok.txt standard-id.txt container-labels.json \

@@ -167,7 +167,7 @@ Build a playbook that merges **group_vars**, prints facts, **registers** a comma
 
 Workspace: `~/rebash-ansible/module-06`
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 mkdir -p ~/rebash-ansible/module-06/{group_vars,host_vars} && cd ~/rebash-ansible/module-06
 ```
 
@@ -260,7 +260,7 @@ Create `facts-and-vars.yml`:
 
 Run:
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-ansible/module-06
 ansible-playbook facts-and-vars.yml --syntax-check | tee syntax-check.txt
 ansible-playbook facts-and-vars.yml | tee playbook-run.txt
@@ -276,7 +276,7 @@ echo "task1 OK" | tee task1-ok.txt
 
 #### Task 2 – Ad-hoc setup and extra-vars precedence demo
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-ansible/module-06
 ansible localhost -m setup -a "filter=ansible_os*" -c local | tee setup-filter.txt
 grep -q ansible_os_family setup-filter.txt
@@ -306,7 +306,7 @@ echo "vars-evidence PASS" | tee vars-evidence-pass.txt
 
 Run:
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 chmod +x ~/rebash-ansible/module-06/vars-evidence.sh
 ~/rebash-ansible/module-06/vars-evidence.sh
 ```
@@ -355,7 +355,7 @@ Create `assert-os-family.yml` that fails if OS family is unknown:
 
 Run and archive:
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-ansible/module-06
 ansible-playbook assert-os-family.yml | tee assert-os.txt
 grep -q 'OS family' assert-os.txt
@@ -375,7 +375,7 @@ echo "assert challenge OK"
 
 ### Cleanup
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-ansible/module-06
 rm -rf ~/rebash-ansible/module-06/reports
 rm -f syntax-check.txt playbook-run.txt task*-ok.txt setup-filter.txt \

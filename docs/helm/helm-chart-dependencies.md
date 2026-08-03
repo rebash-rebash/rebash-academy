@@ -152,7 +152,7 @@ Compose a parent chart with a local file dependency on a child subchart, run `he
 
 Workspace: `~/rebash-helm/module-06` on your workstation.
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 mkdir -p ~/rebash-helm/module-06/rebash-parent/charts/rebash-lib/templates \
   ~/rebash-helm/module-06/rebash-parent/templates && cd ~/rebash-helm/module-06
 ```
@@ -270,7 +270,7 @@ spec:
 
 #### Task 3 – Dependency update, lint, and template
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-helm/module-06/rebash-parent
 helm dependency update . | tee dep-update-m06.txt
 ls charts/ | tee charts-dir-m06.txt
@@ -298,7 +298,7 @@ metadata:
   name: rebash-helm-m06
 ```
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-helm/module-06
 if command -v helm >/dev/null && kubectl cluster-info >/dev/null 2>&1; then
   kubectl apply -f namespace.yaml
@@ -344,7 +344,7 @@ Add a `condition: rebash-lib.enabled` to the dependency stanza and toggle the su
 
 ### Cleanup
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 helm uninstall parent-demo -n rebash-helm-m06 2>/dev/null || true
 kubectl delete namespace rebash-helm-m06 --ignore-not-found
 ```

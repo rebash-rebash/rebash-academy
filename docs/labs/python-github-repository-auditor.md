@@ -64,7 +64,7 @@ Platform owns dozens of application repos. Auditors need a dry report for compli
 
 ## Environment
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 mkdir -p ~/rebash-lab-python-gh/{fixtures,out}
 cd ~/rebash-lab-python-gh
 python3 -m venv .venv && source .venv/bin/activate
@@ -103,7 +103,7 @@ Write `out/findings.json` and print a short summary. Exit `0` always for audit-o
 
 ## Validation
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 python audit_repos.py --fixture fixtures/repos.json
 python -c 'import json; print(len(json.load(open("out/findings.json"))))'
 ```

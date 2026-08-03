@@ -73,7 +73,7 @@ Complete (or be comfortable with):
 
 ## Phase 0 — Repository skeleton
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 mkdir -p ~/rebash-status-api/{app,deploy/k8s,infra} && cd ~/rebash-status-api
 git init
 ```
@@ -132,7 +132,7 @@ CMD ["python", "server.py"]
 
 **Validate locally:**
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 docker build -t rebash-status-api:0.1.0 ./app
 docker run --rm -p 18082:8080 -e APP_VERSION=0.1.0 rebash-status-api:0.1.0
 curl -sS http://127.0.0.1:18082/healthz
@@ -160,7 +160,7 @@ services:
       retries: 5
 ```
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 docker compose -f deploy/compose.yaml up -d --build
 curl -sS http://127.0.0.1:18082/version
 docker compose -f deploy/compose.yaml down
@@ -170,7 +170,7 @@ docker compose -f deploy/compose.yaml down
 
 Load the image into kind if needed:
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 # kind
 kind load docker-image rebash-status-api:0.1.0
 # minikube
@@ -246,7 +246,7 @@ spec:
       targetPort: 8080
 ```
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 kubectl apply -f deploy/k8s/status-api.yaml
 kubectl rollout status deploy/status-api -n rebash-status --timeout=120s
 kubectl port-forward -n rebash-status svc/status-api 18083:80
@@ -259,7 +259,7 @@ curl -sS http://127.0.0.1:18083/version
 
 Track release notes as a managed file (portfolio-friendly, no cloud bill):
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-status-api/infra
 
 cat > versions.tf <<'EOF'
@@ -311,7 +311,7 @@ cat "$(terraform output -raw release_file)"
 
 ## Phase 5 — Git hygiene for the portfolio
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-status-api
 printf '.terraform/\n*.tfstate*\ntfplan\n__pycache__/\n' >> .gitignore
 git add README.md app deploy infra .gitignore
@@ -341,7 +341,7 @@ Optional: push to GitHub and add screenshots of `kubectl get po` and `curl` outp
 
 ## Cleanup
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 kubectl delete namespace rebash-status --wait=true
 cd ~/rebash-status-api/infra && terraform destroy -input=false -auto-approve
 docker compose -f ~/rebash-status-api/deploy/compose.yaml down 2>/dev/null || true

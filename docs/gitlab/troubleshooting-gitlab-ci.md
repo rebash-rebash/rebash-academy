@@ -173,7 +173,7 @@ Workspace: `~/rebash-gitlab/module-17`
 
 File-first lab. Broken YAML fails locally before wasting runner minutes.
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 mkdir -p ~/rebash-gitlab/module-17 && cd ~/rebash-gitlab/module-17
 set -euo pipefail
 ```
@@ -217,7 +217,7 @@ print("ok")
 
 Validate and capture the failure:
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-gitlab/module-17
 set -euo pipefail
 python3 -m py_compile src/app.py
@@ -267,7 +267,7 @@ test:
 
 Validate the fix:
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-gitlab/module-17
 set -euo pipefail
 python3 -c "
@@ -286,7 +286,7 @@ grep -q 'python:3.12-alpine' .gitlab-ci.yml
 
 #### Task 3 – Simulate job scripts locally
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-gitlab/module-17
 set -euo pipefail
 python3 -m py_compile src/app.py
@@ -315,7 +315,7 @@ echo 'module-17 troubleshooting lab passed'
 
 Run it:
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-gitlab/module-17
 set -euo pipefail
 chmod +x validate-fix.sh
@@ -357,7 +357,7 @@ Add a third broken variant `.gitlab-ci.yml.runner-mismatch` where jobs require t
 
 ### Cleanup
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 rm -f ~/rebash-gitlab/module-17/out.txt 2>/dev/null || true
 ls ~/rebash-gitlab/module-17
 ```

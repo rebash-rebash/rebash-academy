@@ -165,7 +165,7 @@ Create a production operations checklist YAML, an etcd backup drill script that 
 
 Workspace: `~/rebash-k8s/module-17`
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 mkdir -p ~/rebash-k8s/module-17 && cd ~/rebash-k8s/module-17
 ```
 
@@ -211,7 +211,7 @@ drain:
 
 Validate offline:
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-k8s/module-17
 set -euo pipefail
 python3 -c "
@@ -278,7 +278,7 @@ echo "DRY-RUN complete. Evidence written to ${EVIDENCE_DIR}/"
 
 Run the drill:
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-k8s/module-17
 chmod +x etcd-backup-drill.sh
 ./etcd-backup-drill.sh | tee drill-run.txt
@@ -307,7 +307,7 @@ metadata:
 
 Apply and archive:
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-k8s/module-17
 kubectl apply -f namespace.yaml
 kubectl get ns rebash-prodops-lab | tee evidence/namespace.txt
@@ -350,7 +350,7 @@ Extend `prod-ops-checklist.yaml` with a `post_upgrade` section listing three val
 
 ### Cleanup
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 kubectl delete namespace rebash-prodops-lab --ignore-not-found --wait=true
 rm -rf ~/rebash-k8s/module-17/evidence ~/rebash-k8s/module-17/drill-run.txt ~/rebash-k8s/module-17/module-17-prodops-evidence.tgz
 ```

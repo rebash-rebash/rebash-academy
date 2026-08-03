@@ -143,7 +143,7 @@ Under `~/rebash-python/lab05`, create sample logs and `log_stats.py` that uses l
 
 Workspace: `~/rebash-python/lab05`
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 mkdir -p ~/rebash-python/lab05 && cd ~/rebash-python/lab05
 set -euo pipefail
 python3 -m venv .venv
@@ -165,7 +165,7 @@ A service writes large access/error logs on a jump host. You need a safe summary
 
 #### Task 1 – Fixture log and stats script
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-python/lab05
 set -euo pipefail
 # shellcheck disable=SC1091
@@ -254,7 +254,7 @@ if __name__ == "__main__":
 
 Run:
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 # Build a larger stream file for the generator demo (still small enough for lab)
 python - << 'PY'
 from pathlib import Path
@@ -277,7 +277,7 @@ test -f app-large.log
 
 #### Task 2 – Run asserts and save output
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-python/lab05
 set -euo pipefail
 # shellcheck disable=SC1091
@@ -295,7 +295,7 @@ grep -F 'web-01' stats-output.txt
 
 #### Task 3 – Comprehension micro-checks
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-python/lab05
 set -euo pipefail
 # shellcheck disable=SC1091
@@ -354,7 +354,7 @@ Add `top_hosts.py` that streams `app.log` with a generator, counts ERROR lines *
 
 ### Cleanup
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-python/lab05
 set -euo pipefail
 deactivate 2>/dev/null || true

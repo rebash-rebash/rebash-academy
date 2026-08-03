@@ -140,7 +140,7 @@ Demonstrate sensitive variable handling, redacted CLI output, and plaintext pers
 
 Workspace: `~/rebash-terraform/module-15`
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 mkdir -p ~/rebash-terraform/module-15 && cd ~/rebash-terraform/module-15
 ```
 
@@ -257,7 +257,7 @@ generated/
 
 Initialise and validate:
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-terraform/module-15
 mkdir -p generated artefacts
 terraform init | tee artefacts/init.log
@@ -271,7 +271,7 @@ terraform validate | tee artefacts/validate.log
 #### Task 2 – Apply and observe CLI redaction vs state persistence
 
 {% raw %}
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-terraform/module-15
 terraform apply -auto-approve -input=false | tee artefacts/apply.log
 terraform output | tee artefacts/output-redacted.txt
@@ -320,7 +320,7 @@ service_name = "payments-api"
 
 Verify examples exist:
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-terraform/module-15
 test -f secrets.tf.example
 test -f terraform.tfvars.example
@@ -351,7 +351,7 @@ deny[msg] {
 Generate plan JSON evidence:
 
 {% raw %}
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-terraform/module-15
 terraform plan -input=false -out=artefacts/security.tfplan | tee artefacts/plan.log
 terraform show -json artefacts/security.tfplan > artefacts/plan.json
@@ -396,7 +396,7 @@ Add a `precondition` on `var.api_token` requiring `length(var.api_token) >= 20` 
 
 ### Cleanup
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-terraform/module-15
 terraform destroy -auto-approve
 rm -rf .terraform generated artefacts

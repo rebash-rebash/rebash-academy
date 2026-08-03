@@ -139,7 +139,7 @@ Under `~/rebash-shell/lab09`, create an incoming tree, find `*.conf` files, stag
 
 Workspace: `~/rebash-shell/lab09`
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 mkdir -p ~/rebash-shell/lab09/{incoming,published,out}
 cd ~/rebash-shell/lab09
 set -euo pipefail
@@ -159,7 +159,7 @@ A small app drops config snippets into `incoming/`. Your job must copy only `*.c
 
 #### Task 1 – Seed incoming files and discover with `find`
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-shell/lab09
 set -euo pipefail
 
@@ -211,7 +211,7 @@ grep -F 'app-a' out/published-manifest.txt
 
 Run:
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-shell/lab09
 set -euo pipefail
 
@@ -253,7 +253,7 @@ grep -q 'lock_acquired=1' out/lock-status.txt
 
 Run:
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-shell/lab09
 set -euo pipefail
 
@@ -301,7 +301,7 @@ Write `safe-backup.sh` that: creates `backup/` with `mkdir -p`, copies every pub
 
 ### Cleanup
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-shell/lab09
 set -euo pipefail
 rm -f out/publish.lock

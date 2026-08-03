@@ -130,7 +130,7 @@ Simulate three mini workflow tracks in one lab repo, produce `workflow-matrix.ya
 
 Workspace: `~/rebash-git/related/workflows`
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 mkdir -p ~/rebash-git/related/workflows && cd ~/rebash-git/related/workflows
 set -euo pipefail
 ```
@@ -143,7 +143,7 @@ Engineering leadership asks platform team to document why SaaS services use GitH
 
 #### Task 1 – GitHub Flow track simulation
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-git/related/workflows
 set -euo pipefail
 rm -rf wf-lab
@@ -169,7 +169,7 @@ cd ..
 
 #### Task 2 – GitFlow-style release branch simulation
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-git/related/workflows/wf-lab
 set -euo pipefail
 git switch -c develop
@@ -252,7 +252,7 @@ Create `CONTRIBUTING.md`:
 
 Validate and commit:
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-git/related/workflows/wf-lab
 set -euo pipefail
 chmod +x validate-workflow-matrix.sh
@@ -299,7 +299,7 @@ Add trunk-based simulation: three tiny commits directly on `main` in `trunk-sand
 
 ### Cleanup
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 ls ~/rebash-git/related/workflows/wf-lab
 ```
 

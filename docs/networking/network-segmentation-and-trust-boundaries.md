@@ -116,7 +116,7 @@ Create three namespaces (`dmz`, `app`, `db`) linked with veth pairs through a ti
 
 Workspace: `~/rebash-networking/lab22`
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 mkdir -p ~/rebash-networking/lab22 && cd ~/rebash-networking/lab22
 set -euo pipefail
 whoami | tee admin-user.txt
@@ -134,7 +134,7 @@ Your platform team wants a simple proof that the edge tier cannot open the datab
 
 #### Task 1 – Build dmz / app / db namespaces
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-networking/lab22
 set -euo pipefail
 
@@ -183,7 +183,7 @@ sudo ip -n lab22-rtr addr | tee topology-addrs.txt
 
 #### Task 2 – Enforce deny DMZ→DB with router iptables / nft
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-networking/lab22
 set -euo pipefail
 
@@ -210,7 +210,7 @@ sudo ip netns exec lab22-rtr iptables -L FORWARD -n -v | tee forward-rules.txt
 
 #### Task 3 – Reachability matrix (allow and deny proof)
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-networking/lab22
 set -euo pipefail
 
@@ -272,7 +272,7 @@ Add a tiny HTTP service in `lab22-app` on port `8080` (`python3 -m http.server` 
 
 ### Cleanup
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-networking/lab22
 set -euo pipefail
 for ns in lab22-dmz lab22-app lab22-db lab22-rtr; do

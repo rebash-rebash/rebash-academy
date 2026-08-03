@@ -21,7 +21,7 @@ Engineers who need production-ready **Ansible** skills for cloud, DevOps, platfo
 
 Install **ansible-core** when you want the minimal engine and explicitly add collections via `ansible-galaxy`. Install the **`ansible` PyPI package** (community distribution) when you want a bundled set of collections for a quicker start. Labs assume **ansible-core 2.18+** unless noted. See [Ansible packaging](https://docs.ansible.com/ansible/latest/installation_guide/intro_installation.html).
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 pip install 'ansible-core>=2.18,<2.19'
 ansible --version
 ```
@@ -34,7 +34,7 @@ Most early modules use **localhost** (`ansible_connection: local`) so you can co
 
 Use a **dedicated lab password** — never reuse production Vault passwords. For local practice:
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 ansible-vault create group_vars/lab/vault.yml
 ansible-playbook site.yml --ask-vault-pass
 ```
@@ -45,7 +45,7 @@ In CI, inject `ANSIBLE_VAULT_PASSWORD` from your platform’s secret store; do n
 
 **Ansible Galaxy** hosts roles and collections. Declare dependencies in `collections/requirements.yml` and install with:
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 ansible-galaxy collection install -r collections/requirements.yml
 ```
 

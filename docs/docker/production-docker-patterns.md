@@ -148,7 +148,7 @@ Stand up a production-minded Compose stack with pinned tags, non-root user, heal
 
 Workspace: `~/rebash-docker/module-17`
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 mkdir -p ~/rebash-docker/module-17 && cd ~/rebash-docker/module-17
 ```
 
@@ -222,7 +222,7 @@ services:
 
 Start the stack:
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-docker/module-17
 docker compose up -d --build
 docker compose ps | tee prod-ps.txt
@@ -235,7 +235,7 @@ grep -q rebash-prod-lab prod-ps.txt
 
 #### Task 2 – HTTP and health verification
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-docker/module-17
 sleep 15
 curl -sS http://127.0.0.1:18170/healthz | tee prod-health.txt
@@ -251,7 +251,7 @@ grep -q rebash-prod-lab prod-root.txt
 #### Task 3 – Prove production controls via inspect
 
 {% raw %}
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-docker/module-17
 CID="$(docker compose ps -q edge)"
 docker inspect "$CID" --format 'User={{ "{{" }}.Config.User{{ "}}" }} Restart={{ "{{" }}.HostConfig.RestartPolicy.Name{{ "}}" }} Health={{ "{{" }}.State.Health.Status{{ "}}" }}' | tee prod-inspect.txt
@@ -295,7 +295,7 @@ Add a `deploy.resources.limits` block (Compose v3+) for memory and prove limits 
 
 ### Cleanup
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-docker/module-17
 docker compose down -v --remove-orphans
 docker rmi rebash-prod-lab:1.0.0 2>/dev/null || true

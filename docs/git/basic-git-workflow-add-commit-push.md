@@ -123,7 +123,7 @@ Build a small IaC-style repo with two atomic commits (README + Terraform stub), 
 
 Workspace: `~/rebash-git/module-03` (extends the create/clone lab)
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 mkdir -p ~/rebash-git/module-03 && cd ~/rebash-git/module-03
 set -euo pipefail
 ```
@@ -138,7 +138,7 @@ Your platform team stores Terraform in Git. A colleague already pushed an initia
 
 Start from a clean app directory linked to a bare remote.
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-git/module-03
 set -euo pipefail
 rm -rf workflow-app remotes/workflow.git
@@ -180,7 +180,7 @@ terraform {
 
 Stage and commit only the Terraform file:
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-git/module-03/workflow-app
 set -euo pipefail
 git status --short | tee ../status-before-tf.txt
@@ -202,7 +202,7 @@ cd ..
 
 Publish the second commit and assert remote matches.
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-git/module-03/workflow-app
 set -euo pipefail
 git push
@@ -250,7 +250,7 @@ Use `git add -p` on a file where you intentionally mix a comment change and a lo
 
 ### Cleanup
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 # Keep evidence for portfolio; remove working copy if needed:
 # rm -rf ~/rebash-git/module-03/workflow-app
 ls ~/rebash-git/module-03/*evidence* 2>/dev/null || true

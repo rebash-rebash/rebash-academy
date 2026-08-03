@@ -118,7 +118,7 @@ Create repo with CODEOWNERS and `branch-protection.yaml`; simulate feature PR vi
 
 Workspace: `~/rebash-git/module-10`
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 mkdir -p ~/rebash-git/module-10 && cd ~/rebash-git/module-10
 set -euo pipefail
 ```
@@ -172,7 +172,7 @@ Create `README.md`:
 
 Bootstrap the PR lab repo:
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-git/module-10
 set -euo pipefail
 rm -rf pr-lab
@@ -206,7 +206,7 @@ resource "aws_s3_bucket" "logs" {
 
 Commit the feature and capture review findings:
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-git/module-10/pr-lab
 set -euo pipefail
 git switch -c feature/add-s3-module
@@ -239,7 +239,7 @@ cd ..
 
 #### Task 3 – Simulated approved merge
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-git/module-10/pr-lab
 set -euo pipefail
 git switch main
@@ -285,7 +285,7 @@ Add CODEOWNERS line for `**/production/** @sre-oncall` and extend `review-findin
 
 ### Cleanup
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 ls ~/rebash-git/module-10/pr-lab
 ```
 

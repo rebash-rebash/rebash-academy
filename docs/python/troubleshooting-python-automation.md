@@ -86,7 +86,7 @@ Troubleshooting is a loop: reproduce → fingerprint environment → capture tra
 | `ImportError` / `ModuleNotFoundError` | Missing package or wrong venv/`PYTHONPATH` |
 | Broad `except:` / `except Exception: pass` | Real error hidden; job looks “fine” or fails late |
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 python3 -c 'import sys,platform; print(sys.version); print(platform.platform())'
 ```
 
@@ -154,7 +154,7 @@ Under `~/rebash-python/lab27`, break-fix a small automation script: capture befo
 
 Workspace: `~/rebash-python/lab27`
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 mkdir -p ~/rebash-python/lab27 && cd ~/rebash-python/lab27
 set -euo pipefail
 python3 --version | tee python-version.txt
@@ -287,7 +287,7 @@ if __name__ == "__main__":
 
 Run:
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-python/lab27
 set -euo pipefail
 set +e
@@ -364,7 +364,7 @@ if __name__ == "__main__":
 
 Run:
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-python/lab27
 set -euo pipefail
 python3 -m py_compile fixed_job.py
@@ -376,7 +376,7 @@ python3 -m py_compile fixed_job.py
 
 #### Task 3 – After evidence and comparison pack
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-python/lab27
 set -euo pipefail
 
@@ -447,7 +447,7 @@ Add a second broken mode: write `broken_job_v2.py` that raises `ImportError` **w
 
 ### Cleanup
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-python/lab27
 set -euo pipefail
 rm -rf __pycache__

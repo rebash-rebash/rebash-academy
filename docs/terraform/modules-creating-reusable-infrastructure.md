@@ -154,7 +154,7 @@ Create a reusable **`service`** child module that provisions a Docker network an
 
 ### Lab environment
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 mkdir -p ~/rebash-terraform/module-09/modules/service && cd ~/rebash-terraform/module-09
 ```
 
@@ -261,7 +261,7 @@ output "network_name" {
 
 Run:
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-terraform/module-09/modules/service
 terraform init
 terraform validate
@@ -342,7 +342,7 @@ output "container_names" {
 Run:
 
 {% raw %}
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-terraform/module-09
 terraform init
 terraform plan | tee root-plan.txt
@@ -367,7 +367,7 @@ echo "root apply OK" | tee root-apply-ok.txt
 Run:
 
 {% raw %}
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-terraform/module-09
 terraform state list | tee module-state-list.txt
 grep -q 'module.billing.docker_container.service' module-state-list.txt
@@ -389,7 +389,7 @@ echo "state inspect OK" | tee state-inspect-ok.txt
 Create `~/rebash-terraform/module-09/module-evidence.sh`:
 
 {% raw %}
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 #!/usr/bin/env bash
 set -euo pipefail
 cd ~/rebash-terraform/module-09
@@ -404,7 +404,7 @@ echo "module-evidence PASS" | tee module-evidence-pass.txt
 
 Run:
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 chmod +x ~/rebash-terraform/module-09/module-evidence.sh
 ~/rebash-terraform/module-09/module-evidence.sh
 ```
@@ -459,7 +459,7 @@ output "audit_service_name" {
 Apply:
 
 {% raw %}
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-terraform/module-09
 terraform apply -auto-approve
 docker ps --filter name=audit-dev-svc --format '{{.Names}}' | grep -q audit-dev-svc
@@ -480,7 +480,7 @@ echo "third module challenge OK"
 
 ### Cleanup
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-terraform/module-09
 terraform destroy -auto-approve
 rm -f child-validate-ok.txt root-plan.txt root-outputs.json root-apply-ok.txt \

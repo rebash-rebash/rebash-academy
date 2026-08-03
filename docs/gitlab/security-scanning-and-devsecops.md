@@ -176,7 +176,7 @@ Workspace: `~/rebash-gitlab/module-12`
 
 File-first lab. Analysers run on GitLab runners when templates are included; this lab validates structure locally.
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 mkdir -p ~/rebash-gitlab/module-12 && cd ~/rebash-gitlab/module-12
 set -euo pipefail
 ```
@@ -200,7 +200,7 @@ def greet(name: str) -> str:
 
 Verify locally:
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-gitlab/module-12
 set -euo pipefail
 python3 -m py_compile src/app.py
@@ -240,7 +240,7 @@ sbom:
 
 Validate offline:
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-gitlab/module-12
 set -euo pipefail
 python3 -c "
@@ -293,7 +293,7 @@ build-image-stub:
 
 Validate offline:
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-gitlab/module-12
 set -euo pipefail
 python3 -c "
@@ -327,7 +327,7 @@ echo 'module-12 devsecops lab passed'
 
 Run it:
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-gitlab/module-12
 set -euo pipefail
 chmod +x validate-devsecops.sh
@@ -369,7 +369,7 @@ Add a stub `container_scan` job that declares `dependencies: [build-image-stub]`
 
 ### Cleanup
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 rm -rf ~/rebash-gitlab/module-12/src/__pycache__ 2>/dev/null || true
 ls ~/rebash-gitlab/module-12
 ```

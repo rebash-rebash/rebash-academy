@@ -103,7 +103,7 @@ Inspect the environment, install a lab `/etc/profile.d` script, prove a login sh
 
 Workspace: `~/rebash-linux/lab-env`
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 mkdir -p ~/rebash-linux/lab-env && cd ~/rebash-linux/lab-env
 set -euo pipefail
 echo "$SHELL" | tee shell.txt
@@ -123,7 +123,7 @@ Your team wants every engineer login on a practice jump VM to see `REBASH_LAB_EN
 
 #### Task 1 – Export and one-shot override
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-linux/lab-env
 set -euo pipefail
 
@@ -145,7 +145,7 @@ test "$(cat export-session.txt)" = 'session-value'
 
 #### Task 2 – `/etc/profile.d` drop-in (login shell)
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-linux/lab-env
 set -euo pipefail
 
@@ -169,7 +169,7 @@ bash -c 'printenv REBASH_LAB_ENV || true' | tee profile-d-nologin.txt || true
 
 #### Task 3 – systemd Environment= + evidence
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-linux/lab-env
 set -euo pipefail
 
@@ -231,7 +231,7 @@ Create `/etc/profile.d/rebash-lab-path.sh` that **prepends** `$HOME/rebash-linux
 
 ### Cleanup
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-linux/lab-env
 set -euo pipefail
 sudo rm -f /etc/profile.d/rebash-lab-env.sh /etc/profile.d/rebash-lab-path.sh

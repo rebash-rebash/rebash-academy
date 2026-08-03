@@ -64,7 +64,7 @@ Conditionals sit between inputs (args, files, command statuses) and the actions 
 
 An `if` statement runs a command or test. Exit status **0** means “true”; non-zero means “false”.
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 if [[ -f "$cfg" ]]; then
   printf 'config ok\n'
 elif [[ -z "${cfg:-}" ]]; then
@@ -151,7 +151,7 @@ Build a small service-helper style script under `~/rebash-shell/lab05` that vali
 
 Workspace: `~/rebash-shell/lab05`
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 mkdir -p ~/rebash-shell/lab05 && cd ~/rebash-shell/lab05
 set -euo pipefail
 whoami | tee lab-user.txt
@@ -196,7 +196,7 @@ fi
 
 Run:
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-shell/lab05
 set -euo pipefail
 
@@ -274,7 +274,7 @@ exit 0
 
 Run:
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-shell/lab05
 set -euo pipefail
 
@@ -307,7 +307,7 @@ grep -q 'Usage:' noarg.stderr
 
 #### Task 3 – Combine tests and pack evidence
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-shell/lab05
 set -euo pipefail
 
@@ -367,7 +367,7 @@ Extend `svcctl.sh` into `svcctl-v2.sh` that accepts an optional second argument 
 
 ### Cleanup
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-shell/lab05
 rm -f empty.stdout miss.stdout unknown.stdout noarg.stdout start-miss.stdout
 # Keep svcctl.sh and evidence, or:

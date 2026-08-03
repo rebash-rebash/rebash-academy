@@ -178,7 +178,7 @@ Workspace: `~/rebash-gitlab/module-14`
 
 File-first lab. Release jobs execute on GitLab when tags are pushed.
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 mkdir -p ~/rebash-gitlab/module-14 && cd ~/rebash-gitlab/module-14
 set -euo pipefail
 ```
@@ -213,7 +213,7 @@ Create `CHANGELOG.md`:
 
 Verify locally:
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-gitlab/module-14
 set -euo pipefail
 grep -E '^[0-9]+\.[0-9]+\.[0-9]+$' VERSION | tee version-check.txt
@@ -244,7 +244,7 @@ echo "wrote ${out} for v${version}"
 
 Run it:
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-gitlab/module-14
 set -euo pipefail
 chmod +x generate-changelog.sh
@@ -300,7 +300,7 @@ release:
 
 Validate offline:
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-gitlab/module-14
 set -euo pipefail
 python3 -c "
@@ -321,7 +321,7 @@ grep -q 'generate-changelog.sh' .gitlab-ci.yml
 
 #### Task 4 – Simulate tag metadata locally
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-gitlab/module-14
 set -euo pipefail
 echo 'v0.1.0-lab' > TAG.sim
@@ -366,7 +366,7 @@ Add a `workflow: rules` block so release pipelines run only on tags matching `/^
 
 ### Cleanup
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 rm -f ~/rebash-gitlab/module-14/TAG.sim ~/rebash-gitlab/module-14/dist-notes.md 2>/dev/null || true
 ls ~/rebash-gitlab/module-14
 ```

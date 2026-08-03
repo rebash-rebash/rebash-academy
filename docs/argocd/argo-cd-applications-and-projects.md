@@ -160,7 +160,7 @@ Create `appproject.yaml` and `application.yaml`, apply them declaratively, sync 
 
 ### Lab environment
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 mkdir -p ~/rebash-argocd/module-04 && cd ~/rebash-argocd/module-04
 ```
 
@@ -204,7 +204,7 @@ spec:
 
 Apply and verify:
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-argocd/module-04
 kubectl apply -f appproject.yaml | tee appproject-apply-m04.txt
 kubectl get appproject rebash-lab -n argocd | tee appproject-get-m04.txt
@@ -245,7 +245,7 @@ spec:
 
 Apply:
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-argocd/module-04
 kubectl apply -f application.yaml | tee application-apply-m04.txt
 kubectl get application rebash-guestbook -n argocd | tee application-get-m04.txt
@@ -257,7 +257,7 @@ kubectl get application rebash-guestbook -n argocd | tee application-get-m04.txt
 
 #### Task 3 – Wait for sync and health
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-argocd/module-04
 kubectl wait --for=jsonpath='{.status.sync.status}'=Synced \
   application/rebash-guestbook -n argocd --timeout=300s | tee wait-synced-m04.txt
@@ -274,7 +274,7 @@ grep -q 'Synced' sync-health-m04.txt
 
 #### Task 4 – CLI verification (equivalent operations)
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-argocd/module-04
 argocd app get rebash-guestbook | tee argocd-app-get-m04.txt
 argocd app sync rebash-guestbook --prune | tee argocd-app-sync-m04.txt || true
@@ -328,7 +328,7 @@ Add a second Application manifest `guestbook-dev.yaml` that pins `targetRevision
 
 ### Cleanup
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 kubectl delete application rebash-guestbook -n argocd --wait=false
 kubectl delete appproject rebash-lab -n argocd --ignore-not-found
 kubectl delete namespace rebash-argocd-m04 --ignore-not-found

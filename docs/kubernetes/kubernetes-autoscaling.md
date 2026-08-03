@@ -173,7 +173,7 @@ Create a Deployment with resource requests and a HorizontalPodAutoscaler (HPA), 
 
 Workspace: `~/rebash-k8s/module-13` on a disposable lab cluster.
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 mkdir -p ~/rebash-k8s/module-13 && cd ~/rebash-k8s/module-13
 ```
 
@@ -228,7 +228,7 @@ spec:
 
 Apply:
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-k8s/module-13
 kubectl apply -f namespace.yaml -f deployment.yaml
 kubectl rollout status deployment/checkout-api -n rebash-m13 --timeout=120s
@@ -267,7 +267,7 @@ spec:
 
 Apply and describe:
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-k8s/module-13
 kubectl apply -f hpa.yaml
 kubectl get hpa checkout-api-hpa -n rebash-m13 | tee hpa-m13.txt
@@ -283,7 +283,7 @@ grep -E 'Min replicas|Max replicas|checkout-api' hpa-describe-m13.txt
 
 Check whether the HPA can read metrics:
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-k8s/module-13
 if kubectl top pods -n rebash-m13 >/dev/null 2>&1; then
   kubectl top pods -n rebash-m13 | tee hpa-metrics-m13.txt
@@ -326,7 +326,7 @@ Lower `averageUtilization` to 10 and run a CPU load Job in the namespace; captur
 
 ### Cleanup
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 kubectl delete namespace rebash-m13 --ignore-not-found
 ```
 

@@ -152,7 +152,7 @@ Under `~/rebash-python/lab25`, build a secret scanner that fails on a planted fa
 
 Workspace: `~/rebash-python/lab25`
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 mkdir -p ~/rebash-python/lab25 && cd ~/rebash-python/lab25
 set -euo pipefail
 python3 --version | tee python-version.txt
@@ -237,7 +237,7 @@ if __name__ == "__main__":
 
 Run:
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-python/lab25
 set -euo pipefail
 
@@ -298,7 +298,7 @@ if __name__ == "__main__":
 
 Run:
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-python/lab25
 set -euo pipefail
 python3 safe_subprocess_demo.py | tee safe-subprocess.stdout
@@ -315,7 +315,7 @@ grep -F 'subprocess.run' safe_subprocess_demo.py
 
 #### Task 3 – Optional bandit / pip-audit and evidence pack
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-python/lab25
 set -euo pipefail
 
@@ -396,7 +396,7 @@ Extend `secret_scan.py` with a `--allowlist` file of path substrings to ignore (
 
 ### Cleanup
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-python/lab25
 set -euo pipefail
 # Remove the intentional leaky sample when finished practising:

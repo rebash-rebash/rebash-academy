@@ -152,7 +152,7 @@ Build an offline-first runbook assistant under `~/rebash-python/lab26` with a mo
 
 Workspace: `~/rebash-python/lab26`
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 mkdir -p ~/rebash-python/lab26 && cd ~/rebash-python/lab26
 set -euo pipefail
 python3 --version | tee python-version.txt
@@ -327,7 +327,7 @@ if __name__ == "__main__":
 
 Run:
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-python/lab26
 set -euo pipefail
 python3 -m py_compile ai_runbook.py
@@ -339,7 +339,7 @@ python3 -m py_compile ai_runbook.py
 
 #### Task 2 – Offline run (force mock) and secret-like input block
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-python/lab26
 set -euo pipefail
 
@@ -373,7 +373,7 @@ grep -F 'secret_like_input_blocked' run-blocked.stderr
 
 #### Task 3 – Optional real API path and evidence pack
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-python/lab26
 set -euo pipefail
 
@@ -436,7 +436,7 @@ Add a `--tools-demo` flag that prints a fake MCP/LangChain-style tool request JS
 
 ### Cleanup
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-python/lab26
 set -euo pipefail
 rm -rf __pycache__

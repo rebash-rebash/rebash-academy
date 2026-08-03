@@ -84,7 +84,7 @@ If you equate ping failure with “host down,” you will open wrong tickets. Se
 3. **ICMP** — optional reachability and path messages (filtered often).
 4. **Apps** — TCP/UDP use the resolved path; DNS uses UDP/TCP 53.
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 ip route | awk '/default/ {print; exit}'
 # Then ping that gateway and re-check neighbours
 ```
@@ -132,7 +132,7 @@ On a practice Ubuntu VM, prove ICMP and ARP/neighbour behaviour with `ping` and 
 
 Workspace: `~/rebash-networking/lab08`
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 mkdir -p ~/rebash-networking/lab08 && cd ~/rebash-networking/lab08
 set -euo pipefail
 whoami | tee admin-user.txt
@@ -154,7 +154,7 @@ Users say “the server is down” because ping failed. You must prove whether I
 
 #### Task 1 – ICMP: localhost and gateway
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-networking/lab08
 set -euo pipefail
 
@@ -180,7 +180,7 @@ fi
 
 #### Task 2 – ARP / neighbour table evidence
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-networking/lab08
 set -euo pipefail
 
@@ -204,7 +204,7 @@ fi
 
 #### Task 3 – dig check + read-only DHCP / NM leases
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-networking/lab08
 set -euo pipefail
 
@@ -280,7 +280,7 @@ Write `triage-services.sh` that prints: default gateway, `ping -c1` exit code to
 
 ### Cleanup
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-networking/lab08
 set -euo pipefail
 # Inspection-only lab — optional:

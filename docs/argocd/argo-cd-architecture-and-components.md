@@ -158,7 +158,7 @@ Install or verify Argo CD on a **kind** cluster, collect live pod evidence from 
 
 ### Lab environment
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 mkdir -p ~/rebash-argocd/module-02 && cd ~/rebash-argocd/module-02
 export KUBECONFIG="$(kind get kubeconfig-path --name rebash-argocd 2>/dev/null || kind get kubeconfig --name rebash-argocd)"
 ```
@@ -175,7 +175,7 @@ You join a platform team mid-incident: the UI loads but Applications stay Progre
 
 If Argo CD is not installed yet, run the Module 3 install script or:
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 kubectl create namespace argocd --dry-run=client -o yaml | kubectl apply -f -
 kubectl apply -n argocd --server-side --force-conflicts \
   -f https://raw.githubusercontent.com/argoproj/argo-cd/stable/manifests/install.yaml
@@ -184,7 +184,7 @@ kubectl wait --for=condition=Available deployment/argocd-server -n argocd --time
 
 Collect pod evidence:
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-argocd/module-02
 kubectl get pods -n argocd -o wide | tee pod-evidence-m02.txt
 kubectl get pods -n argocd --no-headers | awk '{print $1}' | tee pod-names-m02.txt
@@ -200,7 +200,7 @@ echo "control plane pods OK" | tee pods-ok-m02.txt
 
 #### Task 2 – Map services and CRDs
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-argocd/module-02
 kubectl get svc -n argocd | tee svc-evidence-m02.txt
 kubectl get crd applications.argoproj.io applicationsets.argoproj.io | tee crd-evidence-m02.txt
@@ -240,7 +240,7 @@ spec:
 
 Apply and wait for sync:
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-argocd/module-02
 kubectl apply -f application-ref.yaml | tee app-apply-m02.txt
 kubectl wait --for=jsonpath='{.status.sync.status}'=Synced \
@@ -287,7 +287,7 @@ Extend `collect-evidence.sh` to append `kubectl get svc -n argocd` and flag if `
 
 ### Cleanup
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 kubectl delete application architecture-lab-ref -n argocd --ignore-not-found
 kubectl delete namespace rebash-argocd-m02 --ignore-not-found
 rm -f ~/rebash-argocd/module-02/*-m02.txt

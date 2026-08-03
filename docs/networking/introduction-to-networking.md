@@ -95,7 +95,7 @@ Every deploy, health check, and on-call page assumes a working path. If DNS is w
 4. **Name resolution** — applications ask DNS for names; the host uses resolvers listed under `/etc/resolv.conf` or `systemd-resolved`.
 5. **Path** — packets leave the NIC, cross switches/routers, and arrive at another host or service.
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 ip -br a
 ip route
 resolvectl status 2>/dev/null || cat /etc/resolv.conf
@@ -142,7 +142,7 @@ On a practice Ubuntu VM, classify host interfaces, capture route and DNS resolve
 
 Workspace: `~/rebash-networking/lab01`
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 mkdir -p ~/rebash-networking/lab01 && cd ~/rebash-networking/lab01
 set -euo pipefail
 hostname | tee hostname.txt
@@ -166,7 +166,7 @@ Your team receives a new Ubuntu jump server (bastion) in a cloud account. Before
 
 List every interface in brief form, then save a richer dump. Classify each non-`lo` interface as roughly LAN-facing (has a private IPv4) or special (docker/bridge/tunnel) in a short table file.
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-networking/lab01
 set -euo pipefail
 
@@ -200,7 +200,7 @@ grep -E 'host-nic-or-lan|loopback|virtual' interface-classification.txt
 
 Capture the routing table and resolver configuration. Optionally prove basic reachability with a short ping and a DNS query tool if available.
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-networking/lab01
 set -euo pipefail
 
@@ -233,7 +233,7 @@ ss -tuln | tee ss-tuln.txt
 
 Write a short topology facts document from the live data, then pack everything into a tarball for the ticket.
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-networking/lab01
 set -euo pipefail
 
@@ -263,7 +263,7 @@ PRIMARY_ADDR="$(ip -4 -o addr show dev "${PRIMARY_IF:-}" 2>/dev/null | awk '{pri
 } > topology-facts.txt
 ```
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 chmod +x write-topology-facts.sh
 ./write-topology-facts.sh
 cat topology-facts.txt
@@ -313,7 +313,7 @@ Write an executable script `~/rebash-networking/lab01/collect-baseline.sh` that 
 
 ### Cleanup
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-networking/lab01
 set -euo pipefail
 # Keep evidence archives if you want them; otherwise remove working text files:

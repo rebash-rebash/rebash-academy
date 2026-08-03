@@ -124,7 +124,7 @@ Write a minimal JCasC snippet, a backup/restore shell script for your Compose vo
 
 Workspace: `~/rebash-jenkins/module-15`
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 mkdir -p ~/rebash-jenkins/module-15 && cd ~/rebash-jenkins/module-15
 set -euo pipefail
 ```
@@ -139,7 +139,7 @@ Leadership asked: “If the Jenkins disk dies tonight, how long to rebuild?” Y
 
 Run:
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-jenkins/module-15
 set -euo pipefail
 
@@ -179,7 +179,7 @@ echo jcasc_bundle_ok
 
 Verify:
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 chmod +x jcasc/apply-casc.sh
 ./jcasc/apply-casc.sh | tee jcasc-validate.txt
 ```
@@ -192,7 +192,7 @@ chmod +x jcasc/apply-casc.sh
 
 Run:
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-jenkins/module-15
 set -euo pipefail
 ```
@@ -212,7 +212,7 @@ echo "Restore: extract tarball into volume on disposable controller, then docker
 
 Verify:
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 chmod +x backup-restore.sh
 ./backup-restore.sh | tee backup-restore-head.txt
 
@@ -228,7 +228,7 @@ ls backups | tee backups-dir.txt || true
 
 Run:
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-jenkins/module-15
 set -euo pipefail
 ```
@@ -254,7 +254,7 @@ logging:
 
 Validate and archive:
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 python3 -c "
 import yaml
 with open('scale-metrics.yaml') as f:
@@ -272,7 +272,7 @@ print('scale-metrics.yaml OK')
 
 Run:
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-jenkins/module-15
 set -euo pipefail
 ```
@@ -301,7 +301,7 @@ rules:
 
 Validate and archive:
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 python3 -c "
 import yaml
 with open('folder-governance.yaml') as f:
@@ -347,7 +347,7 @@ Export live configuration from a lab controller (CasC UI download) into `jcasc/e
 
 ### Cleanup
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 # Keep backups/ out of public git if it contains real home tarballs
 ls ~/rebash-jenkins/module-15
 ```

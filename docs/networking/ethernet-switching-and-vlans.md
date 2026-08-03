@@ -67,7 +67,7 @@ Layer 2 sits under routing. Hosts share a broadcast domain (often one VLAN ≈ o
 
 A **MAC address** is a 48-bit Layer 2 identifier (six hex octets, for example `02:42:ac:11:00:02`). An **Ethernet II** frame carries destination MAC, source MAC, an **EtherType** (for example `0x0800` for IPv4), and a payload. A **switch** (or Linux bridge) forwards frames inside one broadcast domain. A **VLAN** is a logical segment tagged with a numeric **VLAN ID** (1–4094). Access ports carry one VLAN untagged toward a host; **trunk** ports carry many VLANs with **IEEE 802.1Q** tags.
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 ip -br link
 ip link show
 ```
@@ -85,7 +85,7 @@ Cloud VPC subnets, Docker `bridge` networks, and Kubernetes node fabrics are vir
 
 On Linux, a **bridge** (`ip link add type bridge`) behaves like a small software switch. **Network namespaces** give you isolated network stacks so you can attach virtual Ethernet (`veth`) pairs to a bridge and prove Layer 2 connectivity without buying hardware.
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 # Conceptual — lab uses safer scripted steps
 sudo ip link add br-lab type bridge
 sudo ip netns add ns-a
@@ -134,7 +134,7 @@ On a practice Ubuntu VM, inspect Layer 2 state (MAC, link, optional bridge), the
 
 Workspace: `~/rebash-networking/lab07`
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 mkdir -p ~/rebash-networking/lab07 && cd ~/rebash-networking/lab07
 set -euo pipefail
 whoami | tee admin-user.txt
@@ -157,7 +157,7 @@ A new microservice will sit on an internal segment. Platform asks you to prove y
 
 Record MACs and any existing bridges. Prefer read-only inspection.
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-networking/lab07
 set -euo pipefail
 
@@ -180,7 +180,7 @@ grep -E 'link/ether|^[0-9]+:' macs.txt || test -s macs.txt
 
 Create a disposable bridge and two namespaces connected by `veth` pairs. Assign IPs only inside the lab bridge — do not change your default route.
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-networking/lab07
 set -euo pipefail
 
@@ -229,7 +229,7 @@ grep -E '1 received|2 received|bytes from' ns-ping.txt
 
 Do **not** create `eth0.100` on your uplink. Record VLAN ideas as a checklist script output for the ticket.
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-networking/lab07
 set -euo pipefail
 ```
@@ -249,7 +249,7 @@ echo "Cloud note: providers often hide tags; isolation appears as separate subne
 echo "Lab bridge rebash-br0 used private 10.255.77.0/24 — not your uplink"
 ```
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 chmod +x vlan-concepts.sh
 ./vlan-concepts.sh | tee vlan-concepts.txt
 
@@ -297,7 +297,7 @@ Write `bridge-fdb-dump.sh` that runs `bridge fdb show rebash-br0 2>/dev/null || 
 
 ### Cleanup
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-networking/lab07
 set -euo pipefail
 

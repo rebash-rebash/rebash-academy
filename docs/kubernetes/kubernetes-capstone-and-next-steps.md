@@ -212,7 +212,7 @@ Build and apply a multi-manifest mini platform in `~/rebash-k8s/capstone` — na
 
 Workspace: `~/rebash-k8s/capstone`
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 mkdir -p ~/rebash-k8s/capstone && cd ~/rebash-k8s/capstone
 ```
 
@@ -254,7 +254,7 @@ data:
 
 Apply:
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-k8s/capstone
 kubectl apply -f namespace.yaml
 kubectl apply -f configmap.yaml
@@ -353,7 +353,7 @@ spec:
 
 Apply and wait for Ready:
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-k8s/capstone
 kubectl apply -f deployment.yaml
 kubectl apply -f service.yaml
@@ -401,7 +401,7 @@ spec:
 
 Apply and test from an in-cluster curl Pod:
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-k8s/capstone
 kubectl apply -f networkpolicy.yaml
 kubectl run curl-test --rm -it --restart=Never -n rebash-capstone --image=curlimages/curl:8.5.0 -- \
@@ -415,7 +415,7 @@ kubectl get endpoints capstone-api -n rebash-capstone | tee endpoints.txt
 
 #### Task 4 – Package capstone evidence tarball
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-k8s/capstone
 kubectl get all,configmap,networkpolicy -n rebash-capstone | tee capstone-status.txt
 kubectl describe deploy capstone-api -n rebash-capstone | tee capstone-describe.txt
@@ -458,7 +458,7 @@ Add a `PodDisruptionBudget` with `minAvailable: 1` and verify `kubectl get pdb -
 
 ### Cleanup
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 kubectl delete namespace rebash-capstone --ignore-not-found --wait=true
 rm -f ~/rebash-k8s/capstone/*.txt ~/rebash-k8s/capstone/capstone-evidence.tgz
 ```
@@ -528,7 +528,7 @@ If your organisation standardizes on GitLab, port the VoteStack CI workflow — 
 
 
 
-```bash title="Terminal"
+``` {.bash .ra-terminal title="Terminal"}
 # End-to-end status
 kubectl get deploy,sts,svc,ingress,hpa,pdb -n votestack
 argocd app get votestack-root
