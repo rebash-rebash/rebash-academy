@@ -50,6 +50,166 @@
   border-color: rgba(255, 255, 255, 0.09);
 }
 
+/* ---------- Lab code chrome: file vs Terminal ---------- */
+.md-typeset .highlight,
+.md-typeset .highlighttable {
+  position: relative;
+  margin: 1em 0;
+}
+
+.md-typeset .highlight > .filename,
+.md-typeset .highlighttable .filename {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+  font-family: var(--md-code-font-family, ui-monospace, SFMono-Regular, Menlo, Consolas, monospace);
+  font-size: 0.68rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  line-height: 1.2;
+  margin: 0;
+  padding: 0.5rem 0.85rem;
+  border: 1px solid #e1e4e8;
+  border-bottom: 0;
+  border-radius: 0.4rem 0.4rem 0 0;
+  background: #eef1f4;
+  color: #24292f;
+}
+
+.md-typeset .highlight:has(> .filename) > pre,
+.md-typeset .highlight:has(> .filename) > pre > code {
+  border-top-left-radius: 0;
+  border-top-right-radius: 0;
+}
+
+.md-typeset .highlight:has(> .filename) > pre > code {
+  border-color: #e1e4e8;
+}
+
+/* File artefact chrome (title = filename) */
+.md-typeset .ra-file-code > .filename,
+.md-typeset .ra-file-code th.filename {
+  background: #eef6f0;
+  border-color: #c7e2d0;
+  color: #0f5132;
+}
+
+.md-typeset .ra-file-code > .filename::before {
+  content: "";
+  width: 0.55rem;
+  height: 0.7rem;
+  border: 1.5px solid currentColor;
+  border-radius: 0.1rem;
+  opacity: 0.7;
+  flex: 0 0 auto;
+}
+
+.md-typeset .ra-file-code > pre > code,
+.md-typeset .ra-file-code td.code > div > pre > code {
+  border-color: #c7e2d0;
+  background: #f7fbf8;
+}
+
+/* Terminal chrome (title = Terminal) — GitHub-dark style, not purple glow */
+.md-typeset .ra-terminal {
+  border-radius: 0.5rem;
+  overflow: hidden;
+  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.08);
+}
+
+.md-typeset .ra-terminal > .filename,
+.md-typeset .ra-terminal th.filename {
+  background: linear-gradient(180deg, #2a2f38 0%, #21262d 100%);
+  border-color: #30363d;
+  color: #e6edf3;
+  gap: 0.65rem;
+}
+
+/* Traffic-light dots */
+.md-typeset .ra-terminal > .filename::before {
+  content: "";
+  width: 2.4rem;
+  height: 0.55rem;
+  flex: 0 0 auto;
+  background:
+    radial-gradient(circle at 0.28rem 50%, #ff5f56 0 0.22rem, transparent 0.23rem),
+    radial-gradient(circle at 1.05rem 50%, #ffbd2e 0 0.22rem, transparent 0.23rem),
+    radial-gradient(circle at 1.82rem 50%, #27c93f 0 0.22rem, transparent 0.23rem);
+  opacity: 0.95;
+}
+
+.md-typeset .ra-terminal > .filename::after {
+  content: "bash";
+  margin-left: auto;
+  font-size: 0.62rem;
+  font-weight: 500;
+  color: #8b949e;
+  text-transform: lowercase;
+}
+
+.md-typeset .ra-terminal > pre {
+  margin: 0;
+  background: #0d1117;
+}
+
+.md-typeset .ra-terminal > pre > code {
+  background: #0d1117 !important;
+  color: #e6edf3 !important;
+  border: 1px solid #30363d;
+  border-top: 0;
+  border-radius: 0 0 0.5rem 0.5rem;
+  padding: 0.95em 1.15em 1.1em;
+  box-shadow: none;
+}
+
+/* Softer syntax colours on dark terminal */
+.md-typeset .ra-terminal .c,
+.md-typeset .ra-terminal .c1,
+.md-typeset .ra-terminal .cm { color: #8b949e !important; font-style: italic; }
+.md-typeset .ra-terminal .k,
+.md-typeset .ra-terminal .kd,
+.md-typeset .ra-terminal .kn,
+.md-typeset .ra-terminal .nb { color: #79c0ff !important; }
+.md-typeset .ra-terminal .s,
+.md-typeset .ra-terminal .s1,
+.md-typeset .ra-terminal .s2,
+.md-typeset .ra-terminal .sa { color: #a5d6ff !important; }
+.md-typeset .ra-terminal .nv,
+.md-typeset .ra-terminal .o,
+.md-typeset .ra-terminal .p { color: #c9d1d9 !important; }
+
+/* Copy button contrast on terminal */
+.md-typeset .ra-terminal .md-clipboard {
+  color: #8b949e;
+}
+.md-typeset .ra-terminal .md-clipboard:hover {
+  color: #e6edf3;
+}
+
+[data-md-color-scheme="slate"] .md-typeset .highlight > .filename,
+[data-md-color-scheme="slate"] .md-typeset .highlighttable .filename {
+  background: rgba(255, 255, 255, 0.06);
+  border-color: rgba(255, 255, 255, 0.1);
+  color: var(--md-default-fg-color);
+}
+
+[data-md-color-scheme="slate"] .md-typeset .ra-file-code > .filename {
+  background: rgba(46, 160, 67, 0.12);
+  border-color: rgba(46, 160, 67, 0.35);
+  color: #3fb950;
+}
+
+[data-md-color-scheme="slate"] .md-typeset .ra-file-code > pre > code {
+  border-color: rgba(46, 160, 67, 0.35);
+  background: rgba(46, 160, 67, 0.05);
+}
+
+/* Expected output admonitions — slightly stronger than default example */
+.md-typeset .admonition.example,
+.md-typeset details.example {
+  border-left-color: #1a7f37;
+}
+
 /* Inline code: same soft panel, no border */
 .md-typeset code {
   border-radius: 0.2rem;

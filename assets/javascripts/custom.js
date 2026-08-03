@@ -179,10 +179,31 @@ function markCustomTemplateLinks() {
   });
 }
 
+/** Mark lab fences: title="Terminal" → terminal chrome; other titles → file chrome */
+function markLabCodeBlocks() {
+  document.querySelectorAll(".highlight > .filename, .highlighttable .filename").forEach(function (el) {
+    var label = (el.textContent || "").trim().toLowerCase();
+    var block =
+      el.closest(".highlighttable") ||
+      el.closest(".highlight") ||
+      el.parentElement;
+    if (!block) return;
+    block.classList.remove("ra-terminal", "ra-file-code");
+    if (label === "terminal" || label === "shell" || label === "console") {
+      block.classList.add("ra-terminal");
+      el.setAttribute("data-ra-chrome", "terminal");
+    } else if (label) {
+      block.classList.add("ra-file-code");
+      el.setAttribute("data-ra-chrome", "file");
+    }
+  });
+}
+
 function onPageReady() {
   initLearningPathPicker();
   markCustomTemplateLinks();
   initRecommendedRoadmap();
+  markLabCodeBlocks();
 }
 
 if (typeof document$ !== "undefined") {
