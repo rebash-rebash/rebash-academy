@@ -21,13 +21,72 @@
       {% set icon = config.theme.icon.menu or "material/menu" %}
       {% include ".icons/" ~ icon ~ ".svg" %}
     </label>
-    <div class="rebash-header-spacer" aria-hidden="true"></div>
     <nav class="rebash-header-links" aria-label="Quick links">
+      {#- Career Paths dropdown -#}
+      <div class="rebash-header-dd">
+        <a class="rebash-header-dd__trigger" href="{{ 'career-paths/' | url }}">
+          Career Paths
+          <span class="rebash-header-dd__caret" aria-hidden="true"></span>
+        </a>
+        <div class="rebash-header-dd__panel" role="menu" aria-label="Career paths">
+          <a class="rebash-header-dd__item rebash-header-dd__item--emph" href="{{ 'career-paths/' | url }}" role="menuitem">All career paths</a>
+          <a class="rebash-header-dd__item" href="{{ 'career-paths/beginner/' | url }}" role="menuitem">Beginner</a>
+          <a class="rebash-header-dd__item" href="{{ 'career-paths/linux-administrator/' | url }}" role="menuitem">Linux Administrator</a>
+          <a class="rebash-header-dd__item" href="{{ 'career-paths/cloud-engineer/' | url }}" role="menuitem">Cloud Engineer</a>
+          <a class="rebash-header-dd__item" href="{{ 'career-paths/devops-engineer/' | url }}" role="menuitem">DevOps Engineer</a>
+          <a class="rebash-header-dd__item" href="{{ 'career-paths/kubernetes-engineer/' | url }}" role="menuitem">Kubernetes Engineer</a>
+          <a class="rebash-header-dd__item" href="{{ 'career-paths/platform-engineer/' | url }}" role="menuitem">Platform Engineer</a>
+          <a class="rebash-header-dd__item" href="{{ 'career-paths/devsecops-engineer/' | url }}" role="menuitem">DevSecOps Engineer</a>
+          <a class="rebash-header-dd__item" href="{{ 'career-paths/site-reliability-engineer/' | url }}" role="menuitem">Site Reliability Engineer</a>
+          <a class="rebash-header-dd__item" href="{{ 'career-paths/cloud-architect/' | url }}" role="menuitem">Cloud Architect</a>
+          <a class="rebash-header-dd__item" href="{{ 'career-paths/ai-for-devops/' | url }}" role="menuitem">AI for DevOps Engineer</a>
+        </div>
+      </div>
+
+      {#- Tutorials dropdown (ready technology courses, grouped) -#}
+      <div class="rebash-header-dd rebash-header-dd--wide">
+        <a class="rebash-header-dd__trigger" href="{{ 'technologies/' | url }}">
+          Tutorials
+          <span class="rebash-header-dd__caret" aria-hidden="true"></span>
+        </a>
+        <div class="rebash-header-dd__panel rebash-header-dd__panel--grouped" role="menu" aria-label="Tutorials">
+          <div class="rebash-header-dd__group">
+            <p class="rebash-header-dd__label">Foundations</p>
+            <a class="rebash-header-dd__item" href="{{ 'linux/' | url }}" role="menuitem">Linux</a>
+            <a class="rebash-header-dd__item" href="{{ 'shell/' | url }}" role="menuitem">Shell</a>
+            <a class="rebash-header-dd__item" href="{{ 'networking/' | url }}" role="menuitem">Networking</a>
+            <a class="rebash-header-dd__item" href="{{ 'python/' | url }}" role="menuitem">Python</a>
+            <a class="rebash-header-dd__item" href="{{ 'git/' | url }}" role="menuitem">Git</a>
+          </div>
+          <div class="rebash-header-dd__group">
+            <p class="rebash-header-dd__label">Containers</p>
+            <a class="rebash-header-dd__item" href="{{ 'docker/' | url }}" role="menuitem">Docker</a>
+            <a class="rebash-header-dd__item" href="{{ 'kubernetes/' | url }}" role="menuitem">Kubernetes</a>
+          </div>
+          <div class="rebash-header-dd__group">
+            <p class="rebash-header-dd__label">Cloud</p>
+            <a class="rebash-header-dd__item" href="{{ 'aws/' | url }}" role="menuitem">AWS</a>
+            <a class="rebash-header-dd__item" href="{{ 'gcp/' | url }}" role="menuitem">Google Cloud</a>
+          </div>
+          <div class="rebash-header-dd__group">
+            <p class="rebash-header-dd__label">IaC / CI</p>
+            <a class="rebash-header-dd__item" href="{{ 'terraform/' | url }}" role="menuitem">Terraform</a>
+            <a class="rebash-header-dd__item" href="{{ 'gitlab/' | url }}" role="menuitem">GitLab CI/CD</a>
+          </div>
+          <div class="rebash-header-dd__group">
+            <p class="rebash-header-dd__label">AI</p>
+            <a class="rebash-header-dd__item" href="{{ 'ai/' | url }}" role="menuitem">AI for DevOps</a>
+          </div>
+          <a class="rebash-header-dd__item rebash-header-dd__item--emph rebash-header-dd__item--footer" href="{{ 'technologies/' | url }}" role="menuitem">All technologies →</a>
+        </div>
+      </div>
+
       <a href="{{ 'books/' | url }}">Books</a>
       <a href="{{ 'about/' | url }}">About</a>
       <a href="{{ 'blog/' | url }}">Blog</a>
       <a href="{{ 'contact/' | url }}">Contact</a>
     </nav>
+    <div class="rebash-header-spacer" aria-hidden="true"></div>
     {% if config.theme.palette %}
       {% if not config.theme.palette is mapping %}
         {% include "partials/palette.html" %}
