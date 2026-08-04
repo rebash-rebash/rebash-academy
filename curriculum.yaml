@@ -916,11 +916,75 @@ technologies:
   tutorial_count: 0
 - id: gcp
   title: Google Cloud
-  status: stub
+  status: ready
   path_prefix: gcp/
   difficulty: intermediate
-  modules: []
-  tutorial_count: 0
+  modules:
+  - id: gcp-m1
+    title: Module 1 · Google Cloud Fundamentals
+    tutorials:
+    - gcp/google-cloud-fundamentals-and-global-infrastructure
+  - id: gcp-m2
+    title: Module 2 · Identity & Access Management
+    tutorials:
+    - gcp/iam-identity-access-and-resource-hierarchy
+  - id: gcp-m3
+    title: Module 3 · Networking
+    tutorials:
+    - gcp/vpc-networking-on-gcp
+  - id: gcp-m4
+    title: Module 4 · Compute
+    tutorials:
+    - gcp/compute-engine-migs-and-load-balancing
+  - id: gcp-m5
+    title: Module 5 · Storage
+    tutorials:
+    - gcp/storage-gcs-persistent-disk-and-filestore
+  - id: gcp-m6
+    title: Module 6 · Databases
+    tutorials:
+    - gcp/databases-on-gcp
+  - id: gcp-m7
+    title: Module 7 · Containers
+    tutorials:
+    - gcp/containers-gke-and-artifact-registry
+  - id: gcp-m8
+    title: Module 8 · Serverless
+    tutorials:
+    - gcp/serverless-on-gcp
+  - id: gcp-m9
+    title: Module 9 · Data & Analytics
+    tutorials:
+    - gcp/data-and-analytics-on-gcp
+  - id: gcp-m10
+    title: Module 10 · Monitoring & Observability
+    tutorials:
+    - gcp/monitoring-and-observability-on-gcp
+  - id: gcp-m11
+    title: Module 11 · Security
+    tutorials:
+    - gcp/gcp-security-services
+  - id: gcp-m12
+    title: Module 12 · Infrastructure as Code
+    tutorials:
+    - gcp/infrastructure-as-code-on-gcp
+  - id: gcp-m13
+    title: Module 13 · CI/CD
+    tutorials:
+    - gcp/cicd-on-gcp
+  - id: gcp-m14
+    title: Module 14 · Cost Optimisation
+    tutorials:
+    - gcp/cost-optimisation-on-gcp
+  - id: gcp-m15
+    title: Module 15 · Production GCP
+    tutorials:
+    - gcp/production-gcp-landing-zones
+  - id: gcp-m16
+    title: Module 16 · Troubleshooting
+    tutorials:
+    - gcp/troubleshooting-gcp
+  tutorial_count: 16
 - id: github-actions
   title: GitHub Actions
   status: planned
@@ -3960,6 +4024,388 @@ tutorials:
   estimated_time: 45–90 min
   prerequisites:
   - aws/cloudtrail-config-and-account-guardrails
+  next: []
+  related: []
+  labs: []
+  projects: []
+  certifications: []
+- id: gcp/google-cloud-fundamentals-and-global-infrastructure
+  slug: google-cloud-fundamentals-and-global-infrastructure
+  title: Google Cloud Fundamentals and Global Infrastructure
+  path: gcp/google-cloud-fundamentals-and-global-infrastructure.md
+  technology: gcp
+  module: Module 1 · Google Cloud Fundamentals
+  order: 1
+  status: ready
+  career_paths:
+  - cloud-architect
+  - cloud-engineer
+  - devops-engineer
+  - platform-engineer
+  - site-reliability-engineer
+  difficulty: beginner
+  estimated_time: 60–75 min
+  prerequisites: []
+  next:
+  - gcp/iam-identity-access-and-resource-hierarchy
+  related: []
+  labs: []
+  projects: []
+  certifications: []
+- id: gcp/iam-identity-access-and-resource-hierarchy
+  slug: iam-identity-access-and-resource-hierarchy
+  title: IAM, Identity Access, and Resource Hierarchy
+  path: gcp/iam-identity-access-and-resource-hierarchy.md
+  technology: gcp
+  module: Module 2 · Identity & Access Management
+  order: 2
+  status: ready
+  career_paths:
+  - cloud-architect
+  - cloud-engineer
+  - devops-engineer
+  - platform-engineer
+  - site-reliability-engineer
+  difficulty: beginner
+  estimated_time: 65–80 min
+  prerequisites:
+  - gcp/google-cloud-fundamentals-and-global-infrastructure
+  next:
+  - gcp/vpc-networking-on-gcp
+  related: []
+  labs: []
+  projects: []
+  certifications: []
+- id: gcp/vpc-networking-on-gcp
+  slug: vpc-networking-on-gcp
+  title: VPC Networking on Google Cloud
+  path: gcp/vpc-networking-on-gcp.md
+  technology: gcp
+  module: Module 3 · Networking
+  order: 3
+  status: ready
+  career_paths:
+  - cloud-architect
+  - cloud-engineer
+  - devops-engineer
+  - platform-engineer
+  - site-reliability-engineer
+  difficulty: intermediate
+  estimated_time: 70–90 min
+  prerequisites:
+  - gcp/iam-identity-access-and-resource-hierarchy
+  next:
+  - gcp/compute-engine-migs-and-load-balancing
+  related: []
+  labs: []
+  projects: []
+  certifications: []
+- id: gcp/compute-engine-migs-and-load-balancing
+  slug: compute-engine-migs-and-load-balancing
+  title: Compute Engine, MIGs, and Load Balancing
+  path: gcp/compute-engine-migs-and-load-balancing.md
+  technology: gcp
+  module: Module 4 · Compute
+  order: 4
+  status: ready
+  career_paths:
+  - cloud-architect
+  - cloud-engineer
+  - devops-engineer
+  - platform-engineer
+  - site-reliability-engineer
+  difficulty: intermediate
+  estimated_time: 70–90 min
+  prerequisites:
+  - gcp/vpc-networking-on-gcp
+  next:
+  - gcp/storage-gcs-persistent-disk-and-filestore
+  related: []
+  labs: []
+  projects: []
+  certifications: []
+- id: gcp/storage-gcs-persistent-disk-and-filestore
+  slug: storage-gcs-persistent-disk-and-filestore
+  title: Cloud Storage, Persistent Disk, and Filestore
+  path: gcp/storage-gcs-persistent-disk-and-filestore.md
+  technology: gcp
+  module: Module 5 · Storage
+  order: 5
+  status: ready
+  career_paths:
+  - cloud-architect
+  - cloud-engineer
+  - devops-engineer
+  - platform-engineer
+  - site-reliability-engineer
+  difficulty: intermediate
+  estimated_time: 45–75 min
+  prerequisites:
+  - gcp/compute-engine-migs-and-load-balancing
+  next:
+  - gcp/databases-on-gcp
+  related: []
+  labs: []
+  projects: []
+  certifications: []
+- id: gcp/databases-on-gcp
+  slug: databases-on-gcp
+  title: Databases on Google Cloud
+  path: gcp/databases-on-gcp.md
+  technology: gcp
+  module: Module 6 · Databases
+  order: 6
+  status: ready
+  career_paths:
+  - cloud-architect
+  - cloud-engineer
+  - devops-engineer
+  - platform-engineer
+  - site-reliability-engineer
+  difficulty: intermediate
+  estimated_time: 60–90 min
+  prerequisites:
+  - gcp/storage-gcs-persistent-disk-and-filestore
+  next:
+  - gcp/containers-gke-and-artifact-registry
+  related: []
+  labs: []
+  projects: []
+  certifications: []
+- id: gcp/containers-gke-and-artifact-registry
+  slug: containers-gke-and-artifact-registry
+  title: Containers — GKE and Artifact Registry
+  path: gcp/containers-gke-and-artifact-registry.md
+  technology: gcp
+  module: Module 7 · Containers
+  order: 7
+  status: ready
+  career_paths:
+  - cloud-architect
+  - cloud-engineer
+  - devops-engineer
+  - platform-engineer
+  - site-reliability-engineer
+  difficulty: intermediate
+  estimated_time: 75–120 min
+  prerequisites:
+  - gcp/databases-on-gcp
+  next:
+  - gcp/serverless-on-gcp
+  related: []
+  labs: []
+  projects: []
+  certifications: []
+- id: gcp/serverless-on-gcp
+  slug: serverless-on-gcp
+  title: Serverless on Google Cloud
+  path: gcp/serverless-on-gcp.md
+  technology: gcp
+  module: Module 8 · Serverless
+  order: 8
+  status: ready
+  career_paths:
+  - cloud-architect
+  - cloud-engineer
+  - devops-engineer
+  - platform-engineer
+  - site-reliability-engineer
+  difficulty: intermediate
+  estimated_time: 60–90 min
+  prerequisites:
+  - gcp/containers-gke-and-artifact-registry
+  next:
+  - gcp/data-and-analytics-on-gcp
+  related: []
+  labs: []
+  projects: []
+  certifications: []
+- id: gcp/data-and-analytics-on-gcp
+  slug: data-and-analytics-on-gcp
+  title: Data and Analytics on Google Cloud
+  path: gcp/data-and-analytics-on-gcp.md
+  technology: gcp
+  module: Module 9 · Data & Analytics
+  order: 9
+  status: ready
+  career_paths:
+  - cloud-architect
+  - cloud-engineer
+  - devops-engineer
+  - platform-engineer
+  - site-reliability-engineer
+  difficulty: intermediate
+  estimated_time: 60–90 min
+  prerequisites:
+  - gcp/serverless-on-gcp
+  next:
+  - gcp/monitoring-and-observability-on-gcp
+  related: []
+  labs: []
+  projects: []
+  certifications: []
+- id: gcp/monitoring-and-observability-on-gcp
+  slug: monitoring-and-observability-on-gcp
+  title: Monitoring and Observability on Google Cloud
+  path: gcp/monitoring-and-observability-on-gcp.md
+  technology: gcp
+  module: Module 10 · Monitoring & Observability
+  order: 10
+  status: ready
+  career_paths:
+  - cloud-architect
+  - cloud-engineer
+  - devops-engineer
+  - platform-engineer
+  - site-reliability-engineer
+  difficulty: intermediate
+  estimated_time: 60–90 min
+  prerequisites:
+  - gcp/data-and-analytics-on-gcp
+  next:
+  - gcp/gcp-security-services
+  related: []
+  labs: []
+  projects: []
+  certifications: []
+- id: gcp/gcp-security-services
+  slug: gcp-security-services
+  title: Google Cloud Security Services
+  path: gcp/gcp-security-services.md
+  technology: gcp
+  module: Module 11 · Security
+  order: 11
+  status: ready
+  career_paths:
+  - cloud-architect
+  - cloud-engineer
+  - devops-engineer
+  - platform-engineer
+  - site-reliability-engineer
+  difficulty: intermediate
+  estimated_time: 60–90 min
+  prerequisites:
+  - gcp/monitoring-and-observability-on-gcp
+  next:
+  - gcp/infrastructure-as-code-on-gcp
+  related: []
+  labs: []
+  projects: []
+  certifications: []
+- id: gcp/infrastructure-as-code-on-gcp
+  slug: infrastructure-as-code-on-gcp
+  title: Infrastructure as Code on Google Cloud
+  path: gcp/infrastructure-as-code-on-gcp.md
+  technology: gcp
+  module: Module 12 · Infrastructure as Code
+  order: 12
+  status: ready
+  career_paths:
+  - cloud-architect
+  - cloud-engineer
+  - devops-engineer
+  - platform-engineer
+  - site-reliability-engineer
+  difficulty: intermediate
+  estimated_time: 60–90 min
+  prerequisites:
+  - gcp/gcp-security-services
+  next:
+  - gcp/cicd-on-gcp
+  related: []
+  labs: []
+  projects: []
+  certifications: []
+- id: gcp/cicd-on-gcp
+  slug: cicd-on-gcp
+  title: CI/CD on Google Cloud
+  path: gcp/cicd-on-gcp.md
+  technology: gcp
+  module: Module 13 · CI/CD
+  order: 13
+  status: ready
+  career_paths:
+  - cloud-architect
+  - cloud-engineer
+  - devops-engineer
+  - platform-engineer
+  - site-reliability-engineer
+  difficulty: intermediate
+  estimated_time: 60–90 min
+  prerequisites:
+  - gcp/infrastructure-as-code-on-gcp
+  next:
+  - gcp/cost-optimisation-on-gcp
+  related: []
+  labs: []
+  projects: []
+  certifications: []
+- id: gcp/cost-optimisation-on-gcp
+  slug: cost-optimisation-on-gcp
+  title: Cost Optimisation on Google Cloud
+  path: gcp/cost-optimisation-on-gcp.md
+  technology: gcp
+  module: Module 14 · Cost Optimisation
+  order: 14
+  status: ready
+  career_paths:
+  - cloud-architect
+  - cloud-engineer
+  - devops-engineer
+  - platform-engineer
+  - site-reliability-engineer
+  difficulty: intermediate
+  estimated_time: 45–75 min
+  prerequisites:
+  - gcp/cicd-on-gcp
+  next:
+  - gcp/production-gcp-landing-zones
+  related: []
+  labs: []
+  projects: []
+  certifications: []
+- id: gcp/production-gcp-landing-zones
+  slug: production-gcp-landing-zones
+  title: Production GCP Landing Zones
+  path: gcp/production-gcp-landing-zones.md
+  technology: gcp
+  module: Module 15 · Production GCP
+  order: 15
+  status: ready
+  career_paths:
+  - cloud-architect
+  - cloud-engineer
+  - devops-engineer
+  - platform-engineer
+  - site-reliability-engineer
+  difficulty: advanced
+  estimated_time: 75–120 min
+  prerequisites:
+  - gcp/cost-optimisation-on-gcp
+  next:
+  - gcp/troubleshooting-gcp
+  related: []
+  labs: []
+  projects: []
+  certifications: []
+- id: gcp/troubleshooting-gcp
+  slug: troubleshooting-gcp
+  title: Troubleshooting Google Cloud
+  path: gcp/troubleshooting-gcp.md
+  technology: gcp
+  module: Module 16 · Troubleshooting
+  order: 16
+  status: ready
+  career_paths:
+  - cloud-architect
+  - cloud-engineer
+  - devops-engineer
+  - platform-engineer
+  - site-reliability-engineer
+  difficulty: advanced
+  estimated_time: 60–90 min
+  prerequisites:
+  - gcp/production-gcp-landing-zones
   next: []
   related: []
   labs: []

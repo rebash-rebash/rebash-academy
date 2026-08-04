@@ -26,7 +26,7 @@ Generated from [`curriculum.yaml`](../../curriculum.yaml). Tutorial URLs remain 
 | Docker | Containers | 6 | 20 | — | — | — | — | intermediate | P0 | ready |
 | GitHub Actions | CI/CD | 0 | 0 | — | — | — | — | intermediate | P1 | planned |
 | GitLab CI/CD | CI/CD | 5 | 20 | — | — | — | — | intermediate | P0 | ready |
-| Google Cloud | Cloud Platforms | 0 | 0 | — | — | — | — | intermediate | P2 | stub |
+| Google Cloud | Cloud Platforms | 16 | 16 | — | — | — | — | intermediate | P0 | ready |
 | Grafana | Observability | 0 | 0 | — | — | — | — | intermediate | P1 | planned |
 | Helm | Containers | 0 | 0 | — | — | — | — | intermediate | P1 | planned |
 | Jenkins | CI/CD | 0 | 0 | — | — | — | — | intermediate | P1 | planned |

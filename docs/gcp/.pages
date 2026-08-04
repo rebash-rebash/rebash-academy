@@ -1,2 +1,37 @@
 title: Google Cloud
 icon: material/google-cloud
+
+nav:
+  - Overview: index.md
+  - Module 1 · Google Cloud Fundamentals:
+    - google-cloud-fundamentals-and-global-infrastructure.md
+  - Module 2 · Identity & Access Management:
+    - iam-identity-access-and-resource-hierarchy.md
+  - Module 3 · Networking:
+    - vpc-networking-on-gcp.md
+  - Module 4 · Compute:
+    - compute-engine-migs-and-load-balancing.md
+  - Module 5 · Storage:
+    - storage-gcs-persistent-disk-and-filestore.md
+  - Module 6 · Databases:
+    - databases-on-gcp.md
+  - Module 7 · Containers:
+    - containers-gke-and-artifact-registry.md
+  - Module 8 · Serverless:
+    - serverless-on-gcp.md
+  - Module 9 · Data & Analytics:
+    - data-and-analytics-on-gcp.md
+  - Module 10 · Monitoring & Observability:
+    - monitoring-and-observability-on-gcp.md
+  - Module 11 · Security:
+    - gcp-security-services.md
+  - Module 12 · Infrastructure as Code:
+    - infrastructure-as-code-on-gcp.md
+  - Module 13 · CI/CD:
+    - cicd-on-gcp.md
+  - Module 14 · Cost Optimisation:
+    - cost-optimisation-on-gcp.md
+  - Module 15 · Production GCP:
+    - production-gcp-landing-zones.md
+  - Module 16 · Troubleshooting:
+    - troubleshooting-gcp.md

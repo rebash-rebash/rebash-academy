@@ -48,7 +48,7 @@ This page tracks what is published on REBASH Academy and what comes next.
 - [x] AWS core services tutorials (20-tutorial track published)
 - [x] CI/CD tutorials (GitLab CI published under `/gitlab/`; Jenkins and GitHub Actions planned later)
 - [ ] Azure fundamentals
-- [ ] Google Cloud Platform guides
+- [x] Google Cloud Platform guides (syllabus frozen v1.0 · 16 modules published)
 - [ ] Monitoring and observability stack
 
 These sections keep stable URLs under `/azure/`, `/gcp/`, `/gitlab/`, and `/monitoring/`. AWS is live under `/aws/`. CI/CD is live under `/gitlab/`. Follow the [DevOps Engineer path](learning-paths/devops-engineer.md) for order.

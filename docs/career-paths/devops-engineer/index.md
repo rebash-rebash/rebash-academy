@@ -66,7 +66,7 @@ Mid to senior DevOps roles — treat as directional guidance only.
 - **Ansible** — planned
 - [AWS](../../aws/) — ready · 20 tutorials
 - [Azure](../../azure/) — stub / coming soon
-- [Google Cloud](../../gcp/) — stub / coming soon
+- [Google Cloud](../../gcp/) — complete (16 modules)
 
 ### Phase 4 · Pipelines
 

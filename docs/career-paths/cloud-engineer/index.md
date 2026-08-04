@@ -62,7 +62,7 @@ Mid-level cloud roles — treat as directional guidance only.
 ### Multi-cloud
 
 - [Azure](../../azure/) — stub / coming soon
-- [Google Cloud](../../gcp/) — stub / coming soon
+- [Google Cloud](../../gcp/) — complete (16 modules)
 
 
 ## Skills gained

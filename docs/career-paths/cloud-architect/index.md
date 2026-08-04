@@ -50,7 +50,7 @@ Senior / principal architecture roles — treat as directional guidance only.
 
 - [AWS](../../aws/) — ready · 20 tutorials
 - [Azure](../../azure/) — stub / coming soon
-- [Google Cloud](../../gcp/) — stub / coming soon
+- [Google Cloud](../../gcp/) — complete (16 modules)
 
 ### IaC & Delivery
 
