@@ -1,8 +1,8 @@
 ---
 title: "CI/CD on AWS"
-description: "Build production Continuous Integration and Continuous Delivery (CI/CD) on Amazon Web Services — CodePipeline, CodeBuild, CodeDeploy, GitHub Actions and GitLab CI with OIDC, and blue/green deployments."
-difficulty: advanced
-estimated_time: "55–75 min"
+description: "CI/CD what continuous integration and delivery mean, CodeBuild and CodePipeline — then create a real build, prove SUCCEEDED, and tear it down."
+difficulty: beginner
+estimated_time: "65–80 min"
 technology: aws
 category: aws
 module: "Module 12 · CI/CD"
@@ -14,391 +14,533 @@ career_paths:
   - devsecops-engineer
 skills:
   - aws
-  - cicd
-  - codepipeline
   - codebuild
+  - codepipeline
   - codedeploy
-  - oidc
+  - cicd
+  - github-actions
 prerequisites:
   - aws/infrastructure-as-code-on-aws
+  - aws/aws-security-services
 next:
   - aws/cost-optimisation-on-aws
 related:
-  - github-actions/index
-  - gitlab/index
-  - docker/docker-in-ci-cd-pipelines
+  - aws/infrastructure-as-code-on-aws
+  - gitlab/cicd
+  - github/cicd
 labs: []
 projects: []
 interview: interview/aws
 certifications:
   - AWS Certified DevOps Engineer – Professional
-  - AWS Certified Solutions Architect – Associate
+  - AWS Certified Developer – Associate
 tags:
   - aws
   - cicd
-  - codepipeline
   - codebuild
+  - codepipeline
   - codedeploy
-  - blue-green
+  - beginners
 author: Shaik Basha
-last_updated: "2026-07-31"
+last_updated: "2026-08-03"
 comments: false
 ---
-
 
 # CI/CD on AWS
 
 ## Overview
 
+**CI/CD** (Continuous Integration / Continuous Delivery) is one of the most common terms on DevOps job descriptions. This module explains what it means on AWS and how to prove a small pipeline step with CodeBuild.
 
+**Problem in plain English:** Ten developers push code to Git every day. If someone manually copies files to a server each time, mistakes happen, releases take weekends, and nobody can prove tests ran before production.
 
+**What CI/CD means:**
 
+| Term | Plain English |
+|------|---------------|
+| **CI — Continuous Integration** | Every code change automatically builds and runs tests |
+| **CD — Continuous Delivery / Deployment** | Passing builds automatically (or with approval) reach staging or production |
 
+**Analogy:** A factory assembly line. Code enters at one end; automated steps compile, test, and package it; only good packages ship to customers.
 
-Design a secure delivery path on Amazon Web Services (AWS): source → build → test → deploy, using native Code* services and/or GitHub Actions / GitLab CI with OpenID Connect (OIDC), including a blue/green promotion pattern.
+**AWS terms:** **AWS CodeBuild** runs the build steps. **AWS CodePipeline** connects source → build → test → deploy stages. **AWS CodeDeploy** rolls out to servers or containers. Many teams also use **GitHub Actions** with short-lived AWS login (OIDC) instead of stored passwords.
 
-Continuous Integration and Continuous Delivery (CI/CD) turns every merge into a reviewed, automated path to an environment. On AWS you can stay native (**CodePipeline**, **CodeBuild**, **CodeDeploy**) or keep the pipeline in GitHub/GitLab and assume temporary AWS roles via **OIDC** — preferred over long-lived access keys. Deployments should be reversible: rolling, canary, or **blue/green**.
+This is **Tutorial 1** in **Module 12: CI/CD** of the REBASH Academy **AWS for Cloud & DevOps Engineers** series. You will create a real **CodeBuild** project, start a build, prove `SUCCEEDED`, and delete it — the same building block inside full pipelines that deploy Module 11 CloudFormation templates.
 
-!!! warning "Cost hygiene"
-    CodeBuild minutes, artefact stores, and idle load balancers used for blue/green all cost money. Tear down lab pipelines and target groups when finished.
-
-This is a core tutorial in **Module 12 · CI/CD** of the REBASH Academy **AWS for Cloud & DevOps Engineers** series — written for Cloud, DevOps, Platform, and SRE engineers.
+!!! warning "Cost"
+    CodeBuild charges per build minute. This lab uses `BUILD_GENERAL1_SMALL` with a seconds-long buildspec. Delete the project when finished.
 
 ## Prerequisites
 
+- [Infrastructure as Code on AWS](infrastructure-as-code-on-aws.md) *(Module 11)* — templates should flow through pipelines
+- [AWS Fundamentals](aws-fundamentals-and-global-infrastructure.md) — CLI and IAM basics
+- AWS CLI v2 with `codebuild`, `iam`, and `logs` permissions
 
-
-
-
-
-- [Infrastructure as Code on AWS](infrastructure-as-code-on-aws.md)
-- Comfort with Git branches, pull/merge requests, and Docker image builds
-- Optional: [GitHub Actions](../github-actions/index.md) or [GitLab CI](../gitlab/index.md)
+You do **not** need prior Jenkins, GitLab CI, or CodePipeline experience.
 
 ## Learning Objectives
 
-
-
-
-
-
 By the end of this tutorial, you will be able to:
 
-- [ ] Map CodePipeline stages to build, test, and deploy  
-- [ ] Configure CodeBuild with a buildspec and least-privilege role  
-- [ ] Contrast CodeDeploy strategies (rolling vs blue/green)  
-- [ ] Prefer OIDC from GitHub/GitLab over static AWS keys  
-- [ ] Sketch a promotion path that is auditable and reversible
+- [ ] Explain CI and CD to a non-technical friend
+- [ ] Describe what CodeBuild, CodePipeline, and CodeDeploy each do
+- [ ] Create and run a CodeBuild project with observable build logs
+- [ ] Contrast blue/green and canary deployments in plain English
+- [ ] Explain why GitHub OIDC beats long-lived AWS keys in repositories
+- [ ] Answer fresher interview questions on pipeline security and rollback
 
 ## Architecture
 
+Source (CodeCommit, GitHub, S3) triggers CodePipeline. Build stage invokes CodeBuild (buildspec phases). Test/deploy stages call CodeDeploy, CloudFormation, or ECS/EKS actions. CloudWatch Logs capture build output; IAM roles isolate permissions per stage.
 
-
-
-
-
-This topic’s control points and relationships are shown below.
-
-![CI/CD pipeline on AWS](../assets/excalidraw/aws-cicd-pipeline.svg)
+![CI/CD on AWS — source, build, test, deploy](../assets/excalidraw/aws-cicd-pipeline.svg)
 
 ## Theory
 
+### The problem (before tool names)
 
+**Problem:** Manual releases are slow, error-prone, and unauditable. “It worked on my laptop” is not evidence for production.
 
+**Analogy:** Checking exam answer sheets by hand for 500 students vs running them through a scanner that flags errors automatically.
 
+**AWS approach:** Automate build and deploy with services that integrate with IAM and logging.
 
+### What CI/CD is on AWS
 
-### What it is
+| Service | Plain job | Tiny example |
+|---------|-----------|--------------|
+| **CodePipeline** | Orchestrator — connects stages | “When Git push → run build → deploy to test” |
+| **CodeBuild** | Runs commands in a container | `npm test`, `docker build`, `terraform plan` |
+| **CodeDeploy** | Rolls out to EC2, Lambda, or ECS | Swap old servers for new ones safely |
+| **GitHub Actions + OIDC** | External CI that logs into AWS briefly | Workflow assumes IAM role without stored keys |
 
-**CI/CD on AWS** is the automated path from version control to a running workload. Native building blocks: **CodePipeline** (stages and approvals), **CodeBuild** (`buildspec.yml` in managed containers), **CodeDeploy** (EC2/ASG, ECS, or Lambda with traffic shifting). Artefacts land in S3, ECR, or CodeArtifact. Many teams keep YAML in **GitHub Actions** or **GitLab CI** and deploy to AWS via **OIDC** (short-lived IAM roles — no static keys).
+**Interview one-liner:** “CI proves every change builds and tests; CD moves proven artefacts to environments with automation instead of manual SSH.”
 
-**Rolling** replaces gradually; **canary** shifts a percentage first; **blue/green** runs two environments (or target groups / task sets / Lambda versions) and flips traffic after health checks — rollback reverses the flip without rebuilding.
+### The buildspec — where work happens
 
-| Piece | Role |
-|-------|------|
-| CodePipeline | Orchestration and approvals |
-| CodeBuild | Build / test / package |
-| CodeDeploy | Traffic-aware deploy |
-| GitHub / GitLab + OIDC | External CI → AWS |
-| Blue/green · rolling · canary | Cutover patterns |
+CodeBuild reads a **buildspec** YAML file with phases:
 
-### Why it matters
+```yaml
+version: 0.2
+phases:
+  install:    # install tools
+  pre_build:  # login to registry, lint
+  build:      # compile, test
+  post_build: # push image, deploy
+```
 
-Platform and SRE teams own change failure rate and recovery time. Manual deploy does not scale or audit. DevSecOps needs lint, tests, image scan, and IaC plan *before* production credentials. Native Code* keeps artefacts in AWS; GitHub/GitLab keep developer experience in the PR. Separate **build** and **deploy** roles; never let fork PRs assume production.
+**Tiny example:** A buildspec might run `echo hello`, then `npm test`, then upload a zip to S3. The lab uses a minimal buildspec to prove the engine works before you connect GitHub.
 
-### How it works
+### Deployment styles (depth for interviews)
 
-1. **Source** — push or MR triggers CodePipeline, Actions, or GitLab.
-2. **Build** — produce an immutable artefact (digest, zip, template).
-3. **Gates** — SAST, dependency/container scans; fail closed on CRITICAL for prod.
-4. **Deploy** — CodeDeploy or IaC/`kubectl` with a scoped role.
-5. **Validate** — health checks, synthetics, alarms; roll back on failure.
-6. **Promote** — same digest staging → production (build once, promote many).
+| Pattern | Plain meaning | When teams use it |
+|---------|---------------|-------------------|
+| **In-place** | Update same servers | Simple; brief downtime possible |
+| **Blue/green** | New fleet ready; switch traffic | Fast rollback — keep old fleet warm |
+| **Canary** | Send 5% traffic to new version first | Risky releases; watch metrics |
+| **Rolling** | Replace servers in batches | Common with Auto Scaling groups |
 
-### Concept deep dive
+**Analogy for blue/green:** Open a new shop next door, verify it works, then redirect customers — old shop stays as backup.
 
-**CodePipeline.** Stages (Source → Build → Deploy → Approve); artefacts via S3; encrypt buckets; least-privilege pipeline role; manual approval before prod.
+### GitHub Actions OIDC (no passwords in Git)
 
-**CodeBuild.** Phases in `buildspec.yml`; size compute; cache layers to cut minutes. Build role: ECR push/pull and secret read — not broad IAM mutation. Privileged mode for Docker-in-Docker is a trust boundary.
+**Problem:** Storing `AWS_ACCESS_KEY_ID` in GitHub Secrets leaks easily via forks and logs.
 
-**CodeDeploy.** A **deployment group** targets ASG, ECS, or Lambda. Appspec/hooks (`BeforeAllowTraffic`, `AfterAllowTraffic`) validate before full traffic. Rolling needs less spare capacity; blue/green needs a second environment and a balancer that can shift traffic.
+**Solution:** GitHub mints a short-lived token; AWS trusts it and gives temporary credentials via `sts:AssumeRoleWithWebIdentity`.
 
-**GitHub Actions with AWS.** `aws-actions/configure-aws-credentials` + OIDC provider for `token.actions.githubusercontent.com`; trust `sub` limited to org/repo/ref or environment; pin actions by SHA; use Environments for prod approval.
-
-**GitLab CI with AWS.** JWT/OIDC → IAM role in `before_script`; protected branches and environment scopes. Static keys on self-managed runners are an anti-pattern — prefer OIDC or instance profiles.
-
-**Blue/green, rolling, canary.** Rolling: simple, mixed versions briefly, slower undo. Blue/green: clean cutover, fast traffic flip, higher temporary cost. Canary: 5–10% traffic, watch errors/latency, then proceed — CodeDeploy and weighted target groups support this. Plan **expand/contract** data migrations; compute blue/green does not undo a breaking schema.
-
-### Key concepts and comparisons
-
-| Term | Meaning |
-|------|---------|
-| Artefact | Immutable build output |
-| Build vs deploy role | Separate least privilege |
-| Deployment group | CodeDeploy target set |
-| Traffic shifting | Weighted cutover |
-| OIDC provider | GitHub/GitLab issuer → IAM role |
-
-| Pattern | When to use |
-|---------|-------------|
-| Rolling | Simple ASG/ECS; mixed versions OK |
-| Canary | Observe a percentage first |
-| Blue/green | Instant reversible cutover |
-| Approval gate | Human check before prod |
+**Interview one-liner:** “We use OIDC so CI gets temporary credentials scoped to one repo and branch — no long-lived keys in Git.”
 
 ### Common pitfalls
 
-- Long-lived AWS keys in CI instead of OIDC.
-- Rebuilding “for production” instead of promoting a digest.
-- Privileged builds that can change IAM/org policies.
-- Blue/green without draining or a DB migration plan.
-- No buildspec caching → burned CodeBuild minutes.
-- OIDC trust for `*` repos or all branches.
-- Assuming CodePipeline is mandatory — GitHub/GitLab + OIDC is valid.
+- **Over-privileged CodeBuild role** — scope S3 and CloudFormation to specific ARNs.
+- **Secrets in buildspec plain text** — use Secrets Manager or Parameter Store.
+- **Missing CloudWatch Logs permission** — build fails with empty logs; hard to debug.
+- **Deploying every branch to production** — use branch filters and manual approvals.
 
 ## Hands-on Lab
 
-
-
-!!! warning "Cost and account safety"
-    Use a sandbox account. Prefer read-only calls. Destroy anything you create before leaving the lab.
-
 ### Objective
 
-Use read-only AWS APIs to inventory and verify aspects of **CI/CD on AWS** in a sandbox account.
+Create an IAM role and CodeBuild project with a trivial inline buildspec, start a build, prove `SUCCEEDED` from CLI output, then delete the project and role.
 
 ### Prerequisites
 
-- AWS CLI v2
-- Credentials for a **sandbox** account (SSO or short-lived keys)
+| Tool | Notes |
+|------|--------|
+| AWS CLI v2 | `iam:*`, `codebuild:*`, `logs:*` (scoped) |
+| jq | Parse build status |
+| Sandbox account | No shared CI infrastructure |
 
 ### Lab environment
 
-Workspace: `~/rebash-aws/module-12`
-
-Prefer `describe`/`list`/`get` APIs. Create resources only with an explicit destroy path.
-
 ``` {.bash .ra-terminal title="Terminal"}
 mkdir -p ~/rebash-aws/module-12 && cd ~/rebash-aws/module-12
+export AWS_REGION="${AWS_REGION:-eu-west-2}"
+export AWS_PAGER=""
+export PROJECT_NAME="rebash-m12-build"
+export ROLE_NAME="rebash-m12-codebuild-role"
+ACCOUNT_ID=$(aws sts get-caller-identity --query Account --output text)
+echo "$ACCOUNT_ID" | tee account-id.txt
 ```
 
 ### Real-world scenario
 
-Security asks for evidence that **CI/CD on AWS** is configured correctly. You gather CLI proof without click-ops drift.
+DevOps receives: **“Prove our AWS account can run CodeBuild before we connect GitHub OIDC and deploy Module 11 CloudFormation stacks.”** You stand up the smallest working build, capture logs, and document teardown — standard platform onboarding work.
 
 ### Step-by-step tasks
 
-#### Task 1 – Prove caller identity
+#### Task 1 – Create CodeBuild trust and service role
 
-Every AWS change starts by knowing which account/role you are.
+Create `codebuild-trust.json`:
+
+```json title="codebuild-trust.json"
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Effect": "Allow",
+      "Principal": {
+        "Service": "codebuild.amazonaws.com"
+      },
+      "Action": "sts:AssumeRole"
+    }
+  ]
+}
+```
+
+Create `codebuild-policy.json`:
+
+```json title="codebuild-policy.json"
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Effect": "Allow",
+      "Action": [
+        "logs:CreateLogGroup",
+        "logs:CreateLogStream",
+        "logs:PutLogEvents"
+      ],
+      "Resource": "*"
+    },
+    {
+      "Effect": "Allow",
+      "Action": [
+        "codebuild:CreateReportGroup",
+        "codebuild:CreateReport",
+        "codebuild:UpdateReport",
+        "codebuild:BatchPutTestCases",
+        "codebuild:BatchPutCodeCoverages"
+      ],
+      "Resource": "*"
+    }
+  ]
+}
+```
 
 ``` {.bash .ra-terminal title="Terminal"}
-aws sts get-caller-identity | tee identity.json
-aws configure get region || true
-test -s identity.json
+cd ~/rebash-aws/module-12
+aws iam create-role --role-name "$ROLE_NAME" \
+  --assume-role-policy-document file://codebuild-trust.json \
+  --tags Key=Name,Value=rebash-m12-codebuild | tee role-create.json
+aws iam put-role-policy --role-name "$ROLE_NAME" \
+  --policy-name rebash-m12-codebuild-inline \
+  --policy-document file://codebuild-policy.json
+ROLE_ARN=$(aws iam get-role --role-name "$ROLE_NAME" --query Role.Arn --output text)
+echo "$ROLE_ARN" | tee role-arn.txt
+test -n "$ROLE_ARN"
+sleep 10
 ```
 
 !!! example "Expected output"
-    JSON includes Account, Arn, and UserId.
+    `role-arn.txt` contains `arn:aws:iam::…:role/rebash-m12-codebuild-role`.
 
 
-#### Task 2 – Collect topic signals
+#### Task 2 – Create CodeBuild project with inline buildspec
 
-Inventory the service surface related to this module.
+Create `buildspec-inline.txt` (human-readable reference):
+
+```yaml title="buildspec-inline.txt"
+version: 0.2
+phases:
+  build:
+    commands:
+      - echo "REBASH Module 12 — hello build"
+      - echo "BUILD_ID=$CODEBUILD_BUILD_ID"
+      - echo "REGION=$AWS_DEFAULT_REGION"
+      - uname -a
+```
+
+Create `codebuild-project.json` (replace `ROLE_ARN_PLACEHOLDER` after Task 1):
+
+```json title="codebuild-project.json"
+{
+  "name": "rebash-m12-build",
+  "source": {
+    "type": "NO_SOURCE",
+    "buildspec": "version: 0.2\nphases:\n  build:\n    commands:\n      - echo \"REBASH Module 12 — hello build\"\n      - echo \"BUILD_ID=$CODEBUILD_BUILD_ID\"\n      - echo \"REGION=$AWS_DEFAULT_REGION\"\n      - uname -a\n"
+  },
+  "artifacts": {
+    "type": "NO_ARTIFACTS"
+  },
+  "environment": {
+    "type": "LINUX_CONTAINER",
+    "image": "aws/codebuild/standard:7.0",
+    "computeType": "BUILD_GENERAL1_SMALL",
+    "privilegedMode": false
+  },
+  "serviceRole": "ROLE_ARN_PLACEHOLDER",
+  "tags": [
+    {
+      "key": "Name",
+      "value": "rebash-m12"
+    }
+  ]
+}
+```
 
 ``` {.bash .ra-terminal title="Terminal"}
-aws ec2 describe-vpcs --query 'Vpcs[].{Id:VpcId,Cidr:CidrBlock}' --output table 2>/dev/null | tee vpcs.txt || true
-aws iam get-account-summary 2>/dev/null | tee iam-summary.json || true
-tee notes.txt << 'EOF'
-Record which APIs apply to this topic and any NotAuthorized errors for follow-up.
-EOF
-cat notes.txt
+cd ~/rebash-aws/module-12
+ROLE_ARN=$(cat role-arn.txt)
+sed "s|ROLE_ARN_PLACEHOLDER|${ROLE_ARN}|" codebuild-project.json > codebuild-project-ready.json
+aws codebuild create-project --cli-input-json file://codebuild-project-ready.json | tee project-create.json
+aws codebuild batch-get-projects --names "$PROJECT_NAME" \
+  --query 'projects[0].name' --output text | tee project-name.txt
+grep -q "$PROJECT_NAME" project-name.txt
 ```
 
 !!! example "Expected output"
-    Evidence files created even if some APIs are denied.
+    `project-create.json` shows `"name": "rebash-m12-build"`; `batch-get-projects` returns the project name.
+
+
+#### Task 3 – Start build and prove SUCCEEDED
+
+``` {.bash .ra-terminal title="Terminal"}
+cd ~/rebash-aws/module-12
+BUILD_ID=$(aws codebuild start-build --project-name "$PROJECT_NAME" \
+  --query 'build.id' --output text)
+echo "$BUILD_ID" | tee build-id.txt
+aws codebuild batch-get-builds --ids "$BUILD_ID" \
+  --query 'builds[0].buildStatus' --output text | tee status-initial.txt
+for i in $(seq 1 30); do
+  STATUS=$(aws codebuild batch-get-builds --ids "$BUILD_ID" \
+    --query 'builds[0].buildStatus' --output text)
+  echo "attempt $i status=$STATUS"
+  case "$STATUS" in
+    SUCCEEDED|FAILED|FAULT|STOPPED|TIMED_OUT) break ;;
+  esac
+  sleep 10
+done
+echo "$STATUS" | tee build-status.txt
+test "$STATUS" = "SUCCEEDED"
+aws codebuild batch-get-builds --ids "$BUILD_ID" --output json | tee build.json
+```
+
+!!! example "Expected output"
+    `build-status.txt` contains `SUCCEEDED`; `build.json` shows phases completed and log group/stream ARNs.
+
+
+#### Task 4 – Fetch build log snippet (optional failure drill)
+
+Revoke logs permission temporarily to see failure mode, then restore:
+
+``` {.bash .ra-terminal title="Terminal"}
+cd ~/rebash-aws/module-12
+aws iam delete-role-policy --role-name "$ROLE_NAME" --policy-name rebash-m12-codebuild-inline
+BUILD_FAIL=$(aws codebuild start-build --project-name "$PROJECT_NAME" \
+  --query 'build.id' --output text)
+sleep 45
+aws codebuild batch-get-builds --ids "$BUILD_FAIL" \
+  --query 'builds[0].buildStatus' --output text | tee status-broken.txt
+aws iam put-role-policy --role-name "$ROLE_NAME" \
+  --policy-name rebash-m12-codebuild-inline \
+  --policy-document file://codebuild-policy.json
+BUILD_OK=$(aws codebuild start-build --project-name "$PROJECT_NAME" \
+  --query 'build.id' --output text)
+for i in $(seq 1 20); do
+  STATUS=$(aws codebuild batch-get-builds --ids "$BUILD_OK" \
+    --query 'builds[0].buildStatus' --output text)
+  [[ "$STATUS" == "SUCCEEDED" || "$STATUS" == "FAILED" ]] && break
+  sleep 10
+done
+echo "$STATUS" | tee restore-status.txt
+test "$STATUS" = "SUCCEEDED"
+echo "break-fix build OK" | tee breakfix.txt
+```
+
+!!! example "Expected output"
+    `status-broken.txt` may show `FAILED`; after policy restore, `restore-status.txt` is `SUCCEEDED`.
 
 
 ### Validation steps
 
-- [ ] identity.json present
-- [ ] No long-lived keys committed to the repo
+- [ ] IAM role created with CodeBuild trust
+- [ ] Project exists and build reached `SUCCEEDED`
+- [ ] Build JSON shows log streams
+- [ ] Break/fix demonstrated IAM logs permission impact
+- [ ] No pipeline left running after cleanup
 
 ### Common errors and fixes
 
 | Error | Cause | Fix |
 |-------|-------|-----|
-| Unable to locate credentials | No profile/SSO | Run `aws sso login` or export sandbox keys |
-| AccessDenied | Least privilege | Use a role that can read the service — or document the deny |
-| UnauthorizedOperation | Wrong region/account | Check `AWS_REGION` and account id |
+| `InvalidInputException` on buildspec | Escaping in inline string | Use `buildspec-inline.txt` and careful escaping, or S3 source |
+| `AccessDenied` on StartBuild | Missing `codebuild:StartBuild` | Grant caller `codebuild:StartBuild` on project ARN |
+| Build `FAILED` immediately | Role missing logs permissions | Attach `codebuild-policy.json` |
+| `Cannot delete role` | Project still references role | Delete CodeBuild project first |
 
 ### Challenge exercise
 
-Enable a cost budget alarm in the sandbox (or document the console clicks) and screenshot/CLI-describe it.
+Create `github-oidc-trust.json` documenting a trust policy skeleton for GitHub Actions (`token.actions.githubusercontent.com`) with `StringLike` condition on `sub` for your repo. Do **not** apply if you lack org approval — keep as portfolio artefact and explain the flow in an interview answer.
+
+```json title="github-oidc-trust.json"
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Effect": "Allow",
+      "Principal": {
+        "Federated": "arn:aws:iam::ACCOUNT_ID:oidc-provider/token.actions.githubusercontent.com"
+      },
+      "Action": "sts:AssumeRoleWithWebIdentity",
+      "Condition": {
+        "StringEquals": {
+          "token.actions.githubusercontent.com:aud": "sts.amazonaws.com"
+        },
+        "StringLike": {
+          "token.actions.githubusercontent.com:sub": "repo:ORG/REPO:ref:refs/heads/main"
+        }
+      }
+    }
+  ]
+}
+```
 
 ### Learning outcomes
 
-- Authenticated safely
-- Captured read-only evidence
-- Avoided unmanaged spend
+- You created a working CodeBuild project without external Git connectivity
+- You proved build status via CLI — the same check pipelines gate on
+- You saw IAM break/fix impact on builds
+- You have OIDC trust skeleton for GitHub → AWS stories
 
 ### Cleanup
 
-```bash
-# Revoke/lab-expire any temporary keys you exported
-# Do not leave EC2/ELB/NAT running
+``` {.bash .ra-terminal title="Terminal"}
+cd ~/rebash-aws/module-12
+aws codebuild delete-project --name "$PROJECT_NAME"
+aws iam delete-role-policy --role-name "$ROLE_NAME" --policy-name rebash-m12-codebuild-inline
+aws iam delete-role --role-name "$ROLE_NAME"
+echo "cleanup complete" | tee cleanup-log.txt
 ```
 
 ## Validation
 
-
-
-
-
-
-- [ ] Lab commands run under `~/rebash-aws/module-12/`
-- [ ] You can explain each Theory section in your own words
-- [ ] You used modern tooling where it applies to this topic
-- [ ] You can describe one production failure mode for this topic
+- [ ] Build project created and deleted cleanly
+- [ ] Can explain CodePipeline vs standalone CodeBuild in plain English
+- [ ] Can describe blue/green vs canary at a high level
+- [ ] Understands OIDC advantage over long-lived AWS keys in CI
 
 ## Code Walkthrough
 
-
-
-
-
-
-Production practice for **CI/CD on AWS** always combines:
-
-1. Inspect before you change (status, plan, logs, dry-run)
-2. Prefer reversible, documented changes (Git, IaC, drop-ins, version pins)
-3. Capture evidence (command output, pipeline logs) for handovers
-4. Prefer current tools and APIs over legacy shortcuts
-5. Least privilege — escalate credentials only when required
-
-Keep runbooks short enough to follow under pressure. Automate checks; keep humans for judgement.
+1. **Service role per project** — never share one mega-role across all builds.
+2. **NO_SOURCE + inline buildspec** — fastest lab path; production uses GitHub/CodeCommit source.
+3. **Poll build status** — mirrors pipeline stage completion checks.
+4. **Logs permissions** — first thing to verify when builds fail mysteriously.
+5. **Delete project before role** — IAM dependency order matters.
 
 ## Security Considerations
 
-
-
-
-
-
-- Treat credentials and tokens for aws as privileged — never commit them
-- Prefer short-lived auth (OIDC, roles, SSO) over long-lived keys
-- Validate blast radius before apply/deploy/delete operations
-- Restrict who can approve production changes
-- Collect audit logs; limit who can read sensitive traces
+- Restrict `codebuild:StartBuild` to approved principals and project ARNs.
+- Run sensitive builds in VPC with private subnets and restricted security groups.
+- Encrypt artefacts with KMS; deny unencrypted S3 uploads via bucket policy.
+- Use OIDC subject conditions — never `repo:*` wildcards in production trust policies.
+- Scan buildspec and Docker images for secrets and CVEs in CI.
 
 ## Common Mistakes
 
+!!! warning "Admin keys in GitHub Secrets"
+    Long-lived `AWS_ACCESS_KEY_ID` in repos leak via forks and logs. Prefer OIDC with scoped roles.
 
+!!! warning "Production deploy without approval"
+    Manual approval stages and environment branch filters prevent accidental main→prod pushes.
 
-
-
-
-!!! warning "Long-lived AWS keys in CI instead of OIDC."
-    Validate assumptions against the Theory section and official docs before changing production.
-
-!!! warning "Rebuilding “for production” instead of promoting a digest."
-    Lab shortcuts (open security groups, admin roles, skip approvals) must not ship unchanged.
-
-!!! warning "Changing production without a rollback path"
-    Always know how to revert (previous artefact, prior release, state rollback, DNS failback).
+!!! warning "Ignoring build caches"
+    Stale Docker layer caches can hide dependency vulnerabilities — pin images and bust cache on security updates.
 
 ## Best Practices
 
-
-
-
-
-
-- Encode CI/CD on AWS changes as code and review them in pull requests
-- Pin versions (images, modules, actions, provider plugins)
-- Separate environments with clear promotion gates
-- Alert on symptoms with runbooks attached
-- Destroy lab resources; tag everything with owner and expiry where possible
+- Separate pipelines/roles per environment
+- Store buildspec in Git when using source providers — inline only for bootstrap
+- Emit SBOM and scan results as build artefacts
+- Use CodeDeploy lifecycle hooks for draining connections
+- Tag builds with commit SHA for traceability
 
 ## Troubleshooting
 
-
-
-
-
-
 | Symptom | Likely cause | Fix |
 |---------|--------------|-----|
-| Auth / permission denied | Wrong identity, policy, or scope | Check caller identity, roles, and least-privilege policies |
-| Timeout / no route | Network, DNS, security group, or endpoint | Trace path, DNS, and allow-lists before retrying |
-| Drift / unexpected plan | Manual change or wrong state/workspace | Reconcile desired vs actual; avoid click-ops on managed resources |
-| Pipeline/job red | Flaky step, cache, or missing secret | Read failing step logs; bisect recent workflow/config changes |
-| Cost spike | Idle load balancer, NAT, oversized compute | Inventory billable resources; stop/delete labs promptly |
+| Build stuck `IN_PROGRESS` | VPC ENI/subnet issue | Check VPC config or use default networking |
+| Empty CloudWatch logs | Role missing `logs:*` | Fix IAM policy on service role |
+| Pipeline source fails | OAuth/token expired | Reconnect GitHub/CodeCommit credential |
+| Deploy rollback loop | Health check too aggressive | Tune grace period and alarm thresholds |
 
 ## Summary
 
-
-
-
-
-
-**CI/CD on AWS** is essential for Cloud and DevOps engineers working with aws. Practise the lab until the inspection and change path is muscle memory, then continue the track.
+**CI/CD** automates build, test, and deploy so teams ship smaller changes with evidence. CodeBuild runs the work; CodePipeline orchestrates stages; CodeDeploy handles rollout styles; GitHub OIDC is the modern keyless path. You proved a real build end-to-end — next, control **cost** before pipelines multiply resources.
 
 ## Interview Questions
 
+**1. What is CI/CD in simple words?**
 
+??? success "Reveal answer"
+    Continuous Integration means every code change automatically builds and runs tests. Continuous Delivery/Deployment means passing builds are promoted to environments through automation instead of manual copying. Together they reduce release risk and provide audit evidence.
 
+**2. What does CodeBuild execute and where is it defined?**
 
-1. CodePipeline versus GitHub Actions deploying to AWS?
-2. Why OIDC to IAM roles beats AKIA keys in CI?
-3. What should a deploy role be allowed to do?
-4. How do you promote across accounts?
-5. Artifact integrity between stages?
+??? success "Reveal answer"
+    CodeBuild runs a buildspec YAML with phases (`install`, `pre_build`, `build`, `post_build`) on a managed container image. The buildspec can live in the repository, in S3, or inline for simple projects. Environment variables, secrets, and artefacts are configured on the project.
 
-!!! tip "Sample answer — question 2"
-    Check the pipeline stage error, the deploy role’s trust policy, and whether the commit SHA matches the artifact.
+**3. Blue/green vs canary on CodeDeploy?**
 
-!!! tip "Sample answer — question 4"
-    Scope roles per environment/account and forbid long-lived keys in CI.
+??? success "Reveal answer"
+    Blue/green provisions a parallel fleet (green), shifts traffic when healthy, keeps blue for fast rollback. Canary shifts a small traffic percentage first, monitoring metrics before full cutover. Blue/green is simpler; canary reduces blast radius on risky releases.
+
+**4. How does GitHub Actions OIDC replace access keys?**
+
+??? success "Reveal answer"
+    GitHub issues a short-lived JWT for the workflow. AWS IAM trusts the GitHub OIDC provider and allows `sts:AssumeRoleWithWebIdentity` when `aud` and `sub` conditions match the repo and branch. The workflow receives temporary credentials — no static keys in secrets.
+
+**5. Where do pipeline artefacts live and how are they protected?**
+
+??? success "Reveal answer"
+    CodePipeline stores artefact zips in S3 buckets (often customer-managed with KMS encryption). IAM policies scope bucket access per pipeline role. Cross-account artefacts use bucket policies and KMS grants carefully.
+
+**6. What breaks a CodeBuild project that “used to work”?**
+
+??? success "Reveal answer"
+    Common causes: expired GitHub token, IAM policy shrink, VPC/subnet drift, Docker image pull failures, buildspec path change, or insufficient CloudWatch Logs permissions. `batch-get-builds` and log streams are the first triage step.
+
+**7. When would you attach CodeBuild to a VPC?**
+
+??? success "Reveal answer"
+    When builds must reach private resources — internal npm mirrors, RDS databases, on-premises endpoints via Direct Connect. Trade-off: ENI creation time, NAT/endpoints for outbound internet, and security group design.
+
+**8. How does CI deploy Module 11 CloudFormation safely?**
+
+??? success "Reveal answer"
+    Pipeline runs cfn-lint/validate, creates a change set, runs tests, requires approval, executes deploy with a scoped role (`cloudformation:*` on stack prefix, `iam:PassRole` conditioned), and emits stack outputs as artefacts. Rollback uses previous template version or stack auto-rollback.
 
 ## Related Tutorials
 
-
-
-
-
-
-- [Course overview](index.md)
-- [Cost Optimisation on AWS](cost-optimisation-on-aws.md)
+- Previous: [Infrastructure as Code on AWS](infrastructure-as-code-on-aws.md) *(Module 11)*
+- Next: [Cost Optimisation on AWS](cost-optimisation-on-aws.md) *(Module 13)*
+- [AWS Security Services](aws-security-services.md) *(Module 10)*
+- Course index: [AWS for Cloud & DevOps Engineers](index.md)
 
 ## References
 
-
-
-
-
-
-- [AWS CodePipeline](https://docs.aws.amazon.com/codepipeline/latest/userguide/welcome.html)  
-- [AWS CodeBuild](https://docs.aws.amazon.com/codebuild/latest/userguide/welcome.html)  
-- [AWS CodeDeploy](https://docs.aws.amazon.com/codedeploy/latest/userguide/welcome.html)  
-- [Configuring OpenID Connect in Amazon Web Services](https://docs.github.com/en/actions/deployment/security-hardening-your-deployments/configuring-openid-connect-in-amazon-web-services)
+- [AWS CodeBuild User Guide](https://docs.aws.amazon.com/codebuild/latest/userguide/)
+- [AWS CodePipeline User Guide](https://docs.aws.amazon.com/codepipeline/latest/userguide/)
+- [AWS CodeDeploy User Guide](https://docs.aws.amazon.com/codedeploy/latest/userguide/)
+- [GitHub OIDC with AWS](https://docs.github.com/en/actions/deployment/security-hardening-your-deployments/configuring-openid-connect-in-amazon-web-services)
+- [CodeBuild buildspec reference](https://docs.aws.amazon.com/codebuild/latest/userguide/build-spec-ref.html)

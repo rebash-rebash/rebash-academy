@@ -8,6 +8,8 @@ nav:
     - Boot Process and Filesystem Hierarchy: boot-process-and-filesystem-hierarchy.md
   - "Module 2 · Command Line":
     - Essential Linux Commands: essential-linux-commands.md
+    - Environment Variables and Shell Config: environment-variables-shell-config.md
+    - Shell Scripting Fundamentals: shell-scripting-fundamentals.md
   - "Module 3 · Filesystem":
     - Paths, Links, Mounts, and Inodes: filesystem-paths-links-mounts-and-inodes.md
     - Disk Usage and File Attributes: disk-usage-and-file-attributes.md

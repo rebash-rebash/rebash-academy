@@ -1,13 +1,19 @@
 ---
 title: "Permissions, ACLs, and Special Bits"
-description: "Apply chmod, chown, umask, ACLs, and special bits (sticky, SUID, SGID) on a practice Ubuntu VM with proof."
-difficulty: intermediate
-estimated_time: "50–60 min"
+description: "chmod, chown, umask, ACLs, and sticky/SUID/SGID — plain language first, then a shared-folder lab with proof."
+difficulty: beginner
+estimated_time: "55–70 min"
 author: Shaik Basha
-last_updated: "2026-08-02"
+last_updated: "2026-08-04"
 category: linux
 technology: linux
 module: "Module 4 · Users & Permissions"
+career_paths:
+  - linux-administrator
+  - devops-engineer
+  - cloud-engineer
+  - platform-engineer
+  - site-reliability-engineer
 tags:
   - linux
   - chmod
@@ -16,6 +22,7 @@ tags:
   - suid
   - sgid
   - sticky
+  - beginners
 prerequisites:
   - linux/users-groups-and-sudo
 next:
@@ -32,115 +39,165 @@ comments: false
 
 ## Overview
 
-Most “Permission denied” tickets are about **mode**, **ownership**, or **umask** — not mysterious kernel bugs. Linux file access starts with three classes: **user (owner)**, **group**, and **other**, each with read (4), write (2), and execute (1). **umask** masks default permissions when new files are created. **Access Control Lists (ACLs)** add named users or groups beyond those three classes. **Special bits** — sticky, setuid (SUID), and setgid (SGID) — change delete rules or the effective identity when a program runs.
+This error shows up constantly in Linux work:
 
-Shared deploy folders need group write without opening “other”. `/tmp` needs the sticky bit so users cannot delete each other’s files. Unexpected SUID binaries are a classic hardening finding. In this tutorial you will set modes and ownership, apply an ACL, demonstrate a sticky directory, and save proof under `~/rebash-linux/lab07`.
+**`Permission denied`**
 
-In production, wrong modes on Secure Shell (SSH) keys, application configs, or CI artefact directories break deployments and create security findings. Prefer group or ACL sharing over world-writable paths. Audit SUID/SGID regularly on jump servers and build agents.
+Most of the time it is not a mysterious kernel bug. It is **mode** (read/write/execute bits), **ownership**, **umask**, or an **Access Control List (ACL)** — plus occasionally **special bits** (sticky, SUID, SGID).
 
-This is **Tutorial 7** in **Module 4: Users & Permissions** of the REBASH Academy **Linux for Cloud & DevOps Engineers** series. It is written for Linux administrators, DevOps engineers, Site Reliability Engineering (SRE), and platform engineers.
+Linux file access starts with three classes: **user (owner)**, **group**, and **other**. Each can have **read (4)**, **write (2)**, and **execute (1)**. Directories need the execute bit to **traverse** (enter) the path. **ACLs** add named users or groups beyond those three classes. The **sticky bit** on `/tmp`-style folders stops users deleting each other’s files.
+
+This is **Tutorial 7** in **Module 4: Users & Permissions** of the REBASH Academy **Linux for Cloud & DevOps Engineers** series — practical Linux for Cloud and DevOps work.
+
+!!! warning "Lab safety"
+    Create lab users only on a **practice VM**. Requires `sudo` and the `acl` package.
 
 ## Prerequisites
 
-- [Users, Groups, and sudo](users-groups-and-sudo.md)
+- [Users, Groups, and sudo](users-groups-and-sudo.md) — you understand users, groups, and `id`
 - A **practice Ubuntu 22.04/24.04 VM** with `sudo`
-- Package `acl` for `setfacl`/`getfacl` (`sudo apt-get install -y acl` if missing)
-- You may create and delete lab users (do **not** run this on a shared production server)
+- Install ACL tools: `sudo apt-get install -y acl`
 
 ## Learning Objectives
 
 By the end of this tutorial, you will be able to:
 
 - [ ] Set and verify POSIX modes with `chmod` and ownership with `chown`/`chgrp`
-- [ ] Explain umask and check the current umask
-- [ ] Grant a named user access with `setfacl` and prove it with `getfacl`
-- [ ] Apply the sticky bit on a shared drop directory and explain why it matters
-- [ ] Pack evidence under `~/rebash-linux/lab07`
+- [ ] Explain **umask** and check the current umask
+- [ ] Grant a named user read access with `setfacl` and prove it with `getfacl`
+- [ ] Apply the **sticky bit** on a shared drop directory and explain why it matters
+- [ ] Pack allow/deny evidence under `~/rebash-linux/lab07`
 
 ## Architecture
 
-Permissions sit between identity (UID/GID) and the filesystem. Mode bits, ACLs, and special bits decide whether a process may read, write, traverse, or delete.
+Permissions sit between identity (UID/GID from the previous tutorial) and the filesystem. Mode bits, ACLs, and special bits decide whether a process may read, write, traverse, or delete.
 
-![Architecture diagram for Permissions, ACLs, and Special Bits](../assets/excalidraw/linux-permission-model.svg)
+![Linux permission model — mode, ACL, special bits](../assets/excalidraw/linux-permission-model.svg)
 
 ## Theory
 
-### What it is
+### The problem (before any jargon)
 
-POSIX permissions use three classes. Directories need the execute bit to **traverse** (enter) the path. ACLs add entries such as `user:alice:rwx`. Sticky (`+t`) on a directory restricts unlinking to the file owner (plus root). SUID on an executable runs it as the file owner; SGID runs as the file group. SGID on a directory often makes new files inherit the directory’s group.
+Your team shares a deploy folder. A junior runs `chmod 777 shared` so “everyone can write”. Security rejects the change ticket. Auditors flag **world-writable** paths. Meanwhile a contractor needs **read-only** access but is not in the deploy group.
+
+POSIX **owner/group/other** is not enough. You need **groups**, **ACLs**, and sometimes the **sticky bit** — not `777`.
+
+### POSIX permissions — simple words
+
+**Analogy:** A file is a room. **Owner** holds the main key. **Group** members share a team key. **Other** is everyone else in the building.
+
+| Class | Letter in `ls -l` | Meaning |
+|-------|-------------------|---------|
+| **User (u)** | First `rwx` triplet | Owner |
+| **Group (g)** | Second triplet | Members of file’s group |
+| **Other (o)** | Third triplet | Everyone else |
+
+| Bit | Value | On a **file** | On a **directory** |
+|-----|-------|---------------|---------------------|
+| **r** | 4 | Read content | List names |
+| **w** | 2 | Change content | Create/delete names |
+| **x** | 1 | Run as program | **Traverse** (enter/search) |
+
+**What you can say in an interview:** “Without execute on every directory in the path, you get Permission denied even if the file mode looks open.”
+
+**Tiny example:**
 
 ``` {.bash .ra-terminal title="Terminal"}
-ls -l
-stat -c '%A %U %G %n' file
-umask
-getfacl file
+ls -l /etc/passwd
+chmod 640 secret.conf
+stat -c '%A %U %G %n' secret.conf
 ```
 
-### Why it matters
+### umask — default mask for new files
 
-“Permission denied” is rarely mysterious once you inspect mode, owner, group, ACL, and Mandatory Access Control (MAC) such as AppArmor or SELinux. Shared project trees need group write without `o+rwx`. World-writable deploy directories are a common audit failure. Wrong modes on `~/.ssh` (`700`/`600`) lock people out of servers.
+**umask** subtracts bits from the default when you create files. Common **`0022`** yields **`644`** files and **`755`** directories.
 
-### How it works
+**What you can say in an interview:** “Loose umask on CI can create world-readable artefacts; tight umask can break the next job — set it deliberately and verify with `stat`.”
 
-`chmod` sets mode (octal `640` or symbolic `u=rw,g=r,o=`). Capital `X` in symbolic mode sets execute only on directories or on files that already had execute. `chown`/`chgrp` change ownership (often requiring root). umask `0022` typically yields `644` files and `755` directories; `0027` is tighter. `setfacl`/`getfacl` manage ACLs; default ACLs on directories apply to new children.
+**Tiny example:**
 
-| Mechanism | Granularity | Typical use |
-|-----------|-------------|-------------|
-| POSIX mode | owner/group/other | Default access model |
-| ACL | named users/groups | Shared dirs without widening other |
-| Sticky | directory delete rules | `/tmp`, shared drop boxes |
-| SGID directory | group inheritance | Team project trees |
-| SUID/SGID file | effective UID/GID at run | Rare; prefer capabilities |
+``` {.bash .ra-terminal title="Terminal"}
+umask
+touch newfile.txt
+stat -c '%A %n' newfile.txt
+```
 
-| umask | Typical file / dir |
-|-------|---------------------|
-| `0022` | `644` / `755` |
-| `0002` | `664` / `775` (group-friendly) |
-| `0027` | `640` / `750` (tighter) |
+### ACLs — named users beyond owner/group/other
+
+**Analogy:** ACLs are **guest badges** with their own rules — “contractor may read, not write” — without opening the building to **other**.
+
+| Command | Plain meaning |
+|---------|----------------|
+| **`getfacl path`** | Show ACL + POSIX mode |
+| **`setfacl -m u:alice:r-- path`** | Give alice read |
+| **`setfacl -d -m …`** | Default ACL for new children |
+
+**What you can say in an interview:** “I use ACLs when two users need different access but should not share a primary group — and I prove with `getfacl` plus login-as tests.”
+
+**Tiny example:**
+
+``` {.bash .ra-terminal title="Terminal"}
+getfacl /etc/passwd
+```
+
+### Special bits — sticky, SUID, SGID
+
+| Bit | On directories | On executables |
+|-----|----------------|----------------|
+| **Sticky (+t)** | Only owner/root can delete others’ files (`/tmp`) | Rare |
+| **SGID (+s on dir)** | New files inherit directory’s group | Runs with file’s group |
+| **SUID (+s on file)** | N/A | Runs with file **owner’s** UID — audit carefully |
+
+**What you can say in an interview:** “Sticky on shared drop dirs; SGID on team project trees; SUID on random binaries is a security finding.”
+
+**Tiny example:**
+
+``` {.bash .ra-terminal title="Terminal"}
+ls -ld /tmp
+```
 
 ### Common pitfalls
 
-- Widening `o+rwx` instead of using a group or ACL.
-- Forgetting execute on directories — path lookup fails.
-- Leaving unexpected SUID/SGID binaries after experiments.
-- Applying ACLs on filesystems mounted without ACL support.
-- Changing ownership of SSH keys and locking yourself out.
+- Fixing access with `chmod 777` instead of group or ACL
+- Forgetting **directory execute** — path lookup fails
+- Leaving test SUID binaries on a server
+- ACLs on filesystems mounted without ACL support
+- Changing ownership of SSH keys and locking yourself out (`~/.ssh` should be `700`/`600`)
 
 ## Hands-on Lab
 
 ### Objective
 
-On a practice Ubuntu VM, create a shared project directory with correct group modes, grant an ACL to a lab user, demonstrate sticky-bit delete behaviour, and save evidence under `~/rebash-linux/lab07`.
+Create a shared project directory with correct group modes, grant a contractor **read-only ACL**, demonstrate **sticky-bit** delete protection, and save evidence under `~/rebash-linux/lab07`.
 
 ### Prerequisites
 
-- Ubuntu with `sudo`, `chmod`, `chown`, and the `acl` package
-- Ability to create temporary users
+| Item | Notes |
+|------|--------|
+| Ubuntu with sudo | `chmod`, `chown`, `acl` package |
+| Lab users | Created in Task 1 |
 
 ### Lab environment
-
-Workspace: `~/rebash-linux/lab07`
 
 ``` {.bash .ra-terminal title="Terminal"}
 mkdir -p ~/rebash-linux/lab07 && cd ~/rebash-linux/lab07
 set -euo pipefail
-sudo apt-get update -qq
 sudo DEBIAN_FRONTEND=noninteractive apt-get install -y acl
 umask | tee umask-default.txt
 whoami | tee lab-admin.txt
 ```
 
 !!! example "Expected output"
-    `acl` tools available; `umask-default.txt` shows a value such as `0022`.
+    `acl` tools available. `umask-default.txt` shows a value such as `0022`.
 
 
 ### Real-world scenario
 
-Your team shares a deploy drop folder on a practice VM. Security wants: (1) group-writable for deployers, (2) one contractor with read-only ACL access, (3) sticky bit so people cannot delete each other’s artefacts. You implement and prove it before the change ticket closes.
+Security ticket: shared deploy folder on a practice VM — group-writable for deployers, read-only ACL for a contractor, sticky bit so users cannot delete each other’s drop files. Prove allow **and** deny before closing the ticket.
 
 ### Step-by-step tasks
 
-#### Task 1 – Group, users, and POSIX modes
+#### Task 1 – Group, users, and POSIX modes (SGID directory)
 
 ``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-linux/lab07
@@ -163,13 +220,14 @@ sudo -u rebash-dev bash -c 'echo deploy-artefact > /opt/rebash-perm/shared/app.t
 sudo -u rebash-dev bash -c 'ls -l /opt/rebash-perm/shared/app.txt' | tee ls-shared-file.txt
 stat -c '%A %U %G %n' /opt/rebash-perm/shared /opt/rebash-perm/shared/app.txt | tee stat-shared.txt
 getent group rebash-perm | tee group-rebash-perm.txt
+grep 's' stat-shared.txt
 ```
 
 !!! example "Expected output"
-    directory mode shows `rwx` for group and `s` in the group-execute position (SGID); `app.txt` group is `rebash-perm`.
+    Directory mode shows SGID (`s` in group execute). `app.txt` group is `rebash-perm`. `rebash-dev` could create the file.
 
 
-#### Task 2 – ACL for the contractor (read-only)
+#### Task 2 – ACL for contractor (read allow, write deny)
 
 ``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-linux/lab07
@@ -189,7 +247,7 @@ grep -F 'user:rebash-contractor:r' getfacl-shared.txt
 ```
 
 !!! example "Expected output"
-    `getfacl` lists the contractor ACL; read succeeds; write is denied.
+    Contractor read succeeds. Write fails with Permission denied. `getfacl` shows contractor entries.
 
 
 #### Task 3 – Sticky drop box and evidence pack
@@ -222,17 +280,18 @@ tar -czf permissions-evidence.tgz \
   getfacl-shared.txt contractor-read.txt contractor-write-deny.txt \
   sticky-deny.txt ls-drop.txt
 ls -l permissions-evidence.tgz | tee evidence-ls.txt
+test -s permissions-evidence.tgz
 ```
 
 !!! example "Expected output"
-    sticky delete is denied; `ls-drop.txt` shows `t` in the mode; evidence archive exists.
+    Sticky delete of another user’s file is **denied**. `ls-drop.txt` shows `t` in mode. Archive exists.
 
 
 ### Validation steps
 
-- [ ] `/opt/rebash-perm/shared` is mode `2770` (or equivalent `drwxrws---`)
-- [ ] `getfacl` shows `rebash-contractor` with read on the file
-- [ ] Contractor write fails; sticky delete fails for the other user
+- [ ] `/opt/rebash-perm/shared` is mode `2770` (or `drwxrws---`)
+- [ ] `getfacl` shows contractor read on the file
+- [ ] Contractor write fails; sticky delete fails
 - [ ] `permissions-evidence.tgz` exists under `~/rebash-linux/lab07`
 
 ### Common errors and fixes
@@ -240,13 +299,25 @@ ls -l permissions-evidence.tgz | tee evidence-ls.txt
 | Error | Cause | Fix |
 |-------|-------|-----|
 | `setfacl: command not found` | `acl` package missing | `sudo apt-get install -y acl` |
-| `Operation not supported` | Filesystem without ACL | Use ext4/xfs home/data disk; avoid some network mounts |
-| Contractor cannot enter directory | Missing `x` on directory ACL | `setfacl -m u:user:rx` on the directory |
-| Sticky test unexpectedly succeeds | Mode not sticky | `chmod +t` / `chmod 1770` and re-check `ls -ld` |
+| `Operation not supported` | FS without ACL | Use ext4/xfs; check mount options |
+| Contractor cannot enter dir | Missing `x` on directory ACL | `setfacl -m u:user:rx` on directory |
+| Sticky test succeeds | Mode not sticky | `chmod 1770` / `chmod +t`; re-check |
 
 ### Challenge exercise
 
-Add a **default ACL** on `/opt/rebash-perm/shared` so new files grant `rebash-contractor` read access automatically (`setfacl -d -m u:rebash-contractor:r`). Create a new file as `rebash-dev`, run `getfacl` on that file, and save output to `default-acl-proof.txt`.
+Add a **default ACL** so new files grant contractor read automatically:
+
+``` {.bash .ra-terminal title="Terminal"}
+cd ~/rebash-linux/lab07
+sudo setfacl -d -m u:rebash-contractor:r /opt/rebash-perm/shared
+sudo -u rebash-dev bash -c 'echo new-file > /opt/rebash-perm/shared/new.txt'
+sudo getfacl /opt/rebash-perm/shared/new.txt | tee default-acl-proof.txt
+grep 'user:rebash-contractor:r' default-acl-proof.txt
+```
+
+!!! example "Expected output"
+    New file inherits contractor read ACL without manual `setfacl` on each file.
+
 
 ### Learning outcomes
 
@@ -260,71 +331,67 @@ Add a **default ACL** on `/opt/rebash-perm/shared` so new files grant `rebash-co
 ``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-linux/lab07
 set -euo pipefail
-
 sudo rm -rf /opt/rebash-perm
 sudo userdel -r rebash-dev 2>/dev/null || true
 sudo userdel -r rebash-dev2 2>/dev/null || true
 sudo userdel -r rebash-contractor 2>/dev/null || true
 sudo groupdel rebash-perm 2>/dev/null || true
-# Keep permissions-evidence.tgz if you want it
 ```
 
 ## Validation
 
-- [ ] Lab finished under `~/rebash-linux/lab07/` with evidence files
-- [ ] You can explain POSIX mode vs ACL vs sticky bit
-- [ ] You know why world-writable shared dirs are a bad default
-- [ ] You can list when SUID on files is a security finding
+- [ ] Lab completed under `~/rebash-linux/lab07`
+- [ ] Can explain POSIX mode vs ACL vs sticky bit
+- [ ] Know why `chmod 777` fails security review
+- [ ] Can list when SUID on files is a finding
 
 ## Code Walkthrough
 
-Production permission work usually follows:
-
-1. **Identify** — `ls -l`, `stat`, `namei -l`, `id`
-2. **Prefer group or ACL** over `chmod o+rwx`
-3. **Prove allow and deny** for the real users
-4. **Special bits** — sticky on shared drop dirs; avoid casual SUID
-5. **Automate** modes in configuration management, not one-off SSH
+1. **`ls -l` + `stat` + `id`** — who is trying what?
+2. **`namei -l path`** — which directory denies traverse?
+3. **Prefer group (`2770`) or ACL** over `chmod o+rwx`
+4. **`getfacl` after every ACL change** — prove named entries
+5. **Allow + deny tests** as the real user — not only as root
 
 ## Security Considerations
 
-- Never make secrets world-readable (`o+r` on key material)
+- Never make secrets world-readable (`o+r` on keys)
 - Keep `~/.ssh` at `700` and private keys at `600`
-- Audit SUID/SGID binaries (`find / -perm /6000`) on hardened images
-- ACLs can hide access — always include `getfacl` in reviews
-- Sticky bit on shared directories reduces cross-user deletion attacks
+- Audit unexpected SUID/SGID binaries on hardened images
+- ACLs can hide access — include `getfacl` in reviews
+- Sticky bit reduces cross-user deletion in shared directories
 
 ## Common Mistakes
 
 !!! warning "Fixing access with `chmod 777`"
-    World-writable paths fail audits and invite tampering. **Fix:** use a group (`2770`) or a named ACL.
+    World-writable paths fail audits. **Fix:** group (`2770`) or named ACL.
 
 !!! warning "Forgetting directory execute"
-    Users can “see” a file mode but still get “Permission denied” on the path. **Fix:** ensure `x` on every directory in the path.
+    Path lookup fails even when file mode looks open. **Fix:** `x` on every directory in the path.
 
-!!! warning "Assuming ACL is optional documentation"
-    Some NAS/NFS mounts ignore ACLs. **Fix:** verify with `getfacl` after mount; test as the named user.
+!!! warning "Assuming ACL works on every mount"
+    Some network mounts ignore ACLs. **Fix:** verify with `getfacl` after mount.
 
-!!! warning "Shipping SUID binaries for convenience"
-    Any bug becomes a privilege escalation path. **Fix:** prefer capabilities, sudo allow-lists, or root helpers with narrow scope.
+!!! warning "Casual SUID binaries"
+    Bugs become privilege escalation. **Fix:** capabilities, sudo allow-lists, or narrow root helpers.
 
 ## Best Practices
 
-- Encode modes and ownership in Ansible/Puppet/cloud-init
+- Encode modes and ownership in configuration management
 - Use SGID directories for team trees; sticky for drop boxes
 - Review umask on CI runners that publish artefacts
-- Document ACL entries next to the directory purpose
-- Re-test access after user leave (remove ACLs and group membership)
+- Document ACL entries next to directory purpose
+- Remove ACLs and group membership when people leave
 
 ## Troubleshooting
 
 | Symptom | Likely cause | Fix |
 |---------|--------------|-----|
-| Permission denied | Mode/owner/path `x` missing | `namei -l`, `stat`, fix mode |
+| Permission denied | Mode/owner/path `x` | `namei -l`, `stat`, fix mode |
 | Works for one user only | Group/ACL missing | `id`, `getfacl`, `usermod -aG` |
-| New files wrong group | Directory not SGID | `chmod g+s` on the directory |
+| New files wrong group | Directory not SGID | `chmod g+s` on directory |
 | Delete others’ files in shared dir | Sticky missing | `chmod +t` |
-| ACL “ignored” | Mount options / FS type | Check `mount` options; remount with ACL |
+| ACL ignored | Mount options | Check `mount`; remount with ACL |
 
 ## Summary
 
@@ -335,48 +402,47 @@ Modes, ownership, umask, ACLs, and special bits decide **who can read, write, tr
 **1. What do the three POSIX permission classes mean, and what does execute mean on a directory?**
 
 ??? success "Reveal answer"
-    The classes are **owner**, **group**, and **other**. On files, execute means run as a program. On directories, execute means **traverse** (enter/search) that directory. Without directory `x`, you cannot reach files inside even if the file mode looks open.
+    Classes are **owner**, **group**, and **other**. On files, execute means run as a program. On directories, execute means **traverse** (enter/search). Without directory `x`, you cannot reach files inside.
 
 **2. How do ACLs help when two users need access but should not share a primary group?**
 
 ??? success "Reveal answer"
-    **ACLs** add named-user or named-group entries with `setfacl` without widening “other” or forcing a shared primary group. Prove with `getfacl` and a login/sudo-as that user. Default ACLs on directories apply to new children.
+    **ACLs** add named-user or named-group entries with `setfacl` without widening “other”. Prove with `getfacl` and tests as that user. Default ACLs on directories apply to new children.
 
 **3. What is the sticky bit for, and how do you recognise it in `ls -ld`?**
 
 ??? success "Reveal answer"
-    On a directory, sticky (`+t`) means only the **file owner** (or root) can unlink/rename files there — classic for `/tmp`. In `ls -ld`, you see a `t` or `T` in the other-execute position of the mode string (for example `drwxrwxrwt`).
+    On a directory, sticky (`+t`) means only the **file owner** (or root) can unlink/rename files there — classic for `/tmp`. In `ls -ld`, you see `t` or `T` in the other-execute position (for example `drwxrwxrwt`).
 
 **4. Why is `chmod 777` on a deploy directory a security problem?**
 
 ??? success "Reveal answer"
-    Any local user (or compromised low-privilege process) can change or replace artefacts. Prefer `2770` with a deploy group, or ACLs for specific users, and keep secrets out of that tree. Auditors flag world-writable paths quickly.
+    Any local user or compromised low-privilege process can change or replace artefacts. Prefer `2770` with a deploy group, or ACLs for specific users. Auditors flag world-writable paths quickly.
 
 **5. What is the difference between SUID on a file and SGID on a directory?**
 
 ??? success "Reveal answer"
-    **SUID on a file** runs the program with the file owner’s UID (powerful; audit carefully). **SGID on a directory** typically makes new files inherit the directory’s group, which helps team-shared trees. Do not confuse the two in interviews.
+    **SUID on a file** runs the program with the file owner’s UID — powerful; audit carefully. **SGID on a directory** typically makes new files inherit the directory’s group — useful for team-shared trees.
 
 **6. How would you debug “Permission denied” on `/opt/app/bin/start`?**
 
 ??? success "Reveal answer"
-    Check the full path with `namei -l`, then `stat`/`ls -l` on each component, `id` for the runtime user, `getfacl` if ACLs are in use, and MAC logs (AppArmor/SELinux) if modes look correct. Fix the first component that denies traverse or execute.
+    Check the full path with `namei -l`, then `stat`/`ls -l` on each component, `id` for the runtime user, `getfacl` if ACLs apply, and Mandatory Access Control logs if modes look correct.
 
 **7. How does umask affect files created by CI jobs?**
 
 ??? success "Reveal answer"
-    umask masks default permissions. A loose umask can create world-readable artefacts (secret leakage); a tight umask can make the next job unable to read outputs. Set umask deliberately in the job environment and verify with `stat` on a created file.
+    umask masks default permissions. A loose umask can create world-readable artefacts; a tight umask can block the next job. Set umask deliberately in the job environment and verify with `stat` on a created file.
 
 ## Related Tutorials
 
-- [Linux for Cloud & DevOps – Overview](index.md)
-- [Users, Groups, and sudo](users-groups-and-sudo.md) *(previous)*
-- [Text Processing with grep, sed, and awk](text-processing-grep-sed-awk.md) *(next)*
-- [Lab — Users, Groups, and Permissions](../labs/linux-users-permissions-lab.md) *(more practice)*
+- Previous: [Users, Groups, and sudo](users-groups-and-sudo.md)
+- Next: [Text Processing with grep, sed, and awk](text-processing-grep-sed-awk.md)
+- Lab: [Users, Groups, and Permissions](../labs/linux-users-permissions-lab.md)
 
 ## References
 
-- [`chmod(1)`](https://manpages.ubuntu.com/manpages/jammy/en/man1/chmod.1.html) — Ubuntu man-pages
-- [`acl(5)`](https://manpages.ubuntu.com/manpages/jammy/en/man5/acl.5.html) — Access Control Lists
-- [`setfacl(1)`](https://manpages.ubuntu.com/manpages/jammy/en/man1/setfacl.1.html) — set file ACLs
+- [`chmod(1)`](https://manpages.ubuntu.com/manpages/jammy/en/man1/chmod.1.html)
+- [`acl(5)`](https://manpages.ubuntu.com/manpages/jammy/en/man5/acl.5.html)
+- [`setfacl(1)`](https://manpages.ubuntu.com/manpages/jammy/en/man1/setfacl.1.html)
 - Track index: [Linux for Cloud & DevOps Engineers](index.md)

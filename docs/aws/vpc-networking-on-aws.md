@@ -1,8 +1,8 @@
 ---
 title: "VPC Networking on AWS"
-description: "Design Amazon Virtual Private Cloud (VPC) networks: CIDR, subnets, route tables, Internet and NAT gateways, security groups, NACLs, peering, Transit Gateway, endpoints, and Route 53 basics."
-difficulty: intermediate
-estimated_time: "55–70 min"
+description: "Amazon VPC subnets, routes, Internet Gateway, security groups — plain analogies first, then a real public VPC lab with break/fix."
+difficulty: beginner
+estimated_time: "70–85 min"
 technology: aws
 category: aws
 module: "Module 3 · Networking"
@@ -11,12 +11,10 @@ career_paths:
   - devops-engineer
   - platform-engineer
   - site-reliability-engineer
-  - devsecops-engineer
 skills:
   - vpc
-  - subnets
   - security-groups
-  - nat-gateway
+  - routing
   - vpc-endpoints
 prerequisites:
   - aws/iam-identity-access-and-organizations
@@ -24,367 +22,441 @@ prerequisites:
 next:
   - aws/compute-ec2-asg-and-load-balancing
 related:
-  - networking/index
-  - aws/iam-identity-access-and-organizations
-labs: []
+  - labs/aws-iam-vpc-triage
+  - networking/cloud-networking-vpc-and-subnets
+labs:
+  - labs/aws-iam-vpc-triage
 projects: []
 interview: interview/aws
 certifications:
+  - AWS Certified Cloud Practitioner
   - AWS Certified Solutions Architect – Associate
-  - AWS Certified Advanced Networking – Specialty
 tags:
   - aws
   - vpc
   - networking
-  - security-groups
-  - transit-gateway
+  - beginners
 author: Shaik Basha
-last_updated: "2026-07-31"
+last_updated: "2026-08-03"
 comments: false
 ---
-
 
 # VPC Networking on AWS
 
 ## Overview
 
+Your virtual computer on Amazon Web Services (AWS) needs a **network** the same way an office needs corridors and doors. Without a network path, the computer can be “running” but nobody can reach the website on it.
 
+**VPC** means **Virtual Private Cloud** — your own private network slice inside an AWS Region. This tutorial explains VPC for people who have never designed a cloud network: what a subnet is, how a route table works, what an Internet Gateway does, and how a security group acts like a firewall.
 
-
-
-
-Design a production-shaped Amazon Virtual Private Cloud (VPC): Classless Inter-Domain Routing (CIDR) plan, public and private subnets across Availability Zones (AZs), routing, Internet Gateway (IGW), Network Address Translation (NAT), security groups, network access control lists (NACLs), and when to use peering, Transit Gateway (TGW), endpoints, and Amazon Route 53.
-
-Almost every AWS workload sits in a **VPC** — your isolated network in a Region. Poor CIDR planning and “open to `0.0.0.0/0`” security groups cause outages and breaches. This module builds the mental model Cloud, DevOps, and platform engineers use daily.
+This is **Tutorial 1** in **Module 3: Networking** of the REBASH Academy **AWS for Cloud & DevOps Engineers** series — practical AWS for Cloud and DevOps work.
 
 !!! warning "Cost"
-    **NAT Gateways** and **Transit Gateway** attachments bill hourly plus data processing. Prefer **VPC endpoints** for AWS APIs from private subnets when you can. Destroy lab VPCs, NAT Gateways, and Elastic IPs before you finish. Use `--dry-run` where supported.
-
-This is a core tutorial in **Module 3 · Networking** of the REBASH Academy **AWS for Cloud & DevOps Engineers** series — written for Cloud, DevOps, Platform, and SRE engineers.
+    Do **not** create a **NAT Gateway** in this lab. It is a common surprise bill for students. We use a public subnet + Internet Gateway, and a free **S3 gateway endpoint**.
 
 ## Prerequisites
 
-
-
-
-
-
-- [IAM, Identity Access, and Organizations](iam-identity-access-and-organizations.md)
-- [Networking Fundamentals](../networking/index.md) — CIDR, routing, TCP/UDP
+- [IAM](iam-identity-access-and-organizations.md) — you can run the CLI as an allowed identity
+- [Networking fundamentals](../networking/index.md) — IP address, CIDR (for example `10.0.0.0/16`), TCP port (for example 80 for HTTP)
+- Sandbox permission for `ec2` networking APIs
 
 ## Learning Objectives
 
-
-
-
-
-
 By the end of this tutorial, you will be able to:
 
-- [ ] Plan a non-overlapping VPC CIDR and multi-AZ public/private subnet layout  
-- [ ] Explain routing with Internet Gateway, NAT Gateway, and route tables  
-- [ ] Contrast security groups and Network ACLs (NACLs)  
-- [ ] Choose VPC peering vs Transit Gateway vs VPC endpoints  
-- [ ] Place Amazon Route 53 public/private zones and health checks in the design
+- [ ] Explain VPC, subnet, route table, and Internet Gateway with an office-building analogy
+- [ ] Say what makes a subnet “public”
+- [ ] Contrast security group vs network ACL in plain English
+- [ ] Build a small public VPC with the CLI and prove the default route
+- [ ] Break and restore a route (classic interview triage skill)
+- [ ] Explain why a VPC endpoint can replace NAT for S3 access
 
 ## Architecture
 
+A VPC owns an IP address range (CIDR). Subnets are smaller ranges in one Availability Zone each. Route tables decide where packets go next. An Internet Gateway connects public subnets to the internet. Security groups filter traffic to network interfaces.
 
-
-
-
-
-This topic’s control points and relationships are shown below.
-
-![AWS VPC architecture](../assets/excalidraw/aws-vpc-architecture.svg)
+![VPC architecture — subnets, IGW, routes, security groups](../assets/excalidraw/aws-vpc-architecture.svg)
 
 ## Theory
 
+### The problem (before AWS words)
 
+You deploy a website on a virtual machine. Users report “site down”. The machine status says running. What failed?
 
+Often it is not the app — it is the **path**:
 
+- Wrong door rules (firewall)
+- Missing road to the internet (route)
+- Machine has no public address
 
+Cloud networking is learning to read that path calmly.
 
-### What it is
+### VPC — your private office floor on AWS
 
-An **Amazon Virtual Private Cloud (VPC)** is your isolated, Region-scoped virtual network on AWS. You control Internet Protocol (IP) addressing with Classless Inter-Domain Routing (CIDR) blocks, place resources in subnets across Availability Zones (AZs), and steer traffic with route tables, gateways, security controls, and optional private connectivity to other VPCs or AWS services. Almost every production workload lives inside a VPC.
+**Analogy:** The AWS Region is a city. Your **VPC** is a private office campus you rent inside that city. Outsiders cannot walk into random rooms unless you build doors and roads.
 
-### Why it matters
+**CIDR** (for example `10.42.0.0/16`) is the address range for that campus — like the set of room numbers you own. Plan so two campuses you might connect later do not use the same numbers (overlapping CIDRs block peering).
 
-Platform teams standardise multi-AZ public subnets (load balancers) and private subnets (apps, data), central egress, no public database addresses, and S3 gateway endpoints so traffic stays on the AWS network. CI/CD runners and Kubernetes nodes need predictable egress and security-group hygiene. Site Reliability Engineering (SRE) incidents often trace to missing routes, Network ACL asymmetry, or open security groups — not application code. Poor CIDR planning blocks peering later.
+### Subnets — rooms in one building (AZ)
 
-### How it works
+A **subnet** is a slice of the VPC CIDR inside **one Availability Zone** (one building).
 
-1. Choose a non-overlapping CIDR (for example `10.20.0.0/16`).  
-2. Carve per-AZ public `/24`s (load balancers), private `/24`s (apps), optional data `/24`s (no NAT).  
-3. Attach an **Internet Gateway**; public default route `0.0.0.0/0` → IGW.  
-4. Place a **NAT Gateway** per AZ for private egress; private routes → NAT.  
-5. **Security groups** allow only required ports (prefer source SGs over wide CIDRs).  
-6. Gateway endpoints for S3/DynamoDB; interface endpoints when APIs must avoid NAT.  
-7. Many VPCs → **Transit Gateway**; simple pairs → peering.  
-8. **Route 53** private zones for internal names; public zones for internet DNS.
+**Public subnet (plain meaning):** machines can reach the internet (and be reached) because:
 
-Path: client → Route 53 → public LB → private app → DB SG; egress via NAT or endpoints.
+1. The subnet’s **route table** sends `0.0.0.0/0` (everything elsewhere) to an **Internet Gateway (IGW)**
+2. The instance has a **public IP** (or Elastic IP)
 
-### Concept deep dive
+The name tag “public” alone does nothing — **routing** makes it public.
 
-- **Amazon VPC** — Logical network boundary in one Region. Resources get private IPs; internet reachability depends on gateways and routes, not on “being in AWS” alone.
-- **CIDR** — Address plan for the VPC and each subnet. Avoid overlapping on-premises or peer VPC ranges. Leave headroom; reclaiming a `/16` mid-flight is painful.
-- **Public and private subnets** — Public when the route table sends `0.0.0.0/0` to an Internet Gateway (instances may get public IPs). Private subnets have no direct IGW route; outbound IPv4 usually uses a NAT Gateway. Apps and databases stay private; load balancers sit in public subnets.
-- **Route tables** — Next hop per destination: `local`, Internet Gateway, NAT Gateway, peering, Transit Gateway, or VPC endpoint. Associate the correct table with each subnet.
-- **Internet Gateway (IGW)** — Highly available gateway for bidirectional internet traffic to public-subnet resources with public or Elastic IPs.
-- **NAT Gateway** — Managed NAT for private-subnet IPv4 egress. Bills hourly plus data processing. Use one per AZ in production to avoid an egress SPOF and reduce cross-AZ charges.
-- **Security groups** — Stateful firewalls on elastic network interfaces. Allow rules only; return traffic is tracked. Prefer other security groups as sources for tiered apps.
-- **Network ACL (NACL)** — Stateless subnet-level allow/deny. You must allow ephemeral ports for return traffic. Use Network ACLs for coarse denies; keep day-to-day controls in security groups.
-- **VPC peering** — One-to-one private link between two VPCs. Non-transitive: A↔B and B↔C does not imply A↔C. Fine for a few VPCs; painful as a mesh.
-- **Transit Gateway (TGW)** — Hub-and-spoke for many VPCs and hybrid attachments. Prefer TGW over a peering mesh as VPC count grows.
-- **VPC endpoints** — Private AWS API access without the public internet. **Gateway endpoints** (S3, DynamoDB) update route tables. **Interface endpoints** (PrivateLink) place ENIs in your subnets for most other services.
-- **Route 53** — Authoritative DNS. **Public hosted zones** answer on the internet; **private hosted zones** resolve inside associated VPCs. **Health checks** monitor endpoints and can drive DNS failover.
+**Private subnet:** no direct IGW route. Apps often sit here and go out through a NAT Gateway (costs money) or talk to AWS services through **VPC endpoints** (often cheaper for S3).
 
-### Key concepts and comparisons
+**Interview line:** “A subnet is public if its route table points `0.0.0.0/0` to an Internet Gateway and instances get public IPs — not because someone typed public in the name.”
 
-| Decision | Prefer |
-|----------|--------|
-| App servers with public IPs? | No — private subnets + load balancer |
-| Database exposure | Private subnet; security group from app tier only |
-| Many VPCs | Transit Gateway hub, not a peering mesh |
-| S3 from private subnet | Gateway endpoint before paying for NAT |
-| Firewall model | Security groups primary; Network ACL for coarse deny |
-| Internal service names | Route 53 private hosted zones |
+### Route tables — the campus map
+
+A **route table** is a list of: destination → next hop.
+
+| Destination | Typical target | Meaning |
+|-------------|----------------|---------|
+| VPC CIDR (local) | `local` | Stay inside the VPC |
+| `0.0.0.0/0` | `igw-…` | Go to the internet via IGW |
+| `0.0.0.0/0` | `nat-…` | Private subnet egress via NAT (costs) |
+| S3 prefix list | `vpce-…` | S3 via gateway endpoint |
+
+If the default route to the IGW is missing, public websites time out even when the instance is healthy.
+
+### Internet Gateway vs NAT Gateway
+
+| Device | Plain job | Student note |
+|--------|-----------|--------------|
+| **Internet Gateway** | Door between VPC and internet for public subnets | Free attachment; normal for labs |
+| **NAT Gateway** | Lets private subnets start outbound internet connections | **Hourly + data charges** — avoid in student labs |
+
+### Security groups — the door lock on the machine
+
+A **security group (SG)** is a stateful firewall attached to a network interface (the virtual network card).
+
+- You write **allow** rules (by default, deny what is not allowed for inbound)
+- **Stateful** means if you allow inbound HTTP, the response is allowed back automatically
+
+**Analogy:** The security group is the lock on the office door. The route table is whether a road exists to the building at all.
+
+### Network ACLs — the gate at the street
+
+A **network ACL (NACL)** sits on the subnet. It is **stateless** — you must allow return traffic ports explicitly. Beginners rarely need custom NACLs; misconfigured NACLs cause mysterious failures. Prefer security groups as your main tool.
+
+### VPC endpoints — private roads to AWS services
+
+If a private server must talk to **S3** (file storage), you can:
+
+1. Pay for NAT and go via the internet path, or
+2. Create a **gateway VPC endpoint for S3** — a free route that keeps S3 traffic on the AWS network
+
+**Interview line:** “For S3 from private subnets I prefer a gateway endpoint over sending that traffic through a NAT Gateway.”
+
+### Peering and Transit Gateway (awareness)
+
+- **VPC peering** connects two VPCs (not transitive: A–B and B–C does not mean A–C)
+- **Transit Gateway** is a hub when you have many VPCs
+
+Know the names; you will not build TGW in this student lab.
 
 ### Common pitfalls
 
-- Exhausting a `/16` because teams carved huge `/20`s without a plan  
-- Single NAT Gateway in one AZ (egress SPOF and cross-AZ charges)  
-- Security group `0.0.0.0/0` on SSH/RDP or database ports  
-- Expecting VPC peering to be transitive  
-- Forgetting Network ACL ephemeral ports on return traffic (stateless)  
-- Leaving lab NAT Gateways running overnight  
-- Treating Route 53 health checks as a substitute for multi-AZ application design
+- Opening SSH `0.0.0.0/0` on port 22 to the world
+- Creating NAT “because the diagram had one” and getting a bill
+- Forgetting `MapPublicIpOnLaunch` then wondering why there is no public IP
+- Overlapping `10.0.0.0/16` everywhere so accounts can never peer
 
 ## Hands-on Lab
 
-
-
-!!! warning "Cost and account safety"
-    Use a sandbox account. Prefer read-only calls. Destroy anything you create before leaving the lab.
-
 ### Objective
 
-Use read-only AWS APIs to inventory and verify aspects of **VPC Networking on AWS** in a sandbox account.
+Build VPC `10.42.0.0/16` with one public subnet, IGW, route, and security group; prove routes; delete the default route (break); restore it; add an S3 gateway endpoint; clean up.
 
 ### Prerequisites
 
-- AWS CLI v2
-- Credentials for a **sandbox** account (SSO or short-lived keys)
+| Tool | Notes |
+|------|--------|
+| AWS CLI v2 | Working identity from Module 1 |
+| jq | Recommended |
 
 ### Lab environment
 
-Workspace: `~/rebash-aws/module-03`
-
-Prefer `describe`/`list`/`get` APIs. Create resources only with an explicit destroy path.
-
 ``` {.bash .ra-terminal title="Terminal"}
 mkdir -p ~/rebash-aws/module-03 && cd ~/rebash-aws/module-03
+export AWS_REGION="${AWS_REGION:-eu-west-2}"
+export AWS_PAGER=""
+aws sts get-caller-identity --output table
 ```
 
 ### Real-world scenario
 
-Security asks for evidence that **VPC Networking on AWS** is configured correctly. You gather CLI proof without click-ops drift.
+Platform asks for a cheap **scratch network** for learning — no NAT. You deliver a public subnet path, prove you can spot a missing internet route, and add an S3 endpoint so later private workloads can reach buckets without NAT.
 
 ### Step-by-step tasks
 
-#### Task 1 – Prove caller identity
-
-Every AWS change starts by knowing which account/role you are.
+#### Task 1 – Create VPC, subnet, IGW, routes
 
 ``` {.bash .ra-terminal title="Terminal"}
-aws sts get-caller-identity | tee identity.json
-aws configure get region || true
-test -s identity.json
+cd ~/rebash-aws/module-03
+VPC_ID=$(aws ec2 create-vpc --cidr-block 10.42.0.0/16 --tag-specifications \
+  'ResourceType=vpc,Tags=[{Key=Name,Value=rebash-m03-vpc}]' \
+  --query Vpc.VpcId --output text)
+echo "$VPC_ID" | tee vpc-id.txt
+aws ec2 modify-vpc-attribute --vpc-id "$VPC_ID" --enable-dns-support
+aws ec2 modify-vpc-attribute --vpc-id "$VPC_ID" --enable-dns-hostnames
+AZ=$(aws ec2 describe-availability-zones --query 'AvailabilityZones[0].ZoneName' --output text)
+echo "Using AZ $AZ"
+SUBNET_ID=$(aws ec2 create-subnet --vpc-id "$VPC_ID" --cidr-block 10.42.1.0/24 \
+  --availability-zone "$AZ" \
+  --tag-specifications 'ResourceType=subnet,Tags=[{Key=Name,Value=rebash-m03-public}]' \
+  --query Subnet.SubnetId --output text)
+echo "$SUBNET_ID" | tee subnet-id.txt
+aws ec2 modify-subnet-attribute --subnet-id "$SUBNET_ID" --map-public-ip-on-launch
+IGW_ID=$(aws ec2 create-internet-gateway --tag-specifications \
+  'ResourceType=internet-gateway,Tags=[{Key=Name,Value=rebash-m03-igw}]' \
+  --query InternetGateway.InternetGatewayId --output text)
+echo "$IGW_ID" | tee igw-id.txt
+aws ec2 attach-internet-gateway --internet-gateway-id "$IGW_ID" --vpc-id "$VPC_ID"
+RTB_ID=$(aws ec2 create-route-table --vpc-id "$VPC_ID" --tag-specifications \
+  'ResourceType=route-table,Tags=[{Key=Name,Value=rebash-m03-public-rt}]' \
+  --query RouteTable.RouteTableId --output text)
+echo "$RTB_ID" | tee rtb-id.txt
+aws ec2 create-route --route-table-id "$RTB_ID" --destination-cidr-block 0.0.0.0/0 \
+  --gateway-id "$IGW_ID"
+aws ec2 associate-route-table --route-table-id "$RTB_ID" --subnet-id "$SUBNET_ID" \
+  | tee assoc.json
 ```
 
 !!! example "Expected output"
-    JSON includes Account, Arn, and UserId.
+    ID files created; route to `0.0.0.0/0` via IGW succeeds.
 
 
-#### Task 2 – Collect topic signals
-
-Inventory the service surface related to this module.
+#### Task 2 – Security group + evidence
 
 ``` {.bash .ra-terminal title="Terminal"}
-aws ec2 describe-vpcs --query 'Vpcs[].{Id:VpcId,Cidr:CidrBlock}' --output table 2>/dev/null | tee vpcs.txt || true
-aws iam get-account-summary 2>/dev/null | tee iam-summary.json || true
-tee notes.txt << 'EOF'
-Record which APIs apply to this topic and any NotAuthorized errors for follow-up.
-EOF
-cat notes.txt
+cd ~/rebash-aws/module-03
+VPC_ID=$(cat vpc-id.txt)
+SG_ID=$(aws ec2 create-security-group --vpc-id "$VPC_ID" \
+  --group-name rebash-m03-sg --description "Student module-03 SG" \
+  --query GroupId --output text)
+echo "$SG_ID" | tee sg-id.txt
+aws ec2 describe-route-tables --route-table-ids "$(cat rtb-id.txt)" --output json | tee routes.json
+aws ec2 describe-security-groups --group-ids "$SG_ID" --output json | tee sg.json
+jq -e '.RouteTables[0].Routes[] | select(.GatewayId!=null)' routes.json
+echo "vpc path evidence OK" | tee evidence.txt
 ```
 
 !!! example "Expected output"
-    Evidence files created even if some APIs are denied.
+    `routes.json` shows a route whose gateway is your IGW.
+
+
+#### Task 3 – Break the internet route, then fix it
+
+``` {.bash .ra-terminal title="Terminal"}
+cd ~/rebash-aws/module-03
+RTB_ID=$(cat rtb-id.txt)
+IGW_ID=$(cat igw-id.txt)
+aws ec2 delete-route --route-table-id "$RTB_ID" --destination-cidr-block 0.0.0.0/0
+aws ec2 describe-route-tables --route-table-ids "$RTB_ID" \
+  --query 'RouteTables[0].Routes' --output json | tee routes-broken.json
+echo "Broken on purpose — no default route to IGW"
+aws ec2 create-route --route-table-id "$RTB_ID" --destination-cidr-block 0.0.0.0/0 \
+  --gateway-id "$IGW_ID"
+aws ec2 describe-route-tables --route-table-ids "$RTB_ID" \
+  --query 'RouteTables[0].Routes' --output json | tee routes-fixed.json
+grep -q "$(cat igw-id.txt)" routes-fixed.json
+echo "break-fix route OK" | tee breakfix.txt
+```
+
+!!! example "Expected output"
+    Broken file lacks IGW default route; fixed file has it again.
+
+
+#### Task 4 – S3 gateway endpoint
+
+``` {.bash .ra-terminal title="Terminal"}
+cd ~/rebash-aws/module-03
+VPC_ID=$(cat vpc-id.txt)
+RTB_ID=$(cat rtb-id.txt)
+aws ec2 create-vpc-endpoint --vpc-id "$VPC_ID" --service-name "com.amazonaws.${AWS_REGION}.s3" \
+  --route-table-ids "$RTB_ID" --tag-specifications \
+  'ResourceType=vpc-endpoint,Tags=[{Key=Name,Value=rebash-m03-s3}]' \
+  | tee s3-endpoint.json
+jq -r '.VpcEndpoint.VpcEndpointId' s3-endpoint.json | tee vpce-id.txt
+test -s vpce-id.txt
+```
+
+!!! example "Expected output"
+    `vpce-id.txt` contains `vpce-…`.
 
 
 ### Validation steps
 
-- [ ] identity.json present
-- [ ] No long-lived keys committed to the repo
+- [ ] Can draw VPC → subnet → route → IGW on paper
+- [ ] Break/fix evidence files exist
+- [ ] S3 endpoint created
+- [ ] No NAT Gateway created
 
 ### Common errors and fixes
 
-| Error | Cause | Fix |
-|-------|-------|-----|
-| Unable to locate credentials | No profile/SSO | Run `aws sso login` or export sandbox keys |
-| AccessDenied | Least privilege | Use a role that can read the service — or document the deny |
-| UnauthorizedOperation | Wrong region/account | Check `AWS_REGION` and account id |
+| Error | Meaning | Fix |
+|-------|---------|-----|
+| InvalidSubnet.Conflict | CIDR already used | Choose another block |
+| DependencyViolation on delete | Resources still attached | Delete endpoint/SG/subnet before VPC |
+| Endpoint error | Wrong Region in service name | Use `com.amazonaws.<your-region>.s3` |
 
 ### Challenge exercise
 
-Enable a cost budget alarm in the sandbox (or document the console clicks) and screenshot/CLI-describe it.
+Create `cleanup-vpc.sh`:
+
+```bash title="cleanup-vpc.sh"
+#!/usr/bin/env bash
+set -euo pipefail
+cd ~/rebash-aws/module-03
+VPCE=$(cat vpce-id.txt 2>/dev/null || true)
+SG=$(cat sg-id.txt 2>/dev/null || true)
+RTB=$(cat rtb-id.txt 2>/dev/null || true)
+SUBNET=$(cat subnet-id.txt 2>/dev/null || true)
+IGW=$(cat igw-id.txt 2>/dev/null || true)
+VPC=$(cat vpc-id.txt 2>/dev/null || true)
+[[ -n "${VPCE:-}" ]] && aws ec2 delete-vpc-endpoints --vpc-endpoint-ids "$VPCE" || true
+sleep 5
+[[ -n "${SG:-}" ]] && aws ec2 delete-security-group --group-id "$SG" || true
+if [[ -n "${RTB:-}" && -n "${SUBNET:-}" ]]; then
+  ASSOC=$(aws ec2 describe-route-tables --route-table-ids "$RTB" \
+    --query 'RouteTables[0].Associations[?SubnetId!=`null`].RouteTableAssociationId' --output text)
+  [[ -n "$ASSOC" ]] && aws ec2 disassociate-route-table --association-id "$ASSOC" || true
+  aws ec2 delete-route --route-table-id "$RTB" --destination-cidr-block 0.0.0.0/0 2>/dev/null || true
+  aws ec2 delete-route-table --route-table-id "$RTB" || true
+fi
+[[ -n "${SUBNET:-}" ]] && aws ec2 delete-subnet --subnet-id "$SUBNET" || true
+if [[ -n "${IGW:-}" && -n "${VPC:-}" ]]; then
+  aws ec2 detach-internet-gateway --internet-gateway-id "$IGW" --vpc-id "$VPC" || true
+  aws ec2 delete-internet-gateway --internet-gateway-id "$IGW" || true
+fi
+[[ -n "${VPC:-}" ]] && aws ec2 delete-vpc --vpc-id "$VPC" || true
+echo "cleanup done"
+```
+
+``` {.bash .ra-terminal title="Terminal"}
+cd ~/rebash-aws/module-03
+chmod +x cleanup-vpc.sh
+test -x cleanup-vpc.sh
+```
 
 ### Learning outcomes
 
-- Authenticated safely
-- Captured read-only evidence
-- Avoided unmanaged spend
+- You built a real VPC path without paying for NAT
+- You practised the most common network outage: missing default route
+- You can explain SG vs route vs endpoint in an interview
 
 ### Cleanup
 
-```bash
-# Revoke/lab-expire any temporary keys you exported
-# Do not leave EC2/ELB/NAT running
+``` {.bash .ra-terminal title="Terminal"}
+cd ~/rebash-aws/module-03
+./cleanup-vpc.sh | tee cleanup-log.txt
 ```
 
 ## Validation
 
-
-
-
-
-
-- [ ] Lab commands run under `~/rebash-aws/module-03/`
-- [ ] You can explain each Theory section in your own words
-- [ ] You used modern tooling where it applies to this topic
-- [ ] You can describe one production failure mode for this topic
+- [ ] VPC destroyed cleanly
+- [ ] Can teach public vs private subnet to a classmate
+- [ ] Ready for EC2 in Module 4
 
 ## Code Walkthrough
 
-
-
-
-
-
-Production practice for **VPC Networking on AWS** always combines:
-
-1. Inspect before you change (status, plan, logs, dry-run)
-2. Prefer reversible, documented changes (Git, IaC, drop-ins, version pins)
-3. Capture evidence (command output, pipeline logs) for handovers
-4. Prefer current tools and APIs over legacy shortcuts
-5. Least privilege — escalate credentials only when required
-
-Keep runbooks short enough to follow under pressure. Automate checks; keep humans for judgement.
+1. Tags (`Name=rebash-m03-*`) make console cleanup easier.
+2. `MapPublicIpOnLaunch` matters for public lab instances later.
+3. Deleting `0.0.0.0/0` is safe chaos for learning.
+4. Gateway endpoints inject prefix routes automatically.
+5. Delete order: endpoint → SG → routes → subnet → IGW → VPC.
 
 ## Security Considerations
 
-
-
-
-
-
-- Treat credentials and tokens for aws as privileged — never commit them
-- Prefer short-lived auth (OIDC, roles, SSO) over long-lived keys
-- Validate blast radius before apply/deploy/delete operations
-- Restrict who can approve production changes
-- Collect audit logs; limit who can read sensitive traces
+- Do not leave SSH open to the world in production.
+- Prefer security groups as primary control; keep NACLs simple.
+- Use Flow Logs in real accounts when investigating traffic.
+- Separate prod and sandbox VPCs.
 
 ## Common Mistakes
 
+!!! warning "NAT by default"
+    Private subnets often need AWS APIs, not the whole internet. Prefer endpoints; add NAT only when required.
 
-
-
-
-
-!!! warning "Exhausting a `/16` because teams carved huge `/20`s without a plan  "
-    Validate assumptions against the Theory section and official docs before changing production.
-
-!!! warning "Single NAT Gateway in one AZ (egress SPOF and cross-AZ charges)  "
-    Lab shortcuts (open security groups, admin roles, skip approvals) must not ship unchanged.
-
-!!! warning "Changing production without a rollback path"
-    Always know how to revert (previous artefact, prior release, state rollback, DNS failback).
+!!! warning "Name tag is not routing"
+    Calling a subnet “public” without an IGW route does not make it public.
 
 ## Best Practices
 
-
-
-
-
-
-- Encode VPC Networking on AWS changes as code and review them in pull requests
-- Pin versions (images, modules, actions, provider plugins)
-- Separate environments with clear promotion gates
-- Alert on symptoms with runbooks attached
-- Destroy lab resources; tag everything with owner and expiry where possible
+- At least two AZs for production apps
+- Clear CIDR plan written down before peering
+- Tag owner and expiry on lab networks
+- Document the happy-path route in your notes
 
 ## Troubleshooting
 
-
-
-
-
-
 | Symptom | Likely cause | Fix |
 |---------|--------------|-----|
-| Auth / permission denied | Wrong identity, policy, or scope | Check caller identity, roles, and least-privilege policies |
-| Timeout / no route | Network, DNS, security group, or endpoint | Trace path, DNS, and allow-lists before retrying |
-| Drift / unexpected plan | Manual change or wrong state/workspace | Reconcile desired vs actual; avoid click-ops on managed resources |
-| Pipeline/job red | Flaky step, cache, or missing secret | Read failing step logs; bisect recent workflow/config changes |
-| Cost spike | Idle load balancer, NAT, oversized compute | Inventory billable resources; stop/delete labs promptly |
+| curl timeout to instance | SG / route / no public IP | Check SG inbound, RT `0.0.0.0/0`, public IP |
+| S3 fails from private subnet | No NAT/endpoint | Add gateway endpoint |
+| Peering fails | Overlapping CIDR | Redesign address plan |
 
 ## Summary
 
-
-
-
-
-
-**VPC Networking on AWS** is essential for Cloud and DevOps engineers working with aws. Practise the lab until the inspection and change path is muscle memory, then continue the track.
+A **VPC** is your private network on AWS. **Subnets**, **route tables**, **Internet Gateway**, and **security groups** decide whether users can reach your app. Practise reading the path — that skill is core for Cloud support and DevOps roles.
 
 ## Interview Questions
 
+**1. What is a VPC in simple words?**
 
+??? success "Reveal answer"
+    A Virtual Private Cloud is your private network inside an AWS Region. You choose an IP range, create subnets, and control routing and firewalls. Resources like EC2 usually sit inside a VPC.
 
+**2. What makes a subnet public?**
 
-1. Public versus private subnet routing?
-2. Security group versus NACL?
-3. Why are NAT gateways a cost surprise?
-4. How do you troubleshoot no route to host for EC2?
-5. VPC endpoints — when do they help?
+??? success "Reveal answer"
+    Its route table sends internet-bound traffic (`0.0.0.0/0`) to an Internet Gateway, and instances receive public or Elastic IPs. The subnet name alone does not make it public.
 
-!!! tip "Sample answer — question 2"
-    Trace route tables, subnet association, security groups, and NACLs in that order.
+**3. Security group vs network ACL?**
 
-!!! tip "Sample answer — question 4"
-    Avoid 0.0.0.0/0 SSH from the world. Prefer SSM Session Manager.
+??? success "Reveal answer"
+    A security group is a stateful firewall on a network interface (allow rules; return traffic handled automatically). A network ACL is a stateless firewall on a subnet (allow and deny; return ports need explicit rules). Prefer security groups for most app controls.
+
+**4. Internet Gateway vs NAT Gateway?**
+
+??? success "Reveal answer"
+    An Internet Gateway connects public subnets to the internet. A NAT Gateway lets private subnets make outbound internet connections without accepting inbound internet connections. NAT Gateways cost money; students should avoid them unless required.
+
+**5. Why did deleting the `0.0.0.0/0` route break internet access?**
+
+??? success "Reveal answer"
+    Without a default route to the Internet Gateway, packets from the subnet have no next hop to the internet. The instance can still be running; users simply cannot reach it (and it cannot reach the internet).
+
+**6. What is a VPC gateway endpoint for S3?**
+
+??? success "Reveal answer"
+    It is a route-table entry that sends S3 traffic to S3 over the AWS network without needing a NAT Gateway for that traffic. It is a common cost and security improvement for private subnets.
+
+**7. Is VPC peering transitive?**
+
+??? success "Reveal answer"
+    No. If A peers with B and B peers with C, A does not automatically reach C through B. For hub-and-spoke at scale, companies use Transit Gateway.
+
+**8. How do you triage an unreachable website on EC2?**
+
+??? success "Reveal answer"
+    Confirm identity (`get-caller-identity`), instance state, public IP, security group inbound port, route to IGW/NAT, then the application. Separate IAM `AccessDenied` on APIs from TCP timeouts on the website port.
 
 ## Related Tutorials
 
-
-
-
-
-
-- [Course overview](index.md)
-- [Compute: EC2, ASG, and Load Balancing](compute-ec2-asg-and-load-balancing.md)
+- Previous: [IAM](iam-identity-access-and-organizations.md)
+- Next: [Compute: EC2, ASG, and Load Balancing](compute-ec2-asg-and-load-balancing.md)
+- Lab: [IAM and VPC Reachability Triage](../labs/aws-iam-vpc-triage.md)
 
 ## References
 
-
-
-
-
-
-- [Amazon VPC User Guide](https://docs.aws.amazon.com/vpc/latest/userguide/what-is-amazon-vpc.html)  
-- [Security groups vs NACLs](https://docs.aws.amazon.com/vpc/latest/userguide/vpc-security-comparison.html)  
-- [VPC endpoints](https://docs.aws.amazon.com/vpc/latest/privatelink/vpc-endpoints.html)  
-- [Transit Gateway](https://docs.aws.amazon.com/vpc/latest/tgw/what-is-transit-gateway.html)
+- [VPC User Guide](https://docs.aws.amazon.com/vpc/latest/userguide/)
+- [Security groups](https://docs.aws.amazon.com/vpc/latest/userguide/vpc-security-groups.html)
+- [Gateway endpoints](https://docs.aws.amazon.com/vpc/latest/privatelink/vpce-gateway.html)

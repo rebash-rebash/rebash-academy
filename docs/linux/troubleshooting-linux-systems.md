@@ -1,18 +1,23 @@
 ---
 title: "Troubleshooting Linux Systems"
-description: "Use a repeatable Linux troubleshooting method — gather facts, narrow scope, fix forward — with a hands-on broken-service lab on Ubuntu."
+description: "Linux a repeatable troubleshoot method — gather facts, narrow scope, break and fix a systemd unit, prove recovery with evidence."
 difficulty: intermediate
-estimated_time: "50–60 min"
+estimated_time: "50–65 min"
 author: Shaik Basha
-last_updated: "2026-08-02"
+last_updated: "2026-08-04"
 category: linux
 technology: linux
 module: "Module 15 · Troubleshooting"
+career_paths:
+  - linux-administrator
+  - devops-engineer
+  - site-reliability-engineer
 tags:
   - linux
   - troubleshooting
-  - incident
+  - systemd
   - journalctl
+  - beginners
 prerequisites:
   - linux/containers-namespaces-cgroups-and-oci
 next:
@@ -28,361 +33,331 @@ comments: false
 
 ## Overview
 
-Troubleshooting is not random command typing. It is a **method**: define the symptom, gather facts, narrow the scope, make one change at a time, and prove recovery with evidence. On Linux hosts the first facts usually come from **time**, **recent changes**, **failed units**, **disk**, **memory**, **network listen ports**, and **logs**.
+Panic looks like random command typing. Good troubleshooting looks like detective work: symptom → facts → one hypothesis → one change → proof. This tutorial builds that method on a real break-and-fix lab.
 
-In Cloud and DevOps work you troubleshoot jump servers, Continuous Integration (CI) runners, Kubernetes nodes, and application VMs. The tools differ slightly; the method stays the same. In this tutorial you will practise a checklist, break and fix a small systemd unit on purpose, and save an incident-style evidence pack under `~/rebash-linux/lab23`.
+**Plain problem:** “The API is down.” Is it the app, the service unit, disk full, out of memory, or a bad deploy? Without order, you restart everything and hope — extending the outage.
 
-In production, communicate blast radius (how much is affected) in plain language, avoid untracked changes, and write down what you tried. Guessing without evidence extends outages.
+This tutorial teaches a **repeatable loop** and a lab where you **break** a systemd unit, **diagnose** with logs and status commands, **fix** it, and **prove** recovery.
 
-This is **Tutorial 23** in **Module 15: Troubleshooting** of the REBASH Academy **Linux for Cloud & DevOps Engineers** series. It is written for Linux administrators, DevOps engineers, Site Reliability Engineering (SRE), and platform engineers.
+This is **Tutorial 15** in **Module 15: Troubleshooting** of the REBASH Academy **Linux for Cloud & DevOps Engineers** series.
 
 ## Prerequisites
 
-- [Containers — Namespaces, cgroups, and OCI](containers-namespaces-cgroups-and-oci.md)
-- Comfort with [systemd Services and journalctl](systemd-services-and-journalctl.md)
-- A **practice Ubuntu 22.04/24.04 VM** with `sudo`
+- Ubuntu VM with systemd
+- [systemd Services and journalctl](systemd-services-and-journalctl.md) or equivalent comfort
+- `sudo` for unit files under `/etc/systemd/system/`
 
 ## Learning Objectives
 
 By the end of this tutorial, you will be able to:
 
-- [ ] Apply a fact-first troubleshooting checklist on a Linux host
-- [ ] Use `systemctl --failed`, `journalctl`, `df`, and `ss` as early signals
-- [ ] Diagnose a broken systemd unit from status + journal
-- [ ] Fix forward with a reversible change and prove recovery
-- [ ] Pack incident evidence under `~/rebash-linux/lab23`
+- [ ] State a troubleshooting method in plain language
+- [ ] Gather first facts: time, change, disk, memory, failed units, logs
+- [ ] Diagnose a failed **systemd** unit with `systemctl` and `journalctl`
+- [ ] Break and fix a misconfigured unit on purpose
+- [ ] Write a short incident evidence pack
+- [ ] Answer fresher interview questions on Linux troubleshooting
 
 ## Architecture
 
-Troubleshooting walks from user symptom → host signals → component logs → targeted fix → validation.
+Incidents flow from user-visible symptom down through service state, resources, and logs. Your job is narrowing which layer failed before changing production.
 
-![Architecture diagram for Troubleshooting Linux Systems](../assets/excalidraw/linux-troubleshooting.svg)
+![Linux troubleshooting flow — symptom to evidence](../assets/excalidraw/linux-troubleshooting.svg)
 
 ## Theory
 
-### What it is
+### The problem (before any jargon)
 
-A practical loop:
+3 am page: “Site unreachable.” Junior restarts nginx three times. Disk was 100% full from logs — nginx was innocent. **Gather facts first** would have shown `df -h` at 0 bytes free in thirty seconds.
 
-1. **Symptom** — what fails, since when, for whom?  
-2. **Scope** — one host, one service, or many?  
-3. **Facts** — status, logs, resources, recent changes  
-4. **Hypothesis** — one likely cause  
-5. **Action** — smallest safe change  
-6. **Proof** — symptom gone; evidence saved  
+### The method (simple words)
+
+**Analogy:** Doctor visit — symptoms, vitals, one test, one treatment, follow-up. Not random medicine.
+
+| Step | Action |
+|------|--------|
+| 1. Symptom | What fails, for whom, since when? |
+| 2. Timeline | Deploys, cron, config changes? |
+| 3. Scope | One host or many? One service? |
+| 4. Facts | `uptime`, `df -h`, `free -h`, failed units, logs |
+| 5. Hypothesis | One likely cause |
+| 6. Change | One fix at a time |
+| 7. Proof | Metric/log showing recovery |
+| 8. Document | What broke, why, how you fixed |
+
+**Interview line:** “I never restart without checking `systemctl status`, `journalctl -u`, disk, and recent changes.”
+
+### First-fact commands
 
 ``` {.bash .ra-terminal title="Terminal"}
+uptime
+df -h
+free -h
 systemctl --failed
-journalctl -xe --no-pager | tail
-df -hT
-ss -lntu
+journalctl -p err -b --no-pager | tail -30
+ss -tlnp
 ```
 
-### Why it matters
+### systemd failure patterns
 
-Unstructured troubleshooting causes longer outages and new failures. Interviewers and incident commanders look for method and evidence, not memorised trivia.
-
-### How it works
-
-| Area | First commands |
-|------|----------------|
-| Services | `systemctl status`, `--failed`, `journalctl -u` |
-| Capacity | `df -hT`, `df -i`, `free -h` |
-| CPU/I/O | `vmstat`, `iostat` |
-| Network | `ip -br a`, `ss -lntu` |
-| Auth/SSH | `journalctl -u ssh`, auth logs |
+| Signal | Tool |
+|--------|------|
+| Unit failed | `systemctl status app.service` |
+| Why exit code | `journalctl -u app.service -b` |
+| Config syntax | `systemd-analyze verify unit.file` |
+| Dependency order | `systemctl list-dependencies` |
 
 ### Common pitfalls
 
-- Changing three things at once.  
-- Rebooting as the first step without capturing logs.  
-- Fixing a symptom on the wrong host.  
-- No before/after proof in the ticket.
+- Restarting before reading logs (loses evidence)
+- Multiple changes at once (cannot tell what worked)
+- Ignoring disk/memory until late
+- No written timeline for post-incident review
 
 ## Hands-on Lab
 
 ### Objective
 
-Run a host fact pack, deploy a systemd unit that fails on purpose, diagnose it with `systemctl`/`journalctl`, fix it, prove it is active, and save evidence under `~/rebash-linux/lab23`.
+Deploy a small **systemd** app unit, **break** it with a bad `ExecStart`, **diagnose** and **fix**, prove recovery — evidence under `~/rebash-linux/lab23`.
 
 ### Prerequisites
 
-- Ubuntu with `sudo` and systemd
+| Item | Notes |
+|------|--------|
+| Ubuntu VM | systemd |
+| `sudo` | Install unit to `/etc/systemd/system/` |
 
 ### Lab environment
 
-Workspace: `~/rebash-linux/lab23`
-
 ``` {.bash .ra-terminal title="Terminal"}
-mkdir -p ~/rebash-linux/lab23 && cd ~/rebash-linux/lab23
-set -euo pipefail
-date -Is | tee incident-start.txt
-whoami | tee operator.txt
+mkdir -p ~/rebash-linux/lab23/bin && cd ~/rebash-linux/lab23
 ```
-
-!!! example "Expected output"
-    timestamp and operator files exist.
-
 
 ### Real-world scenario
 
-A practice “health writer” service should create `/var/tmp/rebash-lab23.ok` every time it runs. After a bad config change it fails. You are on call: gather host facts, find the failed unit, fix the ExecStart path, and attach proof that the unit is active again.
+Ticket: “`rebash-report.service` failed after deploy.” You have no prior context — only SSH. Follow the method and attach an evidence pack.
 
 ### Step-by-step tasks
 
-#### Task 1 – Host fact pack
+#### Task 1 – Working unit and baseline
 
-``` {.bash .ra-terminal title="Terminal"}
-cd ~/rebash-linux/lab23
+Create `report.sh`:
+
+```bash title="report.sh"
+#!/usr/bin/env bash
 set -euo pipefail
-
-uname -a | tee uname.txt
-cat /etc/os-release | tee os-release.txt
-uptime | tee uptime.txt
-df -hT | tee df.txt
-free -h | tee free.txt
-systemctl is-system-running | tee systemd-state.txt || true
-systemctl --failed --no-pager | tee failed-before.txt || true
-ss -lntu | head -n 30 | tee ss.txt
-ip -br a | tee ip.txt
+echo "$(date -Is) report OK" >> /tmp/rebash-report.log
 ```
 
-!!! example "Expected output"
-    fact files created; systemd state captured (may be `running` or `degraded`).
+Create `rebash-report.service`:
 
-
-#### Task 2 – Break a unit on purpose and diagnose
-
-``` {.bash .ra-terminal title="Terminal"}
-cd ~/rebash-linux/lab23
-set -euo pipefail
-
-# Broken unit: ExecStart points to a missing script
-sudo tee /etc/systemd/system/rebash-lab23.service >/dev/null << 'EOF'
+```ini title="rebash-report.service"
 [Unit]
-Description=REBASH lab23 health writer (intentionally broken first)
-After=network.target
+Description=REBASH lab23 report oneshot
 
 [Service]
 Type=oneshot
-ExecStart=/usr/local/bin/rebash-lab23-missing.sh
-RemainAfterExit=yes
+ExecStart=/home/USER_PLACEHOLDER/rebash-linux/lab23/bin/report.sh
 
 [Install]
 WantedBy=multi-user.target
-EOF
-
-sudo systemctl daemon-reload
-set +e
-sudo systemctl start rebash-lab23.service
-set -e
-systemctl status rebash-lab23.service --no-pager -l | tee status-broken.txt || true
-journalctl -u rebash-lab23.service -n 30 --no-pager | tee journal-broken.txt
-grep -Ei 'No such file|failed|status=' journal-broken.txt status-broken.txt
-systemctl is-failed rebash-lab23.service | tee is-failed.txt
-test "$(cat is-failed.txt)" = "failed"
 ```
-
-!!! example "Expected output"
-    unit is `failed`; journal/status mention the missing ExecStart path.
-
-
-#### Task 3 – Fix forward, prove recovery, pack evidence
 
 ``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-linux/lab23
-set -euo pipefail
-
-sudo tee /usr/local/bin/rebash-lab23-health.sh >/dev/null << 'EOF'
-#!/bin/bash
-set -euo pipefail
-date -Is > /var/tmp/rebash-lab23.ok
-EOF
-sudo chmod 755 /usr/local/bin/rebash-lab23-health.sh
-
-sudo tee /etc/systemd/system/rebash-lab23.service >/dev/null << 'EOF'
-[Unit]
-Description=REBASH lab23 health writer
-After=network.target
-
-[Service]
-Type=oneshot
-ExecStart=/usr/local/bin/rebash-lab23-health.sh
-RemainAfterExit=yes
-
-[Install]
-WantedBy=multi-user.target
-EOF
-
+mkdir -p bin
+cp report.sh bin/
+chmod +x bin/report.sh
+sed "s/USER_PLACEHOLDER/$USER/" rebash-report.service | sudo tee /etc/systemd/system/rebash-report.service >/dev/null
 sudo systemctl daemon-reload
-sudo systemctl reset-failed rebash-lab23.service || true
-sudo systemctl start rebash-lab23.service
-systemctl is-active rebash-lab23.service | tee is-active.txt
-test "$(cat is-active.txt)" = "active"
-test -f /var/tmp/rebash-lab23.ok
-cat /var/tmp/rebash-lab23.ok | tee health-ok.txt
-systemctl status rebash-lab23.service --no-pager -l | tee status-fixed.txt
-journalctl -u rebash-lab23.service -n 20 --no-pager | tee journal-fixed.txt
-
-tar -czf troubleshooting-evidence.tgz \
-  incident-start.txt operator.txt uname.txt os-release.txt \
-  uptime.txt df.txt free.txt systemd-state.txt failed-before.txt ss.txt ip.txt \
-  status-broken.txt journal-broken.txt is-failed.txt \
-  is-active.txt health-ok.txt status-fixed.txt journal-fixed.txt
-ls -l troubleshooting-evidence.tgz | tee evidence-ls.txt
+sudo systemctl enable --now rebash-report.service
+systemctl status rebash-report.service --no-pager | tee status-ok.txt
+test -f /tmp/rebash-report.log
+tail -1 /tmp/rebash-report.log | tee log-ok.txt
 ```
 
 !!! example "Expected output"
-    unit `active`; `/var/tmp/rebash-lab23.ok` exists; evidence archive not empty.
+    Unit active/exited successfully; log line with timestamp in `log-ok.txt`.
+
+
+#### Task 2 – Break (bad ExecStart), diagnose
+
+``` {.bash .ra-terminal title="Terminal"}
+cd ~/rebash-linux/lab23
+sudo sed -i 's|report.sh|report-MISSING.sh|' /etc/systemd/system/rebash-report.service
+sudo systemctl daemon-reload
+sudo systemctl start rebash-report.service 2>&1 | tee start-broken.txt || true
+systemctl status rebash-report.service --no-pager | tee status-broken.txt
+journalctl -u rebash-report.service -b --no-pager | tail -15 | tee journal-broken.txt
+grep -i 'failed\|error\|not found' journal-broken.txt status-broken.txt | tee diagnosis.txt
+```
+
+!!! example "Expected output"
+    Status shows failed state; journal mentions missing script or exit code failure.
+
+
+#### Task 3 – Fix and prove recovery
+
+``` {.bash .ra-terminal title="Terminal"}
+cd ~/rebash-linux/lab23
+sudo sed -i 's|report-MISSING.sh|report.sh|' /etc/systemd/system/rebash-report.service
+sudo systemctl daemon-reload
+sudo systemctl start rebash-report.service
+systemctl status rebash-report.service --no-pager | tee status-fixed.txt
+journalctl -u rebash-report.service -b --no-pager | tail -5 | tee journal-fixed.txt
+grep -q 'report OK' /tmp/rebash-report.log
+echo "lab23 troubleshoot OK" | tee evidence.txt
+```
+
+Create `incident-summary.md`:
+
+```markdown title="incident-summary.md"
+# Incident summary — lab23
+
+- Symptom: rebash-report.service failed after change
+- Cause: ExecStart pointed to missing script path
+- Fix: restored correct path, daemon-reload, start
+- Proof: status-fixed.txt and new log line in /tmp/rebash-report.log
+```
+
+!!! example "Expected output"
+    Service succeeds again; incident summary documents break→fix→prove.
 
 
 ### Validation steps
 
-- [ ] Fact pack files exist under `~/rebash-linux/lab23`
-- [ ] Broken state showed `failed` with a clear journal reason
-- [ ] Fixed unit is `active` and wrote the ok file
-- [ ] `troubleshooting-evidence.tgz` exists
+- [ ] Baseline success captured before break
+- [ ] Diagnosis used `systemctl` + `journalctl` (not blind restart)
+- [ ] Fix restored service with evidence files
+- [ ] `incident-summary.md` completed
 
 ### Common errors and fixes
 
 | Error | Cause | Fix |
 |-------|-------|-----|
-| `Unit not found` | Forgot `daemon-reload` | `sudo systemctl daemon-reload` |
-| Still failed after fix | Old failure cached / wrong path | `reset-failed`; verify ExecStart exists |
-| Cannot write `/etc/systemd/system` | No sudo | Use a practice VM with admin rights |
-| `is-active` is `inactive` | oneshot without RemainAfterExit | Keep `RemainAfterExit=yes` as in the lab |
+| Unit not found | Not daemon-reload | `sudo systemctl daemon-reload` |
+| Permission denied in script | Path or perms | `chmod +x`; absolute paths |
+| Empty journal | Wrong unit name | Match `-u` to unit file |
+| Fix does not apply | Forgot reload | Always reload after unit edit |
 
 ### Challenge exercise
 
-Extend the unit into a simple **restarting service** (`Type=simple`) that loops `sleep 30` after rewriting the ok file, enable it, prove `active (running)`, then stop and disable it. Save `systemctl status` to `challenge-status.txt`.
+Add `systemctl --failed` output before and after fix to `failed-units.txt`.
 
 ### Learning outcomes
 
-- Ran a repeatable host fact pack
-- Diagnosed a failed unit from status + journal
-- Fixed forward and proved recovery
-- Built an incident evidence archive
+- You followed a structured troubleshoot loop
+- You broke and fixed a real systemd unit
+- You produced interview-ready incident notes
 
 ### Cleanup
 
 ``` {.bash .ra-terminal title="Terminal"}
-cd ~/rebash-linux/lab23
-set -euo pipefail
-sudo systemctl disable --now rebash-lab23.service 2>/dev/null || true
-sudo rm -f /etc/systemd/system/rebash-lab23.service
-sudo rm -f /usr/local/bin/rebash-lab23-health.sh
+sudo systemctl disable --now rebash-report.service 2>/dev/null || true
+sudo rm -f /etc/systemd/system/rebash-report.service
 sudo systemctl daemon-reload
-sudo rm -f /var/tmp/rebash-lab23.ok
-# Keep troubleshooting-evidence.tgz if you want it
+rm -f /tmp/rebash-report.log
 ```
 
 ## Validation
 
-- [ ] Lab finished under `~/rebash-linux/lab23/` with evidence files
-- [ ] You can list the first five fact commands you run on a sick host
-- [ ] You know why rebooting first can destroy evidence
-- [ ] You can explain failed → fixed with journal proof
+- [ ] Evidence under `~/rebash-linux/lab23`
+- [ ] Can recite first-fact commands from memory
+- [ ] Ready for production hardening next
 
 ## Code Walkthrough
 
-Production incident habit:
-
-1. Announce symptom and scope  
-2. Capture facts (do not reboot yet)  
-3. Form one hypothesis  
-4. Change one thing; watch logs  
-5. Confirm user symptom cleared; attach evidence  
+1. **`Type=oneshot`** — runs script once per start; good for report/cron-style tasks.
+2. **Break via ExecStart typo** — mirrors real deploy typo incidents.
+3. **`journalctl -u -b`** — this boot’s unit story only.
+4. **One change fix** — restore path, reload, start — scientific method.
+5. **`incident-summary.md`** — habit hiring managers like in postmortems.
 
 ## Security Considerations
 
-- Prefer read-only gathering before privileged changes  
-- Do not paste secrets from logs into tickets  
-- Use break-glass admin accounts carefully (emergency admin)  
-- Record who changed what during the incident  
-- Limit SSH access while you work on internet-facing hosts  
+- Preserve logs before restart during real incidents (audit trail).
+- Do not paste production secrets into ticket evidence.
+- Verify you are on the correct host (`hostname`, `ip`) before fixes.
+- Use sudo deliberately; document privileged changes.
+- Blameless postmortems focus on process, not individuals.
 
 ## Common Mistakes
 
-!!! warning "Rebooting before collecting logs"
-    Volatile evidence disappears. **Fix:** `journalctl`, `systemctl status`, and resource snapshots first.
+!!! warning "Restart without logs"
+    Read `journalctl` first — restarting may clear transient clues (still check after too).
 
-!!! warning "Changing config and restarting three services at once"
-    You cannot tell what fixed it. **Fix:** one change, then re-check.
+!!! warning "Many changes at once"
+    One hypothesis, one change — otherwise you cannot explain what fixed it.
 
-!!! warning "Troubleshooting the wrong machine"
-    Load balancers hide targets. **Fix:** confirm hostname/IP/instance ID with the reporter.
-
-!!! warning "Declaring victory without a user-visible check"
-    Unit active ≠ feature works. **Fix:** hit the real health URL or canary file users care about.
+!!! warning "Skipping disk and memory"
+    `df -h` and `free -h` belong in the first two minutes.
 
 ## Best Practices
 
-- Keep a personal one-page checklist  
-- Prefer reversible changes and feature flags  
-- Use configuration management after emergency hotfixes  
-- Write a short timeline in the ticket  
-- Practise failure drills on lab VMs  
+- Keep a personal incident checklist (this lab)
+- Correlate deploy timestamps with `journalctl --since`
+- Use `systemd-analyze critical-chain` for boot delays
+- Communicate status to stakeholders during long incidents
+- Write timeline bullets as you go, not from memory later
 
 ## Troubleshooting
 
 | Symptom | Likely cause | Fix |
 |---------|--------------|-----|
-| Service failed | Bad ExecStart/config | status + journal; fix path/config |
-| Disk full | Logs/containers | `df`/`du`; rotate; expand |
-| No listen port | App/crash/firewall | `ss`, journal, security groups |
-| High load | CPU/I/O/memory | vmstat/iostat/free; top PIDs |
-| Intermittent failure | Race/deps/time | journals across boots; chrony |
+| Service fails immediately | Bad ExecStart, perms | status + journal; fix path |
+| Intermittent failures | OOM, disk full | `free -h`; `df -h`; dmesg OOM |
+| Works manually, not in unit | Different env/user | `User=`, `Environment=`, absolute paths |
+| All services slow | Host resource | vmstat/iostat from prior tutorial |
 
 ## Summary
 
-Method beats memory. Gather facts, narrow scope, fix forward, prove recovery, and keep evidence. Next: [Production Hardening and Performance](production-linux-hardening-and-performance.md).
+**Troubleshooting** is a method: define symptom, gather facts (`systemctl --failed`, `journalctl`, disk, memory), change one thing, prove recovery. The lab broke a **systemd** unit on purpose — the same class of failure you will see after bad deploys. Document evidence; interviews and postmortems reward this discipline.
 
 ## Interview Questions
 
-**1. What are the first five commands you run on an unfamiliar sick Linux VM?**
+**1. Describe your Linux troubleshooting approach.**
 
 ??? success "Reveal answer"
-    A solid set is: `uptime` (load/time since boot), `df -hT` (+ `df -i`), `free -h`, `systemctl --failed`, and `journalctl -xe` / `journalctl -u <service>`. Add `ss -lntu` and `ip -br a` when the symptom is network. Explain *why* each command, not only the names.
+    Clarify symptom and scope → check recent changes → gather facts (`uptime`, disk, memory, failed units, logs) → one hypothesis → one change → verify recovery → document timeline. Avoid random restarts without evidence.
 
-**2. A service is `failed`. How do you proceed?**
-
-??? success "Reveal answer"
-    `systemctl status name -l`, then `journalctl -u name --since …`, fix the root cause (path, permissions, config), `daemon-reload` if units changed, `reset-failed` if needed, start, and prove with `is-active` plus an application check. Avoid reboot as step one.
-
-**3. Why is “reboot the server” a weak first answer in interviews?**
+**2. First five commands on a slow/unreachable Linux server?**
 
 ??? success "Reveal answer"
-    Reboot may clear symptoms without understanding cause, destroy volatile evidence, and hide recurring bugs. Prefer capturing logs and status first; reboot only when justified (kernel deadlock, exhausted resources with a plan).
+    `uptime`, `df -h`, `free -h`, `systemctl --failed`, `journalctl -p err -b` (plus `ss -tlnp` if network/service). Then narrow to the failing unit or resource.
 
-**4. How do you decide if the problem is disk vs memory vs CPU?**
-
-??? success "Reveal answer"
-    Use `df`/`df -i` for disk, `free`/`vmstat` swap fields for memory, and `vmstat`/`top` runnable vs idle for CPU. High `wa` points to I/O. Correlate with the application symptom and recent changes.
-
-**5. What evidence belongs in an incident ticket?**
+**3. Service fails — how do you use journalctl?**
 
 ??? success "Reveal answer"
-    Timeline, scope, commands run, key outputs (`status`, journal snippets, `df`), changes made, and proof of recovery. Redact secrets. Before/after is stronger than “we restarted it”.
+    `systemctl status unit.service` for exit code and hint, then `journalctl -u unit.service -b` (this boot), optionally `--since` around incident time. Read ExecStart failures, permissions, missing files.
 
-**6. How does troubleshooting a Kubernetes node differ from an app VM?**
-
-??? success "Reveal answer"
-    You still use host facts (`df`, journal for kubelet/runtime), but you also check node conditions, pods on the node, and cluster events. Decide whether the failure is node-level (disk pressure) or workload-level. Do not apply random `kubectl delete` without scope.
-
-**7. What does “fix forward” mean?**
+**4. Why change one thing at a time?**
 
 ??? success "Reveal answer"
-    Make the smallest safe change that restores service (correct config, free disk, restart one unit) while recording evidence — rather than only rolling back blindly or changing many things. Rollback is still valid when it is the safest path; either way, prove the user symptom is gone.
+    Multiple simultaneous changes hide root cause and complicate rollback. Scientific method: one hypothesis, one fix, observe result — required for postmortems and safe production work.
+
+**5. Disk full — how does it break unrelated services?**
+
+??? success "Reveal answer"
+    Many services need to write logs, temp files, or sockets under `/var` or `/tmp`. No free space → writes fail → database, web server, or systemd units fail with varied errors. Always check `df -h` early.
+
+**6. Difference between restart and reload for diagnosis?**
+
+??? success "Reveal answer"
+    **Restart** stops and starts process (may clear in-memory state). **Reload** often re-reads config with less disruption. For diagnosis, read logs **before** restart to preserve failure evidence; restart after you understand or to verify fix.
+
+**7. What goes in an incident evidence pack?**
+
+??? success "Reveal answer"
+    Symptom, timeline, commands run (outputs), root cause, fix applied, proof of recovery (status, log line, metric), follow-up actions. Redact secrets. Shows operational maturity in interviews.
 
 ## Related Tutorials
 
-- [Linux for Cloud & DevOps – Overview](index.md)
-- [Containers — Namespaces, cgroups, and OCI](containers-namespaces-cgroups-and-oci.md) *(previous)*
-- [Production Hardening and Performance](production-linux-hardening-and-performance.md) *(next)*
-- [systemd Services and journalctl](systemd-services-and-journalctl.md) *(related)*
+- Previous: [Containers — Namespaces, cgroups, and OCI](containers-namespaces-cgroups-and-oci.md)
+- Next: [Production Hardening and Performance](production-linux-hardening-and-performance.md)
+- Related: [systemd Services and journalctl](systemd-services-and-journalctl.md)
 
 ## References
 
-- [`systemctl(1)`](https://www.freedesktop.org/software/systemd/man/systemctl.html) — systemd control  
-- [`journalctl(1)`](https://www.freedesktop.org/software/systemd/man/journalctl.html) — journal queries  
-- Track index: [Linux for Cloud & DevOps Engineers](index.md)
+- [systemd.service man page](https://www.freedesktop.org/software/systemd/man/latest/systemd.service.html)
+- [journalctl man page](https://www.freedesktop.org/software/systemd/man/latest/journalctl.html)
+- [Google SRE incident management](https://sre.google/sre-book/managing-incidents/)

@@ -1,10 +1,10 @@
 ---
 title: Overview
-description: "Linux for Cloud & DevOps Engineers — 16 modules and 25 tutorials covering fundamentals through production operations, containers, security, and troubleshooting."
+description: "Linux for Cloud & DevOps Engineers — learning roadmap and tutorials from fundamentals through production operations."
 difficulty: beginner
 estimated_time: "8–10 weeks"
 author: Shaik Basha
-last_updated: "2026-07-29"
+last_updated: "2026-08-04"
 category: linux
 tags:
   - linux
@@ -19,22 +19,24 @@ comments: false
 **Duration:** 8–10 weeks (≈ 45–60 hours contact time at a professional pace)
 { .ra-facts }
 
-A production-focused Linux course for administering, troubleshooting, automating, and operating Linux systems used in Cloud, DevOps, Platform Engineering, and SRE — practical engineering, not certification-only knowledge.
+Learn Linux the way operators use it: start from a clear problem, build a simple mental model, then practise with a real Hands-on Lab. Suitable if you are new to Linux or revising for Cloud and DevOps interviews.
 
-!!! tip "Course status"
-    **Track ready** — **16 modules · 25 tutorials**, labs, quiz, cheat sheet, interview prep, and projects. Start with [Linux Fundamentals — Distributions and Architecture](linux-fundamentals-distributions-and-architecture.md).
+!!! tip "How to use this course"
+    Start with [Fundamentals](linux-fundamentals-distributions-and-architecture.md), work modules in order, and prefer Ubuntu 22.04/24.04 for labs. Practise Interview Questions aloud with command evidence.
 
 ---
 
-## 1. Course overview
+## Learning roadmap
 
-### Purpose
+1. **Foundations** — what Linux is, boot, Filesystem Hierarchy Standard (FHS)
+2. **Command line** — navigation, environment, first scripts
+3. **Files & identity** — paths, permissions, users, sudo
+4. **Ops daily work** — text tools, processes, systemd, packages
+5. **Systems** — storage, networking, SSH, scheduling, logs
+6. **Secure & scale** — hardening, containers, troubleshooting, production
 
-Prepare learners to confidently operate Linux on cloud VMs, bastions, CI runners, and container hosts.
-
-### Target roles
-
-Linux Administrator · DevOps · Cloud · Platform · SRE · DevSecOps · Infrastructure Engineer
+!!! tip "Checkpoint after Module 4"
+    If you can create a user, grant least-privilege sudo, and prove chmod/ACL behaviour, you are ready for junior Linux interview questions — keep going for Cloud and DevOps depth.
 
 ### Prerequisites
 
@@ -49,25 +51,9 @@ None beyond basic computer knowledge. A disposable Ubuntu 22.04/24.04 (or Rocky/
 | `sudo` user | Not daily root |
 | Snapshots | Before storage/security labs |
 
-### Capstone outcomes
-
-Administer servers · troubleshoot production · secure environments · optimise performance · support Kubernetes nodes · operate cloud VMs · automate admin tasks · prepare hosts for DevOps/Platform work.
-
-### Certification mapping (light)
-
-| Theme | RHCSA/LFCS | RHCE/LFCE | Modules |
-|-------|:----------:|:---------:|---------|
-| Users / permissions / ACL | ● | ○ | 4 |
-| Storage / LVM | ● | ● | 8 |
-| systemd / services | ● | ● | 7 |
-| Networking / SSH | ● | ● | 9, 13 |
-| Security / firewalls / MAC | ● | ● | 13, 16 |
-| Containers host concepts | ○ | ● | 14 |
-| Troubleshooting / performance | ● | ● | 12, 15, 16 |
-
 ---
 
-## 2. Modules and tutorials
+## Modules and tutorials
 
 ### Module 1 — Linux Fundamentals
 
@@ -208,44 +194,10 @@ Administer servers · troubleshoot production · secure environments · optimise
 
 ---
 
-## 3. Practice
-
-### Labs
-
-| Lab | Focus |
-|-----|--------|
-| [Install and first boot](../labs/linux-install-and-first-boot.md) | Lab VM ready |
-| [SSH secure access](../labs/linux-ssh-secure-access.md) | Keys and SSH |
-| [Users and permissions](../labs/linux-users-permissions-lab.md) | Identity lock-down |
-| [Storage lab](../labs/linux-storage-lab.md) | Disks / mounts |
-| [Services and logs](../labs/linux-services-and-logs-lab.md) | systemd + journal |
-| [Firewall hardening](../labs/linux-firewall-hardening-lab.md) | Secure the host |
-| [Performance troubleshooting](../labs/linux-performance-troubleshooting-lab.md) | CPU/memory/service |
-| [Ops toolkit](../labs/linux-ops-toolkit-lab.md) | Monitoring + cron toolkit |
-| [Production incident triage](../labs/linux-production-incident-triage.md) | Scenario drill |
-| [App server from zero](../labs/linux-app-server-from-zero.md) | End-to-end host build |
-
-### Projects
-
-| Level | Project |
-|-------|---------|
-| Beginner | [System Information Utility](../projects/linux-system-information-utility.md) |
-| Intermediate | [Server Health Dashboard](../projects/linux-server-health-dashboard.md) |
-| Advanced | [Operations Toolkit](../projects/linux-operations-toolkit.md) |
-| Capstone | [Production Linux Operations Platform](../projects/linux-production-operations-platform.md) |
-
-### Assessment & reference
-
-- Quiz: [Linux for Cloud & DevOps Fundamentals](../quizzes/linux-for-cloud-devops-fundamentals.md) (40 Q)
-- Also: [Linux Fundamentals](../quizzes/linux-fundamentals.md) · [Linux Servers](../quizzes/linux-servers.md)
-- [Cheat sheet](../cheatsheets/linux.md) · [Interview prep](../interview/linux.md)
-
----
-
 ## Start here
 
 1. [Linux Fundamentals — Distributions and Architecture](linux-fundamentals-distributions-and-architecture.md)
-2. Lab VM with snapshots
+2. Use a disposable lab VM with snapshots
 3. After Module 11–12, deepen automation in [Shell Scripting](../shell/index.md)
 
 ## Related

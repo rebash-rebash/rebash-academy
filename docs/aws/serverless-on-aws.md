@@ -1,8 +1,8 @@
 ---
-title: "Serverless on AWS — Lambda, APIs, and Eventing"
-description: "Design event-driven serverless architectures with Lambda, API Gateway, EventBridge, SNS, SQS, and Step Functions — with cost-aware labs for Cloud DevOps."
-difficulty: intermediate
-estimated_time: "50–65 min"
+title: "Serverless on AWS"
+description: "AWS Lambda run code without servers, Function URLs, break/fix handlers — deploy Python, curl proof, logs, and full cleanup."
+difficulty: beginner
+estimated_time: "60–75 min"
 technology: aws
 category: aws
 module: "Module 8 · Serverless"
@@ -11,376 +11,487 @@ career_paths:
   - devops-engineer
   - platform-engineer
   - site-reliability-engineer
-  - devsecops-engineer
 skills:
-  - aws
   - lambda
   - api-gateway
   - eventbridge
-  - sns
-  - sqs
-  - step-functions
+  - serverless
 prerequisites:
   - aws/containers-ecs-eks-ecr
-  - aws/iam-identity-access-and-organizations
 next:
   - aws/monitoring-and-observability-on-aws
 related:
-  - aws/compute-ec2-asg-and-load-balancing
-  - python/index
+  - aws/containers-ecs-eks-ecr
+  - aws/iam-identity-access-and-organizations
 labs: []
 projects: []
 interview: interview/aws
 certifications:
-  - AWS Developer Associate
-  - AWS Solutions Architect Associate
-  - AWS DevOps Engineer Professional
+  - AWS Certified Developer – Associate
+  - AWS Certified Solutions Architect – Associate
 tags:
   - aws
-  - serverless
   - lambda
-  - eventbridge
-  - sqs
+  - serverless
+  - beginners
 author: Shaik Basha
-last_updated: "2026-07-31"
+last_updated: "2026-08-03"
 comments: false
 ---
 
-
-# Serverless on AWS — Lambda, APIs, and Eventing
+# Serverless on AWS
 
 ## Overview
 
+**Serverless** means you run code without renting and patching a server yourself. AWS starts a tiny runtime when an event happens, runs your function, and stops — you pay for invocations and duration, not idle EC2 hours.
 
+**Lambda** is AWS’s main serverless compute service. Triggers include HTTP (via **Function URL** or **API Gateway**), uploads to S3, messages on queues, schedules, and more.
 
+This module teaches the serverless execution model first, then a hands-on lab: deploy Python, hit it with `curl`, break the handler, fix it from **CloudWatch Logs**, and delete everything.
 
+This is **Tutorial 1** in **Module 8: Serverless** of the REBASH Academy **AWS for Cloud & DevOps Engineers** series.
 
-
-Assemble a small event-driven design using AWS Lambda, Amazon API Gateway, Amazon EventBridge, Amazon Simple Notification Service (SNS), Amazon Simple Queue Service (SQS), and AWS Step Functions — and tear it down so idle resources do not linger.
-
-**Serverless** on AWS means you deploy code or workflows and pay primarily for invocations, duration, and messages — not for always-on virtual machines. **Lambda** runs functions. **API Gateway** exposes HTTP/WebSocket APIs. **EventBridge** routes events from AWS services and custom buses. **SNS** fans out notifications; **SQS** buffers work for consumers. **Step Functions** orchestrate multi-step workflows with retries and branching. Together they form the backbone of many Cloud DevOps automation and product backends.
-
-This is a core tutorial in **Module 8 · Serverless** of the REBASH Academy **AWS for Cloud & DevOps Engineers** series — written for Cloud, DevOps, Platform, and SRE engineers.
+!!! warning "Cost hygiene"
+    Lambda free tier covers small labs. Function URLs and CloudWatch Logs cost pennies. Delete function, IAM role, and log group in Cleanup. **No VPC-attached Lambda** in this lab — avoids NAT Gateway cost.
 
 ## Prerequisites
 
-
-
-
-
-
-- [Containers on AWS](containers-ecs-eks-ecr.md) (when to choose serverless vs containers)
-- IAM roles and least-privilege policies
-- AWS CLI configured; optional Python or Node.js for a tiny handler
+- [Containers: ECS, EKS, and ECR](containers-ecs-eks-ecr.md) — you understand “run my code in a box”
+- AWS CLI v2 with `lambda:*`, `iam:*`, `logs:*` in sandbox
+- Python 3 and `zip` installed locally
+- `curl` for HTTP proof
 
 ## Learning Objectives
 
-
-
-
-
-
 By the end of this tutorial, you will be able to:
 
-- [ ] Place Lambda behind API Gateway (sync) or an event source (async)  
-- [ ] Choose SNS fan-out vs SQS buffering vs EventBridge routing  
-- [ ] Outline Step Functions orchestration for a multi-step job  
-- [ ] Apply timeouts, concurrency, DLQs, and teardown for cost hygiene
+- [ ] Explain Lambda and **cold start** in plain English
+- [ ] Deploy a Python zip function with an IAM execution role
+- [ ] Enable and test a **Lambda Function URL** with `curl`
+- [ ] Diagnose and fix a broken handler using CloudWatch Logs
+- [ ] Contrast Function URL vs API Gateway for HTTP
+- [ ] Clean up Lambda, IAM role, and log groups completely
 
 ## Architecture
 
+Event sources (HTTP, S3, SQS, EventBridge) invoke Lambda synchronously or asynchronously. Lambda assumes an **execution role**, runs in an isolated environment, writes logs to **CloudWatch Logs**, and returns a response.
 
-
-
-
-
-This topic’s control points and relationships are shown below.
-
-![Serverless architecture](../assets/excalidraw/aws-serverless.svg)
+![AWS serverless — Lambda, API Gateway, EventBridge](../assets/excalidraw/aws-serverless.svg)
 
 ## Theory
 
+### The problem (before AWS words)
 
+Your team runs a small webhook that fires twice a day. Paying for a 24/7 EC2 instance wastes money. You want code that scales to zero and wakes on demand.
 
+### Lambda — functions as a service
 
+**Problem:** Managing servers for sporadic or spiky workloads is expensive and boring.
 
+**Analogy:** Lambda is a vending machine — you drop in an event (coin), it runs your snippet (snack), and goes quiet again. No shopkeeper (server) standing around all night.
 
-### What it is
+**AWS name:** **AWS Lambda**.
 
-**Serverless** on AWS means you deploy code or workflows and pay primarily for invocations, duration, and messages — not for always-on virtual machines. **AWS Lambda** runs functions. **Amazon API Gateway** exposes HTTP/WebSocket APIs. **Amazon EventBridge** routes events from AWS services and custom buses. **Amazon Simple Notification Service (SNS)** fans out notifications; **Amazon Simple Queue Service (SQS)** buffers work for consumers. **AWS Step Functions** orchestrates multi-step workflows with retries and branching.
+**Tiny example:** Python function returns JSON when someone POSTs to a Function URL.
 
-### Why it matters
+**Interview one-liner:** “Lambda runs stateless functions up to 15 minutes — great for event-driven work, not long batch jobs.”
 
-Serverless fits bursty automation — webhooks, scheduled jobs, fan-out pipelines — without patching servers. You still own IAM execution roles, packaging, cold starts, dead-letter queues (DLQs), and cost. Long synchronous work behind API Gateway hits hard timeouts. Choosing SNS vs SQS vs EventBridge — and when Step Functions should own orchestration instead of nested Lambda calls — is a staple Cloud/DevOps design question.
+### Cold start — the first-cup delay
 
-### How it works
+**Problem:** The first request after idle time feels slow.
 
-1. Package code; create Lambda with an **execution role** for logs and downstream APIs.  
-2. **Sync HTTP:** API Gateway → Lambda; deploy a stage; caller waits.  
-3. **Async events:** EventBridge/SNS/SQS → Lambda; attach a **DLQ** for poison messages.  
-4. **Multi-step:** Step Functions with retry/backoff; start via API or events.  
-5. **Operate:** avoid provisioned concurrency unless SLOs need it; watch errors/throttles; delete lab stacks.
+**Analogy:** **Cold start** is like the coffee machine heating up — the first customer waits longer; later cups are faster while the machine stays warm.
 
-Design for **at-least-once** delivery — make handlers idempotent.
+**Causes:** New execution environment, runtime init, large deployment package, optional VPC network setup.
 
-### Concept deep dive
+**Interview one-liner:** “Mitigate cold starts with smaller packages, avoid unnecessary VPC, use provisioned concurrency for latency-sensitive HTTP.”
 
-- **Lambda** — Managed function compute. Upload a handler; memory also scales CPU. Set timeout, concurrency, and env vars; use VPC only when you must reach private resources (adds cold-start/ENI cost). Prefer short, single-purpose functions.
-- **API Gateway** — HTTP/WebSocket front door to Lambda (and other integrations), with throttling, authorisers, and stages. Integration timeout is ~**29 seconds** — accept long work and process asynchronously.
-- **EventBridge** — Event bus with content-based rules (or schedules) delivering to Lambda, SQS, Step Functions, and many AWS services. Prefer when many producers/consumers need routing without hard-wiring each pair.
-- **SNS** — Pub/sub for **fan-out**: one publish, many subscriptions (Lambda, SQS, email, HTTPS). Prefer when several systems react to one notification; use SNS → SQS when each consumer needs its own buffer.
-- **SQS** — Durable queues that **decouple** producers from consumers. Standard maximises throughput; FIFO preserves order within limits. Lambda can poll SQS. Prefer for buffering, back-pressure, and visibility-timeout retries.
-- **Step Functions** — **Orchestration** via Amazon States Language: sequence, choice, parallel/map, wait, retries/catchers. Prefer for multi-step workflows instead of fragile nested Lambda calls. Standard for durable jobs; Express for high-volume short flows.
-- **Sync vs async** — **Synchronous:** caller waits (API Gateway → Lambda); errors return immediately. **Asynchronous:** event accepted and processed later (EventBridge/SNS/SQS → Lambda). Async needs DLQs, idempotency, and observability.
-- **Fan-out** — One event, many consumers (SNS with multiple subscriptions, or EventBridge rules to several targets). Do not use one Lambda to notify everyone sequentially.
-- **Orchestration** — Coordinating steps with state, retries, and branching. Step Functions own orchestration; Lambda owns units of work.
+### Function URL vs API Gateway
 
-### Key concepts and comparisons
+**Problem:** You need HTTP access to your function — which front door?
 
-| Pattern | Prefer |
-|---------|--------|
-| Request/response API | API Gateway → Lambda (sync) |
-| Many subscribers | SNS fan-out (± SQS per consumer) |
-| Buffered workers | SQS → Lambda (async) |
-| SaaS/AWS event routing | EventBridge |
-| Long business workflow | Step Functions (orchestration) |
-| Work longer than ~29s from HTTP | Accept + async (SQS/Step Functions) |
+| Option | Plain job | Interview note |
+|--------|-----------|---------------|
+| **Function URL** | Built-in HTTPS on the function | Fastest lab setup; limited enterprise features |
+| **API Gateway** | Full HTTP API with throttling, authorisers | Better for public APIs and WAF integration |
+| **ALB + Lambda** | Same load balancer as EC2/ECS | ALB hourly cost |
 
-Keep secrets in Secrets Manager or Systems Manager Parameter Store, not plaintext environment variables for sensitive values.
+**Interview one-liner:** “Function URL for internal/quick HTTP; API Gateway when you need authorisers, usage plans, and WAF.”
+
+### Sync vs async invocation
+
+| Type | Caller waits? | Example |
+|------|---------------|---------|
+| **Synchronous** | Yes | Function URL, API Gateway |
+| **Asynchronous** | No | S3 event, EventBridge — retries + DLQ |
+
+**Interview one-liner:** “Async invocations need idempotent handlers — duplicates can happen.”
+
+### IAM execution role
+
+**Problem:** Lambda must write logs and maybe call AWS APIs — it needs permissions like EC2 instance profiles.
+
+**Analogy:** The **execution role** is the function’s ID badge — trusted by `lambda.amazonaws.com`, usually with CloudWatch Logs at minimum.
+
+### EventBridge and friends (awareness)
+
+- **EventBridge** — event bus routing between AWS services
+- **SQS / SNS** — queue and fan-out patterns into Lambda
+- **Step Functions** — orchestrate multiple Lambdas into workflows
 
 ### Common pitfalls
 
-- Assuming serverless is free — traffic and provisioned concurrency still bill  
-- Swallowing errors and returning 200 — retries and DLQs never engage  
-- Using SNS when you need a buffer (SQS), or SQS when you need heterogeneous fan-out (SNS/EventBridge)  
-- Nested Lambda “orchestration” instead of Step Functions  
-- Large payloads in events — store in S3 and pass references  
-- Leaving rules, APIs, queues, and log groups after labs
+- Putting a 20-minute batch job in Lambda (900 s max timeout)
+- **VPC without reason** — slower cold start + NAT cost
+- Logging secrets in plain environment variables
+- Public Function URL with `auth-type NONE` in production
+- One giant Lambda doing everything — split with Step Functions
 
 ## Hands-on Lab
 
-
-
-!!! warning "Cost and account safety"
-    Use a sandbox account. Prefer read-only calls. Destroy anything you create before leaving the lab.
-
 ### Objective
 
-Use read-only AWS APIs to inventory and verify aspects of **Serverless on AWS — Lambda, APIs, and Eventing** in a sandbox account.
+Deploy a Python Lambda from zip with IAM role and Function URL; `curl` success; break the handler; fix from logs; delete function, role, and log group.
 
 ### Prerequisites
 
-- AWS CLI v2
-- Credentials for a **sandbox** account (SSO or short-lived keys)
+| Tool | Notes |
+|------|--------|
+| AWS CLI v2 | Create role, function, URL |
+| Python 3 + zip | Package handler |
+| curl | HTTP proof |
 
 ### Lab environment
 
-Workspace: `~/rebash-aws/module-08`
-
-Prefer `describe`/`list`/`get` APIs. Create resources only with an explicit destroy path.
-
 ``` {.bash .ra-terminal title="Terminal"}
 mkdir -p ~/rebash-aws/module-08 && cd ~/rebash-aws/module-08
+export AWS_REGION="${AWS_REGION:-eu-west-2}"
+export AWS_PAGER=""
+export FUNC="rebash-m08-hello"
+export ROLE="rebash-m08-lambda-role"
+echo "$FUNC" | tee func-name.txt
+echo "$ROLE" | tee role-name.txt
+aws sts get-caller-identity --output table
 ```
 
 ### Real-world scenario
 
-Security asks for evidence that **Serverless on AWS — Lambda, APIs, and Eventing** is configured correctly. You gather CLI proof without click-ops drift.
+A partner webhook expects JSON `{"status":"ok"}` from your **health Lambda**. Deploy passes smoke tests, then a bad edit returns 502. You reproduce with `curl`, read CloudWatch Logs, fix the handler, and tear down — the standard serverless incident loop.
 
 ### Step-by-step tasks
 
-#### Task 1 – Prove caller identity
+#### Task 1 – Create IAM trust policy and role
 
-Every AWS change starts by knowing which account/role you are.
+Create `lambda-trust.json`:
+
+```json title="lambda-trust.json"
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Effect": "Allow",
+      "Principal": {"Service": "lambda.amazonaws.com"},
+      "Action": "sts:AssumeRole"
+    }
+  ]
+}
+```
 
 ``` {.bash .ra-terminal title="Terminal"}
-aws sts get-caller-identity | tee identity.json
-aws configure get region || true
-test -s identity.json
+cd ~/rebash-aws/module-08
+ROLE=$(cat role-name.txt)
+aws iam create-role --role-name "$ROLE" \
+  --assume-role-policy-document file://lambda-trust.json \
+  --description "REBASH module-08 Lambda execution" | tee create-role.json
+aws iam attach-role-policy --role-name "$ROLE" \
+  --policy-arn arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole
+sleep 10
+aws iam get-role --role-name "$ROLE" --query 'Role.Arn' --output text | tee role-arn.txt
 ```
 
 !!! example "Expected output"
-    JSON includes Account, Arn, and UserId.
+    `role-arn.txt` contains `arn:aws:iam::…:role/rebash-m08-lambda-role`.
 
 
-#### Task 2 – Collect topic signals
+#### Task 2 – Package Python handler and create function + Function URL
 
-Inventory the service surface related to this module.
+Create `handler.py`:
+
+```python title="handler.py"
+import json
+
+def lambda_handler(event, context):
+    return {
+        "statusCode": 200,
+        "headers": {"Content-Type": "application/json"},
+        "body": json.dumps({"status": "ok", "service": "rebash-m08"})
+    }
+```
 
 ``` {.bash .ra-terminal title="Terminal"}
-aws ec2 describe-vpcs --query 'Vpcs[].{Id:VpcId,Cidr:CidrBlock}' --output table 2>/dev/null | tee vpcs.txt || true
-aws iam get-account-summary 2>/dev/null | tee iam-summary.json || true
-tee notes.txt << 'EOF'
-Record which APIs apply to this topic and any NotAuthorized errors for follow-up.
-EOF
-cat notes.txt
+cd ~/rebash-aws/module-08
+zip -j function.zip handler.py
+FUNC=$(cat func-name.txt)
+ROLE_ARN=$(cat role-arn.txt)
+aws lambda create-function \
+  --function-name "$FUNC" \
+  --runtime python3.12 \
+  --role "$ROLE_ARN" \
+  --handler handler.lambda_handler \
+  --zip-file fileb://function.zip \
+  --timeout 10 \
+  --memory-size 128 \
+  --output json | tee create-function.json
+aws lambda wait function-active-v2 --function-name "$FUNC"
+aws lambda create-function-url-config \
+  --function-name "$FUNC" \
+  --auth-type NONE \
+  --output json | tee url-config.json
+aws lambda add-permission \
+  --function-name "$FUNC" \
+  --statement-id FunctionUrlAllowPublic \
+  --action lambda:InvokeFunctionUrl \
+  --principal "*" \
+  --function-url-auth-type NONE
+FUNC_URL=$(aws lambda get-function-url-config --function-name "$FUNC" \
+  --query FunctionUrl --output text)
+echo "$FUNC_URL" | tee function-url.txt
+curl -fsS "$FUNC_URL" | tee curl-ok.json
+grep -q '"status": "ok"' curl-ok.json
 ```
 
 !!! example "Expected output"
-    Evidence files created even if some APIs are denied.
+    `curl-ok.json` contains `"status": "ok"`; Function URL ends with `.on.aws/`.
+
+
+#### Task 3 – Break handler, observe failure, fix
+
+Create `handler-broken.py`:
+
+```python title="handler-broken.py"
+import json
+
+def lambda_handler(event, context):
+    # BUG: wrong shape for Function URL / API Gateway proxy integration
+    return {"status": "ok", "service": "rebash-m08"}
+```
+
+``` {.bash .ra-terminal title="Terminal"}
+cd ~/rebash-aws/module-08
+FUNC=$(cat func-name.txt)
+zip -j function-broken.zip handler-broken.py
+aws lambda update-function-code --function-name "$FUNC" \
+  --zip-file fileb://function-broken.zip --output json | tee update-broken.json
+aws lambda wait function-updated-v2 --function-name "$FUNC"
+FUNC_URL=$(cat function-url.txt)
+set +e
+curl -sS -o curl-broken.json -w "%{http_code}" "$FUNC_URL" | tee http-code-broken.txt
+set -e
+grep -E '502|500' http-code-broken.txt || test ! -s curl-broken.json
+LOG_GROUP="/aws/lambda/${FUNC}"
+sleep 3
+aws logs tail "$LOG_GROUP" --since 5m | tee logs-broken.txt || true
+zip -j function.zip handler.py
+aws lambda update-function-code --function-name "$FUNC" \
+  --zip-file fileb://function.zip
+aws lambda wait function-updated-v2 --function-name "$FUNC"
+curl -fsS "$(cat function-url.txt)" | tee curl-fixed.json
+grep -q '"status": "ok"' curl-fixed.json
+echo "lambda break-fix OK" | tee evidence.txt
+```
+
+!!! example "Expected output"
+    Broken deploy returns 502/500 or empty body; logs show error; fixed curl returns ok JSON.
+
+
+#### Task 4 – Delete function, URL permission, role, log group
+
+``` {.bash .ra-terminal title="Terminal"}
+cd ~/rebash-aws/module-08
+FUNC=$(cat func-name.txt)
+ROLE=$(cat role-name.txt)
+aws lambda delete-function-url-config --function-name "$FUNC" 2>/dev/null || true
+aws lambda remove-permission --function-name "$FUNC" \
+  --statement-id FunctionUrlAllowPublic 2>/dev/null || true
+aws lambda delete-function --function-name "$FUNC"
+aws logs delete-log-group --log-group-name "/aws/lambda/${FUNC}" 2>/dev/null || true
+aws iam detach-role-policy --role-name "$ROLE" \
+  --policy-arn arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole
+aws iam delete-role --role-name "$ROLE"
+echo "lambda cleanup OK" | tee cleanup-ok.txt
+```
+
+!!! example "Expected output"
+    Function and role deleted; cleanup message printed.
 
 
 ### Validation steps
 
-- [ ] identity.json present
-- [ ] No long-lived keys committed to the repo
+- [ ] Function active with Python 3.12 zip deployment
+- [ ] Function URL returned 200 JSON on first curl
+- [ ] Broken handler reproduced HTTP error; logs inspected
+- [ ] Fixed handler restored success response
+- [ ] Function, role, and log group removed
 
 ### Common errors and fixes
 
 | Error | Cause | Fix |
 |-------|-------|-----|
-| Unable to locate credentials | No profile/SSO | Run `aws sso login` or export sandbox keys |
-| AccessDenied | Least privilege | Use a role that can read the service — or document the deny |
-| UnauthorizedOperation | Wrong region/account | Check `AWS_REGION` and account id |
+| Role not ready | IAM eventual consistency | Sleep/retry after create-role |
+| 403 on Function URL | Missing invoke permission | Run add-permission for URL |
+| Handler not found | Wrong handler string | Match `file.function` to zip layout |
+| ResourceConflictException | Update in progress | Wait `function-updated-v2` |
 
 ### Challenge exercise
 
-Enable a cost budget alarm in the sandbox (or document the console clicks) and screenshot/CLI-describe it.
+Create `eventbridge-rule.json` describing a schedule `rate(5 minutes)` targeting this function (do not deploy unless needed). Add a comment field explaining why **dead-letter queues (DLQ)** matter for async triggers.
+
+```json title="eventbridge-rule.json"
+{
+  "Name": "rebash-m08-schedule",
+  "ScheduleExpression": "rate(5 minutes)",
+  "State": "DISABLED",
+  "Targets": [{"Arn": "LAMBDA_ARN_PLACEHOLDER", "Id": "lambda-target"}],
+  "_comment": "Production async invokes should use DLQ so failed events are not lost"
+}
+```
+
+``` {.bash .ra-terminal title="Terminal"}
+cd ~/rebash-aws/module-08
+test -f eventbridge-rule.json
+grep -q rate eventbridge-rule.json
+echo "eventbridge challenge OK" | tee challenge.txt
+```
 
 ### Learning outcomes
 
-- Authenticated safely
-- Captured read-only evidence
-- Avoided unmanaged spend
+- You deployed Lambda with zip packaging and execution role
+- You used Function URL and curl for synchronous HTTP proof
+- You practised break/fix using CloudWatch Logs
+- You cleaned up IAM and logging artefacts
 
 ### Cleanup
 
-```bash
-# Revoke/lab-expire any temporary keys you exported
-# Do not leave EC2/ELB/NAT running
+``` {.bash .ra-terminal title="Terminal"}
+cd ~/rebash-aws/module-08
+FUNC=$(cat func-name.txt 2>/dev/null || echo rebash-m08-hello)
+ROLE=$(cat role-name.txt 2>/dev/null || echo rebash-m08-lambda-role)
+aws lambda delete-function --function-name "$FUNC" 2>/dev/null || true
+aws logs delete-log-group --log-group-name "/aws/lambda/${FUNC}" 2>/dev/null || true
+aws iam detach-role-policy --role-name "$ROLE" \
+  --policy-arn arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole 2>/dev/null || true
+aws iam delete-role --role-name "$ROLE" 2>/dev/null || true
 ```
 
 ## Validation
 
-
-
-
-
-
-- [ ] Lab commands run under `~/rebash-aws/module-08/`
-- [ ] You can explain each Theory section in your own words
-- [ ] You used modern tooling where it applies to this topic
-- [ ] You can describe one production failure mode for this topic
+- [ ] No `rebash-m08-*` Lambda or role remains
+- [ ] You can explain sync vs async invocation
+- [ ] You can describe cold start in plain English
+- [ ] You understand Function URL auth modes
 
 ## Code Walkthrough
 
-
-
-
-
-
-Production practice for **Serverless on AWS — Lambda, APIs, and Eventing** always combines:
-
-1. Inspect before you change (status, plan, logs, dry-run)
-2. Prefer reversible, documented changes (Git, IaC, drop-ins, version pins)
-3. Capture evidence (command output, pipeline logs) for handovers
-4. Prefer current tools and APIs over legacy shortcuts
-5. Least privilege — escalate credentials only when required
-
-Keep runbooks short enough to follow under pressure. Automate checks; keep humans for judgement.
+1. **Response shape** — HTTP integrations need `statusCode`, `headers`, and string `body`.
+2. **Wait after IAM** — role propagation delay causes obscure create-function failures.
+3. **Basic execution role** — CloudWatch Logs only; add S3/VPC policies explicitly when needed.
+4. **`zip -j`** — flat zip so handler path matches module name.
+5. **Delete log group** — avoids orphaned `/aws/lambda/*` storage charges.
 
 ## Security Considerations
 
-
-
-
-
-
-- Treat credentials and tokens for aws as privileged — never commit them
-- Prefer short-lived auth (OIDC, roles, SSO) over long-lived keys
-- Validate blast radius before apply/deploy/delete operations
-- Restrict who can approve production changes
-- Collect audit logs; limit who can read sensitive traces
+- Never use `auth-type NONE` Function URLs in production without WAF or auth layer.
+- Least-privilege IAM per function — one role per domain.
+- Do not log secrets; use Secrets Manager or Parameter Store SecureString.
+- Cap blast radius with **reserved concurrency** on critical functions.
+- Monitor `Errors` and `Throttles` CloudWatch metrics.
 
 ## Common Mistakes
 
+!!! warning "Public unauthenticated Function URL in prod"
+    Anyone on the internet can invoke your code. Use IAM auth, JWT via API Gateway, or CloudFront + WAF.
 
+!!! warning "Fat Lambda in VPC"
+    Adds ENI setup latency and often NAT costs. Attach VPC only for private resource access.
 
-
-
-
-!!! warning "Assuming serverless is free — traffic and provisioned concurrency still bill  "
-    Validate assumptions against the Theory section and official docs before changing production.
-
-!!! warning "Swallowing errors and returning 200 — retries and DLQs never engage  "
-    Lab shortcuts (open security groups, admin roles, skip approvals) must not ship unchanged.
-
-!!! warning "Changing production without a rollback path"
-    Always know how to revert (previous artefact, prior release, state rollback, DNS failback).
+!!! warning "No DLQ on async triggers"
+    Failed S3/SQS events can disappear silently. Configure dead-letter queues and alarms.
 
 ## Best Practices
 
-
-
-
-
-
-- Encode Serverless on AWS — Lambda, APIs, and Eventing changes as code and review them in pull requests
-- Pin versions (images, modules, actions, provider plugins)
-- Separate environments with clear promotion gates
-- Alert on symptoms with runbooks attached
-- Destroy lab resources; tag everything with owner and expiry where possible
+- Infrastructure as Code for functions — SAM, CDK, Terraform
+- Keep deployment packages small; use layers or container images for heavy deps
+- Provisioned concurrency for latency-sensitive HTTP
+- Idempotency keys for payments and webhooks
+- Structured JSON logging (Powertools) for searchability
 
 ## Troubleshooting
 
-
-
-
-
-
 | Symptom | Likely cause | Fix |
 |---------|--------------|-----|
-| Auth / permission denied | Wrong identity, policy, or scope | Check caller identity, roles, and least-privilege policies |
-| Timeout / no route | Network, DNS, security group, or endpoint | Trace path, DNS, and allow-lists before retrying |
-| Drift / unexpected plan | Manual change or wrong state/workspace | Reconcile desired vs actual; avoid click-ops on managed resources |
-| Pipeline/job red | Flaky step, cache, or missing secret | Read failing step logs; bisect recent workflow/config changes |
-| Cost spike | Idle load balancer, NAT, oversized compute | Inventory billable resources; stop/delete labs promptly |
+| 502 from Function URL | Malformed response / exception | Fix handler shape; check logs |
+| Task timed out | Long downstream call | Increase timeout; async pattern |
+| Throttled | Concurrency limit | Request limit increase; reserved concurrency |
+| AccessDenied on AWS SDK | Execution role missing action | Extend IAM policy |
 
 ## Summary
 
+**Lambda** fits event-driven and HTTP workloads when you respect limits and security. This lab proved **deploy → curl → break → logs → fix → cleanup** — the serverless story interviewers expect when you have actually touched the console and CLI.
 
-
-
-
-
-**Serverless on AWS — Lambda, APIs, and Eventing** is essential for Cloud and DevOps engineers working with aws. Practise the lab until the inspection and change path is muscle memory, then continue the track.
+Next: [Monitoring and Observability on AWS](monitoring-and-observability-on-aws.md).
 
 ## Interview Questions
 
+**1. What is AWS Lambda in simple words?**
 
+??? success "Reveal answer"
+    Lambda runs your code in response to events without you managing servers. AWS starts an environment, runs the function, and bills for invocations and compute time. You upload code or a container image and configure triggers like HTTP, S3, or schedules.
 
+**2. What is a cold start?**
 
-1. Lambda concurrency and timeout pitfalls?
-2. API Gateway versus Lambda Function URLs?
-3. How do you diagnose a failing Lambda?
-4. Cold starts — mitigations?
-5. IAM for Lambda least privilege patterns?
+??? success "Reveal answer"
+    A cold start happens when Lambda creates a new execution environment — runtime init, code load, and optional VPC setup add latency to the first request. Warm invocations reuse the environment and are faster. Mitigate with smaller packages, avoid unnecessary VPC, and provisioned concurrency for strict latency needs.
 
-!!! tip "Sample answer — question 2"
-    Read CloudWatch logs for the function and confirm the role can write logs and reach dependencies.
+**3. Function URL vs API Gateway?**
 
-!!! tip "Sample answer — question 4"
-    Least-privilege function roles and delete unused functions after labs.
+??? success "Reveal answer"
+    **Function URL** is a direct HTTPS endpoint on a function — minimal setup, `AWS_IAM` or public auth. **API Gateway** adds authorisers, throttling, request validation, WAF integration, and usage plans — better for public APIs at extra cost and complexity.
+
+**4. Sync vs async Lambda invocation?**
+
+??? success "Reveal answer"
+    **Synchronous** (Function URL, API Gateway) waits for the response and shows errors to the caller. **Asynchronous** (S3, EventBridge) queues the event, retries by default, and can send failures to a DLQ — design handlers to be idempotent.
+
+**5. What IAM role does Lambda need?**
+
+??? success "Reveal answer"
+    An **execution role** trusted by `lambda.amazonaws.com` with at least CloudWatch Logs permissions (`AWSLambdaBasicExecutionRole`). Add VPC access if in VPC, plus any AWS API permissions the function code calls — often kept in separate policies for least privilege.
+
+**6. When is Lambda the wrong choice?**
+
+??? success "Reveal answer"
+    Sustained high-throughput compute cheaper on EC2/ECS, jobs over 15 minutes, strict low latency at huge scale without provisioned concurrency, or apps needing full OS control. Large batch ETL may fit Glue or EMR better.
+
+**7. Why did our broken handler return 502?**
+
+??? success "Reveal answer"
+    Function URL expects API Gateway proxy format: numeric `statusCode`, `headers`, and string `body`. Returning a bare dict fails integration and surfaces as 502 to the HTTP client — check CloudWatch Logs for the runtime error.
+
+**8. What is reserved concurrency?**
+
+??? success "Reveal answer"
+    Reserved concurrency guarantees capacity for a function and caps its maximum concurrent executions — protecting critical functions from noisy neighbours and limiting blast radius of runaway bugs.
 
 ## Related Tutorials
 
-
-
-
-
-
-- [Course overview](index.md)
-- [Monitoring and Observability on AWS](monitoring-and-observability-on-aws.md)
+- Previous: [Containers: ECS, EKS, and ECR](containers-ecs-eks-ecr.md)
+- Next: [Monitoring and Observability on AWS](monitoring-and-observability-on-aws.md)
+- [IAM, Identity Access, and Organizations](iam-identity-access-and-organizations.md)
 
 ## References
 
-
-
-
-
-
-- [AWS Lambda Developer Guide](https://docs.aws.amazon.com/lambda/latest/dg/welcome.html)  
-- [Amazon API Gateway](https://docs.aws.amazon.com/apigateway/latest/developerguide/welcome.html)  
-- [Amazon EventBridge](https://docs.aws.amazon.com/eventbridge/latest/userguide/eb-what-is.html)  
-- [Amazon SNS](https://docs.aws.amazon.com/sns/latest/dg/welcome.html) · [Amazon SQS](https://docs.aws.amazon.com/AWSSimpleQueueService/latest/SQSDeveloperGuide/welcome.html)  
-- [AWS Step Functions](https://docs.aws.amazon.com/step-functions/latest/dg/welcome.html)
+- [AWS Lambda Developer Guide](https://docs.aws.amazon.com/lambda/latest/dg/welcome.html)
+- [Lambda Function URLs](https://docs.aws.amazon.com/lambda/latest/dg/lambda-urls.html)
+- [Amazon API Gateway](https://docs.aws.amazon.com/apigateway/latest/developerguide/welcome.html)
+- [Amazon EventBridge](https://docs.aws.amazon.com/eventbridge/latest/userguide/eb-what-is.html)
+- [Lambda quotas](https://docs.aws.amazon.com/lambda/latest/dg/gettingstarted-limits.html)

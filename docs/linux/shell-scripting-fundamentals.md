@@ -1,24 +1,30 @@
 ---
 title: "Shell Scripting Fundamentals"
-description: "Write safe Bash scripts for Linux ops — shebang, set -euo pipefail, arguments, exit codes — with an Ubuntu lab. Deeper curriculum lives in the Shell track."
+description: "Linux safe Bash scripts — shebang, set -euo pipefail, arguments, exit codes — short scripts as file fences with a host-check lab."
 difficulty: beginner
 estimated_time: "45–55 min"
 author: Shaik Basha
-last_updated: "2026-08-02"
+last_updated: "2026-08-04"
 category: linux
 technology: linux
 module: "Module 2 · Command Line"
+career_paths:
+  - linux-administrator
+  - devops-engineer
+  - cloud-engineer
 tags:
   - linux
   - shell
   - bash
   - scripting
+  - beginners
 prerequisites:
   - linux/essential-linux-commands
 next:
-  - linux/environment-variables-shell-config
+  - linux/filesystem-paths-links-mounts-and-inodes
 related:
   - ../shell/index.md
+  - linux/environment-variables-shell-config
 interview: interview/linux
 comments: false
 ---
@@ -27,370 +33,321 @@ comments: false
 
 ## Overview
 
-A **shell script** is a text file of commands the shell runs in order. On Ubuntu servers, **Bash** scripts automate checks, backups, and small glue tasks between tools. This page teaches the **operations minimum**: shebang, safe modes (`set -euo pipefail`), arguments, exit codes, and readable output — enough to write trustworthy helpers on a Linux host.
+“Write a small script” sounds scary until you see it is mostly **saved commands** with safety rails. Good **Bash** habits surface errors early instead of hiding them on production hosts.
 
-The full Bash curriculum (functions, arrays, testing patterns, larger programs) lives in the [Shell Scripting](../shell/index.md) track. Use this tutorial when you need safe automation habits inside the Linux for Cloud & DevOps path. In the lab you will build a small host-check script that fails clearly, produces evidence, and exits with proper codes under `~/rebash-linux/lab-shell`.
+**Plain problem:** A midnight cron script fails silently — no `set -e`, errors swallowed, exit code always 0. Monitoring thinks all is well. Good scripts **fail loudly** and leave evidence.
 
-In production, prefer idempotent scripts, absolute paths, logging, and code review — the same standards you apply to application code.
+This page teaches the **operations minimum**: shebang, **`set -euo pipefail`**, arguments, exit codes, and readable output. Full Bash curriculum lives in the [Shell Scripting](../shell/index.md) track.
+
+This is a **Command Line** tutorial in the REBASH Academy **Linux for Cloud & DevOps Engineers** series.
 
 ## Prerequisites
 
+- Ubuntu practice VM or WSL2
 - [Essential Linux Commands](essential-linux-commands.md)
-- A **practice Ubuntu 22.04/24.04 VM** with Bash
-- Text editor or heredocs as shown
+- Text editor (nano, vim, or VS Code)
 
 ## Learning Objectives
 
 By the end of this tutorial, you will be able to:
 
-- [ ] Write a Bash script with `#!/usr/bin/env bash` and `set -euo pipefail`
-- [ ] Use positional arguments and validate input
-- [ ] Return meaningful exit codes (`0` success, non-zero failure)
-- [ ] Redirect useful output to a log file for tickets
-- [ ] Pack evidence under `~/rebash-linux/lab-shell`
+- [ ] Explain what a shell script is in plain language
+- [ ] Write a script with shebang and safe mode flags
+- [ ] Use positional arguments (`$1`, `$#`) and exit codes
+- [ ] Build a small **host-check** script that fails clearly
+- [ ] Break a script on purpose and fix it
+- [ ] Answer fresher interview questions on Bash scripting basics
 
 ## Architecture
 
-Scripts orchestrate existing Linux tools; safe defaults stop silent failures from propagating in automation and CI.
+You write a text file → mark executable → shell reads lines top to bottom → each command returns an exit code → caller (cron/systemd/human) sees success or failure.
 
-![Architecture diagram for shell CLI workflow](../assets/excalidraw/linux-cli-workflow.svg)
+![Linux CLI workflow — script, bash, commands, exit code](../assets/excalidraw/linux-cli-workflow.svg)
 
 ## Theory
 
-### What it is
+### The problem (before any jargon)
 
-| Piece | Role |
-|-------|------|
-| Shebang | Which interpreter runs the file |
-| `set -e` | Exit on command failure |
-| `set -u` | Exit on unset variables |
-| `set -o pipefail` | Pipeline fails if any stage fails |
-| Exit code | `0` ok; non-zero means failure to callers |
+Team script:
 
-``` {.bash .ra-terminal title="Terminal"}
-#!/usr/bin/env bash
-set -euo pipefail
-echo "hello"
+```bash
+grep ERROR /var/log/app.log
+echo "check done"
 ```
 
-### Why it matters
+Log missing → grep fails → without `set -e` script continues → “check done” anyway → false green status.
 
-Scripts without `set -u` hide typos. Pipelines without `pipefail` can “succeed” after a failed `grep`. Cron and CI only see exit codes — silent partial failure is worse than a loud error.
+### What is a shell script? (simple words)
 
-### How it works
+**Analogy:** A **recipe card** for the shell — step 1, step 2, same every time. **Bash** is the cook reading the card.
 
-1. Create an executable file with a shebang  
-2. Enable safe modes  
-3. Parse arguments (`$1`, `$#`)  
-4. Run commands; write logs  
-5. `exit 0` or `exit 1` deliberately  
+First line **shebang** picks the interpreter:
 
-| Pattern | Prefer |
-|---------|--------|
-| Paths | Absolute paths in automation |
-| Output | Log file + concise stdout |
-| Failure | Non-zero exit + message on stderr |
+```bash
+#!/usr/bin/env bash
+```
+
+**Interview line:** “I start ops scripts with `set -euo pipefail` so failures stop the script and unset variables error.”
+
+### Safe mode — set -euo pipefail
+
+| Flag | Meaning |
+|------|---------|
+| `-e` | Exit on first command failure |
+| `-u` | Error on unset variables |
+| `-o pipefail` | Pipeline fails if any command fails |
+
+### Arguments and exit codes
+
+``` {.bash .ra-terminal title="Terminal"}
+echo "First arg: ${1:-none}"
+exit 0   # success
+exit 1   # generic failure
+```
+
+**`$?`** holds last exit code. Cron and systemd use it for success/failure.
 
 ### Common pitfalls
 
-- Running scripts with `sh` when they need Bash features.  
-- Forgetting `chmod +x` or calling via `bash script.sh`.  
-- Parsing `ls` output instead of globs/`find`.  
-- Ignoring exit codes in CI.
+- No shebang → wrong shell on cron
+- Unquoted variables breaking on spaces
+- Parsing `ls` output (use `find` or globs)
+- Missing `chmod +x`
 
 ## Hands-on Lab
 
 ### Objective
 
-Write `hostcheck.sh` that validates an argument directory, checks disk free space and a writable probe file, logs results, and exits non-zero on failure — with evidence under `~/rebash-linux/lab-shell`.
+Build **`host-check.sh`** with safe modes, arguments, intentional **break**, **fix**, and evidence under `~/rebash-linux/lab-shell`.
 
 ### Prerequisites
 
-- Bash on Ubuntu
+| Item | Notes |
+|------|--------|
+| Ubuntu VM | bash |
+| Lab only | Script checks local disk |
 
 ### Lab environment
 
-Workspace: `~/rebash-linux/lab-shell`
-
 ``` {.bash .ra-terminal title="Terminal"}
 mkdir -p ~/rebash-linux/lab-shell && cd ~/rebash-linux/lab-shell
-set -euo pipefail
-bash --version | head -n 1 | tee bash-version.txt
 ```
-
-!!! example "Expected output"
-    Bash version line stored.
-
 
 ### Real-world scenario
 
-On-call wants a tiny pre-deploy check on practice VMs: “can we write to the app directory, and is free space above a threshold?” You ship a script with safe Bash defaults and sample successful/failed runs for the runbook.
+Mentor: “Give me a script I can run from cron that checks root disk usage and exits non-zero if above a threshold — must not hide errors.”
 
 ### Step-by-step tasks
 
-#### Task 1 – Create `hostcheck.sh`
+#### Task 1 – host-check.sh (working version)
 
-```bash title="hostcheck.sh"
-cd ~/rebash-linux/lab-shell
-set -euo pipefail
+Create `host-check.sh`:
 
-cat > hostcheck.sh << 'EOF'
+```bash title="host-check.sh"
 #!/usr/bin/env bash
 set -euo pipefail
 
-usage() {
-  echo "Usage: $0 <directory> <min_free_mb>" >&2
-}
+THRESH="${1:-90}"
+LOG="${HOME}/rebash-linux/lab-shell/host-check.log"
+MOUNT="/"
 
-if [[ $# -ne 2 ]]; then
-  usage
+usage="$(df -P "$MOUNT" | awk 'NR==2 {print $5}' | tr -d '%')"
+{
+  echo "=== $(date -Is) ==="
+  echo "mount=$MOUNT usage_percent=$usage threshold=$THRESH"
+} >> "$LOG"
+
+if [[ "$usage" -ge "$THRESH" ]]; then
+  echo "FAIL: disk usage ${usage}% >= ${THRESH}%" >&2
   exit 2
 fi
-
-TARGET_DIR=$1
-MIN_FREE_MB=$2
-LOG=${HOSTCHECK_LOG:-./hostcheck.log}
-
-if [[ ! -d "$TARGET_DIR" ]]; then
-  echo "ERROR: not a directory: $TARGET_DIR" >&2
-  exit 1
-fi
-
-{
-  echo "=== hostcheck $(date -Is) ==="
-  echo "target=$TARGET_DIR min_free_mb=$MIN_FREE_MB"
-  df -hT "$TARGET_DIR"
-} | tee -a "$LOG"
-
-# Free space in MB for the filesystem containing TARGET_DIR (POSIX df -P)
-FREE_MB=$(df -Pm "$TARGET_DIR" | awk 'NR==2 {print $4}')
-echo "free_mb=$FREE_MB" | tee -a "$LOG"
-
-if [[ "$FREE_MB" -lt "$MIN_FREE_MB" ]]; then
-  echo "ERROR: free ${FREE_MB}MB < required ${MIN_FREE_MB}MB" >&2
-  exit 1
-fi
-
-PROBE="$TARGET_DIR/.rebash-hostcheck-probe"
-echo ok > "$PROBE"
-test -f "$PROBE"
-rm -f "$PROBE"
-echo "write_probe=ok" | tee -a "$LOG"
-echo "RESULT=PASS" | tee -a "$LOG"
+echo "OK: disk usage ${usage}%"
 exit 0
-EOF
-
-chmod +x hostcheck.sh
-test -x hostcheck.sh
 ```
-
-!!! example "Expected output"
-    executable `hostcheck.sh` exists.
-
-
-#### Task 2 – Successful run
 
 ``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-linux/lab-shell
-set -euo pipefail
-
-mkdir -p appdir
-HOSTCHECK_LOG="$PWD/hostcheck-success.log" ./hostcheck.sh "$PWD/appdir" 50
-test -f hostcheck-success.log
-grep -F 'RESULT=PASS' hostcheck-success.log
-grep -F 'write_probe=ok' hostcheck-success.log
+chmod +x host-check.sh
+./host-check.sh 90 | tee run-ok.txt
+grep -q '^OK:' run-ok.txt
+tail -3 host-check.log | tee log-ok-tail.txt
+echo $? | tee exit-code-ok.txt
 ```
 
 !!! example "Expected output"
-    script exits 0; success log contains `RESULT=PASS`.
+    `OK: disk usage …` printed; exit code 0; log appended.
 
 
-#### Task 3 – Failure paths + evidence
+#### Task 2 – Break (disable -e), observe silent failure
+
+Create `host-check-broken.sh`:
+
+```bash title="host-check-broken.sh"
+#!/usr/bin/env bash
+# intentionally missing set -e for lab break demo
+THRESH="${1:-90}"
+false
+echo "This line should not run if -e were enabled"
+exit 0
+```
 
 ``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-linux/lab-shell
-set -euo pipefail
-
-# Bad arity → exit 2
-set +e
-./hostcheck.sh only-one-arg >arity.out 2>arity.err
-EC=$?
-set -e
-echo "$EC" | tee arity-exit.txt
-test "$EC" -eq 2
-
-# Missing directory → exit 1
-set +e
-./hostcheck.sh "$PWD/does-not-exist" 50 >miss.out 2>miss.err
-EC=$?
-set -e
-echo "$EC" | tee miss-exit.txt
-test "$EC" -eq 1
-grep -F 'not a directory' miss.err
-
-# Impossible free-space requirement → exit 1
-set +e
-HOSTCHECK_LOG="$PWD/hostcheck-fail-space.log" ./hostcheck.sh "$PWD/appdir" 999999999 >space.out 2>space.err
-EC=$?
-set -e
-echo "$EC" | tee space-exit.txt
-test "$EC" -eq 1
-grep -F 'ERROR: free' space.err
-
-tar -czf shell-evidence.tgz \
-  bash-version.txt hostcheck.sh \
-  hostcheck-success.log arity-exit.txt arity.err \
-  miss-exit.txt miss.err space-exit.txt space.err hostcheck-fail-space.log
-ls -l shell-evidence.tgz | tee evidence-ls.txt
+chmod +x host-check-broken.sh
+./host-check-broken.sh; echo "exit=$?" | tee broken-exit.txt
+grep -q 'exit=0' broken-exit.txt
+echo "break: script reported success after false command" | tee break-notes.txt
 ```
 
 !!! example "Expected output"
-    exit codes `2`, `1`, `1` for the three failure cases; evidence archive exists.
+    Broken script prints misleading success line; `exit=0` despite `false` — demonstrates why `-e` matters.
+
+
+#### Task 3 – Fix threshold test and prove non-zero exit
+
+``` {.bash .ra-terminal title="Terminal"}
+cd ~/rebash-linux/lab-shell
+./host-check.sh 0; echo "exit=$?" | tee fail-threshold-exit.txt || true
+grep -q 'exit=2' fail-threshold-exit.txt
+./host-check.sh 90 | tee run-after-fix.txt
+echo "lab-shell OK" | tee evidence.txt
+```
+
+!!! example "Expected output"
+    Threshold 0 forces FAIL exit code 2 (disk always >= 0%). Normal threshold returns OK again.
 
 
 ### Validation steps
 
-- [ ] `hostcheck.sh` uses shebang and `set -euo pipefail`
-- [ ] Success run writes `RESULT=PASS`
-- [ ] Wrong usage exits `2`; missing dir exits `1`
-- [ ] `shell-evidence.tgz` exists under `~/rebash-linux/lab-shell`
+- [ ] `host-check.sh` uses shebang and `set -euo pipefail`
+- [ ] Broken script demonstrates silent failure without `-e`
+- [ ] Exit codes 0 vs 2 verified
+- [ ] Log file receives timestamped entries
 
 ### Common errors and fixes
 
 | Error | Cause | Fix |
 |-------|-------|-----|
-| `./hostcheck.sh: Permission denied` | Not executable | `chmod +x hostcheck.sh` |
-| `set: pipefail: invalid` | Running under `dash`/`sh` | Run with `bash` or `./` shebang Bash |
-| `df -Pm` unsupported | Unusual df | Use GNU df on Ubuntu; adjust carefully |
-| Probe cannot write | Permissions on directory | Fix ownership/mode on `appdir` |
+| `Permission denied` | Not executable | `chmod +x script.sh` |
+| `bad interpreter` | Windows CRLF line endings | `dos2unix script.sh` |
+| Unbound variable | `-u` and missing arg | `${1:-default}` |
+| Pipeline wrong status | Missing pipefail | `set -o pipefail` |
 
 ### Challenge exercise
 
-Extend `hostcheck.sh` with an optional third argument `--json` that prints a one-line JSON result to stdout (`{"result":"PASS","free_mb":N}`) while still appending the human log. Keep exit codes unchanged. Save a sample to `json-sample.txt`.
+Add a second check: fail if `loadavg` first field > 10 (use `uptime` or `/proc/loadavg`) — keep script under 40 lines.
 
 ### Learning outcomes
 
-- Built a safe Bash ops script with argument checks
-- Used exit codes callers can trust
-- Demonstrated pass and fail paths with logs
-- Packed scripting evidence for a runbook
+- You wrote a production-shaped mini script
+- You saw why safe modes matter
+- You can discuss exit codes in interviews
 
 ### Cleanup
 
 ``` {.bash .ra-terminal title="Terminal"}
-cd ~/rebash-linux/lab-shell
-set -euo pipefail
-rm -rf appdir
-# Keep hostcheck.sh and shell-evidence.tgz if you want them
+# Keep scripts and logs for revision
 ```
 
 ## Validation
 
-- [ ] Lab finished under `~/rebash-linux/lab-shell/` with evidence files
-- [ ] You can explain why `set -euo pipefail` is a default for ops scripts
-- [ ] You know exit code `0` vs non-zero for CI/cron
-- [ ] You know where to go for deeper Bash ([Shell track](../shell/index.md))
+- [ ] Evidence under `~/rebash-linux/lab-shell`
+- [ ] Can explain `set -euo pipefail` in one sentence each
+- [ ] Ready for environment variables tutorial next
 
 ## Code Walkthrough
 
-Ops script checklist:
-
-1. Shebang + safe `set`  
-2. Validate arguments early  
-3. Absolute paths  
-4. Log + clear stderr errors  
-5. Explicit exit codes  
+1. **`#!/usr/bin/env bash`** — portable shebang finding bash on PATH.
+2. **`${1:-90}`** — default threshold if no argument — avoids unset with `-u`.
+3. **`df -P` + awk** — predictable parsing; avoid bare `df` locale surprises.
+4. **`exit 2`** — distinct code for disk threshold vs generic 1.
+5. **Broken script without `-e`** — intentional anti-pattern for learning.
 
 ## Security Considerations
 
-- Do not pass secrets on the command line if `ps` can see them  
-- Quote variables to avoid word-splitting surprises  
-- Avoid `curl | sudo bash` patterns in production automation  
-- Review scripts like code; least privilege when using sudo  
-- Write logs without leaking credentials  
+- Quote variables: `"$LOG"` prevents word splitting/injection.
+- Do not run curl|bash; review scripts before cron as root.
+- Restrict script write permissions — attackers replace your script.
+- Avoid secrets in scripts; use env files with tight permissions.
+- Validate arguments (`[[ "$THRESH" =~ ^[0-9]+$ ]]`) before use.
 
 ## Common Mistakes
 
-!!! warning "Running Bash scripts with `sh`"
-    Ubuntu’s `sh` is dash — many Bash features break. **Fix:** `./script.sh` with a Bash shebang, or `bash script.sh`.
+!!! warning "No set -e on ops scripts"
+    Failures cascade silently — always use safe modes unless you handle each error.
 
-!!! warning "No `pipefail`"
-    `false | true` can still look successful. **Fix:** `set -o pipefail`.
+!!! warning "Unquoted $variables"
+    Filenames with spaces break scripts; quoting is mandatory.
 
-!!! warning "Ignoring exit codes in CI"
-    Later steps run on bad state. **Fix:** fail fast; check statuses.
-
-!!! warning "Parsing `ls` for automation"
-    Fragile output. **Fix:** globs, `find -print0`, or dedicated tools.
+!!! warning "Ignoring exit codes in cron"
+    Cron only emails on failure if exit non-zero — return meaningful codes.
 
 ## Best Practices
 
-- Keep scripts short and testable  
-- Prefer systemd timers/units for long-running automation  
-- Use shellcheck when available  
-- Version scripts in git  
-- Continue with the [Shell](../shell/index.md) track for mastery  
+- Log timestamp + result on every run
+- Use meaningful exit codes (document in header comment)
+- Absolute paths for cron-invoked scripts
+- ShellCheck scripts in CI when possible
+- Keep scripts small; complex logic → proper language + tests
 
 ## Troubleshooting
 
 | Symptom | Likely cause | Fix |
 |---------|--------------|-----|
-| Unbound variable | `set -u` + typo | Fix name; provide default if intentional |
-| Script stops early | `set -e` on expected fail | Guard with `if` / `|| true` only when safe |
-| Wrong line endings | Windows CRLF | `dos2unix` or recreate with heredoc |
-| Works manually, fails in cron | Env/PATH | Absolute paths; see env tutorial |
-| Permission denied on probe | Directory mode | `chmod`/`chown` the target dir |
+| Script empty output | Redirected stderr | Check `>&2` for errors |
+| Works manual, not cron | PATH/env | Full paths; see env tutorial |
+| Syntax error near `fi` | Missing then/if | `bash -n script.sh` |
+| Wrong disk reported | Wrong mount arg | Pass `$MOUNT` explicitly |
 
 ## Summary
 
-Safe Bash defaults turn fragile command piles into reliable ops tools. Validate inputs, log clearly, exit correctly, then deepen skills in the Shell track. Related: [Environment Variables and Shell Configuration](environment-variables-shell-config.md).
+A **shell script** is repeatable automation for Linux ops. Start with **shebang** and **`set -euo pipefail`**, use **arguments** and meaningful **exit codes**, log evidence, and never ship the broken “always exit 0” pattern from the lab break task.
 
 ## Interview Questions
 
-**1. What does `set -euo pipefail` buy you in an ops script?**
+**1. What is the shebang line for?**
 
 ??? success "Reveal answer"
-    **`-e`** aborts on failed commands, **`-u`** catches unset variables, **`pipefail`** makes pipelines fail if any stage fails. Together they prevent many silent automation bugs that cron and CI would otherwise ignore.
+    First line `#!/usr/bin/env bash` tells the OS which interpreter runs the file when executed directly. Ensures bash features and consistent behaviour in cron/systemd.
 
-**2. Why is a shebang of `#!/usr/bin/env bash` often preferred?**
-
-??? success "Reveal answer"
-    `env` locates `bash` on `PATH`, which helps across systems where Bash is not always in `/bin/bash`. Still test on your target distro. Never run Bash-only scripts with `sh`.
-
-**3. How should a script signal failure to cron or CI?**
+**2. What does set -euo pipefail do?**
 
 ??? success "Reveal answer"
-    Exit **non-zero** and print a clear message to **stderr**. Exit `0` only on real success. Callers and monitors key off the exit status more than log wording.
+    **-e** exit on command failure; **-u** treat unset variables as error; **-o pipefail** pipeline fails if any stage fails. Together they stop silent partial failures in ops scripts.
 
-**4. What is wrong with parsing `ls` output in scripts?**
-
-??? success "Reveal answer"
-    `ls` formatting is for humans and breaks on spaces/newlines/odd filenames. Prefer globs, `find -print0`, or tools that offer machine-safe output.
-
-**5. When should you automate with a shell script vs a systemd unit/timer?**
+**3. Why do exit codes matter for cron and systemd?**
 
 ??? success "Reveal answer"
-    Use a script for the logic; use **systemd** (or cron) to schedule, restart, and journal the run. Long-running daemons belong in units, not bare infinite loops in screen sessions.
+    Scheduler uses exit code to detect success/failure (alerts, unit state). Always returning 0 hides problems; use non-zero for real failures.
 
-**6. How do you keep scripts safe with untrusted input?**
-
-??? success "Reveal answer"
-    Validate arguments, quote expansions (`"$1"`), avoid `eval`, use `--` where commands support it, and do not concatenate raw user input into shell syntax. Least privilege for any sudo.
-
-**7. Where do you go next after this fundamentals page?**
+**4. How do you pass arguments to a script?**
 
 ??? success "Reveal answer"
-    The REBASH [Shell Scripting](../shell/index.md) track for deeper Bash, plus [Environment Variables and Shell Configuration](environment-variables-shell-config.md) for profile/systemd/cron environment behaviour that breaks many scripts in production.
+    Positional parameters: `$1`, `$2`, … `$#` is count, `$@` all args. Use `"$1"` quoted. Defaults: `${1:-default}`.
+
+**5. Script works interactively but not in cron — why?**
+
+??? success "Reveal answer"
+    Different **PATH**, working directory, and environment; cron may not load `.bashrc`. Use absolute paths, set env in crontab or unit, log to known file.
+
+**6. What is pipefail and give an example?**
+
+??? success "Reveal answer"
+    Without **pipefail**, `false | true` exits 0 (last command). With **pipefail**, pipeline exits non-zero if `false` fails — critical when grepping logs: `grep pattern file | mail` should fail if grep finds nothing (depending on intent).
+
+**7. How do you syntax-check a script without running it?**
+
+??? success "Reveal answer"
+    `bash -n script.sh` — parse only. Also **ShellCheck** static analyser. Run as non-root in staging before production cron.
 
 ## Related Tutorials
 
-- [Linux for Cloud & DevOps – Overview](index.md)
-- [Essential Linux Commands](essential-linux-commands.md) *(previous)*
-- [Environment Variables and Shell Configuration](environment-variables-shell-config.md) *(next)*
-- [Shell Scripting track](../shell/index.md) *(full Bash curriculum)*
+- Next: [Environment Variables and Shell Configuration](environment-variables-shell-config.md)
+- Previous: [Essential Linux Commands](essential-linux-commands.md)
+- Deeper: [Shell Scripting](../shell/index.md) course
 
 ## References
 
-- [Bash Reference Manual](https://www.gnu.org/software/bash/manual/) — GNU Bash  
-- [`bash(1)`](https://manpages.ubuntu.com/manpages/jammy/en/man1/bash.1.html) — Ubuntu man-pages  
-- Track index: [Linux for Cloud & DevOps Engineers](index.md)
+- [Bash manual](https://www.gnu.org/software/bash/manual/)
+- [ShellCheck](https://www.shellcheck.net/)
+- [Google shell style guide](https://google.github.io/styleguide/shellguide.html)

@@ -1,8 +1,8 @@
 ---
 title: "Cost Optimisation on AWS"
-description: "Optimise Amazon Web Services spend with pricing models, Cost Explorer, Budgets, Savings Plans, Reserved Instances, Spot, and Trusted Advisor — FinOps habits for Cloud and DevOps teams."
-difficulty: advanced
-estimated_time: "50–70 min"
+description: "AWS cost budgets, Cost Explorer, Spot vs On-Demand — then create a $5 budget alert, prove it, and delete it cleanly."
+difficulty: beginner
+estimated_time: "60–75 min"
 technology: aws
 category: aws
 module: "Module 13 · Cost Optimisation"
@@ -11,383 +11,460 @@ career_paths:
   - devops-engineer
   - platform-engineer
   - site-reliability-engineer
-  - devsecops-engineer
+  - finops-analyst
 skills:
   - aws
-  - cost-optimisation
-  - finops
+  - budgets
+  - cost-explorer
+  - reserved-instances
   - savings-plans
   - spot
+  - finops
 prerequisites:
   - aws/cicd-on-aws
+  - aws/compute-ec2-asg-and-load-balancing
+  - aws/storage-s3-ebs-efs
 next:
   - aws/reliability-and-disaster-recovery
 related:
-  - aws/aws-fundamentals-and-global-infrastructure
-  - aws/compute-ec2-asg-and-load-balancing
+  - aws/monitoring-and-observability-on-aws
+  - aws/vpc-networking-on-aws
 labs: []
 projects: []
 interview: interview/aws
 certifications:
+  - AWS Certified Cloud Practitioner
   - AWS Certified Solutions Architect – Associate
-  - AWS Certified SysOps Administrator – Associate
-  - AWS Certified DevOps Engineer – Professional
 tags:
   - aws
   - cost
+  - budgets
   - finops
-  - savings-plans
-  - reserved-instances
   - spot
+  - beginners
 author: Shaik Basha
-last_updated: "2026-07-31"
+last_updated: "2026-08-03"
 comments: false
 ---
-
 
 # Cost Optimisation on AWS
 
 ## Overview
 
+**Cost surprises** are a common early mistake — leaving a server running overnight, forgetting a NAT Gateway, or launching a GPU instance by accident. This module teaches Budgets, Cost Explorer, and pricing models in plain terms.
 
+**Problem in plain English:** On AWS you pay mostly for what you use. That is powerful but dangerous for students. A forgotten lab resource can become a real bill.
 
+**What FinOps means:** **FinOps** combines finance awareness with engineering choices — right-sizing servers, setting alerts, tagging resources by team, and picking pricing models wisely.
 
+**AWS terms you will meet:**
 
+| Term | Plain English |
+|------|---------------|
+| **AWS Budgets** | Email alert when spend crosses a limit you set |
+| **Cost Explorer** | Charts showing which service spent money |
+| **On-Demand** | Pay per hour — no commitment |
+| **Reserved Instances / Savings Plans** | Commit for 1–3 years for a discount |
+| **Spot Instances** | Cheap spare capacity — AWS can take it back with 2 minutes notice |
 
-Read Amazon Web Services (AWS) bills with intent: know pricing models, use Cost Explorer and Budgets, and apply Savings Plans, Reserved Instances (RIs), Spot, and Trusted Advisor recommendations without breaking reliability.
+This is **Tutorial 1** in **Module 13: Cost Optimisation** of the REBASH Academy **AWS for Cloud & DevOps Engineers** series. You will create a **USD 5 monthly budget** with email notification, prove it with `describe-budget`, then delete it — while learning patterns interviewers ask about daily.
 
-Cloud cost is an engineering problem. Idle NAT Gateways, oversized Amazon Elastic Compute Cloud (EC2) instances, unattached Elastic Block Store (EBS) volumes, and forgotten load balancers dominate surprise invoices. **FinOps** (cloud financial operations) means visibility, ownership via tags, and continuous right-sizing — not a once-a-year discount purchase.
-
-!!! warning "Cost hygiene"
-    Enable Cost Explorer and a monthly Budget with email alerts before you buy Savings Plans. Never commit multi-year discounts without 30 days of usage data.
-
-This is a core tutorial in **Module 13 · Cost Optimisation** of the REBASH Academy **AWS for Cloud & DevOps Engineers** series — written for Cloud, DevOps, Platform, and SRE engineers.
+!!! warning "Cost"
+    AWS Budgets themselves are low cost (first budgets often Free Tier eligible). The lab budget does not charge you USD 5 — it **alerts** when spend approaches that threshold.
 
 ## Prerequisites
 
+- [AWS Fundamentals](aws-fundamentals-and-global-infrastructure.md) — you created a billing alarm in Module 1
+- [CI/CD on AWS](cicd-on-aws.md) *(Module 12)* — pipelines can multiply resources quickly
+- Billing console access or `budgets:*` and `ce:*` read in sandbox
 
-
-
-
-
-- [CI/CD on AWS](cicd-on-aws.md)
-- Billing access (or a read-only billing view) in a sandbox or shared account
-- Familiarity with EC2, Amazon Simple Storage Service (S3), and networking cost drivers from earlier modules
+You do **not** need finance or accounting background.
 
 ## Learning Objectives
 
-
-
-
-
-
 By the end of this tutorial, you will be able to:
 
-- [ ] Contrast On-Demand, Spot, Savings Plans, and Reserved Instances  
-- [ ] Navigate Cost Explorer by service, tag, and account  
-- [ ] Create a Budget with alert thresholds  
-- [ ] Interpret Trusted Advisor cost checks safely  
-- [ ] List top waste patterns and how to eliminate them
+- [ ] Explain why cloud cost matters for students and junior engineers
+- [ ] Configure AWS Budgets with thresholds and email subscribers
+- [ ] Explain On-Demand vs Reserved vs Spot in plain English
+- [ ] Query Cost Explorer by service for a simple investigation
+- [ ] Name three common AWS waste items (unattached disks, idle NAT, old snapshots)
+- [ ] Answer fresher interview questions on tags and bill spikes
 
 ## Architecture
 
+Billing data flows from usage records to Cost and Usage Reports (CUR), Cost Explorer, and Budgets. Organisations consolidate linked accounts. Tags enable allocation; SCPs and budgets enforce guardrails at the organisation level.
 
-
-
-
-
-This topic’s control points and relationships are shown below.
-
-![Cost optimisation loop](../assets/excalidraw/aws-cost.svg)
+![Cost optimisation on AWS — visibility, guardrails, purchasing](../assets/excalidraw/aws-cost.svg)
 
 ## Theory
 
+### The problem (before jargon)
 
+**Problem:** A team deploys 20 test servers and forgets them over the weekend. Monday’s manager asks why the bill doubled.
 
+**Analogy:** Leaving all the lights and AC on in a rented office when nobody is inside — the building owner still sends the bill.
 
+**AWS reality:** Most services bill continuously (per hour, per GB, per request). Automation (IaC, CI/CD) makes it easy to create resources fast — guardrails must be automatic too.
 
+### AWS cost optimisation in plain English
 
-### What it is
+**Cost optimisation** means matching spend to business value: delete waste, pick the right size server, choose smart pricing, and alert before surprises.
 
-**Cost optimisation on AWS** matches capacity and purchase model to demand while preserving SLOs. Combine **pricing models** (On-Demand, Spot, Savings Plans, Reserved Instances), **visibility** (Cost Explorer, Budgets, Trusted Advisor), and hygiene (right-sizing, lifecycle, fewer idle NAT Gateways). Cost allocation tags and Organizations cost categories enable FinOps showback/chargeback.
+| Tool | Plain job | Tiny example |
+|------|-----------|--------------|
+| **AWS Budgets** | “Email me at 80% of USD 5” | Student sandbox safety net |
+| **Cost Explorer** | “Which service spent most this week?” | After alert, find NAT Gateway spike |
+| **Cost and Usage Report (CUR)** | Detailed line-item export to S3 | Finance team spreadsheets |
+| **Trusted Advisor** | Automated best-practice tips | “You have 3 unattached EBS volumes” |
+| **Compute Optimizer** | “This server is too big” | Downsize t3.large → t3.small |
 
-| Lever | Idea |
-|-------|------|
-| On-Demand | Flexible; highest unit price |
-| Spot | Deep discount; interruptible |
-| Savings Plans | Commit $/hour compute (1–3 years) |
-| Reserved Instances | Commit to specific attributes/capacity |
-| Cost Explorer | Visualise and group spend |
-| Budgets | Alert on actual/forecast thresholds |
-| Trusted Advisor | Cost checks (by Support tier) |
+**Interview one-liner:** “I tag resources, set budgets, review Cost Explorer weekly, and delete what we do not need — cost is a design choice, not only finance’s problem.”
 
-### Why it matters
+### Pricing models — comparison for beginners
 
-Platforms that ignore unit cost become unaffordable. SRE balances Multi-AZ reliability against idle waste; staging left 24×7 doubles bills. Interviews expect purchase-option literacy *and* waste elimination. Cost spikes are also incidents — runaway ASG, data transfer, or logging.
+| Model | Plain meaning | Good for | Risk |
+|-------|---------------|----------|------|
+| **On-Demand** | Pay hourly, no contract | Unknown or spiky workloads | Highest unit price |
+| **Savings Plans** | Commit to USD/hour compute spend | Steady baseline traffic | Pay even if usage drops |
+| **Reserved Instances** | Commit to specific instance type/Region | Stable databases | Wrong size wastes money |
+| **Spot** | Bid on spare capacity | Batch jobs, CI workers | AWS can interrupt with 2-minute notice |
 
-### How it works
+**Analogy for Spot:** Standby airline seats sold cheap — you may be bumped if demand rises. Do not put your only production database on Spot without a plan.
 
-1. Enable Cost Explorer and cost allocation tags; separate prod/dev accounts.
-2. Baseline two to four weeks before large commitments.
-3. Kill waste: idle resources, right-size, S3 lifecycle, endpoints instead of NAT where possible.
-4. Commit: Savings Plans for steady compute; Spot for interruptible fleets; RIs when footprint is stable/specific.
-5. Govern: Budgets + anomaly detection; showback by `Owner`/`CostCenter`; Trusted Advisor / Compute Optimizer reviews.
+### Common waste patterns (memorise for interviews)
 
-### Concept deep dive
+| Waste | How you notice | Fix |
+|-------|----------------|-----|
+| Unattached EBS disk | Trusted Advisor / console | Snapshot if needed; delete volume |
+| NAT Gateway left running | Cost Explorer → VPC | Delete; use S3 gateway endpoint in labs |
+| Old snapshots | Age + no tags | Lifecycle policy |
+| Idle load balancer | Low request count | Remove or merge |
+| Wrong Region resources | Console filter confusion | Delete in correct Region |
 
-**On-Demand** — default for spiky or unknown work. **Spot** — spare EC2 at large discount; handle interruption/rebalance; diversify types/AZs; keep a minimum On-Demand floor for capacity that must not die; never the sole copy of a stateful single-AZ database. **Savings Plans** — commit $/hour for 1–3 years. **Compute SP** flexes across family/size/OS/Region and covers much Fargate/Lambda usage; **EC2 Instance SP** is narrower/deeper for a fixed family. **Reserved Instances** still matter for some database/cache commitments and capacity reservation; for EC2, many orgs prefer Compute SP. Unused commitment is wasted money — cover the *stable baseline*, not 100% of peak.
+### VPC cost link (Module 3)
 
-**Cost Explorer** groups by service, account, Region, tag; prefer amortised views with upfront fees; inspect EC2-Other, transfer, and NAT lines. **Budgets** alert at 50/80/100% actual or forecast via SNS; optional budget actions in non-prod; pair with Cost Anomaly Detection. **Trusted Advisor** cost checks (idle LBs, underutilised EC2, free Elastic IPs, …) depend on Support plan — verify with metrics before terminate. **Compute Optimizer** complements rightsizing for EC2, ASG, EBS, and Lambda.
+**Problem:** Private subnets need internet access. **NAT Gateway** charges hourly plus per GB processed — a common student surprise bill.
 
-### Key concepts and comparisons
+**Fix for S3 access from private subnets:** Use a **gateway VPC endpoint** for S3 (free in many cases) instead of sending all traffic through NAT.
 
-| Option | Best for | Risk |
-|--------|----------|------|
-| On-Demand | Spiky / short-lived | Higher unit cost |
-| Spot | Stateless / interruptible | Interruption |
-| Compute Savings Plan | Broad steady compute | Mis-sized commitment |
-| EC2 Instance SP / RI | Stable specific footprint | Lock-in |
-
-| Term | Meaning |
-|------|---------|
-| Amortised cost | Spreads upfront fees across the term |
-| Rightsizing | Match size/family to utilisation |
-| Showback / chargeback | Attribute tagged spend to teams |
-| FinOps | Continuous visibility, ownership, optimisation |
+**Interview one-liner:** “NAT Gateway is often the hidden line item after networking labs — I use endpoints where possible and delete NAT when done.”
 
 ### Common pitfalls
 
-- Three-year RIs on day one of a migration.
-- Ignoring data transfer and NAT hours.
-- Unattached EBS and old AMI snapshots.
-- Inconsistent tags so Cost Explorer cannot attribute spend.
-- Spot for stateful single-AZ databases.
-- Savings Plans without Budgets or a usage baseline.
-- Cutting Multi-AZ “to save money” without an explicit reliability trade-off.
+- **Budget with no owner** — alerts go to an inbox nobody reads.
+- **Buying 3-year Reserved Instances on day one** — architecture still changing.
+- **Spot without interruption handling** — batch job loses progress mid-run.
+- **No tags** — cannot answer “which team spent this?”
 
 ## Hands-on Lab
 
-
-
-!!! warning "Cost and account safety"
-    Use a sandbox account. Prefer read-only calls. Destroy anything you create before leaving the lab.
-
 ### Objective
 
-Use read-only AWS APIs to inventory and verify aspects of **Cost Optimisation on AWS** in a sandbox account.
+Create a monthly cost budget of USD 5 with email notification at 80% actual spend, prove with `describe-budget`, simulate subscriber file structure, and delete the budget.
 
 ### Prerequisites
 
-- AWS CLI v2
-- Credentials for a **sandbox** account (SSO or short-lived keys)
+| Tool | Notes |
+|------|--------|
+| AWS CLI v2 | `budgets:CreateBudget`, `budgets:DescribeBudget` |
+| Account ID | From `sts get-caller-identity` |
+| Valid email | For notification subscriber (use your own) |
 
 ### Lab environment
 
-Workspace: `~/rebash-aws/module-13`
-
-Prefer `describe`/`list`/`get` APIs. Create resources only with an explicit destroy path.
-
 ``` {.bash .ra-terminal title="Terminal"}
 mkdir -p ~/rebash-aws/module-13 && cd ~/rebash-aws/module-13
+export AWS_REGION="${AWS_REGION:-eu-west-2}"
+export AWS_PAGER=""
+export BUDGET_NAME="rebash-m13-monthly-5usd"
+ACCOUNT_ID=$(aws sts get-caller-identity --query Account --output text)
+echo "$ACCOUNT_ID" | tee account-id.txt
+export BUDGET_EMAIL="${BUDGET_EMAIL:-you@example.com}"
+echo "$BUDGET_EMAIL" | tee budget-email.txt
 ```
+
+Replace `you@example.com` with your real inbox before Task 2.
 
 ### Real-world scenario
 
-Security asks for evidence that **Cost Optimisation on AWS** is configured correctly. You gather CLI proof without click-ops drift.
+Finance asks platform: **“Give engineers an early warning before sandbox spend crosses USD 5 this month — no surprise invoice.”** You implement AWS Budgets with documented JSON artefacts the team can reuse in Terraform or CloudFormation later.
 
 ### Step-by-step tasks
 
-#### Task 1 – Prove caller identity
+#### Task 1 – Author budget and notification JSON files
 
-Every AWS change starts by knowing which account/role you are.
+Create `budget.json`:
+
+```json title="budget.json"
+{
+  "BudgetName": "rebash-m13-monthly-5usd",
+  "BudgetLimit": {
+    "Amount": "5",
+    "Unit": "USD"
+  },
+  "TimeUnit": "MONTHLY",
+  "BudgetType": "COST",
+  "CostTypes": {
+    "IncludeTax": true,
+    "IncludeSubscription": true,
+    "UseBlended": false
+  }
+}
+```
+
+Create `notifications.json`:
+
+```json title="notifications.json"
+[
+  {
+    "Notification": {
+      "NotificationType": "ACTUAL",
+      "ComparisonOperator": "GREATER_THAN",
+      "Threshold": 80,
+      "ThresholdType": "PERCENTAGE"
+    },
+    "Subscribers": [
+      {
+        "SubscriptionType": "EMAIL",
+        "Address": "REPLACE_WITH_YOUR_EMAIL"
+      }
+    ]
+  }
+]
+```
+
+Replace the email placeholder:
 
 ``` {.bash .ra-terminal title="Terminal"}
-aws sts get-caller-identity | tee identity.json
-aws configure get region || true
-test -s identity.json
+cd ~/rebash-aws/module-13
+EMAIL=$(cat budget-email.txt)
+sed "s/REPLACE_WITH_YOUR_EMAIL/${EMAIL}/" notifications.json > notifications-ready.json
+grep -q "$EMAIL" notifications-ready.json
 ```
 
 !!! example "Expected output"
-    JSON includes Account, Arn, and UserId.
+    `notifications-ready.json` contains your email address in the `Address` field.
 
 
-#### Task 2 – Collect topic signals
-
-Inventory the service surface related to this module.
+#### Task 2 – Create budget and describe proof
 
 ``` {.bash .ra-terminal title="Terminal"}
-aws ec2 describe-vpcs --query 'Vpcs[].{Id:VpcId,Cidr:CidrBlock}' --output table 2>/dev/null | tee vpcs.txt || true
-aws iam get-account-summary 2>/dev/null | tee iam-summary.json || true
-tee notes.txt << 'EOF'
-Record which APIs apply to this topic and any NotAuthorized errors for follow-up.
-EOF
-cat notes.txt
+cd ~/rebash-aws/module-13
+ACCOUNT_ID=$(cat account-id.txt)
+aws budgets create-budget \
+  --account-id "$ACCOUNT_ID" \
+  --budget file://budget.json \
+  --notifications-with-subscribers file://notifications-ready.json \
+  | tee create-budget.json
+aws budgets describe-budget \
+  --account-id "$ACCOUNT_ID" \
+  --budget-name "$BUDGET_NAME" \
+  --output json | tee describe-budget.json
+jq -e '.Budget.BudgetLimit.Amount == "5.0" or .Budget.BudgetLimit.Amount == "5"' describe-budget.json
+jq -e '.Budget.BudgetType == "COST"' describe-budget.json
+echo "budget created OK" | tee evidence.txt
 ```
 
 !!! example "Expected output"
-    Evidence files created even if some APIs are denied.
+    `describe-budget.json` shows `"BudgetName": "rebash-m13-monthly-5usd"` and limit USD 5; `evidence.txt` confirms creation.
+
+
+#### Task 3 – Cost Explorer read-only investigation
+
+``` {.bash .ra-terminal title="Terminal"}
+cd ~/rebash-aws/module-13
+START=$(date -u -v-7d +%Y-%m-%d 2>/dev/null || date -u -d '7 days ago' +%Y-%m-%d)
+END=$(date -u +%Y-%m-%d)
+aws ce get-cost-and-usage \
+  --time-period Start="$START",End="$END" \
+  --granularity DAILY \
+  --metrics UnblendedCost \
+  --group-by Type=DIMENSION,Key=SERVICE \
+  --output json | tee cost-by-service.json
+jq '[.ResultsByTime[].Groups[] | {service: .Keys[0], amount: .Metrics.UnblendedCost.Amount}] | sort_by(.amount | tonumber) | reverse | .[0:5]' \
+  cost-by-service.json | tee top-services.json
+test -s top-services.json
+echo "cost explorer OK" | tee ce-evidence.txt
+```
+
+!!! example "Expected output"
+    `top-services.json` lists up to five services with spend amounts (may be small in sandbox).
+
+
+#### Task 4 – Document Spot vs On-Demand decision (artefact file)
+
+Create `spot-decision.md`:
+
+```markdown title="spot-decision.md"
+# REBASH Module 13 — Spot vs On-Demand (lab note)
+
+| Workload | Choice | Reason |
+|----------|--------|--------|
+| CI batch worker (Module 12) | Spot with checkpoint | Interruptible; 60–90% savings |
+| Production API ASG baseline | On-Demand + Savings Plan | Steady traffic; interruption unacceptable |
+| Render farm | Spot Fleet + diversification | Multiple pools reduce interruption rate |
+
+**Interview line:** "We use Savings Plans for baseline compute and Spot for fault-tolerant batch — never Spot for single-AZ stateful databases without HA design."
+```
+
+``` {.bash .ra-terminal title="Terminal"}
+cd ~/rebash-aws/module-13
+test -f spot-decision.md
+wc -l spot-decision.md | tee spot-lines.txt
+```
+
+!!! example "Expected output"
+    `spot-lines.txt` shows a non-zero line count; file exists for portfolio reference.
 
 
 ### Validation steps
 
-- [ ] identity.json present
-- [ ] No long-lived keys committed to the repo
+- [ ] Budget created with USD 5 monthly limit
+- [ ] `describe-budget` returns matching name and type
+- [ ] Email subscriber present in notification JSON
+- [ ] Cost Explorer query returned service breakdown
+- [ ] Spot decision artefact documents trade-offs
 
 ### Common errors and fixes
 
 | Error | Cause | Fix |
 |-------|-------|-----|
-| Unable to locate credentials | No profile/SSO | Run `aws sso login` or export sandbox keys |
-| AccessDenied | Least privilege | Use a role that can read the service — or document the deny |
-| UnauthorizedOperation | Wrong region/account | Check `AWS_REGION` and account id |
+| `DuplicateRecordException` | Budget name exists | Delete old budget or pick new name |
+| `AccessDeniedException` on CE | Missing `ce:GetCostAndUsage` | Use billing admin role or skip CE task |
+| Email not received | Threshold not crossed yet | 80% alert fires only when spend exceeds limit |
+| Invalid email in subscriber | Typo in JSON | Fix `notifications-ready.json` and update budget |
 
 ### Challenge exercise
 
-Enable a cost budget alarm in the sandbox (or document the console clicks) and screenshot/CLI-describe it.
+Add a **usage budget** JSON file for EC2 running hours (e.g. 100 hours/month) in `budget-ec2-hours.json` and create it with a second notification at 100% forecasted. Delete both budgets in cleanup. Forecast notifications help catch pipeline runaway before month end.
 
 ### Learning outcomes
 
-- Authenticated safely
-- Captured read-only evidence
-- Avoided unmanaged spend
+- You implemented programmatic AWS Budgets — common in landing zone baselines
+- You queried Cost Explorer by service — first step in spike triage
+- You documented Spot vs On-Demand judgement for interviews
+- You understand budgets alert on **spend**, not **charge** your card automatically
 
 ### Cleanup
 
-```bash
-# Revoke/lab-expire any temporary keys you exported
-# Do not leave EC2/ELB/NAT running
+``` {.bash .ra-terminal title="Terminal"}
+cd ~/rebash-aws/module-13
+ACCOUNT_ID=$(cat account-id.txt)
+aws budgets delete-budget --account-id "$ACCOUNT_ID" --budget-name "$BUDGET_NAME"
+aws budgets describe-budget --account-id "$ACCOUNT_ID" --budget-name "$BUDGET_NAME" 2>&1 | tee delete-check.txt || true
+grep -q 'NotFoundException\|Unable to get budget' delete-check.txt && echo "budget removed OK" | tee cleanup-log.txt
 ```
 
 ## Validation
 
-
-
-
-
-
-- [ ] Lab commands run under `~/rebash-aws/module-13/`
-- [ ] You can explain each Theory section in your own words
-- [ ] You used modern tooling where it applies to this topic
-- [ ] You can describe one production failure mode for this topic
+- [ ] Budget lifecycle completed (create → describe → delete)
+- [ ] Can explain RI vs Savings Plan vs Spot in plain English
+- [ ] Can name three common AWS waste items
+- [ ] Links NAT/endpoints discussion to Module 3 networking costs
 
 ## Code Walkthrough
 
-
-
-
-
-
-Production practice for **Cost Optimisation on AWS** always combines:
-
-1. Inspect before you change (status, plan, logs, dry-run)
-2. Prefer reversible, documented changes (Git, IaC, drop-ins, version pins)
-3. Capture evidence (command output, pipeline logs) for handovers
-4. Prefer current tools and APIs over legacy shortcuts
-5. Least privilege — escalate credentials only when required
-
-Keep runbooks short enough to follow under pressure. Automate checks; keep humans for judgement.
+1. **Account ID in budget API** — budgets are always scoped to payer/linked account ID.
+2. **ACTUAL vs FORECASTED notifications** — actual fires on spend; forecast predicts month-end breach.
+3. **Unblended vs blended costs** — organisations with RIs use blended in payer view; unblended for linked account attribution.
+4. **Cost Explorer group-by SERVICE** — fastest “what spiked?” view after alert.
+5. **JSON files in Git** — same artefacts IaC modules consume (`aws_budgets_budget` in Terraform).
 
 ## Security Considerations
 
-
-
-
-
-
-- Treat credentials and tokens for aws as privileged — never commit them
-- Prefer short-lived auth (OIDC, roles, SSO) over long-lived keys
-- Validate blast radius before apply/deploy/delete operations
-- Restrict who can approve production changes
-- Collect audit logs; limit who can read sensitive traces
+- Restrict `budgets:ModifyBudget` to finance/platform roles — attackers could disable alerts.
+- CUR buckets contain detailed usage — encrypt with KMS; block public access.
+- Do not publish cost reports with account IDs to public wikis.
+- Use IAM deny on expensive instance types in sandbox SCPs (Module 15).
+- Anomaly detection complements budgets for zero-day resource creation spikes.
 
 ## Common Mistakes
 
+!!! warning "Alerts without owners"
+    Route budget SNS/email to a team alias with on-call rotation — not an individual who left the company.
 
+!!! warning "RI purchase before rightsizing"
+    Buy commitments only after workload stabilises; use Compute Optimizer first.
 
-
-
-
-!!! warning "Three-year RIs on day one of a migration."
-    Validate assumptions against the Theory section and official docs before changing production.
-
-!!! warning "Ignoring data transfer and NAT hours."
-    Lab shortcuts (open security groups, admin roles, skip approvals) must not ship unchanged.
-
-!!! warning "Changing production without a rollback path"
-    Always know how to revert (previous artefact, prior release, state rollback, DNS failback).
+!!! warning "Ignoring Support plan limits"
+    Full Trusted Advisor checks require Business/Enterprise Support — know what is available in your account.
 
 ## Best Practices
 
-
-
-
-
-
-- Encode Cost Optimisation on AWS changes as code and review them in pull requests
-- Pin versions (images, modules, actions, provider plugins)
-- Separate environments with clear promotion gates
-- Alert on symptoms with runbooks attached
-- Destroy lab resources; tag everything with owner and expiry where possible
+- Mandatory cost allocation tags enforced at creation (SCP/tag policy)
+- Weekly Cost Explorer review per team; monthly FinOps council
+- S3 Intelligent-Tiering or lifecycle for log buckets (Module 5)
+- Gateway endpoints for S3 in private VPCs (Module 3)
+- Automate idle resource reports with AWS Config rules or custom Lambda
 
 ## Troubleshooting
 
-
-
-
-
-
 | Symptom | Likely cause | Fix |
 |---------|--------------|-----|
-| Auth / permission denied | Wrong identity, policy, or scope | Check caller identity, roles, and least-privilege policies |
-| Timeout / no route | Network, DNS, security group, or endpoint | Trace path, DNS, and allow-lists before retrying |
-| Drift / unexpected plan | Manual change or wrong state/workspace | Reconcile desired vs actual; avoid click-ops on managed resources |
-| Pipeline/job red | Flaky step, cache, or missing secret | Read failing step logs; bisect recent workflow/config changes |
-| Cost spike | Idle load balancer, NAT, oversized compute | Inventory billable resources; stop/delete labs promptly |
+| Bill spike after VPC lab | NAT Gateway hourly + data processing | Delete NAT; use endpoints |
+| Budget never emails | Below threshold | Lower threshold for test or use forecast alert |
+| CE shows `$0` everywhere | New account / IAM scope | Wait 24h for data; check payer vs linked account |
+| Spot fleet unstable | Single pool, one AZ | Diversify instance types and AZs |
 
 ## Summary
 
-
-
-
-
-
-**Cost Optimisation on AWS** is essential for Cloud and DevOps engineers working with aws. Practise the lab until the inspection and change path is muscle memory, then continue the track.
+Cost control is **architecture plus discipline**: tags, budgets, right-sizing, and smart purchasing. You created and verified a real AWS Budget and queried Cost Explorer — skills that pair with **Reliability and Disaster Recovery** when balancing spend against how fast you must recover from outages.
 
 ## Interview Questions
 
+**1. Why should a student set a budget before launching servers?**
 
+??? success "Reveal answer"
+    Labs can leave billable resources running (EC2, load balancers, NAT Gateways). A budget emails you when spend crosses a threshold so a learning mistake does not become a large invoice. It also shows interviewers you think about cost from day one.
 
+**2. Reserved Instance vs Savings Plan — which is more flexible?**
 
-1. Top idle resources you hunt weekly?
-2. What tags enable showback?
-3. Savings Plans versus Reserved Instances — conceptual difference?
-4. How do you attribute CI/CD costs?
-5. NAT gateway cost control ideas?
+??? success "Reveal answer"
+    Compute Savings Plans apply to EC2, Fargate, and Lambda regardless of instance family, size, AZ, or Region (within the plan scope). Standard RIs lock to instance family, tenancy, and Region. Savings Plans suit dynamic fleets; RIs can offer deeper discounts when attributes are stable.
 
-!!! tip "Sample answer — question 2"
-    Start with Cost Explorer by service, then inventory unattached EIPs, idle LBs, old volumes, and oversized idle EC2.
+**3. When is Spot appropriate and how do you handle interruption?**
 
-!!! tip "Sample answer — question 4"
-    Enforce tagging, budget alarms, and destroy lab stacks with expiry tags.
+??? success "Reveal answer"
+    Spot fits fault-tolerant, flexible workloads: batch, CI, render farms, stateless workers with multiple instance types. Handle the two-minute interruption notice with checkpointing, graceful drain, Spot Fleet diversification, and fallback to On-Demand capacity in mixed instance groups.
+
+**4. What is the first CLI/API step after a budget alert fires?**
+
+??? success "Reveal answer"
+    Open Cost Explorer (or `ce get-cost-and-usage`) grouped by service and linked account for the alert window. Identify the top contributor, then drill into resource IDs via CUR/Resource Groups Tagging API. Correlate with CloudTrail for who created resources.
+
+**5. How do VPC choices affect cost (Module 3 link)?**
+
+??? success "Reveal answer"
+    NAT Gateways charge hourly plus per-GB processed — chatty private subnets hurt. S3/DynamoDB gateway endpoints avoid NAT for those prefixes. Cross-AZ traffic between tiers adds data transfer charges. Public subnets with IGW avoid NAT cost but expose instances — design trade-off.
+
+**6. Trusted Advisor vs Compute Optimizer?**
+
+??? success "Reveal answer"
+    Trusted Advisor provides broad best-practice checks (security, fault tolerance, cost, limits) depending on support plan. Compute Optimizer focuses on ML-driven right-sizing for EC2, EBS, Lambda, ASG. Use both: Advisor for checklist, Optimizer for sizing evidence.
+
+**7. What tags do you require for chargeback?**
+
+??? success "Reveal answer"
+    At minimum: `Environment`, `Owner` or `Team`, `CostCentre` or `Project`, and `Application`. Activate cost allocation tags in the billing console. Enforce with SCP/tag policies at org level (Module 15).
+
+**8. How do pipelines cause cost incidents?**
+
+??? success "Reveal answer"
+    Runaway builds, leaked long-lived test clusters, unbounded parallel integration tests, and failed destroy steps in IaC pipelines. Mitigate with account vending for ephemeral envs, auto-expiry tags, budget alerts, and mandatory cleanup jobs in CI.
 
 ## Related Tutorials
 
-
-
-
-
-
-- [Course overview](index.md)
-- [Reliability and Disaster Recovery](reliability-and-disaster-recovery.md)
+- Previous: [CI/CD on AWS](cicd-on-aws.md) *(Module 12)*
+- Next: [Reliability and Disaster Recovery](reliability-and-disaster-recovery.md) *(Module 14)*
+- [VPC Networking on AWS](vpc-networking-on-aws.md) — NAT and endpoint cost
+- [Monitoring and Observability on AWS](monitoring-and-observability-on-aws.md)
+- Course index: [AWS for Cloud & DevOps Engineers](index.md)
 
 ## References
 
-
-
-
-
-
-- [AWS Cost Explorer](https://docs.aws.amazon.com/cost-management/latest/userguide/ce-what-is.html)  
-- [AWS Budgets](https://docs.aws.amazon.com/cost-management/latest/userguide/budgets-managing-costs.html)  
-- [Savings Plans](https://docs.aws.amazon.com/savingsplans/latest/userguide/what-is-savings-plans.html)  
+- [AWS Budgets](https://docs.aws.amazon.com/cost-management/latest/userguide/budgets-managing-costs.html)
+- [AWS Cost Explorer](https://docs.aws.amazon.com/cost-management/latest/userguide/ce-what-is.html)
+- [Savings Plans](https://docs.aws.amazon.com/savingsplans/latest/userguide/)
+- [Amazon EC2 Spot Instances](https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/using-spot-instances.html)
 - [AWS Trusted Advisor](https://docs.aws.amazon.com/awssupport/latest/user/trusted-advisor.html)

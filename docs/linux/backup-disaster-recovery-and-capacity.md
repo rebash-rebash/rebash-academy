@@ -1,19 +1,24 @@
 ---
 title: "Backup, Disaster Recovery, and Capacity"
-description: "Practise backup and restore with tar and rsync, define a simple recovery objective, and check capacity signals on Ubuntu."
+description: "Linux backup and restore with tar and rsync, simple RPO/RTO, capacity checks — destroy data on purpose and prove restore."
 difficulty: intermediate
-estimated_time: "50–60 min"
+estimated_time: "50–65 min"
 author: Shaik Basha
-last_updated: "2026-08-02"
+last_updated: "2026-08-04"
 category: linux
 technology: linux
 module: "Module 16 · Production Linux"
+career_paths:
+  - linux-administrator
+  - devops-engineer
+  - site-reliability-engineer
 tags:
   - linux
   - backup
   - disaster-recovery
-  - capacity
   - rsync
+  - capacity
+  - beginners
 prerequisites:
   - linux/production-linux-hardening-and-performance
 related:
@@ -27,340 +32,316 @@ comments: false
 
 ## Overview
 
-A backup you have never restored is only a hope. **Backup** copies data so you can recover from deletion, corruption, or bad deploys. **Disaster Recovery (DR)** is the plan and practise to restore service after a larger failure (lost VM, lost region, lost disk). **Capacity** planning watches disk, CPU, and memory so you grow before you break.
+“We have backups” sounds reassuring until someone asks: **“When did you last restore?”** This tutorial uses **`tar`**, **`rsync`**, and honest **Recovery Point Objective (RPO)** / **Recovery Time Objective (RTO)** thinking — not enterprise appliances.
 
-Two numbers appear in every serious DR conversation: **Recovery Point Objective (RPO)** — how much data you can afford to lose (time since last good backup), and **Recovery Time Objective (RTO)** — how long recovery may take. In this tutorial you will create sample data, back it up with `tar` and `rsync`, destroy the original on purpose, restore, verify checksums, and capture capacity signals under `~/rebash-linux/lab25`.
+**Plain problem:** A bad deploy deletes config. The team has a tarball somewhere — nobody tested restore. Hours lost. **Capacity** is the sibling problem: disks fill silently until everything stops.
 
-In production, use platform tools too (cloud snapshots, database native backups, object storage). Host-level `tar`/`rsync` skills still matter for configs, small app trees, and proving you understand restore.
+This tutorial: create data, **back up**, **destroy**, **restore**, verify checksums, capture capacity signals — evidence under `~/rebash-linux/lab25`.
 
-This is **Tutorial 25** in **Module 16: Production Linux** of the REBASH Academy **Linux for Cloud & DevOps Engineers** series. It is written for Linux administrators, DevOps engineers, Site Reliability Engineering (SRE), and platform engineers.
+This is **Tutorial 16b** in **Module 16: Production Linux** of the REBASH Academy **Linux for Cloud & DevOps Engineers** series.
 
 ## Prerequisites
 
-- [Production Hardening and Performance](production-linux-hardening-and-performance.md)
-- A **practice Ubuntu 22.04/24.04 VM** with write space under `$HOME`
-- Package `rsync` (install if missing)
+- Ubuntu practice VM with free disk space (~500 MB for lab)
+- [Production Hardening and Performance](production-linux-hardening-and-performance.md) or comfort with `df`, `du`
+- `sudo` not required for most of this lab
 
 ## Learning Objectives
 
 By the end of this tutorial, you will be able to:
 
-- [ ] Explain RPO and RTO in plain language
-- [ ] Create a `tar` archive backup and restore it
-- [ ] Mirror a directory with `rsync` and prove a restore after deletion
-- [ ] Verify restored data with checksums
-- [ ] Capture capacity signals (`df`, `du`) with the backup evidence under `~/rebash-linux/lab25`
+- [ ] Explain backup vs **Disaster Recovery (DR)** in plain language
+- [ ] Define **RPO** and **RTO** with a simple example
+- [ ] Create and restore **`tar`** and **`rsync`** backups
+- [ ] Verify restore with checksums
+- [ ] Read basic **capacity** signals (`df`, `du`)
+- [ ] Answer fresher interview questions on backup and DR
 
 ## Architecture
 
-Backups copy data to safe storage; DR restores service within RPO/RTO; capacity monitoring prevents “no space for backups” failures.
+Backups copy data to secondary storage. DR is the plan and practise to restore **service** after larger failure. Capacity monitoring ensures you grow storage before backups themselves fail.
 
-![Architecture diagram for Backup, Disaster Recovery, and Capacity](../assets/excalidraw/linux-backup-dr.svg)
+![Linux backup and DR — source, backup store, restore](../assets/excalidraw/linux-backup-dr.svg)
 
 ## Theory
 
-### What it is
+### The problem (before any jargon)
 
-| Term | Meaning |
-|------|---------|
-| Backup | Copy of data for restore |
-| Restore test | Proving the copy works |
-| RPO | Max acceptable data loss window |
-| RTO | Max acceptable downtime to recover |
-| Capacity | Headroom for growth and for backup storage |
+Intern deletes `/etc/nginx` trying to “clean up”. No tested restore. Team rebuilds manually from memory — wrong TLS cert, hours downtime. A 15-minute tested **`tar`** restore would have fixed it.
+
+### Backup vs DR (simple words)
+
+**Analogy:** **Backup** is photocopying important documents to a safe drawer. **DR** is the fire drill — who grabs the copies, how fast the office reopens, which copy is new enough.
+
+| Term | Plain meaning |
+|------|----------------|
+| **Backup** | Copy of data at a point in time |
+| **Restore** | Put data back from backup |
+| **DR** | Process + infra to recover after major failure |
+| **RPO** | Max acceptable **data loss** (time since last good backup) |
+| **RTO** | Max acceptable **downtime** to restore service |
+
+**Example:** Nightly backup at midnight, incident at 09:00 → RPO ≈ 9 hours of changes lost unless incremental/hourly backups exist.
+
+**Interview line:** “I test restores regularly; RPO/RTO drive backup frequency and architecture.”
+
+### tar — archive one directory tree
 
 ``` {.bash .ra-terminal title="Terminal"}
-tar -czf backup.tgz data/
-rsync -aH data/ backup-mirror/
-df -hT
+tar -czvf backup.tar.gz /path/to/data
+tar -xzvf backup.tar.gz -C /restore/destination
 ```
 
-### Why it matters
+`-c` create, `-z` gzip, `-v` verbose, `-f` file.
 
-Ransomware, bad migrations, and accidental `rm` are normal risks. Cloud snapshots help, but application consistency and restore drills matter. Disks that are 95% full often fail the backup job first.
+### rsync — efficient sync
 
-### How it works
+**Analogy:** **rsync** is a smart copy — only changed blocks, great for large trees and remote hosts (`user@host:/path`).
 
-1. Identify critical data and RPO/RTO  
-2. Copy off-box when possible  
-3. Automate schedules (cron/timer)  
-4. **Restore regularly** into a scratch path  
-5. Watch capacity of source and backup target  
+``` {.bash .ra-terminal title="Terminal"}
+rsync -a --delete /source/ /backup/mirror/
+```
 
-| Tool | Good for |
-|------|----------|
-| `tar` | Portable archives of trees |
-| `rsync` | Incremental mirrors |
-| Snapshots | Whole disk/VM points in time |
-| DB dumps | Consistent database recovery |
+`-a` archive mode (perms, times); trailing slashes matter.
+
+### Capacity
+
+``` {.bash .ra-terminal title="Terminal"}
+df -h
+du -sh /var/log/*
+```
+
+Plan growth before 100% full — backups fail when destination has no space.
 
 ### Common pitfalls
 
-- Backups on the same disk as the source only.  
-- Never testing restore.  
-- No room left for the backup target.  
-- Backing up without application quiesce when consistency matters.
+- Backups on the same disk as source (single point of failure)
+- Never tested restore
+- Ignoring database consistency (apps need quiesce or native backup)
+- Confusing snapshot with backup without off-site copy
 
 ## Hands-on Lab
 
 ### Objective
 
-Create sample app data, back it up with `tar` and `rsync`, delete the live data, restore from both methods, verify checksums, and pack evidence under `~/rebash-linux/lab25`.
+Build sample app data, **`tar`** and **`rsync`** backups, **delete** source deliberately, **restore**, verify **checksums**, capture **capacity** — under `~/rebash-linux/lab25`.
 
 ### Prerequisites
 
-- Ubuntu with `tar`, `rsync`, `sha256sum`
+| Item | Notes |
+|------|--------|
+| Ubuntu VM | Local disk space |
+| `sha256sum` | Usually preinstalled |
 
 ### Lab environment
 
-Workspace: `~/rebash-linux/lab25`
-
 ``` {.bash .ra-terminal title="Terminal"}
-mkdir -p ~/rebash-linux/lab25 && cd ~/rebash-linux/lab25
-set -euo pipefail
-sudo apt-get update -qq
-sudo DEBIAN_FRONTEND=noninteractive apt-get install -y rsync
-df -hT . | tee df-before.txt
+mkdir -p ~/rebash-linux/lab25/{data,backup-tar,backup-rsync,restore} && cd ~/rebash-linux/lab25
+df -h . | tee df-before.txt
 ```
-
-!!! example "Expected output"
-    `rsync` available; capacity snapshot stored.
-
 
 ### Real-world scenario
 
-A small app keeps critical config and upload files under one directory. Leadership asks for an RPO of “last hourly backup” and proof that restore works. You rehearse archive + mirror backups, destroy the live tree, restore, and attach checksum proof to the DR document.
+Ticket: “Prove we can restore `/opt/myapp/config` after accidental deletion. Document RPO if we backup nightly.” You simulate with lab directories and checksum proof.
 
 ### Step-by-step tasks
 
-#### Task 1 – Create data and checksum manifest
+#### Task 1 – Create sample data and checksum baseline
 
 ``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-linux/lab25
-set -euo pipefail
-
-rm -rf appdata backups restore
-mkdir -p appdata/conf appdata/uploads backups restore
-
-printf 'role=api\nversion=1\n' > appdata/conf/app.env
-printf 'user-upload-1\n' > appdata/uploads/a.txt
-printf 'user-upload-2\n' > appdata/uploads/b.txt
-# Stable manifest of contents
-( cd appdata && find . -type f -print0 | sort -z | xargs -0 sha256sum ) | tee checksums-before.txt
+echo "version=1.0" > data/app.conf
+echo "important=$(date -Is)" > data/state.txt
+mkdir -p data/sub
+echo "nested=ok" > data/sub/nested.txt
+sha256sum data/* data/sub/* | tee checksums-before.txt
 test -s checksums-before.txt
 ```
 
 !!! example "Expected output"
-    `checksums-before.txt` lists hashes for the three files.
+    Three files in `data/`; checksums listed in `checksums-before.txt`.
 
 
-#### Task 2 – Backup with tar and rsync
-
-``` {.bash .ra-terminal title="Terminal"}
-cd ~/rebash-linux/lab25
-set -euo pipefail
-
-tar -czf backups/appdata.tgz -C appdata .
-rsync -aH --delete appdata/ backups/appdata-mirror/
-tar -tzf backups/appdata.tgz | tee tar-listing.txt
-find backups/appdata-mirror -type f | sort | tee mirror-listing.txt
-test -f backups/appdata.tgz
-test -f backups/appdata-mirror/conf/app.env
-```
-
-!!! example "Expected output"
-    archive and mirror both contain `conf/app.env`; listings captured.
-
-
-#### Task 3 – Destroy, restore, verify, capacity + evidence
+#### Task 2 – tar and rsync backup
 
 ``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-linux/lab25
-set -euo pipefail
-
-# Disaster: live data wiped
-rm -rf appdata
-test ! -d appdata
-
-# Restore from tar
-mkdir -p restore/from-tar
-tar -xzf backups/appdata.tgz -C restore/from-tar
-( cd restore/from-tar && find . -type f -print0 | sort -z | xargs -0 sha256sum ) | tee checksums-from-tar.txt
-cmp checksums-before.txt checksums-from-tar.txt
-
-# Restore from rsync mirror
-mkdir -p restore/from-rsync
-rsync -aH backups/appdata-mirror/ restore/from-rsync/
-( cd restore/from-rsync && find . -type f -print0 | sort -z | xargs -0 sha256sum ) | tee checksums-from-rsync.txt
-cmp checksums-before.txt checksums-from-rsync.txt
-
-# Put live data back from tar (simulating recovery)
-mkdir -p appdata
-tar -xzf backups/appdata.tgz -C appdata
-df -hT . | tee df-after.txt
-du -sh appdata backups restore | tee du-trees.txt
-
-# Simple RPO/RTO notes for the ticket
-cat > dr-notes.txt << 'EOF'
-Lab RPO: since last successful backup in backups/
-Lab RTO: time to untar/rsync + checksum verify on this VM
-Off-box note: copy backups/ to another disk or object storage in real DR
-EOF
-
-tar -czf backup-dr-evidence.tgz \
-  df-before.txt df-after.txt du-trees.txt \
-  checksums-before.txt checksums-from-tar.txt checksums-from-rsync.txt \
-  tar-listing.txt mirror-listing.txt dr-notes.txt
-ls -l backup-dr-evidence.tgz | tee evidence-ls.txt
+tar -czvf backup-tar/app-data.tar.gz -C data . 2>&1 | tee tar-create.log
+rsync -a data/ backup-rsync/data-mirror/
+diff -qr data backup-rsync/data-mirror | tee rsync-diff.txt
+test ! -s rsync-diff.txt
+ls -la backup-tar backup-rsync/data-mirror | tee backup-listing.txt
 ```
 
 !!! example "Expected output"
-    both `cmp` checks succeed; live `appdata` restored; evidence archive exists.
+    `rsync-diff.txt` empty (trees match). Tarball exists under `backup-tar/`.
+
+
+#### Task 3 – Destroy, restore, prove (break → fix → prove)
+
+``` {.bash .ra-terminal title="Terminal"}
+cd ~/rebash-linux/lab25
+rm -rf data/*
+ls data | tee data-after-delete.txt
+test ! -s data-after-delete.txt
+mkdir -p restore/data
+tar -xzvf backup-tar/app-data.tar.gz -C restore/data 2>&1 | tee tar-restore.log
+rsync -a backup-rsync/data-mirror/ restore/data/
+sha256sum restore/data/* restore/data/sub/* | tee checksums-after-restore.txt
+diff checksums-before.txt checksums-after-restore.txt | tee checksum-diff.txt
+test ! -s checksum-diff.txt
+du -sh data backup-tar backup-rsync | tee du-capacity.txt
+df -h . | tee df-after.txt
+echo "lab25 backup DR OK" | tee evidence.txt
+```
+
+Create `rpo-rto-notes.md`:
+
+```markdown title="rpo-rto-notes.md"
+# RPO / RTO — lab25
+
+- If we backup once per lab session, max data loss = changes since last tar/rsync.
+- RTO here = time to extract tar + verify checksums (minutes on small data).
+- Production would add off-site object storage and automated restore drills.
+```
+
+!!! example "Expected output"
+    `checksum-diff.txt` empty — restore matches original. Capacity files show disk use.
 
 
 ### Validation steps
 
-- [ ] `checksums-before.txt` matches both restore checksum files
-- [ ] `backups/appdata.tgz` and `backups/appdata-mirror/` exist
-- [ ] Live `appdata` restored after deletion
-- [ ] `backup-dr-evidence.tgz` exists under `~/rebash-linux/lab25`
+- [ ] Data deleted deliberately after backup
+- [ ] tar restore + rsync mirror both used
+- [ ] Checksums match before and after
+- [ ] RPO/RTO notes written in your words
 
 ### Common errors and fixes
 
 | Error | Cause | Fix |
 |-------|-------|-----|
-| `cmp` fails | Different find order / paths | Use the same `find … sort` pipeline |
-| `rsync: command not found` | Package missing | `sudo apt-get install -y rsync` |
-| Archive empty | Wrong `-C` path | `tar -tzf` to inspect before delete |
-| No space for backups | Capacity ignored | Free space; separate backup disk |
+| tar: empty archive | Wrong `-C` path | Check directory contents before tar |
+| rsync copies wrong tree | Trailing slash | `source/` vs `source` changes meaning |
+| Checksum mismatch | Partial restore | Re-run tar; verify paths |
+| No space for backup | Disk full | `df -h`; clean or expand volume |
 
 ### Challenge exercise
 
-Write `~/rebash-linux/lab25/backup-appdata.sh` that creates a timestamped `backups/appdata-YYYYMMDD-HHMMSS.tgz`, writes `backups/latest-checksums.txt`, and exits non-zero if `df` free space on `.` is under 100M. Run it once and keep the new archive.
+Add a deliberate one-byte change to `data/app.conf`, re-rsync, show `diff` detects it — then restore from tar again.
 
 ### Learning outcomes
 
-- Defined lab RPO/RTO in plain notes
-- Backed up with tar and rsync
-- Restored after destructive loss and verified hashes
-- Linked capacity checks to backup success
+- You performed a full backup/destroy/restore cycle
+- You verified integrity with checksums
+- You can explain RPO/RTO in an interview
 
 ### Cleanup
 
 ``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-linux/lab25
-set -euo pipefail
-# Keep evidence; remove bulky trees if needed:
-# rm -rf appdata backups restore
+# Keep evidence for revision; optional:
+# rm -rf data restore backup-tar backup-rsync
 ```
 
 ## Validation
 
-- [ ] Lab finished under `~/rebash-linux/lab25/` with evidence files
-- [ ] You can explain RPO vs RTO with an example
-- [ ] You treat restore tests as mandatory
-- [ ] You watch capacity on both source and backup target
+- [ ] Evidence under `~/rebash-linux/lab25`
+- [ ] Can explain why untested backups fail audits
+- [ ] Course production module complete
 
 ## Code Walkthrough
 
-Production DR habit:
-
-1. Classify data and set RPO/RTO  
-2. Automate backups off-box  
-3. Schedule restore drills  
-4. Monitor backup job success **and** free space  
-5. Document who runs DR and where credentials live  
+1. **`sha256sum` before backup** — baseline for restore proof.
+2. **`tar -C data .`** — archive contents, not parent path confusion.
+3. **`rsync -a`** — fast incremental sync for large trees.
+4. **Deliberate `rm -rf data/*`** — simulates accidental deletion incident.
+5. **`diff checksums`** — objective restore success — better than “looks fine”.
 
 ## Security Considerations
 
-- Encrypt backups that contain personal or secret data  
-- Restrict who can read backup storage  
-- Do not leave world-readable archives in `/tmp`  
-- Protect backup credentials like production admin access  
-- Test restores in isolated networks when data is sensitive  
+- Encrypt backups at rest and in transit for sensitive data.
+- Restrict backup directory permissions (`chmod 700`).
+- Off-site copies protect against site loss — local tarball alone is not DR.
+- Secrets should not live in plain tarballs in shared drives.
+- Test restore in isolated environment to avoid overwriting production.
 
 ## Common Mistakes
 
-!!! warning "Never testing restore"
-    Backups can be corrupt or incomplete. **Fix:** restore to a scratch path on a schedule; keep checksum proof.
+!!! warning "Backup on same disk"
+    Disk failure loses source and backup together — replicate off-host.
 
-!!! warning "Backups only on the same disk"
-    Disk failure loses source and backup together. **Fix:** copy off-box (another disk, another account, object storage).
+!!! warning "Never tested restore"
+    Backups are only as good as last successful restore test.
 
-!!! warning "Ignoring backup target capacity"
-    Jobs fail silently when the target is full. **Fix:** alert on target `df`; retention policies.
-
-!!! warning "Confusing VM snapshot with application backup"
-    Snapshots may be crash-consistent only. **Fix:** use DB-native backups / app quiesce when RPO is strict.
+!!! warning "Ignoring app consistency"
+    Databases need coordinated backup (dump, snapshot, native tool) — not only file copy mid-write.
 
 ## Best Practices
 
-- Write RPO/RTO per service in plain language  
-- Automate + alert on backup failures  
-- Quarterly restore drills with notes  
-- Separate backup accounts and least privilege  
-- Keep capacity headroom for growth and backups  
+- Automate backups; alert on failure
+- Schedule quarterly restore drills
+- Document RPO/RTO per service tier
+- Monitor backup destination capacity
+- Version backups and retention policy (daily/weekly/monthly)
 
 ## Troubleshooting
 
 | Symptom | Likely cause | Fix |
 |---------|--------------|-----|
-| Restore checksum mismatch | Incomplete backup / bitrot | Re-backup; check disk health |
-| `tar` permission errors | Not reading all files | Run with appropriate user; note exclusions |
-| rsync deleted too much | `--delete` misuse | Dry-run (`-n`) first |
-| Backup job OOM/timeout | Huge trees | Incremental strategy; exclude caches |
-| Cannot meet RTO | Slow restore path | Parallel restore; warmer standby |
+| Restore partial | Wrong extract path | Check `-C` destination |
+| rsync slow | Network or huge files | `--partial`, compression, exclude caches |
+| Backup job fails | Disk full | Expand volume; rotate old backups |
+| Checksum mismatch | Corrupt archive | Re-backup; verify storage integrity |
 
 ## Summary
 
-Backups matter only when restores work. Practise tar/rsync restore, state RPO/RTO clearly, and watch capacity so backup jobs can succeed. This completes the core Linux production module sequence — return to the [Linux overview](index.md) for related labs and interview prep.
+**Backups** copy data; **restore drills** prove they work. **DR** adds process and infra for big failures — define **RPO** (data loss window) and **RTO** (downtime window). Use **`tar`** for archives, **`rsync`** for sync, **`df`/`du`** for capacity. Destroy-on-purpose labs build the confidence interviews expect.
 
 ## Interview Questions
 
-**1. What is the difference between RPO and RTO?**
+**1. What is the difference between backup and disaster recovery?**
 
 ??? success "Reveal answer"
-    **RPO (Recovery Point Objective)** is how much data you can afford to lose — tied to backup frequency. **RTO (Recovery Time Objective)** is how long recovery may take before the business accepts the outage. Example: RPO 1 hour, RTO 4 hours.
+    **Backup** is copying data to recover files or DBs. **DR** is the broader plan to restore **business service** after major failure (lost region, datacentre, host) including runbooks, infra, RPO/RTO, and tested procedures.
 
-**2. Why is a restore test more important than “backup success” green checks?**
-
-??? success "Reveal answer"
-    Jobs can archive the wrong path, skip files, or write corrupt data while still exiting zero. Only a **restore + verification** (checksums, app start) proves usefulness.
-
-**3. When would you choose `rsync` over `tar` for host backups?**
+**2. Define RPO and RTO with an example.**
 
 ??? success "Reveal answer"
-    **`rsync`** is strong for incremental mirrors and efficient repeats. **`tar`** is strong for portable point-in-time archives. Many designs use both: frequent rsync plus periodic tar/snapshot to object storage.
+    **RPO (Recovery Point Objective):** max acceptable data loss — e.g. hourly backup → up to 1 hour lost. **RTO (Recovery Time Objective):** max acceptable downtime to restore service — e.g. 4 hours to rebuild app server from image + restore DB.
 
-**4. How does capacity planning relate to backups?**
-
-??? success "Reveal answer"
-    Backup targets need free space and retention room. Source disks that are nearly full may also fail snapshots. Monitor `df` on both sides and alert before jobs fail.
-
-**5. Are cloud VM snapshots enough for database DR?**
+**3. tar vs rsync — when use each?**
 
 ??? success "Reveal answer"
-    Snapshots are useful but may be **crash-consistent** only. Databases often need native dumps/backups or filesystem freeze/agent integration for a stricter RPO. Know your consistency requirements.
+    **tar** creates portable compressed archives (good for snapshots, off-site upload). **rsync** efficiently synchronises directories (incremental, local or remote mirroring). Often both: rsync for daily sync, tar for periodic full archives.
 
-**6. What belongs in a one-page DR runbook?**
-
-??? success "Reveal answer"
-    Critical systems list, RPO/RTO, where backups live, how to restore (commands/links), who to call, and how to verify success. Keep it short enough to use under stress.
-
-**7. How would you prove backup success in a change ticket for this lab?**
+**4. How do you verify a restore succeeded?**
 
 ??? success "Reveal answer"
-    Show archive/mirror listings, a deliberate delete, restore commands, and matching `sha256sum` manifests before vs after. That is stronger than “tar completed”.
+    Compare checksums (`sha256sum`) before backup and after restore, run application health checks, verify file counts and critical config values — not only “extract completed without error”.
+
+**5. Why is capacity planning part of backup/DR?**
+
+??? success "Reveal answer"
+    Backups need destination space; restores need room to extract; full disks cause cascading failures. Monitor `df`, `du`, growth trends, and alert before 100% — otherwise backups and apps fail together.
+
+**6. What is wrong with only cloud snapshots and no restore test?**
+
+??? success "Reveal answer"
+    Snapshots can be misconfigured, corrupted, or unrestorable across regions/accounts. Without periodic **restore tests**, RPO/RTO are guesses — same failure mode as untested tar backups.
+
+**7. Accidental rm -rf on config — first steps?**
+
+??? success "Reveal answer"
+    Stop further changes; identify last good backup/snapshot; restore to staging first if possible; verify checksums and service health; postmortem on why backup/restore worked or failed; improve automation and permissions.
 
 ## Related Tutorials
 
-- [Linux for Cloud & DevOps – Overview](index.md)
-- [Production Hardening and Performance](production-linux-hardening-and-performance.md) *(previous)*
-- [Disk Usage and File Attributes](disk-usage-and-file-attributes.md) *(related)*
-- [LVM, Swap, and Disk Monitoring](lvm-swap-and-disk-monitoring.md) *(related)*
+- Previous: [Production Hardening and Performance](production-linux-hardening-and-performance.md)
+- Related: [Disk Usage and File Attributes](disk-usage-and-file-attributes.md)
+- Related: [LVM, Swap, and Disk Monitoring](lvm-swap-and-disk-monitoring.md)
 
 ## References
 
-- [`tar(1)`](https://manpages.ubuntu.com/manpages/jammy/en/man1/tar.1.html) — Ubuntu man-pages  
-- [`rsync(1)`](https://manpages.ubuntu.com/manpages/jammy/en/man1/rsync.1.html) — Ubuntu man-pages  
-- Track index: [Linux for Cloud & DevOps Engineers](index.md)
+- [GNU tar manual](https://www.gnu.org/software/tar/manual/)
+- [rsync man page](https://manpages.ubuntu.com/manpages/noble/man1/rsync.1.html)
+- [AWS Backup documentation](https://docs.aws.amazon.com/aws-backup/) *(cloud DR context)*

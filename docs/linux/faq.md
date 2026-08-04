@@ -1,33 +1,40 @@
 ---
 title: FAQ
-description: "Frequently asked questions about the Linux course."
+description: "FAQ for Linux for Cloud & DevOps Engineers — labs, distros, and interview prep."
 technology_id: linux
 hide:
   - toc
 author: Shaik Basha
+last_updated: "2026-08-04"
 category: linux
 tags:
   - linux
+  - faq
+comments: false
 ---
 
 # Linux — FAQ
 
-## Who is this course for?
+## I am a college graduate with no Linux experience. Can I follow this?
 
-Engineers who need production-ready **Linux** skills for cloud, DevOps, and platform work.
+Yes — that is the primary audience. Tutorials start with a real problem and a simple analogy before jargon. You need basic computer skills and a practice Ubuntu (or similar) VM. You do **not** need prior sysadmin jobs.
 
-## Do I need prior experience?
+## Which Linux should I install for labs?
 
-See the course homepage for prerequisites. Beginner tracks start from fundamentals.
+**Ubuntu 22.04 or 24.04 LTS** is the default recommendation. Rocky Linux / AlmaLinux are fine if you want a RHEL-family path. Use a disposable VM, cloud Free Tier instance, or WSL2 Ubuntu.
 
-## Where are the tutorials?
+## Do I need to buy anything?
 
-Tutorials live inside each **module** — open a module from the sidebar or course homepage.
+No. Use free VM software or a cloud free tier. Always snapshot before storage and firewall labs.
 
-## How do labs and projects fit in?
+## Where do tutorials live?
 
-Complete the module tutorials first, then use the **Labs**, **Quizzes**, and **Projects** sections for practice and portfolio work.
+In the sidebar under Modules 1–16, plus **Environment variables** and **Shell scripting fundamentals** under Command Line. Start with [Linux Fundamentals](linux-fundamentals-distributions-and-architecture.md).
 
-## Is progress tracked?
+## How do labs work?
 
-Learner progress tracking is planned — course structure is ready today.
+Each tutorial has a Hands-on Lab under `~/rebash-linux/labNN`. Standalone labs also live in the [Academy labs catalog](../labs/index.md) (for example install/first boot, users/permissions).
+
+## How should I revise for interviews?
+
+Explain each module’s analogy aloud, re-run or narrate the lab evidence, then answer the seven Interview Questions without looking. Prefer stories with command proof over buzzwords.

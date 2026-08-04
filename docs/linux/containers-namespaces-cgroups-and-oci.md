@@ -1,19 +1,25 @@
 ---
 title: "Containers — Namespaces, cgroups, OverlayFS, and OCI"
-description: "Inspect Linux container building blocks — namespaces, cgroups, OverlayFS, and OCI runtime basics — on a practice host."
+description: "Linux what containers really are — namespaces, cgroups, OverlayFS, OCI — with Docker and unshare demos, no Kubernetes required."
 difficulty: advanced
-estimated_time: "55–65 min"
+estimated_time: "55–70 min"
 author: Shaik Basha
-last_updated: "2026-08-02"
+last_updated: "2026-08-04"
 category: linux
 technology: linux
 module: "Module 14 · Containers & Cloud"
+career_paths:
+  - devops-engineer
+  - platform-engineer
+  - cloud-engineer
+  - site-reliability-engineer
 tags:
   - linux
   - namespaces
   - cgroups
-  - overlayfs
+  - docker
   - oci
+  - beginners
 prerequisites:
   - linux/selinux-apparmor-fail2ban-auditd-pam
 next:
@@ -28,380 +34,342 @@ comments: false
 
 ## Overview
 
-Kubernetes nodes are Linux. A **container** is not a tiny virtual machine (VM). It is a normal process with an isolated view of the system (**namespaces**) and resource limits (**control groups / cgroups**), usually with a layered root filesystem such as **OverlayFS**. The **Open Container Initiative (OCI)** defines image and runtime standards so engines (Docker, containerd, CRI-O) can build and run portable images.
+When people say “we run it in Docker” or “Kubernetes pods”, beginners often think containers are tiny virtual machines (VMs). They are not. This tutorial shows what the Linux kernel actually does — **namespaces**, **cgroups**, and overlays — without requiring a Kubernetes cluster.
 
-When a pod is Out-Of-Memory (OOM) killed, when a node disk fills with image layers, or when “it works in Docker but not in the cluster”, the real story is often namespaces, cgroups, and filesystems on the host. Brand names sit on top of these kernel features.
+**Plain problem:** A container exits with **Out Of Memory (OOM)** killed, or disk fills with “image layers”. YAML and `kubectl` do not explain why — **namespaces**, **cgroups**, and **OverlayFS** on the **host** do.
 
-In production, Site Reliability Engineering (SRE) and platform engineers debug both the YAML and the node: `lsns`, cgroup paths under `/sys/fs/cgroup`, `findmnt` for overlay mounts, and runtime versions (`runc` / `crun`). Understanding the kernel contract makes Docker and Kubernetes less magical and easier to operate.
+A **container** is a normal Linux process (or tree of processes) with:
 
-This is **Tutorial 22** in **Module 14: Containers & Cloud** of the REBASH Academy **Linux for Cloud & DevOps Engineers** series. It is written for Linux administrators, DevOps engineers, SREs, and platform engineers. By the end, you will have host-level evidence of namespaces, cgroups, and overlay/runtime facts you can explain in an interview.
+1. **Namespaces** — isolated view (own process IDs, network, mount table, …)
+2. **cgroups** — CPU/memory/I/O limits
+3. Often **OverlayFS** — layered root filesystem
+4. **OCI** standards — portable image and runtime formats (`runc`, `crun`)
+
+This is **Tutorial 14** in **Module 14: Containers & Cloud** of the REBASH Academy **Linux for Cloud & DevOps Engineers** series.
 
 ## Prerequisites
 
-- [SELinux, AppArmor, Fail2Ban, Auditd, and PAM](selinux-apparmor-fail2ban-auditd-pam.md)
-- A **practice Ubuntu 22.04/24.04 VM** with sudo
-- Optional: Docker or Podman installed (lab works with kernel tools alone; runtime steps are optional extras)
-- Do **not** run heavy container clean-ups on a shared production node
+- Ubuntu practice VM with `sudo`
+- Docker Engine or `docker.io` package (lab installs if missing)
+- Basic process concepts from [Process Management](process-management.md) helpful
 
 ## Learning Objectives
 
 By the end of this tutorial, you will be able to:
 
-- [ ] Explain how namespaces and cgroups differ (what you see vs what you can consume)
-- [ ] List namespaces with `lsns` and read your process cgroup path
-- [ ] Detect OverlayFS mounts and relate them to image layers
-- [ ] Identify OCI runtime pieces (`runc`/`crun`/engine) when present
-- [ ] Capture a container-internals evidence pack under `~/rebash-linux/lab22`
+- [ ] Explain containers vs VMs in plain language
+- [ ] Name key **namespaces** and what each isolates
+- [ ] Explain **cgroups** memory/CPU limits simply
+- [ ] Inspect a running container from the **host** with `ps`, `lsns`, `findmnt`
+- [ ] Run a safe **`unshare`** demo without full Kubernetes
+- [ ] Answer fresher interview questions on container internals
 
 ## Architecture
 
-Container engines sit above an OCI runtime. The runtime asks the kernel for namespaces, cgroups, and a root filesystem (often OverlayFS). The application process runs with that isolated view and those limits.
+Container runtimes (Docker → containerd → **runc**) configure namespaces and cgroups, mount overlay rootfs, then exec your process. Kubernetes schedules pods on nodes that use the same kernel primitives.
 
-![Architecture diagram for Containers — Namespaces, cgroups, OverlayFS, and OCI](../assets/excalidraw/linux-container-internals.svg)
+![Linux container internals — namespaces, cgroups, overlay](../assets/excalidraw/linux-container-internals.svg)
 
 ## Theory
 
-### What it is
+### The problem (before any jargon)
 
-**Namespaces** isolate what a process can *see*: process IDs (PID), network, mounts, hostname (UTS), Inter-Process Communication (IPC), user IDs, cgroup view, and time.
+Interview question: “What is a container?” Weak answer: “Docker.” Strong answer: “A process with isolated namespaces and cgroup limits, started by an OCI runtime on Linux.” That answer comes from this page.
 
-**cgroups** limit and account what a process can *consume*: CPU, memory, I/O, PIDs. Modern systems use **cgroup v2** under `/sys/fs/cgroup`.
+### Containers vs VMs (simple words)
 
-**OverlayFS** stacks read-only image layers under a writable upper layer (copy-on-write).
+**Analogy:** A **VM** is a whole flat with its own kitchen (guest OS + kernel). A **container** is a roommate with labelled cupboards — same building kernel, separate labelled spaces (**namespaces**), and a lease on electricity (**cgroups**).
 
-**OCI** defines the image format and the runtime lifecycle (`create`, `start`, …). Engines add UX, networking plugins, and distribution.
+| | VM | Container |
+|---|-----|-----------|
+| Kernel | Guest + host | Shared host kernel |
+| Boot | Full OS | Starts one app/process |
+| Isolation | Hardware virtualisation | Namespaces + cgroups |
+| Typical start time | Minutes | Seconds |
 
-```bash
+**Interview line:** “Containers share the host kernel; isolation is OS-level, not hardware-level like VMs.”
+
+### Namespaces (plain first)
+
+**Namespaces** make a process think it has its own system slice:
+
+| Namespace | Isolates |
+|-----------|----------|
+| pid | Process IDs |
+| net | Network interfaces, routes |
+| mnt | Mount points |
+| uts | Hostname |
+| ipc | Inter-process communication |
+| user | User/group IDs (user namespaces) |
+
+``` {.bash .ra-terminal title="Terminal"}
 lsns
-cat /proc/self/cgroup
-findmnt -t overlay 2>/dev/null | head || true
-command -v runc; command -v crun; command -v docker; command -v podman
+lsns -p 1
 ```
 
-### Why it matters
+### cgroups (control groups)
 
-Node disk fill, noisy-neighbour CPU, and mysterious OOM kills are kernel-feature issues underneath the container brand. Ops roles debug the host as much as the manifest. Interviewers expect you to say “namespaces isolate; cgroups limit” without confusing them with VMs.
+**Analogy:** **cgroups** are utility caps — “this container may use 512 MB RAM and half a CPU.” Exceed memory → **OOM kill** inside the cgroup.
 
-### How it works
+Modern Linux uses **cgroups v2** unified hierarchy under `/sys/fs/cgroup/`.
 
-1. **Engine** pulls/builds an OCI image (layers + config).
-2. **Runtime** (`runc`/`crun`) creates namespaces and joins/creates cgroups.
-3. **Rootfs** is assembled (often OverlayFS) and the entrypoint starts as PID 1 *inside* the PID namespace.
-4. **Host tools** still see the process: `ps`, `lsns`, `systemd-cgls`, `/sys/fs/cgroup`.
+``` {.bash .ra-terminal title="Terminal"}
+grep memory /sys/fs/cgroup/system.slice/docker-*.scope/memory.max 2>/dev/null | head -3
+```
 
-You can also explore namespaces without Docker using `unshare` / `nsenter` (careful: practice VM only).
+(Docker path varies — lab inspects live container.)
 
-### Key concepts and comparisons
+### OverlayFS
 
-| Mechanism | Isolates / limits |
-|-----------|-------------------|
-| Namespaces | What the process can *see* |
-| cgroups | What the process can *consume* |
-| OverlayFS | Layered filesystem view |
-| OCI runtime | Standard create/start lifecycle |
+**OverlayFS** stacks read-only **lower** layers + writable **upper** layer → container root filesystem. Many layers → disk use on the node.
 
-| Stack piece | Role |
-|-------------|------|
-| Engine (Docker / containerd) | Images, API, UX |
-| OCI runtime (`runc` / `crun`) | Kernel plumbing |
-| Kernel | Namespaces, cgroups, OverlayFS |
+``` {.bash .ra-terminal title="Terminal"}
+findmnt -t overlay
+```
+
+### OCI
+
+**Open Container Initiative (OCI)** defines:
+
+- **Image spec** — filesystem bundle format
+- **Runtime spec** — how to run a container (`config.json` + rootfs)
+
+Docker builds OCI-compatible images; **runc** is a common low-level runtime.
+
+### Safe unshare demo (no Docker required)
+
+``` {.bash .ra-terminal title="Terminal"}
+unshare --fork --pid --mount-proc /bin/bash
+# inside: ps aux shows very few processes
+exit
+```
+
+Requires user namespaces available; run on lab VM only.
 
 ### Common pitfalls
 
-- Treating containers as strong security boundaries without MAC, user namespaces, and least privilege.
-- Ignoring cgroup OOM kills while chasing application “random exits”.
-- Filling the node with image layers and container logs under `/var/lib`.
-- Debugging only inside the container when `lsns` / cgroup paths on the host show the truth.
-- Assuming PID 1 behaviour inside containers matches a full systemd operating system.
+- Treating containers as VM substitutes for strong isolation boundaries
+- No memory limits → one container OOMs the node
+- Ignoring host disk from image/layer buildup
+- Debugging only inside container without checking node cgroups
 
 ## Hands-on Lab
 
 ### Objective
 
-On a practice Ubuntu VM, inspect namespaces and cgroups, create a short-lived user namespace demo with `unshare`, check for OverlayFS / runtime tools, and save evidence under `~/rebash-linux/lab22`.
+Run a **Docker** container with a memory limit, inspect **namespaces** and **cgroups** from the host, run **`unshare`**, and save proof under `~/rebash-linux/lab22`.
 
 ### Prerequisites
 
-- Ubuntu 22.04/24.04 with `util-linux` (`lsns`, `unshare`, `findmnt`)
-- sudo for some cgroup listings
-- Optional: Docker or Podman for Task 3 extras
+| Item | Notes |
+|------|--------|
+| Ubuntu VM | 2 GB+ RAM recommended |
+| Docker | Lab installs `docker.io` if needed |
+| User in `docker` group OR use `sudo docker` |
 
 ### Lab environment
 
-Workspace: `~/rebash-linux/lab22`
-
 ``` {.bash .ra-terminal title="Terminal"}
 mkdir -p ~/rebash-linux/lab22 && cd ~/rebash-linux/lab22
-set -euo pipefail
-whoami | tee admin-user.txt
-uname -r | tee kernel.txt
-cat /proc/self/cgroup | tee self-cgroup-initial.txt
-test -n "$(command -v lsns)"
-test -n "$(command -v unshare)"
+sudo apt update && sudo apt install -y docker.io util-linux
+sudo systemctl enable --now docker
 ```
-
-!!! example "Expected output"
-    kernel and cgroup files exist; `lsns` and `unshare` are available.
-
 
 ### Real-world scenario
 
-A Kubernetes node shows high disk use and occasional OOM kills. Before you blame the app YAML, you need host-level proof: which namespaces exist, how cgroups are mounted, whether overlay mounts are piling up, and which OCI runtime the engine uses. You practise that inspection path on a lab VM.
+Platform ticket: “Pod OOMKilled — prove whether the cgroup memory limit caused it.” You reproduce a small limit, watch the container die, inspect cgroup files, and document host-side evidence.
 
 ### Step-by-step tasks
 
-#### Task 1 – Namespaces inventory and a safe unshare demo
+#### Task 1 – Run container with memory limit
 
+{% raw %}
 ``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-linux/lab22
-set -euo pipefail
-
-lsns | tee lsns.txt
-lsns -t pid,net,mnt,uts,user 2>/dev/null | tee lsns-filtered.txt || lsns | tee lsns-filtered.txt
-
-# Short-lived UTS namespace: hostname change must NOT affect the host
-HOST_BEFORE="$(hostname)"
-unshare --uts /bin/bash -c 'hostname rebash-lab22-ns; hostname' | tee unshare-uts.txt
-HOST_AFTER="$(hostname)"
-echo "host_before=$HOST_BEFORE" | tee hostname-check.txt
-echo "host_after=$HOST_AFTER" | tee -a hostname-check.txt
-test "$HOST_BEFORE" = "$HOST_AFTER"
-grep -F 'rebash-lab22-ns' unshare-uts.txt
-
-# Show your process namespace IDs from /proc
-ls -l /proc/self/ns | tee self-ns.txt
+sudo docker run -d --name lab22-mem --memory=64m nginx:alpine
+sudo docker ps --filter name=lab22-mem | tee docker-ps.txt
+CID=$(sudo docker inspect -f '{{.Id}}' lab22-mem)
+echo "$CID" | tee container-id.txt
+test -n "$CID"
 ```
+{% endraw %}
 
 !!! example "Expected output"
-    `lsns.txt` lists namespaces; `unshare-uts.txt` shows the temporary hostname; host hostname unchanged.
+    Container `lab22-mem` running; `container-id.txt` holds full ID.
 
 
-#### Task 2 – cgroup v2 paths and controllers
+#### Task 2 – Host inspection (namespaces, mounts, cgroups)
 
+{% raw %}
 ``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-linux/lab22
-set -euo pipefail
-
-findmnt /sys/fs/cgroup | tee cgroup-mount.txt
-# cgroup.controllers lists available controllers on cgroup v2
-if [[ -f /sys/fs/cgroup/cgroup.controllers ]]; then
-  cat /sys/fs/cgroup/cgroup.controllers | tee cgroup-controllers.txt
-  echo 'cgroup_v2=yes' | tee cgroup-version.txt
-else
-  echo 'cgroup_v2=no_or_hybrid' | tee cgroup-version.txt
-  ls /sys/fs/cgroup | head | tee cgroup-controllers.txt
-fi
-
-cat /proc/self/cgroup | tee self-cgroup.txt
-# If systemd is present, show a small slice of the tree
-systemd-cgls --no-pager 2>/dev/null | head -n 40 | tee systemd-cgls.txt || \
-  echo 'systemd-cgls not available' | tee systemd-cgls.txt
-
-# Memory pressure / basic facts (read-only)
-grep -E 'MemTotal|MemAvailable' /proc/meminfo | tee meminfo-snip.txt
+PID=$(sudo docker inspect -f '{{.State.Pid}}' lab22-mem)
+echo "container pid=$PID" | tee container-pid.txt
+sudo lsns -p "$PID" | tee lsns-container.txt
+sudo findmnt -T /proc/"$PID"/root 2>/dev/null | tee findmnt-container.txt || sudo findmnt | grep overlay | head -5 | tee findmnt-container.txt
+sudo cat /proc/"$PID"/cgroup | tee cgroup-proc.txt
+test -s lsns-container.txt
 ```
+{% endraw %}
 
 !!! example "Expected output"
-    cgroup mount and controllers (or honest hybrid note); `self-cgroup.txt` non-empty.
+    `lsns-container.txt` shows multiple namespace types (pid, net, mnt, …). Overlay mount appears in findmnt output.
 
 
-#### Task 3 – OverlayFS, OCI runtime detection, optional engine
+#### Task 3 – Break (OOM), fix (raise limit), prove
 
+{% raw %}
 ``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-linux/lab22
-set -euo pipefail
-
-findmnt -t overlay 2>/dev/null | tee overlay-mounts.txt || true
-if [[ ! -s overlay-mounts.txt ]]; then
-  echo 'no overlay mounts right now (normal without running containers)' | tee overlay-mounts.txt
-fi
-
-{
-  echo "runc=$(command -v runc || true)"
-  echo "crun=$(command -v crun || true)"
-  echo "docker=$(command -v docker || true)"
-  echo "podman=$(command -v podman || true)"
-  echo "containerd=$(command -v containerd || true)"
-} | tee runtime-paths.txt
-
-if command -v runc >/dev/null 2>&1; then runc --version 2>&1 | tee runc-version.txt; else echo 'runc absent' | tee runc-version.txt; fi
-if command -v docker >/dev/null 2>&1; then
-  docker version 2>&1 | head -n 20 | tee docker-version.txt
-  # Optional tiny pull-less demo if docker works: run busybox echo (needs network/image)
-  # Skip automatic pull in locked-down labs — document only
-  echo 'docker present — optional: docker run --rm public.ecr.aws/docker/library/busybox:1.36 echo ok' | tee docker-note.txt
-else
-  echo 'docker absent' | tee docker-version.txt
-  echo 'engine optional for this lab' | tee docker-note.txt
-fi
-
-# Disk hint for image stores (common paths)
-du -sh /var/lib/docker 2>/dev/null | tee docker-disk.txt || echo 'no /var/lib/docker' | tee docker-disk.txt
-du -sh /var/lib/containerd 2>/dev/null | tee containerd-disk.txt || echo 'no /var/lib/containerd' | tee containerd-disk.txt
-
-tar -czf container-internals-evidence.tgz \
-  admin-user.txt kernel.txt \
-  lsns.txt lsns-filtered.txt unshare-uts.txt hostname-check.txt self-ns.txt \
-  cgroup-mount.txt cgroup-controllers.txt cgroup-version.txt self-cgroup.txt \
-  systemd-cgls.txt meminfo-snip.txt \
-  overlay-mounts.txt runtime-paths.txt runc-version.txt docker-version.txt docker-note.txt \
-  docker-disk.txt containerd-disk.txt
-
-ls -l container-internals-evidence.tgz | tee evidence-ls.txt
-test -s container-internals-evidence.tgz
+sudo docker update --memory=32m lab22-mem
+sudo docker exec lab22-mem sh -c 'dd if=/dev/zero of=/dev/shm/fill bs=1M count=64' 2>&1 | tee oom-attempt.txt || true
+sleep 2
+sudo docker inspect -f '{{.State.Status}} {{.State.OOMKilled}}' lab22-mem | tee oom-status.txt
+sudo docker rm -f lab22-mem 2>/dev/null || true
+sudo docker run -d --name lab22-mem-fixed --memory=256m nginx:alpine
+sudo docker inspect -f '{{.State.Status}}' lab22-mem-fixed | tee fixed-status.txt
+unshare --fork --pid --mount-proc echo unshare-ok 2>&1 | tee unshare-proof.txt
+echo "lab22 containers OK" | tee evidence.txt
 ```
+{% endraw %}
 
 !!! example "Expected output"
-    runtime paths file exists; overlay note or mounts listed; evidence tarball non-empty.
+    Low memory limit may show `OOMKilled true` or container restarted. After 256m limit, status `running`. `unshare-proof.txt` shows success or documents permission note.
 
 
 ### Validation steps
 
-- [ ] `lsns.txt` lists namespaces on the host
-- [ ] `unshare` UTS demo changed hostname only inside the namespace
-- [ ] cgroup mount / controllers captured
-- [ ] Overlay and runtime detection files exist (even if “absent”)
-- [ ] `container-internals-evidence.tgz` exists under `~/rebash-linux/lab22`
+- [ ] Docker container ran with `--memory` limit
+- [ ] `lsns` output saved for container PID
+- [ ] OOM or stress behaviour observed and documented
+- [ ] You can explain container vs VM in one minute
 
 ### Common errors and fixes
 
 | Error | Cause | Fix |
 |-------|-------|-----|
-| `unshare: operation not permitted` | Restricted environment | Use a full VM; some shared hosts block namespace creation |
-| No overlay mounts | No containers running | Expected — keep the note file |
-| `docker: permission denied` | User not in `docker` group | Use `sudo docker` on practice VM, or skip engine extras |
-| Confusing cgroup v1 paths | Older/hybrid setup | Record what you see; prefer documenting v2 `cgroup.controllers` when present |
+| Cannot connect to Docker | Daemon down | `sudo systemctl start docker` |
+| Permission denied | Not in docker group | Use `sudo docker` |
+| unshare fails | User namespaces restricted | Note in evidence; use Docker inspect path |
+| No overlay in findmnt | Different storage driver | `docker info` — graph driver |
 
 ### Challenge exercise
 
-Write `~/rebash-linux/lab22/ns-report.sh` that prints: count of namespaces from `lsns`, whether `/sys/fs/cgroup/cgroup.controllers` exists, and whether any of `runc`/`crun`/`docker`/`podman` is on `PATH`. Save output to `ns-report.out` and exit 0 on success.
+Run `sudo docker info | grep -E 'Storage Driver|Cgroup'` and save to `docker-info.txt`.
 
 ### Learning outcomes
 
-- Separated “isolation” (namespaces) from “limits” (cgroups)
-- Used `unshare` safely for a UTS demo
-- Inspected cgroup v2 and overlay/runtime signals on the host
-- Packed evidence for node-level container debugging
+- You saw containers as host processes with namespaces
+- You linked memory limits to OOM behaviour
+- You have host-side inspection commands for interviews
 
 ### Cleanup
 
 ``` {.bash .ra-terminal title="Terminal"}
-cd ~/rebash-linux/lab22
-set -euo pipefail
-# No persistent namespaces from the UTS demo
-# If you started containers manually, remove them yourself
-# Keep container-internals-evidence.tgz if useful
+sudo docker rm -f lab22-mem lab22-mem-fixed 2>/dev/null || true
+sudo docker system prune -f
 ```
 
 ## Validation
 
-- [ ] Lab finished under `~/rebash-linux/lab22/` with evidence files
-- [ ] You can explain namespaces vs cgroups in one clear sentence each
-- [ ] You can relate OverlayFS to image layers and node disk growth
-- [ ] You know where OCI runtimes fit under Docker/Kubernetes
+- [ ] Evidence under `~/rebash-linux/lab22`
+- [ ] Can whiteboard namespaces + cgroups
+- [ ] Ready for troubleshooting methodology next
 
 ## Code Walkthrough
 
-Host-level container debugging usually follows this order:
-
-1. **See isolation** — `lsns`, `/proc/<pid>/ns`  
-2. **See limits** — `/proc/<pid>/cgroup`, `/sys/fs/cgroup`, OOM logs  
-3. **See filesystem** — `findmnt -t overlay`, disk under `/var/lib/...`  
-4. **See runtime** — engine + `runc`/`crun` versions  
-5. **Change least first** — fix requests/limits and image GC before exotic kernel tweaks  
+1. **`docker run --memory=64m`** — sets cgroup memory max; lab scales down to trigger OOM.
+2. **`docker inspect State.Pid`** — maps container to host process for `lsns`.
+3. **`lsns -p`** — proves namespaces without Kubernetes.
+4. **`/proc/PID/cgroup`** — shows cgroup membership path.
+5. **`unshare --fork --pid`** — minimal “container feel” without Docker.
 
 ## Security Considerations
 
-- Containers are not a full security boundary by themselves  
-- Prefer non-root containers, read-only rootfs, and drop capabilities  
-- Combine with MAC (AppArmor/SELinux) and seccomp profiles  
-- Limit who can talk to the Docker/containerd socket (root-equivalent)  
-- Scan images and pin digests in production pipelines  
+- Containers are not VMs — kernel escapes are critical CVE class; patch nodes.
+- Run as non-root inside containers; use user namespaces where supported.
+- Limit capabilities (`--cap-drop`); read-only rootfs when possible.
+- SELinux/AppArmor profiles apply to container processes on the host.
+- Scan images for CVEs; signed images from trusted registries.
 
 ## Common Mistakes
 
-!!! warning "Calling a container a lightweight VM"
-    It shares the host kernel. **Fix:** say “isolated process with namespaces and cgroups”; use VMs when you need a separate kernel.
+!!! warning "No resource limits"
+    Always set memory/CPU requests and limits (Docker flags or Kubernetes resources).
 
-!!! warning "Debugging only inside the container"
-    Node pressure and overlay growth are host facts. **Fix:** check `df`, `lsns`, cgroup OOM, and runtime disk paths on the node.
+!!! warning "Debugging only inside container"
+    OOM and disk are host cgroup/filesystem stories — inspect from the node.
 
-!!! warning "Ignoring cgroup memory limits"
-    The kernel OOM-kills the cgroup; the app looks “random”. **Fix:** read events under the cgroup, `dmesg`/`journalctl -k`, and right-size limits.
-
-!!! warning "Leaving docker.sock world-accessible"
-    Socket access is effectively root. **Fix:** restrict group membership; prefer rootless or moderated APIs in platforms.
+!!! warning "Root in Dockerfile"
+    Use non-root USER; reduces risk if container boundary fails.
 
 ## Best Practices
 
-- Standardise on cgroup v2-capable node images  
-- Set resource requests/limits with evidence from monitoring  
-- Garbage-collect images and manage container log size  
-- Know your runtime chain: kubelet → CRI → containerd → `runc`/`crun`  
-- Practise host inspection before the first production page-out  
+- Set memory and CPU limits matching workload tests
+- Monitor node disk for unused images (`docker system df`)
+- Pin base image digests in production
+- Understand OCI runtime on your cluster (containerd/CRI-O)
+- Keep node kernel and runtime patched
 
 ## Troubleshooting
 
 | Symptom | Likely cause | Fix |
 |---------|--------------|-----|
-| OOMKilled | cgroup memory limit / node pressure | Raise limit carefully or fix leak; check node `MemAvailable` |
-| Disk full on node | Images, overlays, logs | `du` on `/var/lib/containerd` or docker; prune safely |
-| Network weird in pod | netns / CNI / NetworkPolicy | Debug from host `ip netns` / CNI docs — not only `curl` in pod |
-| `operation not permitted` | seccomp/AppArmor/caps | Inspect securityContext and MAC profiles |
-| Slow pulls | Registry / disk I/O | Check `iostat`, mirror registry, slim images |
+| OOMKilled | Memory limit too low | Raise limit; fix leak |
+| Disk full on node | Image layers | Prune images; adjust retention |
+| Container sees wrong network | net namespace | Check `--network`, CNI on K8s |
+| Permission denied on volume | MAC or permissions | Host path labels; AppArmor |
 
 ## Summary
 
-Containers are kernel features plus an OCI runtime contract. Namespaces isolate views; cgroups limit resources; OverlayFS layers filesystems; engines make it usable. Next, practise a disciplined host debugging loop in [Troubleshooting Linux Systems](troubleshooting-linux-systems.md).
+**Containers** are processes on Linux with **namespaces** (isolated view), **cgroups** (resource limits), and often **OverlayFS** (layered rootfs). **OCI** standardises images and runtimes. Inspect from the **host** with `lsns`, cgroups, and `findmnt` — Kubernetes sits on top of these primitives, not instead of them.
 
 ## Interview Questions
 
-**1. In one sentence each, what do namespaces and cgroups do?**
+**1. What is a container, in kernel terms?**
 
 ??? success "Reveal answer"
-    **Namespaces** change what a process can *see* (PID list, network stack, mounts, hostname, and more). **cgroups** limit and account what a process can *consume* (CPU, memory, I/O, PIDs). Interviewers listen for this see-vs-consume split.
+    A process (or process tree) with isolated **namespaces** (pid, net, mnt, …), **cgroups** for resource limits, and typically a layered root filesystem (OverlayFS), started by an OCI runtime like **runc** on the shared host kernel.
 
-**2. Why is a container not a virtual machine?**
-
-??? success "Reveal answer"
-    A VM runs a guest kernel on a hypervisor. A container is a process on the **host kernel** with isolation and limits applied. That is why kernel CVEs and host tuning affect all containers on the node.
-
-**3. How does OverlayFS relate to Docker/container image layers?**
+**2. Container vs VM — key difference?**
 
 ??? success "Reveal answer"
-    Image layers are usually stacked as read-only lower layers with a writable upper layer. OverlayFS makes that stack look like one root filesystem. Deleted data and unused images can still consume disk until garbage collection — node `df` matters.
+    VMs run a guest OS and kernel on a hypervisor. Containers share the **host kernel**; isolation is via namespaces/cgroups. VMs stronger isolation boundary; containers lighter and faster start.
 
-**4. A pod is OOMKilled. Where do you look on the Linux node?**
-
-??? success "Reveal answer"
-    Check the container/pod cgroup memory events, node `journalctl -k` / `dmesg` for OOM, `free`/`MemAvailable`, and whether limits in the manifest are too low or the app leaked. Do not restart forever without reading cgroup evidence.
-
-**5. What is the OCI runtime’s job compared to Docker/containerd?**
+**3. What happens when a container exceeds its memory limit?**
 
 ??? success "Reveal answer"
-    Docker/containerd handle images, API, and higher-level lifecycle. An OCI runtime such as `runc` or `crun` performs the low-level create/start work: namespaces, cgroups, rootfs, and exec of the entrypoint. Kubernetes talks CRI to a runtime that ultimately uses OCI.
+    The cgroup OOM killer terminates process(es) in that cgroup — status **OOMKilled**. Fix: increase limit after confirming leak vs legitimate need, or optimise application memory.
 
-**6. How can you demonstrate a namespace on a host without Docker?**
-
-??? success "Reveal answer"
-    Use `unshare` (for example `--uts`) to change hostname inside a new namespace and show the host hostname is unchanged. Use `lsns` and `/proc/self/ns` to list namespace inodes. Keep demos on a practice VM.
-
-**7. Why can access to `docker.sock` be dangerous?**
+**4. Name three namespace types and what they isolate.**
 
 ??? success "Reveal answer"
-    Clients of the Docker socket can often run privileged containers and mount the host filesystem — effectively **root on the host**. Restrict membership, prefer rootless where possible, and treat socket access as highly privileged in audits.
+    Examples: **pid** (process IDs), **net** (network stack), **mnt** (mount table), **uts** (hostname), **ipc**, **user**. `lsns` lists them for a process.
+
+**5. What is OverlayFS role in Docker?**
+
+??? success "Reveal answer"
+    Combines read-only image **layers** (lower) with a writable **upper** layer for container changes. Enables shared layers between containers and efficient image storage — also causes disk use if images accumulate.
+
+**6. What is OCI?**
+
+??? success "Reveal answer"
+    **Open Container Initiative** — standards for container **image format** and **runtime** (bundle + config.json). Enables interchangeable tools (build with Docker, run with containerd/runc).
+
+**7. How do you debug from the host without kubectl?**
+
+??? success "Reveal answer"
+    `docker ps` / crictl on node → `inspect` PID → `lsns -p PID`, `/proc/PID/cgroup`, `findmnt` for overlay, check memory.max in cgroup path, `journalctl` for OOM. Same primitives on Kubernetes nodes.
 
 ## Related Tutorials
 
-- [Linux for Cloud & DevOps – Overview](index.md)
-- [SELinux, AppArmor, Fail2Ban, Auditd, and PAM](selinux-apparmor-fail2ban-auditd-pam.md) *(previous)*
-- [Troubleshooting Linux Systems](troubleshooting-linux-systems.md) *(next)*
-- [Introduction to Containers and Docker](../docker/introduction-to-containers-and-docker.md) *(Docker track)*
+- Previous: [SELinux, AppArmor, Fail2Ban, Auditd, and PAM](selinux-apparmor-fail2ban-auditd-pam.md)
+- Next: [Troubleshooting Linux Systems](troubleshooting-linux-systems.md)
+- Docker track: [Introduction to Containers and Docker](../docker/introduction-to-containers-and-docker.md)
 
 ## References
 
-- [`namespaces(7)`](https://man7.org/linux/man-pages/man7/namespaces.7.html) — Linux namespaces  
-- [`cgroups(7)`](https://man7.org/linux/man-pages/man7/cgroups.7.html) — control groups  
-- [OCI Runtime Specification](https://github.com/opencontainers/runtime-spec) — OCI runtime  
-- [OCI Image Specification](https://github.com/opencontainers/image-spec) — OCI image  
-- Track index: [Linux for Cloud & DevOps Engineers](index.md)
+- [Linux namespaces man page](https://manpages.ubuntu.com/manpages/noble/man7/namespaces.7.html)
+- [cgroups v2 documentation](https://docs.kernel.org/admin-guide/cgroup-v2.html)
+- [OCI runtime specification](https://github.com/opencontainers/runtime-spec)
+- [Docker documentation](https://docs.docker.com/engine/)

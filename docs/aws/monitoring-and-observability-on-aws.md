@@ -1,8 +1,8 @@
 ---
 title: "Monitoring and Observability on AWS"
-description: "Operate CloudWatch, CloudTrail, Config, X-Ray, Health Dashboard, and Systems Manager for metrics, logs, audit, and ops — without noisy or expensive alarms."
-difficulty: intermediate
-estimated_time: "50–65 min"
+description: "CloudWatch metrics, alarms, logs, SNS — publish custom metrics and prove ALARM to OK transitions with CLI evidence."
+difficulty: beginner
+estimated_time: "60–75 min"
 technology: aws
 category: aws
 module: "Module 9 · Monitoring & Observability"
@@ -11,389 +11,457 @@ career_paths:
   - devops-engineer
   - platform-engineer
   - site-reliability-engineer
-  - devsecops-engineer
 skills:
-  - aws
   - cloudwatch
-  - cloudtrail
-  - config
-  - x-ray
-  - systems-manager
+  - sns
+  - observability
+  - alerting
 prerequisites:
   - aws/serverless-on-aws
-  - aws/aws-fundamentals-and-global-infrastructure
 next:
   - aws/aws-security-services
 related:
-  - aws/aws-security-services
-  - aws/troubleshooting-aws
+  - aws/serverless-on-aws
+  - aws/compute-ec2-asg-and-load-balancing
 labs: []
 projects: []
 interview: interview/aws
 certifications:
-  - AWS DevOps Engineer Professional
-  - AWS Solutions Architect Associate
-  - AWS Developer Associate
+  - AWS Certified SysOps Administrator – Associate
+  - AWS Certified Solutions Architect – Associate
 tags:
   - aws
   - cloudwatch
-  - observability
-  - cloudtrail
-  - ssm
+  - sns
+  - monitoring
+  - beginners
 author: Shaik Basha
-last_updated: "2026-07-31"
+last_updated: "2026-08-03"
 comments: false
 ---
-
 
 # Monitoring and Observability on AWS
 
 ## Overview
 
+You cannot fix what you cannot see. When a website is “slow” or “down”, engineers look at **metrics** (numbers over time), **logs** (line-by-line events), and **traces** (request paths across services).
 
+On AWS, **Amazon CloudWatch** is the default home for metrics and logs. **CloudWatch alarms** turn metrics into actions — for example “email me when queue depth > 10”. **Amazon SNS** (**Simple Notification Service**) delivers those alerts.
 
+This module teaches observability vocabulary first, then a lab where you publish a **custom metric**, drive an alarm to **ALARM**, then back to **OK** — with saved CLI evidence.
 
+This is **Tutorial 1** in **Module 9: Monitoring & Observability** of the REBASH Academy **AWS for Cloud & DevOps Engineers** series.
 
-
-Wire the AWS observability spine — Amazon CloudWatch, AWS CloudTrail, AWS Config, AWS X-Ray, AWS Health Dashboard, and AWS Systems Manager — so you can detect, investigate, and act without drowning in alarms or log ingestion cost.
-
-**Observability** answers: is the system healthy, what changed, and why? On AWS, **CloudWatch** holds metrics, logs, alarms, and dashboards. **CloudTrail** records API activity (who did what). **Config** records resource configuration and compliance over time. **X-Ray** traces requests across services. **Health Dashboard** surfaces AWS service events affecting your accounts. **Systems Manager (SSM)** provides operational actions — Session Manager, Parameter Store (ops config), Run Command, Patch Manager, and Inventory. Together they support SRE-style detect → diagnose → remediate loops.
-
-This is a core tutorial in **Module 9 · Monitoring & Observability** of the REBASH Academy **AWS for Cloud & DevOps Engineers** series — written for Cloud, DevOps, Platform, and SRE engineers.
+!!! warning "Cost hygiene"
+    Custom metrics and alarms are inexpensive at lab scale. SNS email is free; SMS costs extra — skip SMS in labs. Delete alarms and topics in Cleanup.
 
 ## Prerequisites
 
-
-
-
-
-
-- [Serverless on AWS](serverless-on-aws.md)
-- AWS CLI access to a sandbox account
-- Familiarity with IAM and basic EC2 or Lambda resources
+- [Serverless on AWS](serverless-on-aws.md) — you have seen CloudWatch Logs from Lambda
+- AWS CLI v2 with `cloudwatch:*`, `sns:*`
+- Optional: email inbox if you subscribe SNS (not required to prove alarm states)
 
 ## Learning Objectives
 
-
-
-
-
-
 By the end of this tutorial, you will be able to:
 
-- [ ] Create a useful CloudWatch alarm, dashboard sketch, and Logs Insights query  
-- [ ] Distinguish CloudTrail (API audit) from Config (resource configuration and compliance)  
-- [ ] Explain when X-Ray tracing helps versus when metrics and logs suffice  
-- [ ] Use Systems Manager Session Manager, Run Command, Parameter Store (ops), and Patch Manager without bastion hosts  
-- [ ] Place the AWS Health Dashboard in an incident triage sequence
+- [ ] Explain metrics vs logs vs traces with everyday analogies
+- [ ] Publish custom metrics with `cloudwatch put-metric-data`
+- [ ] Create CloudWatch alarms wired to SNS
+- [ ] Prove alarm state transitions **ALARM → OK** with CLI evidence
+- [ ] Describe OK, ALARM, and INSUFFICIENT_DATA states
+- [ ] Answer fresher interview questions on alert fatigue and billing alarms
 
 ## Architecture
 
+Applications and AWS services emit metrics to CloudWatch. Logs flow to log groups. Alarms evaluate metrics over time periods and invoke SNS topics or Auto Scaling policies. Operators use dashboards; on-call receives SNS notifications.
 
-
-
-
-
-This topic’s control points and relationships are shown below.
-
-![Observability on AWS](../assets/excalidraw/aws-monitoring.svg)
+![AWS monitoring — CloudWatch, SNS, X-Ray](../assets/excalidraw/aws-monitoring.svg)
 
 ## Theory
 
+### The problem (before AWS words)
 
+Users report “the app feels broken.” Is it CPU, errors, or a downstream API? Without signals, engineers guess. **Observability** means having data to ask questions you did not know to ask in advance.
 
+### Metrics — the dashboard numbers
 
+**Problem:** You need to know *how much* and *how often* — CPU 85%, error rate 2%, queue depth 50.
 
+**Analogy:** Metrics are like a car dashboard — speedometer and fuel gauge, not a diary of every turn.
 
-### What it is
+**AWS name:** **CloudWatch Metrics** — time series with namespace, name, and optional dimensions.
 
-**Observability on AWS** answers: is the system healthy, what changed, and how do we act? **Amazon CloudWatch** holds metrics, logs, alarms, and dashboards (plus Logs Insights). **AWS CloudTrail** audits API activity. **AWS Config** records resource configuration and compliance over time. **AWS X-Ray** samples distributed traces. **AWS Health Dashboard** surfaces provider events affecting your accounts. **AWS Systems Manager (SSM)** provides Session Manager, Parameter Store (ops config), Run Command, and Patch Manager — typically replacing public SSH bastions.
+**Tiny example:** Publish `QueueDepth = 25` to namespace `Rebash/Module09`.
 
-| Tool | Primary question |
-|------|------------------|
-| CloudWatch | Is it broken *now*? |
-| CloudTrail | Who changed what via the API? |
-| Config | What was the config, and is it compliant? |
-| X-Ray | Where is latency in the request path? |
-| Health | Is AWS itself impaired? |
-| SSM | How do I access, configure, patch, or remediate? |
+**Interview one-liner:** “Metrics aggregate numbers for dashboards and thresholds; logs give forensic detail.”
 
-### Why it matters
+### Logs — the diary
 
-Site Reliability Engineering (SRE) and DevOps need golden signals, change correlation, and drift detection. Too many alarms cause fatigue; too little instrumentation prolongs outages. Custom metrics, forever log retention, and multi-Region Config recorders cost real money — design for *actionable* signals. Health stops you blaming the app during an AWS incident. SSM gives auditable, IAM-gated access without opening port 22.
+**Problem:** Metrics show *that* errors spiked; logs show *why* (stack trace, request ID).
 
-### How it works
+**Analogy:** **CloudWatch Logs** is a searchable diary — Lambda writes to `/aws/lambda/function-name` automatically.
 
-1. Verify CloudTrail to a locked-down bucket (account or organisation trail).
-2. Enable Config only in Regions you use, with rules that match guardrails.
-3. Emit CloudWatch metrics/logs; alarm on actionable symptoms via SNS or EventBridge.
-4. Trace critical paths with X-Ray (or OpenTelemetry) at a sensible sample rate.
-5. Prefer Session Manager over SSH; tag for inventory/patch; Parameter Store for ops config; Run Command for fleet tasks.
-6. Incidents: Health → CloudTrail → Config → logs/metrics → traces.
+**Interview one-liner:** “Page on metrics; diagnose with logs (and traces for latency across services).”
 
-### Concept deep dive
+### Traces — the request journey
 
-**CloudWatch metrics** are time series (`AWS/EC2`, `AWS/Lambda`, …). Prefer p99 and error rates over CPU alone; custom and high-resolution metrics cost more. **Logs** go to log groups — set retention (labs: days). **Logs Insights** queries need bounded time ranges; **metric filters** turn log patterns into alarmable metrics. **Alarms** evaluate thresholds over *N* periods; use **composite alarms** and anomaly detection to cut noise; choose missing-data behaviour deliberately. **Dashboards** show SLIs and dependencies — they do not replace paging alarms.
+**Problem:** Microservices make it hard to see where 800 ms was spent.
 
-**CloudTrail** is an API audit log (management events by default; data events optional and dearer), not an application debugger. Organisation trails centralise forensics.
+**Analogy:** **AWS X-Ray** (and OpenTelemetry) is a GPS track of one request through many services.
 
-**Config** stores configuration items and evaluates rules for drift/compliance (“was this security group open yesterday?”), not live performance. Scope recorders — multi-Region Config bills.
+Logs and traces matter too; this lab focuses on metrics and alarms first.
 
-**X-Ray** builds a service map for sampled requests (API → Lambda → DynamoDB). Start with low sampling; raise during incidents.
+### CloudWatch alarms — if-this-then-pager
 
-**Health Dashboard** answers “is AWS degraded?” first; EventBridge can fan into ops channels.
+**Problem:** Nobody watches dashboards 24/7.
 
-**SSM Session Manager** opens a shell via the agent and IAM — no inbound SSH (need agent, instance profile, and path to SSM endpoints or VPC endpoints). **Parameter Store** holds String / StringList / SecureString for ops config. **Run Command** runs documents across tagged fleets. **Patch Manager** applies baselines in maintenance windows; pair with Inventory.
+**Analogy:** An alarm is a smoke detector on a metric — if average queue depth > 10 for two minutes, buzz the on-call phone (via SNS).
 
-### Key concepts and comparisons
+**AWS name:** **CloudWatch Alarm**.
 
-| Signal or job | Prefer |
-|---------------|--------|
-| Error rate / p99 | CloudWatch metrics + alarms |
-| Structured app logs | CloudWatch Logs (+ Insights) |
-| API mutations | CloudTrail |
-| Config / compliance history | Config |
-| Distributed path | X-Ray |
-| Provider impairment | Health Dashboard |
-| Shell-less access | Session Manager |
-| Fleet script / patch | Run Command / Patch Manager |
-| Ops config | Parameter Store |
+**States you must know:**
+
+| State | Plain meaning |
+|-------|----------------|
+| **OK** | Metric within threshold |
+| **ALARM** | Breach condition met for enough periods |
+| **INSUFFICIENT_DATA** | Not enough datapoints to decide |
+
+**Interview one-liner:** “`TreatMissingData` controls whether missing points count as breaching — wrong setting causes false pages or silence.”
+
+### SNS — alert delivery
+
+**Problem:** CloudWatch should not hard-code “send email to Bob.”
+
+**Analogy:** **SNS** is a megaphone — one alarm publishes to a **topic**; email, Lambda, or chat bots **subscribe**.
+
+**Tiny example:** Alarm action → SNS topic → email subscriber.
+
+### Golden signals (awareness)
+
+Site Reliability Engineering (SRE) teams often watch:
+
+- **Latency** — how slow
+- **Traffic** — how much
+- **Errors** — how many failures
+- **Saturation** — how full (CPU, disk, queue)
 
 ### Common pitfalls
 
-- Alarming only on CPU while ignoring errors and latency.
-- Config in every Region without a cost review.
-- Using CloudTrail as an application debugger.
-- 100% X-Ray sampling in steady-state production.
-- Infinite log retention and forgotten custom metrics.
-- Bastions on port 22 instead of Session Manager (and missing VPC endpoints).
-- Treating Parameter Store as a database.
+- Paging on CPU alone without error/latency context
+- No **OK action** — team never knows recovery happened
+- Ignoring **INSUFFICIENT_DATA** — alarm never fires
+- Verbose DEBUG logs on high-traffic services — big bills
+- Forgetting billing metrics live in **us-east-1**
 
 ## Hands-on Lab
 
-
-
-!!! warning "Cost and account safety"
-    Use a sandbox account. Prefer read-only calls. Destroy anything you create before leaving the lab.
-
 ### Objective
 
-Use read-only AWS APIs to inventory and verify aspects of **Monitoring and Observability on AWS** in a sandbox account.
+Create an SNS topic, publish a custom metric, configure a CloudWatch alarm, prove **ALARM** then **OK** transitions, and clean up all resources.
 
 ### Prerequisites
 
-- AWS CLI v2
-- Credentials for a **sandbox** account (SSO or short-lived keys)
+| Tool | Notes |
+|------|--------|
+| AWS CLI v2 | put-metric-data, put-metric-alarm |
+| jq | Parse alarm state |
 
 ### Lab environment
 
-Workspace: `~/rebash-aws/module-09`
-
-Prefer `describe`/`list`/`get` APIs. Create resources only with an explicit destroy path.
-
 ``` {.bash .ra-terminal title="Terminal"}
 mkdir -p ~/rebash-aws/module-09 && cd ~/rebash-aws/module-09
+export AWS_REGION="${AWS_REGION:-eu-west-2}"
+export AWS_PAGER=""
+export NS="Rebash/Module09"
+export METRIC="QueueDepth"
+export ALARM="rebash-m09-queue-depth"
+export TOPIC="rebash-m09-alerts"
+echo "$NS" | tee namespace.txt
+aws sts get-caller-identity --output table
 ```
 
 ### Real-world scenario
 
-Security asks for evidence that **Monitoring and Observability on AWS** is configured correctly. You gather CLI proof without click-ops drift.
+An SRE ticket asks for alerting when **queue depth** exceeds 10 for two consecutive minutes. You stand up SNS routing, push synthetic metric datapoints to breach and clear the threshold, and capture alarm history JSON as evidence — the same proof required before enabling Auto Scaling policies.
 
 ### Step-by-step tasks
 
-#### Task 1 – Prove caller identity
-
-Every AWS change starts by knowing which account/role you are.
+#### Task 1 – Create SNS topic
 
 ``` {.bash .ra-terminal title="Terminal"}
-aws sts get-caller-identity | tee identity.json
-aws configure get region || true
-test -s identity.json
+cd ~/rebash-aws/module-09
+TOPIC=rebash-m09-alerts
+aws sns create-topic --name "$TOPIC" --output json | tee create-topic.json
+TOPIC_ARN=$(jq -r '.TopicArn' create-topic.json)
+echo "$TOPIC_ARN" | tee topic-arn.txt
+test -n "$TOPIC_ARN"
 ```
 
 !!! example "Expected output"
-    JSON includes Account, Arn, and UserId.
+    `topic-arn.txt` contains `arn:aws:sns:…:rebash-m09-alerts`.
 
 
-#### Task 2 – Collect topic signals
+#### Task 2 – Create alarm on custom metric
 
-Inventory the service surface related to this module.
+Create `alarm-actions.json`:
+
+```json title="alarm-actions.json"
+{
+  "AlarmName": "rebash-m09-queue-depth",
+  "Namespace": "Rebash/Module09",
+  "MetricName": "QueueDepth",
+  "Statistic": "Average",
+  "Period": 60,
+  "EvaluationPeriods": 2,
+  "Threshold": 10,
+  "ComparisonOperator": "GreaterThanThreshold",
+  "TreatMissingData": "notBreaching",
+  "AlarmActions": ["TOPIC_ARN_PLACEHOLDER"],
+  "OKActions": ["TOPIC_ARN_PLACEHOLDER"]
+}
+```
 
 ``` {.bash .ra-terminal title="Terminal"}
-aws ec2 describe-vpcs --query 'Vpcs[].{Id:VpcId,Cidr:CidrBlock}' --output table 2>/dev/null | tee vpcs.txt || true
-aws iam get-account-summary 2>/dev/null | tee iam-summary.json || true
-tee notes.txt << 'EOF'
-Record which APIs apply to this topic and any NotAuthorized errors for follow-up.
-EOF
-cat notes.txt
+cd ~/rebash-aws/module-09
+TOPIC_ARN=$(cat topic-arn.txt)
+sed "s|TOPIC_ARN_PLACEHOLDER|${TOPIC_ARN}|g" alarm-actions.json > alarm.json
+aws cloudwatch put-metric-alarm --cli-input-json file://alarm.json
+aws cloudwatch describe-alarms --alarm-names rebash-m09-queue-depth \
+  --output json | tee alarm-initial.json
+jq -r '.MetricAlarms[0].StateValue' alarm-initial.json | tee state-initial.txt
 ```
 
 !!! example "Expected output"
-    Evidence files created even if some APIs are denied.
+    Alarm created; initial state `INSUFFICIENT_DATA` or `OK`.
+
+
+#### Task 3 – Publish high metric values → ALARM
+
+``` {.bash .ra-terminal title="Terminal"}
+cd ~/rebash-aws/module-09
+NS=$(cat namespace.txt)
+for i in 1 2 3; do
+  aws cloudwatch put-metric-data --namespace "$NS" --metric-data \
+    MetricName=QueueDepth,Value=25,Unit=Count
+  sleep 5
+done
+echo "waiting for alarm evaluation (up to 3 minutes)..."
+for i in $(seq 1 36); do
+  STATE=$(aws cloudwatch describe-alarms --alarm-names rebash-m09-queue-depth \
+    --query 'MetricAlarms[0].StateValue' --output text)
+  echo "state=$STATE"
+  echo "$STATE" | tee -a state-log.txt
+  [[ "$STATE" == "ALARM" ]] && break
+  sleep 5
+done
+grep -q ALARM state-log.txt
+aws cloudwatch describe-alarm-history --alarm-name rebash-m09-queue-depth \
+  --history-item-type StateUpdate --max-records 5 --output json | tee history-alarm.json
+```
+
+!!! example "Expected output"
+    `state-log.txt` contains `ALARM`; history shows transition to ALARM.
+
+
+#### Task 4 – Publish low values → OK and cleanup
+
+``` {.bash .ra-terminal title="Terminal"}
+cd ~/rebash-aws/module-09
+NS=$(cat namespace.txt)
+for i in 1 2 3; do
+  aws cloudwatch put-metric-data --namespace "$NS" --metric-data \
+    MetricName=QueueDepth,Value=1,Unit=Count
+  sleep 5
+done
+echo "waiting for OK state..."
+for i in $(seq 1 36); do
+  STATE=$(aws cloudwatch describe-alarms --alarm-names rebash-m09-queue-depth \
+    --query 'MetricAlarms[0].StateValue' --output text)
+  echo "state=$STATE"
+  echo "$STATE" | tee -a state-log-ok.txt
+  [[ "$STATE" == "OK" ]] && break
+  sleep 5
+done
+grep -q OK state-log-ok.txt
+echo "alarm transition OK" | tee evidence.txt
+aws cloudwatch delete-alarms --alarm-names rebash-m09-queue-depth
+TOPIC_ARN=$(cat topic-arn.txt)
+aws sns delete-topic --topic-arn "$TOPIC_ARN"
+echo "cleanup OK" | tee cleanup-ok.txt
+```
+
+!!! example "Expected output"
+    States progress ALARM → OK; alarm and SNS topic deleted.
 
 
 ### Validation steps
 
-- [ ] identity.json present
-- [ ] No long-lived keys committed to the repo
+- [ ] SNS topic created with ARN captured
+- [ ] Alarm on custom namespace `Rebash/Module09` created
+- [ ] High metric values triggered **ALARM** state
+- [ ] Low metric values returned alarm to **OK**
+- [ ] Alarm and topic deleted
 
 ### Common errors and fixes
 
 | Error | Cause | Fix |
 |-------|-------|-----|
-| Unable to locate credentials | No profile/SSO | Run `aws sso login` or export sandbox keys |
-| AccessDenied | Least privilege | Use a role that can read the service — or document the deny |
-| UnauthorizedOperation | Wrong region/account | Check `AWS_REGION` and account id |
+| Alarm stuck INSUFFICIENT_DATA | Not enough periods | Publish more datapoints; wait 2× period |
+| AccessDenied on SNS | IAM | Add sns:CreateTopic/Publish |
+| No state change | Wrong namespace/name | Match PutMetricData to alarm fields |
+| Email not received | Unconfirmed subscription | Lab proves CLI state; confirm email separately |
 
 ### Challenge exercise
 
-Enable a cost budget alarm in the sandbox (or document the console clicks) and screenshot/CLI-describe it.
+Create `billing-alarm-steps.sh` that echoes the CLI steps for a **billing alarm** on `AWS/Billing` `EstimatedCharges` > $10 in **us-east-1** (do not run unless you intend to alert your real account).
+
+```bash title="billing-alarm-steps.sh"
+#!/bin/bash
+set -euo pipefail
+echo "Billing metrics publish in us-east-1 only"
+echo "Namespace: AWS/Billing"
+echo "Metric: EstimatedCharges"
+echo "Enable Billing Alerts in console Billing preferences first"
+echo "Example: aws cloudwatch put-metric-alarm --region us-east-1 --alarm-name student-billing ..."
+```
+
+``` {.bash .ra-terminal title="Terminal"}
+cd ~/rebash-aws/module-09
+chmod +x billing-alarm-steps.sh
+./billing-alarm-steps.sh | tee billing-alarm-output.txt
+grep -qi billing billing-alarm-output.txt
+grep -qi EstimatedCharges billing-alarm-output.txt
+echo "billing challenge OK" | tee challenge.txt
+```
 
 ### Learning outcomes
 
-- Authenticated safely
-- Captured read-only evidence
-- Avoided unmanaged spend
+- You published custom metrics and drove alarm state transitions
+- You wired SNS as an alarm action target
+- You captured alarm history as operational evidence
+- You can contrast metrics vs logs vs traces in incidents
 
 ### Cleanup
 
-```bash
-# Revoke/lab-expire any temporary keys you exported
-# Do not leave EC2/ELB/NAT running
+``` {.bash .ra-terminal title="Terminal"}
+cd ~/rebash-aws/module-09
+aws cloudwatch delete-alarms --alarm-names rebash-m09-queue-depth 2>/dev/null || true
+TOPIC_ARN=$(cat topic-arn.txt 2>/dev/null || echo "")
+if [[ -n "$TOPIC_ARN" ]]; then aws sns delete-topic --topic-arn "$TOPIC_ARN" 2>/dev/null || true; fi
+rm -f state-log.txt state-log-ok.txt evidence.txt
 ```
 
 ## Validation
 
-
-
-
-
-
-- [ ] Lab commands run under `~/rebash-aws/module-09/`
-- [ ] You can explain each Theory section in your own words
-- [ ] You used modern tooling where it applies to this topic
-- [ ] You can describe one production failure mode for this topic
+- [ ] Lab evidence under `~/rebash-aws/module-09`
+- [ ] You can explain OK/ALARM/INSUFFICIENT_DATA without notes
+- [ ] You know billing alarms use us-east-1
+- [ ] No rebash-m09 alarms or topics remain
 
 ## Code Walkthrough
 
-
-
-
-
-
-Production practice for **Monitoring and Observability on AWS** always combines:
-
-1. Inspect before you change (status, plan, logs, dry-run)
-2. Prefer reversible, documented changes (Git, IaC, drop-ins, version pins)
-3. Capture evidence (command output, pipeline logs) for handovers
-4. Prefer current tools and APIs over legacy shortcuts
-5. Least privilege — escalate credentials only when required
-
-Keep runbooks short enough to follow under pressure. Automate checks; keep humans for judgement.
+1. **Custom namespace** — `Rebash/Module09` avoids collision with AWS service namespaces.
+2. **EvaluationPeriods × Period** — two 60 s periods ≈ up to 2 minutes to ALARM.
+3. **TreatMissingData** — `notBreaching` avoids false pages before first datapoint in some designs.
+4. **Alarm history JSON** — attach to incident tickets as proof of transition time.
+5. **Delete alarm before topic** — stops stray notifications during teardown.
 
 ## Security Considerations
 
-
-
-
-
-
-- Treat credentials and tokens for aws as privileged — never commit them
-- Prefer short-lived auth (OIDC, roles, SSO) over long-lived keys
-- Validate blast radius before apply/deploy/delete operations
-- Restrict who can approve production changes
-- Collect audit logs; limit who can read sensitive traces
+- Restrict SNS publish/subscribe with IAM policies.
+- Encrypt SNS topics with KMS for sensitive alert content.
+- Do not put secrets in alarm descriptions or log metric filters.
+- Separate topics for security vs operational alerts.
+- Audit alarm changes via CloudTrail.
 
 ## Common Mistakes
 
+!!! warning "Paging on CPU alone"
+    CPU without latency/error context causes false positives. Pair with golden signals.
 
+!!! warning "Missing OK notifications"
+    On-call assumes issue persists. Wire `OKActions` to the same routing tier.
 
-
-
-
-!!! warning "Alarming only on CPU while ignoring errors and latency."
-    Validate assumptions against the Theory section and official docs before changing production.
-
-!!! warning "Config in every Region without a cost review."
-    Lab shortcuts (open security groups, admin roles, skip approvals) must not ship unchanged.
-
-!!! warning "Changing production without a rollback path"
-    Always know how to revert (previous artefact, prior release, state rollback, DNS failback).
+!!! warning "Unbounded log retention"
+    CloudWatch Logs ingest bills forever. Set retention (7–30 days in non-prod).
 
 ## Best Practices
 
-
-
-
-
-
-- Encode Monitoring and Observability on AWS changes as code and review them in pull requests
-- Pin versions (images, modules, actions, provider plugins)
-- Separate environments with clear promotion gates
-- Alert on symptoms with runbooks attached
-- Destroy lab resources; tag everything with owner and expiry where possible
+- Dashboards per service with SLI metrics (availability, latency, errors)
+- Link runbooks in alarm descriptions
+- Use composite alarms to reduce fan-out
+- Logs Insights saved queries for common failures
+- OpenTelemetry + ADOT for portable instrumentation
 
 ## Troubleshooting
 
-
-
-
-
-
 | Symptom | Likely cause | Fix |
 |---------|--------------|-----|
-| Auth / permission denied | Wrong identity, policy, or scope | Check caller identity, roles, and least-privilege policies |
-| Timeout / no route | Network, DNS, security group, or endpoint | Trace path, DNS, and allow-lists before retrying |
-| Drift / unexpected plan | Manual change or wrong state/workspace | Reconcile desired vs actual; avoid click-ops on managed resources |
-| Pipeline/job red | Flaky step, cache, or missing secret | Read failing step logs; bisect recent workflow/config changes |
-| Cost spike | Idle load balancer, NAT, oversized compute | Inventory billable resources; stop/delete labs promptly |
+| Alarm never ALARMs | Threshold/statistic wrong | Graph metric; verify Average vs Sum |
+| INSUFFICIENT_DATA forever | No datapoints / wrong Region | Confirm Region; publish metrics |
+| SNS not delivered | No subscription / KMS | Add confirmed subscriber; check key policy |
+| Metric delay | Aggregation delay | Wait full evaluation windows |
 
 ## Summary
 
+**CloudWatch metrics and alarms** plus **SNS** routing form the core AWS alerting path. Proving **ALARM → OK** with custom metrics is interview-grade evidence that you understand evaluation periods — not just that you can click in the console.
 
-
-
-
-
-**Monitoring and Observability on AWS** is essential for Cloud and DevOps engineers working with aws. Practise the lab until the inspection and change path is muscle memory, then continue the track.
+Next: [AWS Security Services](aws-security-services.md).
 
 ## Interview Questions
 
+**1. Metrics vs logs vs traces — simple difference?**
 
+??? success "Reveal answer"
+    **Metrics** are aggregated numbers over time (CPU, error rate) — good for dashboards and alarms. **Logs** are individual event lines (stack traces, request IDs) — good for diagnosis. **Traces** follow one request across services — good for finding latency bottlenecks. Page on metrics; debug with logs and traces.
 
+**2. What are CloudWatch alarm states?**
 
-1. Metric versus log versus trace?
-2. What makes a good CloudWatch alarm?
-3. How do you stop alarm fatigue?
-4. Log retention versus cost?
-5. How do runbooks link to alerts?
+??? success "Reveal answer"
+    **OK** — metric within threshold. **ALARM** — breach condition met for configured evaluation periods. **INSUFFICIENT_DATA** — not enough datapoints to judge. `TreatMissingData` defines behaviour when points are missing.
 
-!!! tip "Sample answer — question 2"
-    Check alarm state history, underlying metric, and related logs for the same time window.
+**3. Why publish custom metrics?**
 
-!!! tip "Sample answer — question 4"
-    Avoid putting secrets in logs; control who can read log groups.
+??? success "Reveal answer"
+    Built-in AWS metrics may not expose business signals (queue depth, orders per minute, failed logins). Applications emit custom metrics with `PutMetricData` so alarms and Auto Scaling can react to what customers actually care about.
+
+**4. What does SNS do in alerting?**
+
+??? success "Reveal answer"
+    SNS decouples alarm firing from delivery — one CloudWatch alarm action publishes to an SNS topic; email, SMS, Lambda (ChatOps), SQS, or HTTP endpoints subscribe. You can fan out to multiple on-call paths.
+
+**5. How do you reduce alert fatigue?**
+
+??? success "Reveal answer"
+    Page only on customer-impacting signals, use composite alarms, require multiple evaluation periods, separate severity topics, send OK notifications when recovered, and review alarm inventory regularly in ops meetings.
+
+**6. Where do billing alarms live?**
+
+??? success "Reveal answer"
+    Billing metrics publish to namespace `AWS/Billing`, metric `EstimatedCharges`, in **us-east-1** — even if your workloads run elsewhere. Enable billing alerts in account preferences; combine with AWS Budgets for forecasts.
+
+**7. What is TreatMissingData?**
+
+??? success "Reveal answer"
+    It defines alarm behaviour when datapoints are missing: `missing` (default), `ignore`, `breaching`, or `notBreaching`. Wrong settings cause false alarms or silent failures — especially for sparse custom metrics.
+
+**8. What Lambda metrics matter most?**
+
+??? success "Reveal answer"
+    CloudWatch provides `Invocations`, `Errors`, `Duration`, `Throttles`, and `ConcurrentExecutions`. Alarm on error rate and duration; use logs in `/aws/lambda/<name>` for stack traces.
 
 ## Related Tutorials
 
-
-
-
-
-
-- [Course overview](index.md)
-- [AWS Security Services](aws-security-services.md)
+- Previous: [Serverless on AWS](serverless-on-aws.md)
+- Next: [AWS Security Services](aws-security-services.md)
+- [Compute: EC2, ASG, and Load Balancing](compute-ec2-asg-and-load-balancing.md)
 
 ## References
 
-
-
-
-
-
-- [Amazon CloudWatch](https://docs.aws.amazon.com/AmazonCloudWatch/latest/monitoring/WhatIsCloudWatch.html)  
-- [AWS CloudTrail](https://docs.aws.amazon.com/awscloudtrail/latest/userguide/cloudtrail-user-guide.html)  
-- [AWS Config](https://docs.aws.amazon.com/config/latest/developerguide/WhatIsConfig.html)  
-- [AWS X-Ray](https://docs.aws.amazon.com/xray/latest/devguide/aws-xray.html)  
-- [AWS Systems Manager](https://docs.aws.amazon.com/systems-manager/latest/userguide/what-is-systems-manager.html)  
-- [AWS Health](https://docs.aws.amazon.com/health/latest/ug/what-is-aws-health.html)
+- [Amazon CloudWatch](https://docs.aws.amazon.com/AmazonCloudWatch/latest/monitoring/WhatIsCloudWatch.html)
+- [Using CloudWatch alarms](https://docs.aws.amazon.com/AmazonCloudWatch/latest/monitoring/AlarmThatSendsEmail.html)
+- [Publishing custom metrics](https://docs.aws.amazon.com/AmazonCloudWatch/latest/monitoring/publishingMetrics.html)
+- [Amazon SNS](https://docs.aws.amazon.com/sns/latest/dg/welcome.html)
+- [AWS X-Ray](https://docs.aws.amazon.com/xray/latest/devguide/aws-xray.html)

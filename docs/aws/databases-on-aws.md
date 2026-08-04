@@ -1,8 +1,8 @@
 ---
 title: "Databases on AWS"
-description: "Choose AWS databases with confidence: Amazon RDS, Aurora, DynamoDB, ElastiCache, and DocumentDB — when to use each in Cloud and DevOps architectures."
-difficulty: intermediate
-estimated_time: "55–70 min"
+description: "AWS databases RDS, Aurora, DynamoDB, ElastiCache — with a DynamoDB on-demand lab, query proof, empty-result debug, and PITR toggle."
+difficulty: beginner
+estimated_time: "65–80 min"
 technology: aws
 category: aws
 module: "Module 6 · Databases"
@@ -11,16 +11,14 @@ career_paths:
   - devops-engineer
   - platform-engineer
   - site-reliability-engineer
-  - devsecops-engineer
 skills:
   - rds
   - aurora
   - dynamodb
   - elasticache
-  - documentdb
+  - database-design
 prerequisites:
   - aws/storage-s3-ebs-efs
-  - aws/vpc-networking-on-aws
 next:
   - aws/containers-ecs-eks-ecr
 related:
@@ -35,354 +33,435 @@ certifications:
 tags:
   - aws
   - rds
-  - aurora
   - dynamodb
-  - elasticache
-  - databases
+  - beginners
 author: Shaik Basha
-last_updated: "2026-07-31"
+last_updated: "2026-08-03"
 comments: false
 ---
-
 
 # Databases on AWS
 
 ## Overview
 
+Applications need somewhere to store structured data — user accounts, orders, events, sessions. On AWS you can run traditional **SQL databases**, massive **NoSQL** tables, or fast **in-memory caches**.
 
+Do not memorise database logos yet. Learn the **problem each service solves**:
 
+- **RDS / Aurora** — managed SQL (PostgreSQL, MySQL, etc.) when you need joins and transactions
+- **DynamoDB** — managed key-value/document store when you need huge scale and millisecond reads
+- **ElastiCache** — Redis or Memcached in memory to speed up reads (not your primary database)
 
+This is **Tutorial 1** in **Module 6: Databases** of the REBASH Academy **AWS for Cloud & DevOps Engineers** series. Theory covers RDS and friends; the lab uses **DynamoDB on-demand** — **not RDS** — so you learn key design without hourly database charges or NAT Gateway cost.
 
-
-Choose and operate the right managed database on AWS: Relational Database Service (RDS), Amazon Aurora, DynamoDB, ElastiCache, and DocumentDB — with clear decision criteria for Cloud, DevOps, and platform work.
-
-Self-managing databases on Amazon Elastic Compute Cloud (EC2) is rarely the first choice: patching, failover, and backups dominate toil. AWS managed services trade some control for Multi-AZ resilience and automation. Picking the wrong engine (or leaving a large RDS instance running) is expensive; this module focuses on **fit** and **safe labs**.
-
-!!! warning "Cost"
-    RDS, Aurora, ElastiCache, and DocumentDB bill for instances continuously. Prefer **`db.t3.micro` / Free Tier**, single-AZ for labs, short retention, and **delete with final snapshot skipped** when learning. DynamoDB on-demand is often cheaper for labs than provisioned. Destroy clusters before you finish.
-
-This is a core tutorial in **Module 6 · Databases** of the REBASH Academy **AWS for Cloud & DevOps Engineers** series — written for Cloud, DevOps, Platform, and SRE engineers.
+!!! warning "Cost hygiene"
+    RDS and Aurora bill hourly even when idle. This lab uses DynamoDB **PAY_PER_REQUEST** only. Delete the table when finished. **Point-in-time recovery (PITR)** adds a small storage charge — disable before delete.
 
 ## Prerequisites
 
-
-
-
-
-
 - [Storage: S3, EBS, and EFS](storage-s3-ebs-efs.md)
-- [VPC Networking on AWS](vpc-networking-on-aws.md) — private subnets and security groups
-- Basic Structured Query Language (SQL) or NoSQL awareness
+- AWS CLI v2 with `dynamodb:*` in a sandbox account
+- Basic idea of rows/columns (SQL) vs key lookup (NoSQL) — we explain the rest
 
 ## Learning Objectives
 
-
-
-
-
-
 By the end of this tutorial, you will be able to:
 
-- [ ] Choose among RDS, Aurora, DynamoDB, ElastiCache, and DocumentDB with clear criteria  
-- [ ] Contrast Multi-AZ failover with read replicas  
-- [ ] Design DynamoDB partition (and sort) keys around access patterns  
-- [ ] Place databases in private subnets with least-privilege security groups  
-- [ ] Avoid common cost and connectivity pitfalls
+- [ ] Explain RDS vs DynamoDB vs ElastiCache with simple analogies
+- [ ] Create a DynamoDB table with on-demand capacity and put/query items
+- [ ] Explain why a query with the wrong partition key returns empty results
+- [ ] Toggle PITR on and off safely
+- [ ] Answer fresher interview questions on Multi-AZ and cache-aside pattern
 
 ## Architecture
 
+Apps connect to **RDS/Aurora** over SQL drivers inside a VPC. **DynamoDB** is API-driven (CLI/SDK) with optional streams. **ElastiCache** sits beside the app for sub-millisecond cached reads. Backups differ: RDS snapshots, Aurora continuous backup, DynamoDB PITR, Redis snapshots.
 
-
-
-
-
-This topic’s control points and relationships are shown below.
-
-![AWS databases](../assets/excalidraw/aws-databases.svg)
+![AWS databases — RDS, Aurora, DynamoDB, ElastiCache](../assets/excalidraw/aws-databases.svg)
 
 ## Theory
 
+### The problem (before AWS words)
 
+Your shopping app stores users and orders. A spreadsheet on one server breaks when traffic grows. You need a database that backups, patches, and scales — without you becoming a full-time DBA on day one.
 
+### RDS — managed SQL in the cloud
 
+**Problem:** You want PostgreSQL or MySQL but do not want to install disks, patch OS, and configure backups manually on EC2.
 
+**Analogy:** **RDS** (**Relational Database Service**) is like renting a flat where the landlord handles building maintenance — AWS patches the engine and offers automated backups; you still design tables and queries.
 
-### What it is
+**Tiny example:** `db.t3.micro` PostgreSQL in private subnets, port 5432, security group allows app tier only.
 
-AWS offers managed databases so you spend less time patching engines and orchestrating failover on Amazon Elastic Compute Cloud (EC2). **Amazon Relational Database Service (RDS)** runs familiar relational engines. **Amazon Aurora** is a cloud-native relational engine compatible with MySQL and PostgreSQL. **Amazon DynamoDB** is a managed NoSQL key-value and document store. **Amazon ElastiCache** provides in-memory Redis or Memcached. **Amazon DocumentDB** offers a MongoDB-compatible API with AWS operations. Self-managing databases on EC2 is rarely the first choice for new Cloud and DevOps designs.
+**Interview one-liner:** “RDS is managed relational SQL — Multi-AZ for failover, read replicas for read scale.”
 
-### Why it matters
+| Term | Plain meaning |
+|------|----------------|
+| **Multi-AZ** | Standby copy in another AZ for failover |
+| **Read replica** | Async copy for read traffic (and optional DR) |
+| **DB subnet group** | Which subnets the database may use |
 
-Pipelines need test databases; production needs encryption, parameter groups, and credentials in Secrets Manager or IAM. Platform teams standardise private subnet groups, `PubliclyAccessible=false`, and security groups from the app tier only. SRE tracks Multi-AZ failover, replica lag, storage autoscaling, and restore drills. DevSecOps insists on KMS encryption, TLS, and no passwords in user data. Wrong engine choice — or a leftover large RDS instance — is expensive.
+### Aurora — AWS-built SQL engine
 
-### How it works
+**Problem:** RDS is familiar but storage scaling and replica lag can hurt at large scale.
 
-**Relational (RDS/Aurora):** DB subnet group across ≥2 AZs → SG allows 5432/3306 from the app SG only → encryption on → app reads secrets inside the VPC. Multi-AZ failovers update DNS to a standby; read replicas scale reads asynchronously and are not the same as Multi-AZ.
+**Analogy:** **Aurora** is AWS’s own SQL engine compatible with PostgreSQL/MySQL — storage grows automatically like a magic expanding hard drive shared by writer and readers.
 
-**DynamoDB:** Design access patterns first → table with partition (and optional sort) keys → SDK + IAM roles → optional Streams, TTL, or Global Tables. Use a gateway VPC endpoint for private access.
+**Interview one-liner:** “Aurora separates compute from replicated storage across three AZs — faster failover and more read replicas than classic RDS for many workloads.”
 
-**Cache:** ElastiCache in private subnets → cache-then-DB with careful TTLs to avoid stampedes.
+### DynamoDB — massive key-value table
 
-### Concept deep dive
+**Problem:** Millions of sessions or IoT events per second — SQL on one big server hits limits.
 
-- **RDS** — Managed PostgreSQL, MySQL, MariaDB, SQL Server, Oracle, or Db2. AWS handles provisioning, patching, automated backups, and optional Multi-AZ standby. Choose RDS for standard SQL with straightforward ops and modest scale.
-- **Aurora** — MySQL-/PostgreSQL-compatible with distributed shared storage. Faster typical failover, shared-storage replicas, Serverless v2, and Global Database. Choose Aurora for cloud-native scale beyond classic RDS on the same SQL dialect.
-- **DynamoDB** — Serverless tables (on-demand or provisioned). Design around **partition keys** (and optional sort keys): every efficient query states the key. Hot partitions throttle throughput. Prefer GetItem/Query over scans. Streams enable event-driven follow-on work.
-- **ElastiCache** — Managed Redis (rich structures, replication) or Memcached (simple cache). Use for sessions, rate limits, and hot keys in front of RDS/DynamoDB — not as system of record unless you accept cache semantics.
-- **DocumentDB** — MongoDB-compatible API for migrations that want managed ops on AWS. For greenfield work that does not need MongoDB drivers/features, DynamoDB often fits better.
-- **When to choose each** — SQL + familiar engines → **RDS**. SQL + higher failover/scale → **Aurora**. Key-value / serverless → **DynamoDB**. Sub-ms hot data → **ElastiCache**. MongoDB-compatible API → **DocumentDB**.
-- **Multi-AZ vs read replicas** — **Multi-AZ**: synchronous standby in another AZ for write HA; automatic failover; standby is not for reads. **Read replicas**: asynchronous copies for read scaling (or DR promotion); can lag; do not replace Multi-AZ. Production often uses Multi-AZ **and** optional replicas.
-- **Partition keys for DynamoDB** — Partition key drives distribution. High-cardinality keys matching query patterns spread load. Composite keys (partition + sort) enable ranges within a partition. Avoid designs where one key absorbs all traffic without sharding.
+**Analogy:** **DynamoDB** is a giant hash map in the cloud. You must know the **partition key** to fetch items quickly — like knowing which filing cabinet drawer before you search.
 
-### Key concepts and comparisons
+**AWS name:** **Amazon DynamoDB** (NoSQL).
 
-| Need | Prefer |
-|------|--------|
-| SQL + operational simplicity | RDS PostgreSQL/MySQL |
-| SQL + cloud-native failover/scale | Aurora |
-| Key-value / event scale / serverless | DynamoDB |
-| Sub-ms sessions / hot keys | ElastiCache Redis |
-| MongoDB-compatible managed API | DocumentDB |
-| Write HA in one Region | Multi-AZ (not “replica alone”) |
-| Read scaling | Read replicas (watch lag) |
-| PubliclyAccessible | `false` for production |
-| Hot partition | Anti-pattern — rework key design |
+**Tiny example:** Partition key `tenant_id`, sort key `event_ts` — query all events for one tenant.
+
+**Interview one-liner:** “Design access patterns first, then partition key — wrong key returns empty Query, not necessarily an error.”
+
+| Term | Plain meaning |
+|------|----------------|
+| **Partition key (HASH)** | Which shard stores the item |
+| **Sort key (RANGE)** | Orders items within one partition |
+| **GSI** | **Global Secondary Index** — alternate lookup pattern |
+| **On-demand** | Pay per request — great for labs and spiky traffic |
+| **Scan** | Read entire table — slow and expensive; avoid in prod |
+
+### ElastiCache — speed layer, not vault
+
+**Problem:** Every product page hits the database for the same catalogue data.
+
+**Analogy:** **ElastiCache** is a sticky-note pad on the desk — **Redis** or **Memcached** holds hot data in RAM so the database breathes.
+
+**Interview one-liner:** “Cache-aside: app reads cache first, on miss reads DB and fills cache with TTL — do not store the only copy of money in Redis.”
+
+### When to pick which
+
+| Workload | Prefer | Avoid |
+|----------|--------|-------|
+| Orders with joins and ACID | RDS/Aurora PostgreSQL | DynamoDB relational modelling |
+| Session store at huge scale | DynamoDB or Redis | Uncached RDS for every read |
+| Leaderboard / real-time counts | DynamoDB | Row locks on one SQL server |
+| Speed up product catalogue reads | ElastiCache + RDS | Querying RDS on every page view |
 
 ### Common pitfalls
 
-- Leaving `PubliclyAccessible=true` on RDS  
-- Single-AZ production database  
-- Treating read replicas as synchronous Multi-AZ failover  
-- Undersized `max_connections` behind large Auto Scaling groups  
-- DynamoDB scan-heavy designs instead of keyed queries  
-- Cache without TTL or stampede protection  
-- Forgetting to delete lab instances (24×7 billing)  
-- Choosing DocumentDB “because Mongo” when DynamoDB fits greenfield
+- **DynamoDB hot partition** — one `tenant_id` gets all traffic; throttling despite “high limits”
+- **Scan instead of Query** — reads whole table; burns capacity
+- **RDS public accessibility** — database on the internet for “easy access”
+- **ElastiCache as sole database** — cache can evict data; DB is source of truth
 
 ## Hands-on Lab
 
-
-
-!!! warning "Cost and account safety"
-    Use a sandbox account. Prefer read-only calls. Destroy anything you create before leaving the lab.
-
 ### Objective
 
-Use read-only AWS APIs to inventory and verify aspects of **Databases on AWS** in a sandbox account.
+Create a DynamoDB on-demand table, put and query items, prove empty results for a wrong partition key, toggle PITR on then off, and delete the table.
 
 ### Prerequisites
 
-- AWS CLI v2
-- Credentials for a **sandbox** account (SSO or short-lived keys)
+| Tool | Notes |
+|------|--------|
+| AWS CLI v2 | `CreateTable`, `PutItem`, `Query`, `UpdateContinuousBackups` |
+| `jq` | Parse JSON counts |
 
 ### Lab environment
 
-Workspace: `~/rebash-aws/module-06`
-
-Prefer `describe`/`list`/`get` APIs. Create resources only with an explicit destroy path.
-
 ``` {.bash .ra-terminal title="Terminal"}
 mkdir -p ~/rebash-aws/module-06 && cd ~/rebash-aws/module-06
+export AWS_REGION="${AWS_REGION:-eu-west-2}"
+export AWS_PAGER=""
+export TABLE="rebash-m06-events"
+echo "$TABLE" | tee table-name.txt
+aws sts get-caller-identity --output table
 ```
 
 ### Real-world scenario
 
-Security asks for evidence that **Databases on AWS** is configured correctly. You gather CLI proof without click-ops drift.
+An event platform stores records keyed by **tenant** and **timestamp**. On-call says “customer sees no events.” You check whether data is missing or the dashboard queried the **wrong tenant partition** — a classic junior engineer debug path.
 
 ### Step-by-step tasks
 
-#### Task 1 – Prove caller identity
-
-Every AWS change starts by knowing which account/role you are.
+#### Task 1 – Create on-demand table
 
 ``` {.bash .ra-terminal title="Terminal"}
-aws sts get-caller-identity | tee identity.json
-aws configure get region || true
-test -s identity.json
+cd ~/rebash-aws/module-06
+TABLE=$(cat table-name.txt)
+aws dynamodb create-table \
+  --table-name "$TABLE" \
+  --attribute-definitions \
+    AttributeName=tenant_id,AttributeType=S \
+    AttributeName=event_ts,AttributeType=S \
+  --key-schema \
+    AttributeName=tenant_id,KeyType=HASH \
+    AttributeName=event_ts,KeyType=RANGE \
+  --billing-mode PAY_PER_REQUEST \
+  --tags Key=Name,Value=rebash-m06 \
+  --output json | tee create-table.json
+aws dynamodb wait table-exists --table-name "$TABLE"
+aws dynamodb describe-table --table-name "$TABLE" \
+  --query 'Table.{Name:TableName,Billing:BillingModeSummary.BillingMode,Status:TableStatus}' \
+  --output json | tee describe-table.json
+grep -q PAY_PER_REQUEST describe-table.json
 ```
 
 !!! example "Expected output"
-    JSON includes Account, Arn, and UserId.
+    `describe-table.json` shows `"Billing": "PAY_PER_REQUEST"` and `"Status": "ACTIVE"`.
 
 
-#### Task 2 – Collect topic signals
+#### Task 2 – Put items and query by tenant
 
-Inventory the service surface related to this module.
+Create `item1.json`:
+
+```json title="item1.json"
+{
+  "tenant_id": {"S": "tenant-acme"},
+  "event_ts": {"S": "2026-08-03T10:00:00Z"},
+  "event_type": {"S": "login"},
+  "user_id": {"S": "user-42"}
+}
+```
+
+Create `item2.json`:
+
+```json title="item2.json"
+{
+  "tenant_id": {"S": "tenant-acme"},
+  "event_ts": {"S": "2026-08-03T10:05:00Z"},
+  "event_type": {"S": "purchase"},
+  "user_id": {"S": "user-42"}
+}
+```
 
 ``` {.bash .ra-terminal title="Terminal"}
-aws ec2 describe-vpcs --query 'Vpcs[].{Id:VpcId,Cidr:CidrBlock}' --output table 2>/dev/null | tee vpcs.txt || true
-aws iam get-account-summary 2>/dev/null | tee iam-summary.json || true
-tee notes.txt << 'EOF'
-Record which APIs apply to this topic and any NotAuthorized errors for follow-up.
-EOF
-cat notes.txt
+cd ~/rebash-aws/module-06
+TABLE=$(cat table-name.txt)
+aws dynamodb put-item --table-name "$TABLE" --item file://item1.json
+aws dynamodb put-item --table-name "$TABLE" --item file://item2.json
+aws dynamodb query --table-name "$TABLE" \
+  --key-condition-expression "tenant_id = :t" \
+  --expression-attribute-values '{":t":{"S":"tenant-acme"}}' \
+  --output json | tee query-acme.json
+jq -e '.Count == 2' query-acme.json
+aws dynamodb get-item --table-name "$TABLE" \
+  --key '{"tenant_id":{"S":"tenant-acme"},"event_ts":{"S":"2026-08-03T10:00:00Z"}}' \
+  --output json | tee get-one.json
+jq -e '.Item.event_type.S == "login"' get-one.json
 ```
 
 !!! example "Expected output"
-    Evidence files created even if some APIs are denied.
+    `query-acme.json` Count is 2; `get-one.json` shows the login event.
+
+
+#### Task 3 – Wrong partition key returns empty (debug pattern)
+
+``` {.bash .ra-terminal title="Terminal"}
+cd ~/rebash-aws/module-06
+TABLE=$(cat table-name.txt)
+aws dynamodb query --table-name "$TABLE" \
+  --key-condition-expression "tenant_id = :t" \
+  --expression-attribute-values '{":t":{"S":"tenant-wrong"}}' \
+  --output json | tee query-wrong.json
+jq -e '.Count == 0' query-wrong.json
+aws dynamodb scan --table-name "$TABLE" --select COUNT --output json | tee scan-count.json
+jq -e '.Count == 2' scan-count.json
+echo "dynamodb query empty vs scan OK" | tee evidence.txt
+```
+
+!!! example "Expected output"
+    `query-wrong.json` Count is 0; scan Count is 2 — data exists but wrong key returns nothing.
+
+
+#### Task 4 – Toggle PITR and delete table
+
+**PITR** = **Point-in-time recovery** — continuous backup so you can restore the table to a moment in the last 35 days.
+
+``` {.bash .ra-terminal title="Terminal"}
+cd ~/rebash-aws/module-06
+TABLE=$(cat table-name.txt)
+aws dynamodb update-continuous-backups --table-name "$TABLE" \
+  --point-in-time-recovery-specification PointInTimeRecoveryEnabled=true \
+  --output json | tee pitr-on.json
+grep -qi ENABLED pitr-on.json
+aws dynamodb update-continuous-backups --table-name "$TABLE" \
+  --point-in-time-recovery-specification PointInTimeRecoveryEnabled=false \
+  --output json | tee pitr-off.json
+aws dynamodb delete-table --table-name "$TABLE" --output json | tee delete-table.json
+aws dynamodb wait table-not-exists --table-name "$TABLE"
+echo "table deleted" | tee cleanup-ok.txt
+```
+
+!!! example "Expected output"
+    PITR toggled; table deletion completes; `cleanup-ok.txt` printed.
 
 
 ### Validation steps
 
-- [ ] identity.json present
-- [ ] No long-lived keys committed to the repo
+- [ ] Table created with composite key and on-demand billing
+- [ ] Query returned two items for `tenant-acme`
+- [ ] Query for wrong tenant returned Count 0
+- [ ] PITR enabled then disabled
+- [ ] Table deleted — no ongoing DynamoDB charge
 
 ### Common errors and fixes
 
 | Error | Cause | Fix |
 |-------|-------|-----|
-| Unable to locate credentials | No profile/SSO | Run `aws sso login` or export sandbox keys |
-| AccessDenied | Least privilege | Use a role that can read the service — or document the deny |
-| UnauthorizedOperation | Wrong region/account | Check `AWS_REGION` and account id |
+| ResourceInUseException | Table name already exists | Delete old table or pick new name |
+| ValidationException on Query | Missing partition key in condition | Query must include partition key equality |
+| AccessDeniedException | IAM missing `dynamodb:Query` | Extend sandbox policy |
+| ThrottlingException | Provisioned mode under-provisioned | Lab uses on-demand |
 
 ### Challenge exercise
 
-Enable a cost budget alarm in the sandbox (or document the console clicks) and screenshot/CLI-describe it.
+Create `gsi-design.json` sketching a **Global Secondary Index (GSI)** for “all events by user” and a one-line note on write amplification.
+
+```json title="gsi-design.json"
+{
+  "IndexName": "user_id-index",
+  "KeySchema": [
+    {"AttributeName": "user_id", "KeyType": "HASH"},
+    {"AttributeName": "event_ts", "KeyType": "RANGE"}
+  ],
+  "Projection": {"ProjectionType": "ALL"},
+  "_note": "Each GSI duplicates writes — more indexes mean higher write cost"
+}
+```
+
+``` {.bash .ra-terminal title="Terminal"}
+cd ~/rebash-aws/module-06
+test -f gsi-design.json
+grep -q user_id gsi-design.json
+echo "gsi challenge OK" | tee challenge.txt
+```
 
 ### Learning outcomes
 
-- Authenticated safely
-- Captured read-only evidence
-- Avoided unmanaged spend
+- You created and queried DynamoDB with correct key conditions
+- You proved empty Query vs Scan count — classic on-call skill
+- You toggled PITR and deleted the table cleanly
+- You know when RDS/Aurora would replace DynamoDB
 
 ### Cleanup
 
-```bash
-# Revoke/lab-expire any temporary keys you exported
-# Do not leave EC2/ELB/NAT running
+``` {.bash .ra-terminal title="Terminal"}
+cd ~/rebash-aws/module-06
+TABLE=$(cat table-name.txt 2>/dev/null || echo rebash-m06-events)
+aws dynamodb delete-table --table-name "$TABLE" 2>/dev/null || true
+aws dynamodb wait table-not-exists --table-name "$TABLE" 2>/dev/null || true
+rm -f create-table.json query-acme.json query-wrong.json evidence.txt pitr-on.json pitr-off.json
 ```
 
 ## Validation
 
-
-
-
-
-
-- [ ] Lab commands run under `~/rebash-aws/module-06/`
-- [ ] You can explain each Theory section in your own words
-- [ ] You used modern tooling where it applies to this topic
-- [ ] You can describe one production failure mode for this topic
+- [ ] Lab under `~/rebash-aws/module-06` with query-empty evidence
+- [ ] You can explain RDS Multi-AZ vs read replica in plain English
+- [ ] You can describe partition key design in one minute
+- [ ] No DynamoDB lab tables remain
 
 ## Code Walkthrough
 
-
-
-
-
-
-Production practice for **Databases on AWS** always combines:
-
-1. Inspect before you change (status, plan, logs, dry-run)
-2. Prefer reversible, documented changes (Git, IaC, drop-ins, version pins)
-3. Capture evidence (command output, pipeline logs) for handovers
-4. Prefer current tools and APIs over legacy shortcuts
-5. Least privilege — escalate credentials only when required
-
-Keep runbooks short enough to follow under pressure. Automate checks; keep humans for judgement.
+1. **Composite keys** — `tenant_id` + `event_ts` enables range queries per tenant without Scan.
+2. **Query vs Scan** — Query needs partition key; Scan reads everything (last resort).
+3. **On-demand billing** — zero capacity planning for labs; provisioned + auto scaling for steady prod traffic.
+4. **Empty Query ≠ broken table** — wrong key or typo returns Count 0 silently.
+5. **PITR toggle** — small extra cost when enabled; disable before delete in sandboxes.
 
 ## Security Considerations
 
-
-
-
-
-
-- Treat credentials and tokens for aws as privileged — never commit them
-- Prefer short-lived auth (OIDC, roles, SSO) over long-lived keys
-- Validate blast radius before apply/deploy/delete operations
-- Restrict who can approve production changes
-- Collect audit logs; limit who can read sensitive traces
+- Place RDS in **private subnets**; never `PubliclyAccessible=true` in production.
+- Use **Secrets Manager** or IAM database authentication for credentials — not Git.
+- Encrypt at rest with KMS; enforce TLS in transit.
+- Restrict security groups to application tier only.
+- Enable CloudTrail data events on sensitive DynamoDB tables.
 
 ## Common Mistakes
 
+!!! warning "Provisioning RDS for a key-design lab"
+    RDS bills hourly and takes minutes to create. Use DynamoDB on-demand for access-pattern exercises unless the goal is engine administration.
 
+!!! warning "SQL schema on DynamoDB"
+    Many joins and normalised tables map poorly. Design queries first, then keys and GSIs.
 
-
-
-
-!!! warning "Leaving `PubliclyAccessible=true` on RDS  "
-    Validate assumptions against the Theory section and official docs before changing production.
-
-!!! warning "Single-AZ production database  "
-    Lab shortcuts (open security groups, admin roles, skip approvals) must not ship unchanged.
-
-!!! warning "Changing production without a rollback path"
-    Always know how to revert (previous artefact, prior release, state rollback, DNS failback).
+!!! warning "Redis as primary database"
+    ElastiCache is a cache — use RDS/DynamoDB as source of truth.
 
 ## Best Practices
 
-
-
-
-
-
-- Encode Databases on AWS changes as code and review them in pull requests
-- Pin versions (images, modules, actions, provider plugins)
-- Separate environments with clear promotion gates
-- Alert on symptoms with runbooks attached
-- Destroy lab resources; tag everything with owner and expiry where possible
+- Document access patterns before DynamoDB table design
+- Use **RDS Proxy** for connection pooling to Aurora/RDS at scale
+- Enable **Performance Insights** on production RDS
+- Set **DeletionProtection** on production databases
+- Use cache TTLs with jitter; monitor cache hit ratio
 
 ## Troubleshooting
 
-
-
-
-
-
 | Symptom | Likely cause | Fix |
 |---------|--------------|-----|
-| Auth / permission denied | Wrong identity, policy, or scope | Check caller identity, roles, and least-privilege policies |
-| Timeout / no route | Network, DNS, security group, or endpoint | Trace path, DNS, and allow-lists before retrying |
-| Drift / unexpected plan | Manual change or wrong state/workspace | Reconcile desired vs actual; avoid click-ops on managed resources |
-| Pipeline/job red | Flaky step, cache, or missing secret | Read failing step logs; bisect recent workflow/config changes |
-| Cost spike | Idle load balancer, NAT, oversized compute | Inventory billable resources; stop/delete labs promptly |
+| Query returns empty | Wrong partition key value | Verify put-item keys; check case sensitivity |
+| ProvisionedThroughputExceeded | Hot key or low limits | Redesign key; use on-demand or raise capacity |
+| RDS connection timeout | Security group or subnet | Module 3 VPC path; SG from app tier |
+| High replica lag | Heavy writes | Scale writer; optimise queries |
 
 ## Summary
 
+**RDS and Aurora** excel at relational OLTP. **DynamoDB** excels at massive-scale key-value access. **ElastiCache** accelerates reads. The lab proved **Query key correctness** and safe teardown — skills that transfer directly to interviews and on-call.
 
-
-
-
-
-**Databases on AWS** is essential for Cloud and DevOps engineers working with aws. Practise the lab until the inspection and change path is muscle memory, then continue the track.
+Next: [Containers: ECS, EKS, and ECR](containers-ecs-eks-ecr.md).
 
 ## Interview Questions
 
+**1. RDS vs DynamoDB — simple difference?**
 
+??? success "Reveal answer"
+    **RDS** is managed **SQL** — tables, joins, transactions — good when your app thinks relationally. **DynamoDB** is managed **NoSQL** — you design partition keys for specific queries at huge scale with millisecond latency. Pick based on access pattern and data model, not hype.
 
+**2. RDS Multi-AZ vs read replica?**
 
-1. Multi-AZ RDS versus read replicas?
-2. When is DynamoDB a better fit than RDS?
-3. What does PITR give you?
-4. How do you rotate database secrets?
-5. Why is creating RDS in labs risky for cost?
+??? success "Reveal answer"
+    **Multi-AZ** keeps a synchronous standby in another AZ for **automatic failover** of the primary endpoint (high availability). **Read replicas** are asynchronous copies for **read scaling** and optional disaster recovery — not the same as Multi-AZ standby.
 
-!!! tip "Sample answer — question 2"
-    Check instance/cluster status, subnet groups, and security group rules to the DB port.
+**3. Why did Query return zero items but Scan shows data?**
 
-!!! tip "Sample answer — question 4"
-    Encrypt storage, restrict security groups, and delete lab databases the same day.
+??? success "Reveal answer"
+    Query requires the correct **partition key** (and optional sort key condition). Wrong tenant ID, typo, or wrong Region returns an empty set **without error**. Scan reads all items — proves data exists but the access pattern or key was wrong.
+
+**4. What is a DynamoDB hot partition?**
+
+??? success "Reveal answer"
+    One partition key value receives too much traffic and saturates that shard’s throughput even if the table limit looks high. Fix with high-cardinality keys, write sharding, or on-demand capacity.
+
+**5. When would you pick DynamoDB over Aurora?**
+
+??? success "Reveal answer"
+    When you need predictable single-digit millisecond latency at massive scale with a key-value/document model and minimal ops — sessions, IoT, carts. Choose Aurora when you need SQL joins, complex transactions, and mature SQL tooling.
+
+**6. What is cache-aside with ElastiCache?**
+
+??? success "Reveal answer"
+    App reads cache first; on miss, reads database, stores result in cache with a TTL, returns to user. Writes update the database and invalidate or update cache. Watch cache stampede when many keys expire together.
+
+**7. DynamoDB on-demand vs provisioned?**
+
+??? success "Reveal answer"
+    **On-demand** charges per request — great for unknown or spiky traffic (labs, startups). **Provisioned** with auto scaling is often cheaper at steady high volume but can throttle if limits are too low.
+
+**8. Why did we use DynamoDB not RDS in this lab?**
+
+??? success "Reveal answer"
+    RDS instances bill hourly even when idle and need VPC networking. DynamoDB on-demand lets you learn **partition keys and Query** with pennies of cost and no NAT Gateway — the learning goal is key design, not SQL admin.
 
 ## Related Tutorials
 
-
-
-
-
-
-- [Course overview](index.md)
-- [Containers: ECS, EKS, and ECR](containers-ecs-eks-ecr.md)
+- Previous: [Storage: S3, EBS, and EFS](storage-s3-ebs-efs.md)
+- Next: [Containers: ECS, EKS, and ECR](containers-ecs-eks-ecr.md)
+- [Compute: EC2, ASG, and Load Balancing](compute-ec2-asg-and-load-balancing.md)
 
 ## References
 
-
-
-
-
-
-- [Amazon RDS](https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/Welcome.html)  
-- [Amazon Aurora](https://docs.aws.amazon.com/AmazonRDS/latest/AuroraUserGuide/CHAP_AuroraOverview.html)  
-- [Amazon DynamoDB](https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/Introduction.html)  
-- [Amazon ElastiCache](https://docs.aws.amazon.com/AmazonElastiCache/latest/red-ug/WhatIs.html)  
-- [Amazon DocumentDB](https://docs.aws.amazon.com/documentdb/latest/developerguide/what-is.html)
+- [Amazon RDS](https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/Welcome.html)
+- [Amazon Aurora](https://docs.aws.amazon.com/AmazonRDS/latest/AuroraUserGuide/CHAP_AuroraOverview.html)
+- [Amazon DynamoDB](https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/Introduction.html)
+- [Amazon ElastiCache](https://docs.aws.amazon.com/AmazonElastiCache/latest/red-ug/WhatIs.html)
+- [DynamoDB best practices](https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/best-practices.html)

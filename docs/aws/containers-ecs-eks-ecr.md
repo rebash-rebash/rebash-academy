@@ -1,8 +1,8 @@
 ---
-title: "Containers on AWS — ECS, EKS, ECR, and App Runner"
-description: "Choose and operate Amazon ECS, EKS, Fargate, ECR, and App Runner — registry, orchestration, and cost-aware container platforms for Cloud DevOps."
-difficulty: intermediate
-estimated_time: "55–70 min"
+title: "Containers: ECS, EKS, and ECR"
+description: "AWS containers Docker, ECR, ECS, EKS, Fargate — build, push an image, and author an ECS task definition without running a costly EKS cluster."
+difficulty: beginner
+estimated_time: "65–80 min"
 technology: aws
 category: aws
 module: "Module 7 · Containers"
@@ -11,375 +11,485 @@ career_paths:
   - devops-engineer
   - platform-engineer
   - site-reliability-engineer
-  - devsecops-engineer
 skills:
-  - aws
   - ecs
   - eks
   - ecr
   - fargate
-  - app-runner
+  - docker
 prerequisites:
   - aws/databases-on-aws
-  - docker/index
 next:
   - aws/serverless-on-aws
 related:
+  - docker/introduction-to-containers-and-docker
   - aws/compute-ec2-asg-and-load-balancing
-  - kubernetes/managed-kubernetes-eks-aks-gke
 labs: []
 projects: []
 interview: interview/aws
 certifications:
-  - AWS Solutions Architect Associate
-  - AWS DevOps Engineer Professional
-  - AWS Developer Associate
+  - AWS Certified Solutions Architect – Associate
+  - Certified Kubernetes Administrator (CKA)
 tags:
   - aws
-  - containers
   - ecs
   - eks
   - ecr
-  - fargate
+  - beginners
 author: Shaik Basha
-last_updated: "2026-07-31"
+last_updated: "2026-08-03"
 comments: false
 ---
 
-
-# Containers on AWS — ECS, EKS, ECR, and App Runner
+# Containers: ECS, EKS, and ECR
 
 ## Overview
 
+A **container** packages your application and its dependencies into one runnable unit — “it works on my laptop” becomes “it works in production.” On AWS you store images in **ECR**, run them with **ECS** or **Kubernetes (EKS)**, and optionally skip managing servers with **Fargate**.
 
+Think of the container stack this way:
 
+- **Docker** — builds the box (you may already know this from Module 7 prerequisites)
+- **ECR** — AWS’s private warehouse for boxes (images)
+- **ECS** — AWS-native system that schedules containers
+- **EKS** — AWS-managed Kubernetes (popular, but costs more to learn casually)
+- **Fargate** — run containers without patching EC2 yourself
 
+This is **Tutorial 1** in **Module 7: Containers** of the REBASH Academy **AWS for Cloud & DevOps Engineers** series. You will **build and push** an image to ECR and produce an **ECS Fargate task definition JSON** — **without creating an EKS cluster** (~$0.10/hour control plane plus workers).
 
-
-Map Amazon Elastic Container Registry (ECR), Elastic Container Service (ECS), Elastic Kubernetes Service (EKS), AWS Fargate, and AWS App Runner so you can pick a platform, sketch a deploy path, and avoid leaving expensive clusters running after a lab.
-
-AWS offers several ways to run containers. **ECR** stores images. **ECS** is AWS-native orchestration (tasks and services). **EKS** is managed Kubernetes. **Fargate** runs tasks or pods without you managing EC2 capacity. **App Runner** is a higher-level PaaS for HTTP services from a source or image. Production designs usually pair a registry, an orchestrator, IAM task/pod roles, private networking, and observability — not a single “container button”.
-
-This is a core tutorial in **Module 7 · Containers** of the REBASH Academy **AWS for Cloud & DevOps Engineers** series — written for Cloud, DevOps, Platform, and SRE engineers.
+!!! warning "Cost hygiene"
+    ECR storage is cheap at lab scale. **Do not create an EKS cluster** for this tutorial. Delete the ECR repository in Cleanup.
 
 ## Prerequisites
 
-
-
-
-
-
-- [Databases on AWS](databases-on-aws.md) (or equivalent VPC and IAM comfort)
-- Docker fundamentals and a working AWS CLI profile
-- Optional: kubectl experience for the EKS mental model
+- [Databases on AWS](databases-on-aws.md)
+- Docker installed locally (Docker Desktop or Linux engine)
+- AWS CLI v2 with `ecr:*` permissions
+- Recommended: [Introduction to Containers and Docker](../docker/introduction-to-containers-and-docker.md)
 
 ## Learning Objectives
 
-
-
-
-
-
 By the end of this tutorial, you will be able to:
 
-- [ ] Contrast ECS tasks/services with EKS pods and when to use each  
-- [ ] Place Fargate, ECR, and App Runner in a deploy path  
-- [ ] Choose ECS vs EKS vs App Runner for a given workload  
-- [ ] Sketch task/pod IAM roles and private pull from ECR  
-- [ ] Apply cost hygiene: no long-lived lab EKS/ECS clusters
+- [ ] Explain ECR, ECS, EKS, and Fargate with plain analogies
+- [ ] Create an ECR repository and push a Docker image
+- [ ] Inspect image metadata with `aws ecr describe-images`
+- [ ] Author a valid ECS Fargate task definition JSON
+- [ ] Tell task execution role vs task role apart
+- [ ] Answer fresher interview questions on ECS vs EKS
 
 ## Architecture
 
+Developers build images → push to **ECR** → **ECS** or **EKS** pulls by tag/digest → tasks or pods run on **Fargate** or EC2. Load balancers register healthy targets; **CloudWatch** collects logs; **IAM roles** grant permissions.
 
-
-
-
-
-This topic’s control points and relationships are shown below.
-
-![EKS / ECS container platform](../assets/excalidraw/aws-eks-architecture.svg)
+![AWS container architecture — ECR, ECS, EKS](../assets/excalidraw/aws-eks-architecture.svg)
 
 ## Theory
 
+### The problem (before AWS words)
 
+“It works on my machine” breaks in production because servers have different library versions. Shipping the whole environment inside a container fixes that — but you still need somewhere to store images and something to run them at scale.
 
+### Docker image — the shipping container
 
+**Problem:** Copying code without dependencies causes “missing library” outages.
 
+**Analogy:** A shipping container holds everything needed — app, runtime, config — sealed and portable.
 
-### What it is
+**Tiny example:** `Dockerfile` → `docker build` → image `myapp:v1`.
 
-AWS offers several ways to run containers. **Amazon Elastic Container Registry (ECR)** stores images. **Amazon Elastic Container Service (ECS)** is AWS-native orchestration (tasks and services). **Amazon Elastic Kubernetes Service (EKS)** is managed Kubernetes. **AWS Fargate** runs ECS tasks or EKS pods without managing EC2 capacity. **AWS App Runner** turns a source repository or image into an HTTPS service with minimal cluster concepts. Production designs pair a registry, an orchestrator, IAM roles, private networking, and observability.
+**Interview one-liner:** “An image is immutable layers; a container is a running instance of an image.”
 
-### Why it matters
+### ECR — AWS’s private image registry
 
-ECS is AWS-native and simpler for many teams. EKS unlocks Helm, operators, and portable Kubernetes skills at higher day-two cost. Fargate raises unit price but removes node patching. App Runner is fastest to a URL, with less VPC control. Platform and DevOps teams own image provenance, deploy pipelines, task/pod IAM, and cost guardrails so a lab cluster never becomes a permanent bill.
+**Problem:** You need a secure place to store images that ECS/EKS can pull from.
 
-### How it works
+**Analogy:** **ECR** (**Elastic Container Registry**) is your company’s private Docker Hub inside AWS.
 
-1. Build and push to ECR (`aws ecr get-login-password` → `docker push`).  
-2. **ECS:** register a task definition; create cluster/service; ALB targets healthy tasks.  
-3. **EKS:** create cluster and capacity; map IAM to Kubernetes RBAC; deploy; pull from ECR via node or pod identity.  
-4. **Fargate:** set CPU/memory; AWS places the task/pod in your subnets — no EC2 node group.  
-5. **App Runner:** connect ECR or source; AWS provisions compute and a URL.
+**Tiny example:** `123456789.dkr.ecr.eu-west-2.amazonaws.com/myapp:v1`
 
-Shared concerns: private pull (VPC endpoints), scanning, least-privilege roles, and logs.
+**Interview one-liner:** “ECR stores OCI/Docker images; enable scan-on-push for CVE checks.”
 
-### Concept deep dive
+### ECS — AWS-native orchestrator
 
-- **ECS** — AWS-native scheduler. A **task definition** declares image, CPU/memory, ports, IAM roles, and logging. A **task** is a running instance; a **service** keeps desired count and can register with a load balancer. Capacity is EC2 you manage or Fargate. Prefer ECS for deep AWS integration without operating Kubernetes.
-- **EKS** — Managed Kubernetes control plane. You run **pods** (Deployments, Services, Ingress) against the Kubernetes API. You still own node groups or Fargate profiles, add-ons, upgrades, and RBAC. Prefer EKS when teams standardise on Kubernetes tooling and operators.
-- **Fargate** — Serverless container compute for ECS or EKS. No SSH to nodes or AMI patching; pay for vCPU/memory while tasks/pods run. Good for spiky or low-ops work; EC2 capacity may win for specialised types, DaemonSets, or steady high utilisation.
-- **ECR** — Managed OCI registry. Repositories hold tags/digests; lifecycle policies expire old images; scan-on-push finds common CVEs. ECS, EKS, and App Runner commonly pull from ECR. Prefer immutable tags or digests in production.
-- **App Runner** — PaaS-style HTTP from an image or source. AWS manages scaling and a default HTTPS endpoint. Prefer for simple public APIs; prefer ECS/EKS for rich VPC design, sidecars, meshes, or non-HTTP workloads.
-- **Tasks/services vs pods** — ECS **tasks** are scheduled units; **services** keep N tasks healthy behind a balancer. Kubernetes **pods** are scheduled units; Deployments keep N pods; Services/Ingress expose them. Concepts map loosely, but APIs and networking differ — `kubectl` skills do not transfer unchanged to ECS.
-- **When ECS vs EKS vs App Runner** — AWS-centric microservices + ALB → **ECS** (often + Fargate). Multi-team Helm/operators/portability → **EKS**. Single HTTP service, minimal ops → **App Runner**. Choose deliberately; many orgs run both ECS and EKS for different jobs.
+**Problem:** Running one container manually does not survive crashes or traffic spikes.
 
-### Key concepts and comparisons
+**Analogy:** **ECS** (**Elastic Container Service**) is a foreman assigning work shifts — **tasks** (running containers) grouped in **services** with desired counts.
 
-| Concern | Prefer |
-|---------|--------|
-| Fewer AWS-native moving parts | ECS |
-| Kubernetes ecosystem / operators | EKS |
-| No nodes to patch | Fargate (ECS or EKS) |
-| One HTTP service quickly | App Runner |
-| Reproducible images | ECR digests / immutable tags |
-| Workload credentials | ECS task roles; EKS IRSA / pod identity |
+| Term | Plain meaning |
+|------|----------------|
+| **Cluster** | Logical grouping of capacity |
+| **Task definition** | JSON recipe (CPU, memory, image, roles) |
+| **Service** | Keeps N tasks running |
+| **Task** | One running container group |
 
-Prefer **task roles** (ECS) and **IAM Roles for Service Accounts (IRSA) / pod identity** (EKS) over access keys baked into images.
+**Interview one-liner:** “ECS is AWS-native orchestration — simpler if you do not need full Kubernetes APIs.”
+
+### EKS — managed Kubernetes
+
+**Problem:** Your team already uses Kubernetes tools (Helm, operators) or wants multi-cloud portability.
+
+**Analogy:** **EKS** (**Elastic Kubernetes Service**) runs upstream **Kubernetes** — AWS manages the control plane; you manage nodes or Fargate profiles.
+
+**Interview one-liner:** “EKS costs control plane hourly fee — justify it when you need K8s ecosystem, not for a hello-world.”
+
+### Fargate — no EC2 patching
+
+**Problem:** You do not want to SSH into servers to patch the OS for every container.
+
+**Analogy:** **Fargate** is serverless containers — specify CPU/memory; AWS runs the infrastructure.
+
+**Tiny example:** ECS task `cpu: 256`, `memory: 512`, `requiresCompatibilities: FARGATE`.
+
+**Interview one-liner:** “Fargate uses awsvpc — each task gets its own ENI and security groups.”
+
+### ECS vs EKS
+
+| Question | ECS | EKS |
+|----------|-----|-----|
+| API style | ECS API / CloudFormation | Kubernetes API (`kubectl`) |
+| Learning curve | Lower for AWS-first teams | Higher (CKA-level K8s) |
+| Control plane fee | No separate hourly CP charge | ~$0.10/hr per cluster |
+| Best when | AWS-native microservices | Helm, operators, multi-cloud |
+
+### Task execution role vs task role
+
+**Problem:** The container runtime must pull images and write logs; your app must call S3/DynamoDB — different permissions.
+
+| Role | Who uses it | Typical permissions |
+|------|-------------|---------------------|
+| **Task execution role** | ECS/Fargate agent | ECR pull, CloudWatch Logs, secrets at startup |
+| **Task role** | Your application code | S3, DynamoDB, SQS, etc. |
+
+**Interview one-liner:** “Swapping these roles causes CannotPullContainerError vs app AccessDenied — classic fresher bug.”
 
 ### Common pitfalls
 
-- Leaving EKS/ECS capacity running overnight — control planes and nodes bill continuously  
-- Shipping `:latest` in production — non-reproducible rollbacks  
-- Treating Fargate as free — you still pay vCPU-hours  
-- Expecting App Runner to replace a full multi-tier VPC design  
-- Equating ECS services with Kubernetes Deployments without learning the networking differences  
-- Granting cluster-admin to every CI identity
+- Using only `:latest` tag in production — pin digests or immutable tags
+- Launching **EKS** for one tiny API — control plane tax 24/7
+- Wrong Fargate CPU/memory pair — task fails placement
+- No image scanning — vulnerable base images reach prod
 
 ## Hands-on Lab
 
-
-
-!!! warning "Cost and account safety"
-    Use a sandbox account. Prefer read-only calls. Destroy anything you create before leaving the lab.
-
 ### Objective
 
-Use read-only AWS APIs to inventory and verify aspects of **Containers on AWS — ECS, EKS, ECR, and App Runner** in a sandbox account.
+Create an ECR repository, build and push a container image, describe images in ECR, and produce a Fargate-compatible `task-definition.json` — **without launching an EKS cluster**.
 
 ### Prerequisites
 
-- AWS CLI v2
-- Credentials for a **sandbox** account (SSO or short-lived keys)
+| Tool | Notes |
+|------|--------|
+| Docker | Build and push |
+| AWS CLI v2 | `ecr:*` |
+| jq | Parse JSON |
 
 ### Lab environment
 
-Workspace: `~/rebash-aws/module-07`
-
-Prefer `describe`/`list`/`get` APIs. Create resources only with an explicit destroy path.
-
 ``` {.bash .ra-terminal title="Terminal"}
 mkdir -p ~/rebash-aws/module-07 && cd ~/rebash-aws/module-07
+export AWS_REGION="${AWS_REGION:-eu-west-2}"
+export AWS_PAGER=""
+ACCOUNT_ID=$(aws sts get-caller-identity --query Account --output text)
+export REPO="rebash-m07-app"
+echo "$REPO" | tee repo-name.txt
+echo "$ACCOUNT_ID" | tee account-id.txt
+aws sts get-caller-identity --output table
 ```
 
 ### Real-world scenario
 
-Security asks for evidence that **Containers on AWS — ECS, EKS, ECR, and App Runner** is configured correctly. You gather CLI proof without click-ops drift.
+CI built a new **status API** image. Platform requires it in ECR with a documented ECS task definition before any Fargate deploy window. You push the image, verify digest metadata, and hand off JSON — the gate used before `ecs run-task` in production.
 
 ### Step-by-step tasks
 
-#### Task 1 – Prove caller identity
-
-Every AWS change starts by knowing which account/role you are.
+#### Task 1 – Create ECR repository
 
 ``` {.bash .ra-terminal title="Terminal"}
-aws sts get-caller-identity | tee identity.json
-aws configure get region || true
-test -s identity.json
+cd ~/rebash-aws/module-07
+REPO=$(cat repo-name.txt)
+aws ecr create-repository --repository-name "$REPO" \
+  --image-scanning-configuration scanOnPush=true \
+  --encryption-configuration encryptionType=AES256 \
+  --output json | tee create-repo.json
+aws ecr describe-repositories --repository-names "$REPO" \
+  --query 'repositories[0].repositoryUri' --output text | tee repo-uri.txt
+test -s repo-uri.txt
 ```
 
 !!! example "Expected output"
-    JSON includes Account, Arn, and UserId.
+    `repo-uri.txt` contains `ACCOUNT.dkr.ecr.REGION.amazonaws.com/rebash-m07-app`.
 
 
-#### Task 2 – Collect topic signals
+#### Task 2 – Build Dockerfile and push image
 
-Inventory the service surface related to this module.
+Create `Dockerfile`:
+
+```dockerfile title="Dockerfile"
+FROM public.ecr.aws/docker/library/python:3.12-alpine
+WORKDIR /app
+RUN pip install --no-cache-dir flask==3.0.3 gunicorn==22.0.0
+COPY app.py .
+EXPOSE 8080
+CMD ["gunicorn", "-b", "0.0.0.0:8080", "app:app"]
+```
+
+Create `app.py`:
+
+```python title="app.py"
+from flask import Flask
+app = Flask(__name__)
+
+@app.get("/health")
+def health():
+    return {"status": "ok", "service": "rebash-m07"}
+```
+
+{% raw %}
+``` {.bash .ra-terminal title="Terminal"}
+cd ~/rebash-aws/module-07
+REPO_URI=$(cat repo-uri.txt)
+IMAGE_TAG="${REPO_URI}:v1"
+docker build -t "$IMAGE_TAG" .
+aws ecr get-login-password --region "$AWS_REGION" | \
+  docker login --username AWS --password-stdin "${REPO_URI%%/*}"
+docker push "$IMAGE_TAG" | tee push.log
+grep -q digest push.log || docker inspect --format='{{index .RepoDigests 0}}' "$IMAGE_TAG" | tee digest.txt
+```
+{% endraw %}
+
+!!! example "Expected output"
+    Push succeeds; log or `digest.txt` shows `@sha256:…` digest.
+
+
+#### Task 3 – Describe images in ECR
 
 ``` {.bash .ra-terminal title="Terminal"}
-aws ec2 describe-vpcs --query 'Vpcs[].{Id:VpcId,Cidr:CidrBlock}' --output table 2>/dev/null | tee vpcs.txt || true
-aws iam get-account-summary 2>/dev/null | tee iam-summary.json || true
-tee notes.txt << 'EOF'
-Record which APIs apply to this topic and any NotAuthorized errors for follow-up.
-EOF
-cat notes.txt
+cd ~/rebash-aws/module-07
+REPO=$(cat repo-name.txt)
+aws ecr describe-images --repository-name "$REPO" --output json | tee describe-images.json
+jq -e '.imageDetails | length >= 1' describe-images.json
+jq -r '.imageDetails[0].imageTags[]?' describe-images.json | tee tags.txt
+grep -q v1 tags.txt
+echo "ecr push describe OK" | tee evidence.txt
 ```
 
 !!! example "Expected output"
-    Evidence files created even if some APIs are denied.
+    `describe-images.json` lists at least one image with tag `v1`.
+
+
+#### Task 4 – Author ECS Fargate task definition (artefact)
+
+Create `task-definition.json`:
+
+```json title="task-definition.json"
+{
+  "family": "rebash-m07-status",
+  "networkMode": "awsvpc",
+  "requiresCompatibilities": ["FARGATE"],
+  "cpu": "256",
+  "memory": "512",
+  "executionRoleArn": "arn:aws:iam::ACCOUNT_ID:role/ecsTaskExecutionRole",
+  "taskRoleArn": "arn:aws:iam::ACCOUNT_ID:role/rebash-m07-task-role",
+  "containerDefinitions": [
+    {
+      "name": "status-api",
+      "image": "ACCOUNT_ID.dkr.ecr.REGION.amazonaws.com/rebash-m07-app:v1",
+      "essential": true,
+      "portMappings": [
+        {"containerPort": 8080, "protocol": "tcp"}
+      ],
+      "logConfiguration": {
+        "logDriver": "awslogs",
+        "options": {
+          "awslogs-group": "/ecs/rebash-m07-status",
+          "awslogs-region": "REGION",
+          "awslogs-stream-prefix": "status"
+        }
+      },
+      "healthCheck": {
+        "command": ["CMD-SHELL", "wget -qO- http://localhost:8080/health || exit 1"],
+        "interval": 30,
+        "timeout": 5,
+        "retries": 3,
+        "startPeriod": 10
+      }
+    }
+  ]
+}
+```
+
+``` {.bash .ra-terminal title="Terminal"}
+cd ~/rebash-aws/module-07
+ACCOUNT_ID=$(cat account-id.txt)
+sed -e "s/ACCOUNT_ID/${ACCOUNT_ID}/g" -e "s/REGION/${AWS_REGION}/g" \
+  task-definition.json > task-definition-rendered.json
+python3 -m json.tool task-definition-rendered.json > /dev/null
+grep -q FARGATE task-definition-rendered.json
+grep -q rebash-m07-app task-definition-rendered.json
+echo "task definition artefact OK" | tee task-evidence.txt
+# Optional if ecsTaskExecutionRole exists in your account:
+# aws ecs register-task-definition --cli-input-json file://task-definition-rendered.json
+```
+
+!!! example "Expected output"
+    JSON validates; rendered file contains your account ECR URI and Fargate compatibility.
 
 
 ### Validation steps
 
-- [ ] identity.json present
-- [ ] No long-lived keys committed to the repo
+- [ ] ECR repository exists with scan-on-push enabled
+- [ ] Docker image pushed with tag `v1`
+- [ ] `describe-images` shows the image
+- [ ] `task-definition-rendered.json` is valid Fargate JSON
+- [ ] **No EKS cluster was created**
 
 ### Common errors and fixes
 
 | Error | Cause | Fix |
 |-------|-------|-----|
-| Unable to locate credentials | No profile/SSO | Run `aws sso login` or export sandbox keys |
-| AccessDenied | Least privilege | Use a role that can read the service — or document the deny |
-| UnauthorizedOperation | Wrong region/account | Check `AWS_REGION` and account id |
+| docker login failed | Wrong Region/account | Match `AWS_REGION` to repo URI |
+| denied: repository does not exist | Repo not created | Run create-repository first |
+| CannotPullContainerError (if run) | Execution role missing ECR | Attach `AmazonECSTaskExecutionRolePolicy` |
+| Invalid CPU/memory | Bad Fargate pair | Use supported combo (256/512, 512/1024, …) |
 
 ### Challenge exercise
 
-Enable a cost budget alarm in the sandbox (or document the console clicks) and screenshot/CLI-describe it.
+Create `task-definition-sidecar.json` adding a **non-essential** `log-router` sidecar placeholder — document where a log agent would sit in the same task.
+
+``` {.bash .ra-terminal title="Terminal"}
+cd ~/rebash-aws/module-07
+test -f task-definition-sidecar.json
+grep -qi sidecar task-definition-sidecar.json
+echo "sidecar challenge OK" | tee challenge.txt
+```
 
 ### Learning outcomes
 
-- Authenticated safely
-- Captured read-only evidence
-- Avoided unmanaged spend
+- You pushed a real image to ECR and verified metadata
+- You understand execution vs task IAM roles in JSON
+- You produced interview-ready ECS task definition without costly EKS
+- You can articulate ECS vs EKS vs App Runner trade-offs
 
 ### Cleanup
 
-```bash
-# Revoke/lab-expire any temporary keys you exported
-# Do not leave EC2/ELB/NAT running
+``` {.bash .ra-terminal title="Terminal"}
+cd ~/rebash-aws/module-07
+REPO=$(cat repo-name.txt)
+aws ecr delete-repository --repository-name "$REPO" --force
+rm -f push.log describe-images.json evidence.txt task-evidence.txt
 ```
 
 ## Validation
 
-
-
-
-
-
-- [ ] Lab commands run under `~/rebash-aws/module-07/`
-- [ ] You can explain each Theory section in your own words
-- [ ] You used modern tooling where it applies to this topic
-- [ ] You can describe one production failure mode for this topic
+- [ ] ECR repository deleted (no storage charge)
+- [ ] You can explain Fargate awsvpc networking in plain English
+- [ ] Task definition JSON validates locally
+- [ ] You can justify when EKS is worth the control plane cost
 
 ## Code Walkthrough
 
-
-
-
-
-
-Production practice for **Containers on AWS — ECS, EKS, ECR, and App Runner** always combines:
-
-1. Inspect before you change (status, plan, logs, dry-run)
-2. Prefer reversible, documented changes (Git, IaC, drop-ins, version pins)
-3. Capture evidence (command output, pipeline logs) for handovers
-4. Prefer current tools and APIs over legacy shortcuts
-5. Least privilege — escalate credentials only when required
-
-Keep runbooks short enough to follow under pressure. Automate checks; keep humans for judgement.
+1. **ECR login** — `get-login-password` pipes to `docker login` for your account registry.
+2. **Immutable tags + digests** — production deploys reference `@sha256:` not floating tags.
+3. **Scan on push** — ECR basic scanning catches CVEs early.
+4. **Execution role** — pull/logs/secrets only; app AWS calls use task role.
+5. **Skip EKS in lab** — practise Kubernetes on kind locally for CKA; use ECS/Fargate on AWS for image pipeline labs.
 
 ## Security Considerations
 
-
-
-
-
-
-- Treat credentials and tokens for aws as privileged — never commit them
-- Prefer short-lived auth (OIDC, roles, SSO) over long-lived keys
-- Validate blast radius before apply/deploy/delete operations
-- Restrict who can approve production changes
-- Collect audit logs; limit who can read sensitive traces
+- Private ECR repos by default; use repository policies for cross-account CI.
+- Enable **image scanning**; block deploy on critical CVEs in pipeline.
+- Task role least privilege — no `*` on S3/DynamoDB.
+- Use Secrets Manager for secrets, not plain environment variables in task def.
+- Pin base image digests in Dockerfile `FROM` where possible.
 
 ## Common Mistakes
 
+!!! warning "Launching EKS for hello-world"
+    Control plane fees run 24/7. Use ECS Fargate or App Runner until you need Kubernetes APIs.
 
+!!! warning "Task and execution role confusion"
+    ECR pull works but S3 fails — you attached permissions to the wrong role.
 
-
-
-
-!!! warning "Leaving EKS/ECS capacity running overnight — control planes and nodes bill continuously  "
-    Validate assumptions against the Theory section and official docs before changing production.
-
-!!! warning "Shipping `:latest` in production — non-reproducible rollbacks  "
-    Lab shortcuts (open security groups, admin roles, skip approvals) must not ship unchanged.
-
-!!! warning "Changing production without a rollback path"
-    Always know how to revert (previous artefact, prior release, state rollback, DNS failback).
+!!! warning "Public `:latest` in production"
+    Tags can be overwritten — use immutability and digest deploys.
 
 ## Best Practices
 
-
-
-
-
-
-- Encode Containers on AWS — ECS, EKS, ECR, and App Runner changes as code and review them in pull requests
-- Pin versions (images, modules, actions, provider plugins)
-- Separate environments with clear promotion gates
-- Alert on symptoms with runbooks attached
-- Destroy lab resources; tag everything with owner and expiry where possible
+- One service per task definition family; version via revisions
+- Centralise logs to CloudWatch with structured JSON
+- Use Spot capacity providers for fault-tolerant ECS on EC2
+- GitOps task definition promotions through CI/CD
+- Mirror public base images to ECR to avoid rate limits
 
 ## Troubleshooting
 
-
-
-
-
-
 | Symptom | Likely cause | Fix |
 |---------|--------------|-----|
-| Auth / permission denied | Wrong identity, policy, or scope | Check caller identity, roles, and least-privilege policies |
-| Timeout / no route | Network, DNS, security group, or endpoint | Trace path, DNS, and allow-lists before retrying |
-| Drift / unexpected plan | Manual change or wrong state/workspace | Reconcile desired vs actual; avoid click-ops on managed resources |
-| Pipeline/job red | Flaky step, cache, or missing secret | Read failing step logs; bisect recent workflow/config changes |
-| Cost spike | Idle load balancer, NAT, oversized compute | Inventory billable resources; stop/delete labs promptly |
+| ImagePullBackOff (EKS) | ECR IAM or wrong URI | Node role needs `ecr:GetAuthorizationToken` |
+| Task stuck PROVISIONING | Fargate subnet/IP exhaustion | Add subnets/IPs; check awsvpc |
+| CannotPullContainerError | Execution role | Attach managed execution policy |
+| App 403 on AWS API | Task role missing | Add least-privilege policy to task role |
 
 ## Summary
 
+**ECR** stores images; **ECS** and **EKS** orchestrate them; **Fargate** removes node patching. This lab proved **build → push → describe → task definition** — the pipeline gate before any Fargate deploy — without an expensive EKS cluster.
 
-
-
-
-
-**Containers on AWS — ECS, EKS, ECR, and App Runner** is essential for Cloud and DevOps engineers working with aws. Practise the lab until the inspection and change path is muscle memory, then continue the track.
+Next: [Serverless on AWS](serverless-on-aws.md).
 
 ## Interview Questions
 
+**1. What is ECR in simple words?**
 
+??? success "Reveal answer"
+    ECR (Elastic Container Registry) is AWS’s private Docker/OCI image registry. You push images from CI or your laptop; ECS and EKS pull them to run containers. It integrates with IAM and can scan images on push for vulnerabilities.
 
+**2. ECS vs EKS — how do you decide?**
 
-1. ECR digest pins — why?
-2. ECS versus EKS decision factors?
-3. How do tasks/pods get AWS permissions?
-4. ImagePullBackOff equivalent on ECS?
-5. Control plane cost differences?
+??? success "Reveal answer"
+    Choose **ECS** when you want AWS-native APIs and faster time-to-value without Kubernetes operational burden. Choose **EKS** when you need Kubernetes compatibility (Helm, operators, multi-cloud) and have platform capacity to run clusters. Small teams often start with ECS Fargate.
 
-!!! tip "Sample answer — question 2"
-    Verify repository permissions, image URI/digest, and task/execution roles.
+**3. What is Fargate?**
 
-!!! tip "Sample answer — question 4"
-    Scan images, least-privilege task roles, and delete unused ECR images/repos in labs.
+??? success "Reveal answer"
+    Fargate is serverless compute for containers — you specify CPU and memory; AWS manages the underlying servers. Each task/pod gets an **ENI** in **awsvpc** mode with its own security groups. You pay per task runtime, at a premium vs self-managed EC2.
+
+**4. Task execution role vs task role?**
+
+??? success "Reveal answer"
+    **Execution role** — used by ECS/Fargate to pull images from ECR, write logs, and fetch secrets at startup. **Task role** — credentials your **application code** uses for AWS APIs (S3, DynamoDB). Swapping them causes pull success but app permission failures.
+
+**5. Why did this lab skip EKS?**
+
+??? success "Reveal answer"
+    EKS charges for the managed control plane hourly plus worker compute. Learning ECR push and task definitions does not require Kubernetes — use kind/minikube locally for K8s. Production EKS is justified when K8s APIs and ecosystem are requirements.
+
+**6. App Runner vs ECS Fargate?**
+
+??? success "Reveal answer"
+    **App Runner** is opinionated — connect repo or ECR, auto HTTPS, minimal VPC wiring — great for simple web services. **ECS Fargate** offers full VPC, load balancers, sidecars, and batch — more control, more design work.
+
+**7. What network mode for Fargate tasks?**
+
+??? success "Reveal answer"
+    **awsvpc** — each task gets its own elastic network interface and IP in subnets you choose. Required for Fargate. Security groups attach to the task ENI.
+
+**8. How do you secure container images?**
+
+??? success "Reveal answer"
+    Private ECR, scan on push, minimal base images, pin digests, block critical CVEs in CI, and least-privilege IAM for pull roles. Avoid deploying floating `:latest` tags in production.
 
 ## Related Tutorials
 
-
-
-
-
-
-- [Course overview](index.md)
-- [Serverless on AWS](serverless-on-aws.md)
+- Previous: [Databases on AWS](databases-on-aws.md)
+- Next: [Serverless on AWS](serverless-on-aws.md)
+- [Introduction to Containers and Docker](../docker/introduction-to-containers-and-docker.md)
+- [Compute: EC2, ASG, and Load Balancing](compute-ec2-asg-and-load-balancing.md)
 
 ## References
 
-
-
-
-
-
-- [Amazon ECR User Guide](https://docs.aws.amazon.com/AmazonECR/latest/userguide/what-is-ecr.html)  
-- [Amazon ECS Developer Guide](https://docs.aws.amazon.com/AmazonECS/latest/developerguide/Welcome.html)  
-- [Amazon EKS User Guide](https://docs.aws.amazon.com/eks/latest/userguide/what-is-eks.html)  
-- [AWS Fargate](https://docs.aws.amazon.com/AmazonECS/latest/developerguide/AWS_Fargate.html)  
+- [Amazon ECR](https://docs.aws.amazon.com/AmazonECR/latest/userguide/what-is-ecr.html)
+- [Amazon ECS](https://docs.aws.amazon.com/AmazonECS/latest/developerguide/Welcome.html)
+- [Amazon EKS](https://docs.aws.amazon.com/eks/latest/userguide/what-is-eks.html)
+- [AWS Fargate](https://docs.aws.amazon.com/AmazonECS/latest/developerguide/AWS_Fargate.html)
 - [AWS App Runner](https://docs.aws.amazon.com/apprunner/latest/dg/what-is-apprunner.html)

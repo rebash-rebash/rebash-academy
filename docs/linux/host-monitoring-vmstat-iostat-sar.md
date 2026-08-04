@@ -1,19 +1,24 @@
 ---
 title: "Host Monitoring — vmstat, iostat, and sar"
-description: "Use vmstat, iostat, and sar from sysstat to read CPU, memory, and disk I/O signals on a practice Ubuntu VM."
+description: "Linux read CPU, memory, and disk I/O with vmstat, iostat, and sar — plain language first, then a load-and-measure lab."
 difficulty: intermediate
-estimated_time: "45–55 min"
+estimated_time: "50–60 min"
 author: Shaik Basha
-last_updated: "2026-08-02"
+last_updated: "2026-08-04"
 category: linux
 technology: linux
 module: "Module 12 · Logging & Monitoring"
+career_paths:
+  - linux-administrator
+  - devops-engineer
+  - site-reliability-engineer
 tags:
   - linux
   - vmstat
   - iostat
   - sar
   - sysstat
+  - beginners
 prerequisites:
   - linux/logging-syslog-journald-logrotate
 next:
@@ -28,107 +33,121 @@ comments: false
 
 ## Overview
 
-When a host feels “slow”, you need numbers for **CPU**, **memory**, and **disk Input/Output (I/O)** — not guesses. Classic Linux tools from the **sysstat** package help: **`vmstat`** for processes, memory, swap, and CPU; **`iostat`** for per-disk I/O; **`sar`** for historical samples (when the sysstat collector is enabled).
+When someone says “the server feels slow”, you need numbers — not guesses. Cloud dashboards help, but host tools such as **vmstat**, **iostat**, and **sar** still matter when agents fail or you are on SSH only.
 
-Cloud consoles show graphs, but SSH-era tools still matter on jump servers, during outages when agents are down, and in interviews. In this tutorial you will install sysstat if needed, capture `vmstat`/`iostat`/`sar` samples, generate a little controlled load, and save proof under `~/rebash-linux/lab19`.
+**Plain problem:** CPU at 100%, disk light blinking constantly, or swap churning — three different stories. **`vmstat`**, **`iostat`**, and **`sar`** (from the **sysstat** package) give quick host-level signals for **CPU**, **memory**, **swap**, and **disk Input/Output (I/O)**.
 
-In production, pair these tools with metrics systems (Prometheus node exporter, CloudWatch, and similar). Use CLI tools to validate what dashboards claim and to dig deeper during incidents.
-
-This is **Tutorial 19** in **Module 12: Logging & Monitoring** of the REBASH Academy **Linux for Cloud & DevOps Engineers** series. It is written for Linux administrators, DevOps engineers, Site Reliability Engineering (SRE), and platform engineers.
+This is **Tutorial 12b** in **Module 12: Logging & Monitoring** of the REBASH Academy **Linux for Cloud & DevOps Engineers** series.
 
 ## Prerequisites
 
-- [Logging — syslog, journald, and logrotate](logging-syslog-journald-logrotate.md)
-- A **practice Ubuntu 22.04/24.04 VM** with `sudo`
-- Ability to install `sysstat`
+- Ubuntu practice VM with `sudo`
+- Basic comfort with `top` or `htop` (helpful but not required)
+- Completed logging tutorial (you know where to save evidence)
 
 ## Learning Objectives
 
 By the end of this tutorial, you will be able to:
 
-- [ ] Read key `vmstat` columns (runnable processes, swap, CPU idle/wait)
-- [ ] Use `iostat -xz` to spot high util or await on disks
-- [ ] Collect a `sar` sample (or explain when history is empty)
-- [ ] Capture before/load/after evidence under `~/rebash-linux/lab19`
-- [ ] Relate CLI signals to cloud VM sizing decisions
+- [ ] Explain what vmstat, iostat, and sar measure in plain language
+- [ ] Install **sysstat** and capture baseline samples
+- [ ] Generate controlled load and compare before/after metrics
+- [ ] Read CPU idle, swap activity, and disk utilisation columns
+- [ ] Relate CLI signals to “slow server” interview stories
+- [ ] Answer fresher interview questions on host monitoring
 
 ## Architecture
 
-Host monitoring samples kernel counters for CPU, memory, and block I/O so operators can see pressure quickly.
+The kernel tracks CPU scheduling, memory pages, swap, and block I/O. **sysstat** tools read `/proc` and kernel counters and print human-readable tables. **sar** can store history when the sysstat collector is enabled.
 
-![Architecture diagram for Host Monitoring](../assets/excalidraw/linux-host-monitoring.svg)
+![Linux host monitoring — vmstat, iostat, sar](../assets/excalidraw/linux-host-monitoring.svg)
 
 ## Theory
 
-### What it is
+### The problem (before any jargon)
 
-| Tool | Focus |
-|------|--------|
-| `vmstat` | Processes, memory, swap, I/O, CPU |
-| `iostat` | CPU and per-device disk I/O |
-| `sar` | Historical / scheduled activity reports |
+Ticket: “API latency high.” You restart the app. Still slow. Later someone notices **disk utilisation at 100%** — the database on the same disk was the bottleneck, not the API process. Monitoring narrows *which* resource is saturated.
 
-```bash
+### vmstat — virtual memory statistics
+
+**Analogy:** **vmstat** is a five-second health snapshot of the whole host — processes waiting, memory pressure, swap in/out, CPU idle.
+
+``` {.bash .ra-terminal title="Terminal"}
 vmstat 1 5
-iostat -xz 1 3
-sar -u 1 3
 ```
 
-### Why it matters
+Columns to watch first:
 
-High **`wa`** (I/O wait) points to storage. High runnable processes (`r` in vmstat) points to CPU contention. Heavy **swap** (`si`/`so`) points to memory pressure. Wrong diagnosis leads to the wrong fix (adding CPU when the disk is the bottleneck).
+| Column | Plain meaning |
+|--------|----------------|
+| `r` | Runnable processes (CPU queue) |
+| `si` / `so` | Swap in / swap out (memory pressure) |
+| `us` / `sy` / `id` | User / system / **idle** CPU |
+| `wa` | CPU waiting on I/O |
 
-### How it works
+**Interview line:** “High `wa` suggests I/O wait; high `si/so` suggests memory pressure and swap.”
 
-1. Take a **baseline** when healthy (or at incident start).  
-2. Watch a few samples over time (`vmstat 1 10`).  
-3. Check disks with `iostat -xz`.  
-4. Use `sar` when sysstat’s collector has history (`/var/log/sysstat`).
+### iostat — disk I/O
 
-| Signal | Suggests |
-|--------|----------|
-| High `r`, low `id` | CPU busy / contention |
-| High `wa` | Disk or NFS wait |
-| Rising `si`/`so` | Swapping / memory pressure |
-| Device `%util` near 100 | Disk saturated |
+**Analogy:** **iostat** zooms into each disk — reads/writes per second and **%util** (how busy the device is).
+
+``` {.bash .ra-terminal title="Terminal"}
+iostat -xz 1 3
+```
+
+**%util** near 100% on a disk serving your database is a smoking gun.
+
+### sar — history and trends
+
+**Analogy:** **sar** is yesterday’s notebook if sysstat collection is enabled — CPU, memory, I/O over time.
+
+``` {.bash .ra-terminal title="Terminal"}
+sar -u 1 3        # CPU
+sar -r 1 3        # memory
+sar -b 1 3        # I/O
+```
+
+On Ubuntu, enable ongoing collection by setting `ENABLED="true"` in `/etc/default/sysstat` if your policy allows.
+
+### When CLI beats the dashboard
+
+- Jump box with no agent during an outage
+- Interview whiteboard: “How would you prove disk-bound?”
+- Validating that a cloud graph matches ground truth
+
+Pair CLI checks with Prometheus node exporter, CloudWatch, Datadog, etc. in production.
 
 ### Common pitfalls
 
-- Trusting a single sample (look at trends).  
-- Ignoring steal time (`st`) on busy hypervisors.  
-- Assuming `sar` has history when the collector was never enabled.  
-- Generating heavy load on shared production hosts “to test”.
+- Staring at CPU only while disk is saturated
+- Ignoring swap (`si/so`) until OOM kills appear
+- One sample only — transients mislead; take 5–10 seconds
+- Confusing load average with CPU % (load includes waiting tasks)
 
 ## Hands-on Lab
 
 ### Objective
 
-Install sysstat, capture baseline `vmstat`/`iostat`/`sar` output, create a short controlled CPU+disk load, capture again, and pack evidence under `~/rebash-linux/lab19`.
+Install **sysstat**, capture baseline **vmstat**/**iostat**/**sar**, generate controlled CPU and disk load, compare metrics, and save proof under `~/rebash-linux/lab19`.
 
 ### Prerequisites
 
-- Ubuntu practice VM (not a shared production host)
+| Item | Notes |
+|------|--------|
+| Ubuntu VM | 1+ CPU, a few GB RAM |
+| `sudo` | For sysstat install and enabling collector |
+| `stress-ng` optional | Or use built-in `dd` for disk load |
 
 ### Lab environment
 
-Workspace: `~/rebash-linux/lab19`
-
 ``` {.bash .ra-terminal title="Terminal"}
 mkdir -p ~/rebash-linux/lab19 && cd ~/rebash-linux/lab19
-set -euo pipefail
-sudo apt-get update -qq
-sudo DEBIAN_FRONTEND=noninteractive apt-get install -y sysstat
-command -v vmstat; command -v iostat; command -v sar
-vmstat -V 2>&1 | head -n 1 | tee sysstat-tools.txt || true
+sudo apt update && sudo apt install -y sysstat
 ```
-
-!!! example "Expected output"
-    `vmstat`, `iostat`, and `sar` are on `PATH`.
-
 
 ### Real-world scenario
 
-Users say a practice API VM is slow. Before you resize the instance, you capture CPU/memory/disk signals with sysstat tools, create a small reproducible load to see how the counters move, and attach the outputs to the ticket.
+Mentor: “Users report slowness at 14:00. Show me baseline vmstat/iostat, then reproduce mild CPU and disk pressure in the lab and point at which columns changed.”
 
 ### Step-by-step tasks
 
@@ -136,218 +155,183 @@ Users say a practice API VM is slow. Before you resize the instance, you capture
 
 ``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-linux/lab19
-set -euo pipefail
-
-uptime | tee uptime-before.txt
-free -h | tee free-before.txt
-vmstat 1 5 | tee vmstat-before.txt
-iostat -xz 1 3 | tee iostat-before.txt
-sar -u 1 3 | tee sar-u-before.txt
-sar -d 1 3 | tee sar-d-before.txt 2>/dev/null || echo 'sar -d unavailable' | tee sar-d-before.txt
+vmstat 1 5 | tee vmstat-baseline.txt
+iostat -xz 1 3 | tee iostat-baseline.txt
+sar -u 1 3 | tee sar-cpu-baseline.txt
+test -s vmstat-baseline.txt
+grep -E ' id ' vmstat-baseline.txt | tail -3 | tee idle-sample.txt
 ```
 
 !!! example "Expected output"
-    baseline files exist; `vmstat-before.txt` has a header and several data rows.
+    `idle-sample.txt` shows CPU idle (`id`) typically high on an idle lab VM.
 
 
-#### Task 2 – Controlled load + capture during load
+#### Task 2 – Controlled CPU load and re-measure
 
 ``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-linux/lab19
-set -euo pipefail
-
-# Short CPU load in background
-(timeout 12s bash -c 'while true; do :; done' & echo $! > cpu-load.pid) || true
-# Short disk write load
-timeout 12s dd if=/dev/zero of=load.bin bs=1M count=256 conv=fdatasync status=none &
-echo $! > dd-load.pid || true
-
+( yes >/dev/null ) & pid=$!
 sleep 2
-vmstat 1 5 | tee vmstat-during.txt
-iostat -xz 1 3 | tee iostat-during.txt
-
-# Wait for loads to finish
-wait || true
-rm -f load.bin
-kill "$(cat cpu-load.pid)" 2>/dev/null || true
+vmstat 1 5 | tee vmstat-under-cpu-load.txt
+kill "$pid" 2>/dev/null || true
+wait "$pid" 2>/dev/null || true
+grep -E ' [0-9]+ [0-9]+ [0-9]+ [0-9]+ [0-9]+ [0-9]+ [0-9]+ [0-9]+ [0-9]+ [0-9]+ [0-9]+ [0-9]+ [0-9]+ [0-9]+ [0-9]+ ' vmstat-under-cpu-load.txt | tail -3 | tee cpu-load-idle.txt
 ```
 
 !!! example "Expected output"
-    `vmstat-during.txt` / `iostat-during.txt` captured while load ran; `load.bin` removed.
+    Under `yes` load, idle (`id`) drops compared to baseline — CPU is busy.
 
 
-#### Task 3 – After sample + evidence pack
+#### Task 3 – Disk load, break interpretation, fix understanding
 
 ``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-linux/lab19
-set -euo pipefail
-
-sleep 2
-vmstat 1 3 | tee vmstat-after.txt
-iostat -xz 1 2 | tee iostat-after.txt
-# Optional history location
-ls -la /var/log/sysstat 2>/dev/null | tee sysstat-log-dir.txt || echo 'no /var/log/sysstat yet' | tee sysstat-log-dir.txt
-
-# Simple asserts: files non-empty
-test -s vmstat-before.txt && test -s vmstat-during.txt && test -s iostat-before.txt
-
-tar -czf hostmon-evidence.tgz \
-  sysstat-tools.txt uptime-before.txt free-before.txt \
-  vmstat-before.txt iostat-before.txt sar-u-before.txt sar-d-before.txt \
-  vmstat-during.txt iostat-during.txt \
-  vmstat-after.txt iostat-after.txt sysstat-log-dir.txt
-ls -l hostmon-evidence.tgz | tee evidence-ls.txt
+dd if=/dev/zero of=/tmp/lab19-diskload bs=1M count=256 oflag=direct 2>&1 | tee dd-write.txt &
+sleep 1
+iostat -xz 1 5 | tee iostat-under-disk-load.txt
+wait
+iostat -xz 1 3 | tee iostat-after-disk-load.txt
+echo "mistake: only checked CPU during disk incident" > misread-notes.txt
+echo "fix: check iostat %util and vmstat wa column" >> misread-notes.txt
+cat misread-notes.txt | tee break-fix-notes.txt
+echo "lab19 monitoring OK" | tee evidence.txt
 ```
 
 !!! example "Expected output"
-    evidence archive exists; during/after samples recorded.
+    During `dd`, `iostat` shows higher **%util** on the disk device; `break-fix-notes.txt` documents the CPU-vs-disk diagnostic mistake.
 
 
 ### Validation steps
 
-- [ ] `vmstat` and `iostat` produced before and during files
-- [ ] You can point to idle (`id`) / wait (`wa`) columns in `vmstat`
-- [ ] `sar -u` produced a sample (even if mostly idle)
-- [ ] `hostmon-evidence.tgz` exists under `~/rebash-linux/lab19`
+- [ ] sysstat installed; baseline and under-load files saved
+- [ ] CPU load lowered idle column visibly
+- [ ] Disk load raised I/O utilisation during `dd`
+- [ ] You can explain one column from vmstat and iostat
 
 ### Common errors and fixes
 
 | Error | Cause | Fix |
 |-------|-------|-----|
-| `iostat: command not found` | sysstat missing | `sudo apt-get install -y sysstat` |
-| `sar` shows little history | Collector disabled | Enable sysstat cron/timer; still use live `sar -u 1 3` |
-| Load made laptop unusable | Loop too aggressive | Shorten `timeout`; skip CPU loop on tiny VMs |
-| Permission denied on `/var/log/sysstat` | Restricted perms | Use `sudo ls` or rely on live samples |
+| `vmstat: command not found` | sysstat not installed | `sudo apt install sysstat` |
+| sar shows no history | Collector disabled | `/etc/default/sysstat` ENABLED=true |
+| All zeros in iostat | Wrong interval / no activity | Run during `dd` or app load |
+| Misread load average | Includes I/O wait tasks | Cross-check vmstat `wa`, iostat |
 
 ### Challenge exercise
 
-Write `~/rebash-linux/lab19/quick-host-check.sh` that prints timestamp, `uptime`, one `vmstat 1 3` block, and one `iostat -xz 1 2` block to `quick-host-check.out`, exiting `0` if both tools succeed.
+Enable sysstat history (if policy allows), reboot not required — set `ENABLED="true"` and `sudo systemctl enable --now sysstat`, then run `sar -u` after a few minutes.
 
 ### Learning outcomes
 
-- Captured baseline and under-load host signals
-- Used vmstat/iostat/sar from sysstat
-- Separated CPU vs disk pressure clues
-- Saved monitoring evidence for a ticket
+- You captured real vmstat/iostat/sar samples
+- You linked load types to metric columns
+- You documented a common diagnostic misread (CPU-only tunnel vision)
 
 ### Cleanup
 
 ``` {.bash .ra-terminal title="Terminal"}
-cd ~/rebash-linux/lab19
-set -euo pipefail
-rm -f load.bin cpu-load.pid dd-load.pid
-# Keep hostmon-evidence.tgz if you want it
-# sysstat package may remain installed — that is fine
+rm -f /tmp/lab19-diskload
+pkill -f 'yes >/dev/null' 2>/dev/null || true
 ```
 
 ## Validation
 
-- [ ] Lab finished under `~/rebash-linux/lab19/` with evidence files
-- [ ] You can explain what high `wa` suggests
-- [ ] You know `sar` history needs the sysstat collector
-- [ ] You would not run stress tests on shared production without approval
+- [ ] Evidence under `~/rebash-linux/lab19`
+- [ ] Can narrate “slow server” triage in three tools
+- [ ] Ready for SSH hardening next
 
 ## Code Walkthrough
 
-Incident host check:
-
-1. `uptime`, `free -h`, `df -hT`  
-2. `vmstat 1 10` — CPU/memory/swap  
-3. `iostat -xz 1 5` — disk saturation  
-4. `ps`/`pidstat` for top consumers  
-5. Compare with cloud metrics; then change capacity or fix the app  
+1. **`vmstat 1 5`** — 1-second interval, 5 samples; good incident habit.
+2. **`iostat -xz 1 3`** — extended, skip zero devices, human sizes.
+3. **`sar -u`** — CPU breakdown when sysstat history exists.
+4. **Background `yes`** — cheap CPU burner for lab only.
+5. **`dd … oflag=direct`** — bypasses cache somewhat — shows disk pressure in lab.
 
 ## Security Considerations
 
-- Monitoring data can reveal process names and paths — control access  
-- Do not run destructive stress tools on multi-tenant production  
-- Protect historical `sar` logs if they include sensitive context  
-- Prefer least privilege for monitoring agents  
-- Keep accurate time (chrony) so samples align with other systems  
+- Do not run destructive stress tools on shared production hosts without approval.
+- Monitoring data can reveal workload patterns — protect sar archives.
+- High load tests in cloud may trigger alerts — use sandbox accounts.
+- Read-only monitoring commands are safe; load generation is not.
 
 ## Common Mistakes
 
-!!! warning "Resizing CPU when `wa` is high"
-    The bottleneck may be disk. **Fix:** confirm with `iostat` before changing instance size.
+!!! warning "CPU tunnel vision"
+    Check disk (`iostat`) and memory/swap (`vmstat`) before scaling CPU.
 
-!!! warning "One 1-second sample as truth"
-    Spikes mislead. **Fix:** sample over several seconds or minutes.
+!!! warning "Single snapshot"
+    Take several intervals; spikes and sustained saturation tell different stories.
 
-!!! warning "Ignoring steal time on VMs"
-    Noisy neighbours reduce your CPU. **Fix:** watch `st` in `vmstat`/`sar`; consider new host/capacity.
-
-!!! warning "Expecting weeks of `sar` history by default"
-    Collector may be off. **Fix:** enable sysstat’s timer/cron or rely on a metrics stack.
+!!! warning "Ignoring swap"
+    Rising `si/so` means RAM pressure — fix memory or swap config before buying CPUs.
 
 ## Best Practices
 
-- Keep a small “first 5 commands” host checklist  
-- Store baselines for critical VMs  
-- Alert on saturation (CPU, memory, disk util/latency)  
-- Correlate with app latency and error rates  
-- Practise reading vmstat/iostat offline from saved files  
+- Establish baselines during normal business hours
+- Correlate metrics with deploy times and log spikes
+- Automate node_exporter or cloud metrics; keep CLI skills for gaps
+- Document “normal” idle and util ranges per host class
+- Use the same timezone when comparing sar archives to tickets
 
 ## Troubleshooting
 
 | Symptom | Likely cause | Fix |
 |---------|--------------|-----|
-| High load, CPU idle | Uninterruptible I/O / DNS / locks | Check `wa`, `iostat`, app waits |
-| High swap activity | RAM too small / leak | Inspect RSS; add RAM; fix app |
-| Disk `%util` 100% | Storage bottleneck | Faster disk; reduce I/O; cache |
-| Tools missing | Minimal image | Install `sysstat` |
-| Metrics disagree with cloud | Agent lag / wrong host | Confirm instance ID; compare timestamps |
+| High load, high idle | I/O wait tasks | `vmstat wa`; `iostat %util` |
+| Swap active | RAM full | `free -h`; reduce cache or add RAM |
+| sar empty | sysstat disabled | Enable collector; wait for samples |
+| iostat no devices | VM without block stats | Try `lsblk`; check hypervisor |
 
 ## Summary
 
-`vmstat`, `iostat`, and `sar` turn “it feels slow” into CPU, memory, or disk evidence. Sample over time, compare before and during load, and fix the real bottleneck. Next: [SSH Hardening and Firewalls](ssh-hardening-and-firewalls.md).
+When a host feels slow, use **vmstat** for CPU/memory/swap, **iostat** for disk saturation, and **sar** for trends. Install **sysstat**, sample for several seconds, and match column changes to the resource under stress — interviews and on-call both reward this method.
 
 ## Interview Questions
 
-**1. What does a high `wa` value in `vmstat` suggest?**
+**1. What does vmstat show?**
 
 ??? success "Reveal answer"
-    High **I/O wait** means CPUs are idle waiting on block I/O (disk or sometimes network filesystems). Next check `iostat -xz` for saturated devices and review what process is doing heavy reads/writes.
+    Process queue, memory, swap activity, and CPU usage (user, system, idle, I/O wait) from kernel counters. Useful quick snapshot: `vmstat 1 5`.
 
-**2. How do you use `iostat` to see if a disk is saturated?**
-
-??? success "Reveal answer"
-    Run `iostat -xz 1 5` and look at **`%util`**, **await**/latency fields, and throughput. Near-100% util with rising await often means the device is the bottleneck. Confirm which mount sits on that device with `lsblk`/`findmnt`.
-
-**3. What is the difference between live `sar -u 1 3` and historical sar reports?**
+**2. How do you tell if a host is disk-bound?**
 
 ??? success "Reveal answer"
-    `sar -u 1 3` samples **live** counters now. Historical reports need the sysstat collector writing under `/var/log/sysstat`. If history is empty, enable the collector or use your metrics platform.
+    **iostat** high **%util** and await on the busy device; **vmstat** elevated **wa** (I/O wait). CPU may look busy waiting on disk, not computing.
 
-**4. Which `vmstat` fields help diagnose memory pressure?**
-
-??? success "Reveal answer"
-    Watch swap-in/swap-out (`si`/`so`), free memory, and overall CPU. Pair with `free -h` and process RSS from `ps`. Sustained swapping needs RAM or a leak fix, not only “tune swapiness” as a first answer.
-
-**5. Why capture a baseline before changing instance size?**
+**3. What is sar used for?**
 
 ??? success "Reveal answer"
-    Without before/after numbers you cannot prove the resize helped. Baselines also show whether the problem was CPU, memory, or disk so you pick the right resize dimension.
+    **System Activity Reporter** — historical CPU, memory, I/O samples when sysstat collection is enabled. Helps compare “now vs yesterday” without live reproduction.
 
-**6. How does steal time (`st`) affect your reading on a cloud VM?**
-
-??? success "Reveal answer"
-    **Steal** means the hypervisor scheduled other work instead of your VM. Your app can look slow even when your process list is modest. Consider moving workload or increasing capacity; do not blame the app alone.
-
-**7. Where do these tools fit next to Prometheus or CloudWatch?**
+**4. A server has high load average but low CPU usage. Explain?**
 
 ??? success "Reveal answer"
-    Metrics systems are for continuous monitoring and alerting. `vmstat`/`iostat`/`sar` are for **interactive diagnosis**, interviews, and times when agents are broken. Good engineers use both.
+    Load average counts runnable and uninterruptible (often I/O-wait) tasks. Many tasks waiting on disk can raise load while CPU idle is high. Check `vmstat wa` and `iostat`.
+
+**5. What do si and so mean in vmstat?**
+
+??? success "Reveal answer"
+    **Swap in** and **swap out** — pages moved between RAM and swap. Sustained non-zero values indicate memory pressure; investigate RAM usage and OOM risk.
+
+**6. Why not rely only on cloud dashboards?**
+
+??? success "Reveal answer"
+    Agents fail during outages; jump boxes may lack agents; dashboards aggregate and delay. CLI tools validate ground truth and work in minimal environments — common interview expectation.
+
+**7. First three commands for “server slow” SSH session?**
+
+??? success "Reveal answer"
+    `uptime` (load context), `vmstat 1 5` (CPU/mem/swap/wa), `iostat -xz 1 3` (disk). Add `free -h`, `df -h`, and `journalctl -p err -b` as needed — narrow the saturated resource before restarting random services.
 
 ## Related Tutorials
 
-- [Linux for Cloud & DevOps – Overview](index.md)
-- [Logging — syslog, journald, and logrotate](logging-syslog-journald-logrotate.md) *(previous)*
-- [SSH Hardening and Firewalls](ssh-hardening-and-firewalls.md) *(next)*
-- [Process Management](process-management.md) *(related)*
+- Previous: [Logging — syslog, journald, and logrotate](logging-syslog-journald-logrotate.md)
+- Next: [SSH Hardening and Firewalls](ssh-hardening-and-firewalls.md)
+- Related: [Process Management](process-management.md)
 
 ## References
 
-- [`vmstat(8)`](https://manpages.ubuntu.com/manpages/jammy/en/man8/vmstat.8.html) — Ubuntu man-pages  
-- [`iostat(1)`](https://manpages.ubuntu.com/manpages/jammy/en/man1/iostat.1.html) — Ubuntu man-pages  
-- [sysstat project](https://github.com/sysstat/sysstat) — upstream  
-- Track index: [Linux for Cloud & DevOps Engineers](index.md)
+- [sysstat documentation](https://github.com/sysstat/sysstat)
+- [vmstat man page](https://manpages.ubuntu.com/manpages/noble/man8/vmstat.8.html)
+- [iostat man page](https://manpages.ubuntu.com/manpages/noble/man1/iostat.1.html)

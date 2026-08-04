@@ -1,8 +1,8 @@
 ---
 title: "Storage: S3, EBS, and EFS"
-description: "Choose and operate AWS storage: Amazon S3, Elastic Block Store (EBS), Elastic File System (EFS), FSx overview, storage classes, lifecycle policies, and encryption."
-difficulty: intermediate
-estimated_time: "50–65 min"
+description: "AWS storage S3 objects, EBS disks, EFS shared files — with a hardened S3 lab, deny/restore bucket policy, lifecycle, and full cleanup."
+difficulty: beginner
+estimated_time: "60–75 min"
 technology: aws
 category: aws
 module: "Module 5 · Storage"
@@ -18,14 +18,17 @@ skills:
   - efs
   - storage-classes
   - encryption
+  - lifecycle
 prerequisites:
   - aws/compute-ec2-asg-and-load-balancing
 next:
   - aws/databases-on-aws
 related:
   - aws/compute-ec2-asg-and-load-balancing
+  - labs/aws-ssm-s3
   - linux/index
-labs: []
+labs:
+  - labs/aws-ssm-s3
 projects: []
 interview: interview/aws
 certifications:
@@ -37,347 +40,493 @@ tags:
   - ebs
   - efs
   - storage
-  - encryption
+  - beginners
 author: Shaik Basha
-last_updated: "2026-07-31"
+last_updated: "2026-08-03"
 comments: false
 ---
-
 
 # Storage: S3, EBS, and EFS
 
 ## Overview
 
+Every application needs somewhere to keep files, disks, and backups. On AWS you usually choose between three storage shapes — and picking the wrong one wastes money or breaks your design in interviews.
 
+Start with the storage problem each service solves:
 
+- **S3** — store files as objects (like a massive shared drive accessed over HTTP)
+- **EBS** — attach a disk to one virtual machine (like a USB drive for EC2)
+- **EFS** — share a folder across many Linux servers (like a network file share)
 
+This is **Tutorial 1** in **Module 5: Storage** of the REBASH Academy **AWS for Cloud & DevOps Engineers** series. You will harden an S3 bucket, prove read/write, inject a **Deny** policy on a folder, restore access, add a **lifecycle** rule, and delete every version cleanly.
 
-
-Select the right AWS storage service for each workload — Amazon Simple Storage Service (S3), Elastic Block Store (EBS), Elastic File System (EFS), and a brief Amazon FSx overview — and apply storage classes, lifecycle rules, and encryption correctly.
-
-Cloud storage is not one product. **Block**, **file**, and **object** models solve different problems. Using EBS like a shared drive, or S3 like a POSIX disk, creates outages and surprise bills. This module gives Cloud and DevOps engineers a decision framework used in production architectures.
-
-!!! warning "Cost"
-    S3 requests, incomplete multipart uploads, and unused EBS volumes / snapshots cost money. Enable lifecycle rules, abort incomplete multipart uploads, and delete lab buckets/volumes. Prefer Free Tier–friendly sizes and short-lived objects.
-
-This is a core tutorial in **Module 5 · Storage** of the REBASH Academy **AWS for Cloud & DevOps Engineers** series — written for Cloud, DevOps, Platform, and SRE engineers.
+!!! warning "Cost hygiene"
+    S3 charges for storage and requests. **EBS volumes bill even when detached.** This lab uses S3 only — no EC2 or NAT Gateway required. Always run **Cleanup**.
 
 ## Prerequisites
 
-
-
-
-
-
-- [Compute: EC2, ASG, and Load Balancing](compute-ec2-asg-and-load-balancing.md)
-- Comfortable with Linux filesystems and the AWS CLI
+- [Compute: EC2, ASG, and Load Balancing](compute-ec2-asg-and-load-balancing.md) — you know what an EC2 instance is
+- AWS CLI v2 with permission to create S3 buckets in a sandbox account
+- Optional: [Lab — AWS SSM and S3](../labs/aws-ssm-s3.md)
 
 ## Learning Objectives
 
-
-
-
-
-
 By the end of this tutorial, you will be able to:
 
-- [ ] Contrast object, block, and file storage on AWS (S3, EBS, EFS, FSx)  
-- [ ] Apply S3 storage classes, lifecycle policies, and encryption options  
-- [ ] Choose EBS volume types and snapshot strategy  
-- [ ] Know when EFS or FSx fits shared file access  
-- [ ] Enforce encryption at rest (SSE-S3, SSE-KMS, client-side) and in transit
+- [ ] Explain S3 vs EBS vs EFS using everyday analogies
+- [ ] Enable Block Public Access (BPA), versioning, and encryption on a bucket
+- [ ] Apply a bucket policy that **Denies** reads and prove `AccessDenied`
+- [ ] Add a lifecycle rule and delete a versioned bucket completely
+- [ ] Answer fresher interview questions on storage classes and public bucket risk
 
 ## Architecture
 
+Clients and services read/write **S3 objects** over HTTPS. **EC2** instances attach **EBS volumes** as block devices in one AZ. **EFS** mount targets in subnets expose **NFS** to many instances. Lifecycle rules move or expire S3 objects over time.
 
-
-
-
-
-This topic’s control points and relationships are shown below.
-
-![AWS storage](../assets/excalidraw/aws-storage.svg)
+![AWS storage — S3, EBS, EFS](../assets/excalidraw/aws-storage.svg)
 
 ## Theory
 
+### The problem (before AWS words)
 
+Your app needs to store user uploads, database backups, and static website files. Buying NAS hardware does not scale globally. Attaching one disk per server does not share files across ten web servers.
 
+**What AWS sells:** managed storage services with different shapes for different jobs.
 
+### S3 — the internet-scale filing cabinet
 
+**Problem:** You need durable, cheap storage for millions of files accessed by many services worldwide.
 
-### What it is
+**Analogy:** **S3** is a giant filing cabinet where each drawer is a **bucket** and each file is an **object** with a key name like `logs/2026/app.log`. There are no real folders — only key prefixes that *look* like folders.
 
-Cloud storage on AWS is not one product. **Object**, **block**, and **file** models solve different problems. **Amazon Simple Storage Service (S3)** is an object store. **Elastic Block Store (EBS)** is durable block volumes for EC2. **Elastic File System (EFS)** is managed Network File System (NFS) shared across instances. **Amazon FSx** covers specialised managed file systems (Windows, Lustre, NetApp, OpenZFS). Using EBS like a shared drive, or S3 like a POSIX disk, creates outages and surprise bills.
+**AWS name:** **Amazon Simple Storage Service (S3)**.
 
-### Why it matters
+**Tiny example:** Upload `hello.txt` to `s3://my-bucket/public/hello.txt` and download it from anywhere with HTTPS.
 
-Pipelines push artefacts to S3; Terraform state often sits in S3 with DynamoDB locks. Platform teams enforce block public access, bucket policies, and KMS. SRE sets recovery objectives with versioning, snapshots, and AWS Backup. Wrong storage classes (Glacier for hot logs) add latency and restore fees; orphaned volumes and incomplete multipart uploads waste budget after labs.
+**Interview one-liner:** “S3 is object storage — great for backups, static assets, and logs; not a POSIX disk you mount as `/` on one server.”
 
-### How it works
+| Term | Plain meaning |
+|------|----------------|
+| **Bucket** | Container with a globally unique name |
+| **Object** | File + metadata (key, bytes, headers) |
+| **Versioning** | Keep old copies when you overwrite |
+| **BPA** | **Block Public Access** — account/bucket guardrail against public exposure |
 
-**S3:** Regional bucket → put/get by key → versioning / replication / Object Lock as needed. Prefer gateway VPC endpoints from private subnets.  
-**EBS:** Volume in an AZ → attach to instance in the **same AZ** → format/mount → snapshot; copy snapshots for DR.  
-**EFS:** Filesystem + mount targets per AZ → NFSv4 with correct security groups.  
-**FSx:** SMB/Windows, Lustre HPC, or NetApp features — not the default for greenfield Linux web apps (prefer EFS or S3).
+### EBS — the EC2 hard drive
 
-Lifecycle sketch: Standard → IA (30d) → Glacier Flexible (90d) → expire (365d); abort incomplete multipart after 7 days.
+**Problem:** Your virtual machine needs a boot disk and maybe a data disk with low latency.
 
-### Concept deep dive
+**Analogy:** **EBS** is a network USB drive locked to one instance in one **Availability Zone (AZ)**.
 
-- **S3** — Object storage via HTTP APIs. A **bucket** is a Regional container with a globally unique name. An object **key** is the path-like name inside the bucket. Scale is effectively unbounded for typical application and artefact workloads. Access is by API, not by mounting as a local disk (unless you add a gateway/tooling layer).
-- **EBS** — Block volumes attached to EC2. Common types: `gp3` (general-purpose SSD), `io2`/`io2 Block Express` (provisioned IOPS), `st1`/`sc1` (throughput/cold HDD). **Snapshots** are incremental point-in-time backups stored in S3 behind the scenes; restore creates a new volume (optionally in another AZ/Region via copy).
-- **EFS** — Elastic, multi-AZ NFS for shared POSIX access across an Auto Scaling group or containers. Pay for storage used and, depending on mode, throughput. Ideal when many instances need the same files concurrently.
-- **FSx** — Managed file systems for specialised needs: **FSx for Windows File Server** (SMB, Active Directory), **FSx for Lustre** (high-throughput HPC and machine-learning training), **FSx for NetApp ONTAP** (enterprise NAS features, multiprotocol). Pick FSx when the protocol or performance profile exceeds EFS/S3.
-- **Storage classes** — Trade durability access patterns against price: Standard, Intelligent-Tiering, Standard-IA, One Zone-IA, Glacier Instant Retrieval, Glacier Flexible Retrieval, Glacier Deep Archive. Hot paths stay on Standard or Intelligent-Tiering; archives move colder.
-- **Lifecycle policies** — Rules that transition objects between classes or expire them, and that abort incomplete multipart uploads. Essential for cost control on logs, dumps, and CI artefacts.
-- **Encryption** — **SSE-S3** (AES-256 managed by S3) is the simple default. **SSE-KMS** uses KMS keys for auditability and key policy control. **Client-side encryption** encrypts before upload; you manage keys and cannot rely on S3 to decrypt for you. Also encrypt EBS and EFS at rest, and use HTTPS/TLS in transit.
+**AWS name:** **Elastic Block Store (EBS)**.
 
-### Key concepts and comparisons
+**Tiny example:** Root volume `/dev/xvda` on your EC2 instance is usually EBS.
 
-| Decision | Prefer |
-|----------|--------|
-| Static assets / dumps / artefacts | S3 |
-| Database data directory / boot volume | EBS |
-| Shared uploads across ASG members | EFS (or S3 if the app uses the object API) |
-| Windows SMB / Lustre HPC / NetApp features | FSx family |
-| Infrequent archives | S3 Glacier classes + lifecycle |
-| Simple encryption default | SSE-S3 |
-| Key policy and audit control | SSE-KMS (customer-managed keys) |
-| Encrypt before the wire | Client-side encryption |
+**Interview one-liner:** “EBS is block storage for one EC2 instance in one AZ — snapshot to copy across AZs.”
+
+### EFS — shared Linux folder
+
+**Problem:** Ten web servers need the same uploaded images directory without copying files constantly.
+
+**Analogy:** **EFS** is a shared network drive (NFS) that many Linux instances mount at once, spread across AZs.
+
+**AWS name:** **Elastic File System (EFS)**.
+
+**Interview one-liner:** “EFS is managed NFS for shared POSIX files; S3 is object storage; EBS is one instance’s block disk.”
+
+### When to pick which
+
+| Need | Choose | Why |
+|------|--------|-----|
+| Website images, backups, logs | **S3** | Cheap, durable, HTTP access |
+| OS disk for EC2 | **EBS** | Block device the OS expects |
+| Shared `/uploads` across web tier | **EFS** | Multiple mounts, POSIX |
+| Static site + CDN | **S3 + CloudFront** | Objects at edge |
+
+### Encryption and policies (why labs matter)
+
+**Problem:** Public S3 buckets still cause real-world data leaks. Teams also need guardrails so even admins cannot read certain prefixes.
+
+**Tools you will touch today:**
+
+| Control | Plain job |
+|---------|-----------|
+| **SSE-S3** | S3-managed encryption keys (`AES256`) |
+| **Bucket policy** | Resource-based rules (who may read this bucket) |
+| **Explicit Deny** | Always wins over Allow — compliance guardrail |
+| **Lifecycle** | Auto-move or expire old objects to save money |
+
+**Interview one-liner:** “Block Public Access plus bucket policies — neither alone replaces the other for intentional cross-account access.”
+
+### S3 storage classes (awareness)
+
+| Class | Plain meaning |
+|-------|----------------|
+| **Standard** | Frequent access |
+| **Standard-IA** | Infrequent — 30-day minimum charge |
+| **Glacier** | Archive — cheap storage, slower retrieval |
+| **Intelligent-Tiering** | AWS moves tiers when access pattern changes |
 
 ### Common pitfalls
 
-- Public buckets “for just a minute”  
-- Assuming EBS survives instance terminate without checking `DeleteOnTermination`  
-- Trying to attach EBS across AZs — impossible; use snapshots or EFS  
-- Leaving incomplete multipart uploads (ongoing storage charges)  
-- Using One Zone-IA for critical multi-AZ data  
-- Mounting EFS without TLS or the correct security group and blaming “hangs”  
-- Choosing FSx for every shared-file need when EFS or S3 would suffice
+- Thinking S3 “folders” are real directories — they are key prefixes
+- Deleting a versioned bucket without deleting all versions — `BucketNotEmpty` error
+- Leaving detached **EBS volumes** running up a bill
+- Disabling **BPA** “just to test” and forgetting to re-enable
 
 ## Hands-on Lab
 
-
-
-!!! warning "Cost and account safety"
-    Use a sandbox account. Prefer read-only calls. Destroy anything you create before leaving the lab.
-
 ### Objective
 
-Use read-only AWS APIs to inventory and verify aspects of **Storage: S3, EBS, and EFS** in a sandbox account.
+Create a versioned, encrypted S3 bucket; upload and download objects; deny `GetObject` on a `restricted/` prefix via bucket policy; restore access; add a lifecycle rule; delete all versions and the bucket.
 
 ### Prerequisites
 
-- AWS CLI v2
-- Credentials for a **sandbox** account (SSO or short-lived keys)
+| Tool | Notes |
+|------|--------|
+| AWS CLI v2 | `s3:*` in sandbox |
+| `jq` | Optional JSON checks |
+| Unique bucket name | Globally unique across all AWS customers |
 
 ### Lab environment
 
-Workspace: `~/rebash-aws/module-05`
-
-Prefer `describe`/`list`/`get` APIs. Create resources only with an explicit destroy path.
-
 ``` {.bash .ra-terminal title="Terminal"}
 mkdir -p ~/rebash-aws/module-05 && cd ~/rebash-aws/module-05
+export AWS_REGION="${AWS_REGION:-eu-west-2}"
+export AWS_PAGER=""
+ACCOUNT_ID=$(aws sts get-caller-identity --query Account --output text)
+export BUCKET="rebash-m05-${ACCOUNT_ID}-$(date +%s)"
+echo "$BUCKET" | tee bucket-name.txt
+aws sts get-caller-identity --output table
 ```
 
 ### Real-world scenario
 
-Security asks for evidence that **Storage: S3, EBS, and EFS** is configured correctly. You gather CLI proof without click-ops drift.
+Platform needs a **compliance archive** bucket: encryption and versioning on, public access blocked, and a policy that blocks reads of `restricted/` objects. You prove the deny works, remove bad policy drift, add lifecycle for old logs, then tear down for FinOps.
 
 ### Step-by-step tasks
 
-#### Task 1 – Prove caller identity
-
-Every AWS change starts by knowing which account/role you are.
+#### Task 1 – Create bucket with BPA, versioning, and SSE
 
 ``` {.bash .ra-terminal title="Terminal"}
-aws sts get-caller-identity | tee identity.json
-aws configure get region || true
-test -s identity.json
+cd ~/rebash-aws/module-05
+BUCKET=$(cat bucket-name.txt)
+if [[ "$AWS_REGION" == "us-east-1" ]]; then
+  aws s3api create-bucket --bucket "$BUCKET" --output json | tee create-bucket.json
+else
+  aws s3api create-bucket --bucket "$BUCKET" \
+    --create-bucket-configuration LocationConstraint="$AWS_REGION" \
+    --output json | tee create-bucket.json
+fi
+aws s3api put-public-access-block --bucket "$BUCKET" \
+  --public-access-block-configuration \
+  BlockPublicAcls=true,IgnorePublicAcls=true,BlockPublicPolicy=true,RestrictPublicBuckets=true
+aws s3api put-bucket-versioning --bucket "$BUCKET" \
+  --versioning-configuration Status=Enabled
+aws s3api put-bucket-encryption --bucket "$BUCKET" \
+  --server-side-encryption-configuration '{
+    "Rules": [{"ApplyServerSideEncryptionByDefault": {"SSEAlgorithm": "AES256"}}]
+  }'
+aws s3api get-bucket-versioning --bucket "$BUCKET" | tee versioning.json
+grep -q Enabled versioning.json
 ```
 
 !!! example "Expected output"
-    JSON includes Account, Arn, and UserId.
+    `versioning.json` contains `"Status": "Enabled"`.
 
 
-#### Task 2 – Collect topic signals
+#### Task 2 – Put, get, and overwrite (versioning proof)
 
-Inventory the service surface related to this module.
+Create `hello.txt`:
+
+```text title="hello.txt"
+rebash module-05 v1
+```
 
 ``` {.bash .ra-terminal title="Terminal"}
-aws ec2 describe-vpcs --query 'Vpcs[].{Id:VpcId,Cidr:CidrBlock}' --output table 2>/dev/null | tee vpcs.txt || true
-aws iam get-account-summary 2>/dev/null | tee iam-summary.json || true
-tee notes.txt << 'EOF'
-Record which APIs apply to this topic and any NotAuthorized errors for follow-up.
-EOF
-cat notes.txt
+cd ~/rebash-aws/module-05
+BUCKET=$(cat bucket-name.txt)
+aws s3 cp hello.txt "s3://${BUCKET}/public/hello.txt"
+aws s3 cp hello.txt "s3://${BUCKET}/restricted/secret.txt"
+echo "rebash module-05 v2" > hello-v2.txt
+aws s3 cp hello-v2.txt "s3://${BUCKET}/public/hello.txt"
+aws s3 cp "s3://${BUCKET}/public/hello.txt" - | tee get-public.txt
+grep -q "v2" get-public.txt
+aws s3api list-object-versions --bucket "$BUCKET" --prefix public/hello.txt \
+  --output json | tee versions-public.json
+jq -e '.Versions | length >= 2' versions-public.json
 ```
 
 !!! example "Expected output"
-    Evidence files created even if some APIs are denied.
+    `get-public.txt` shows `v2`; `versions-public.json` lists at least two versions.
+
+
+#### Task 3 – Deny GetObject on `restricted/` prefix, break, restore
+
+Create `deny-restricted-policy.json`:
+
+```json title="deny-restricted-policy.json"
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Sid": "DenyRestrictedReads",
+      "Effect": "Deny",
+      "Principal": "*",
+      "Action": "s3:GetObject",
+      "Resource": "arn:aws:s3:::BUCKET_NAME/restricted/*"
+    }
+  ]
+}
+```
+
+``` {.bash .ra-terminal title="Terminal"}
+cd ~/rebash-aws/module-05
+BUCKET=$(cat bucket-name.txt)
+sed "s/BUCKET_NAME/${BUCKET}/g" deny-restricted-policy.json > bucket-policy.json
+aws s3api put-bucket-policy --bucket "$BUCKET" --policy file://bucket-policy.json
+set +e
+aws s3 cp "s3://${BUCKET}/restricted/secret.txt" - 2>&1 | tee deny-get.txt
+set -e
+grep -Eiq 'AccessDenied|403' deny-get.txt
+aws s3 cp "s3://${BUCKET}/public/hello.txt" - | tee still-ok.txt
+grep -q v2 still-ok.txt
+aws s3api delete-bucket-policy --bucket "$BUCKET"
+aws s3 cp "s3://${BUCKET}/restricted/secret.txt" - | tee restored.txt
+grep -q "module-05" restored.txt
+echo "s3 deny-restore OK" | tee evidence.txt
+```
+
+!!! example "Expected output"
+    `deny-get.txt` shows AccessDenied; public read still works; after policy removal, `restored.txt` returns the object body.
+
+
+#### Task 4 – Lifecycle rule and full bucket deletion
+
+Create `lifecycle.json`:
+
+```json title="lifecycle.json"
+{
+  "Rules": [
+    {
+      "ID": "ExpireOldPublicLogs",
+      "Status": "Enabled",
+      "Filter": { "Prefix": "public/" },
+      "Transitions": [
+        { "Days": 30, "StorageClass": "STANDARD_IA" }
+      ],
+      "NoncurrentVersionExpiration": { "NoncurrentDays": 7 }
+    }
+  ]
+}
+```
+
+Create `delete-versions.py`:
+
+```python title="delete-versions.py"
+import json
+import sys
+
+data = json.load(open("all-versions.json"))
+objs = []
+for v in data.get("Versions", []):
+    objs.append({"Key": v["Key"], "VersionId": v["VersionId"]})
+for m in data.get("DeleteMarkers", []):
+    objs.append({"Key": m["Key"], "VersionId": m["VersionId"]})
+print(json.dumps({"Objects": objs, "Quiet": True}))
+```
+
+``` {.bash .ra-terminal title="Terminal"}
+cd ~/rebash-aws/module-05
+BUCKET=$(cat bucket-name.txt)
+aws s3api put-bucket-lifecycle-configuration --bucket "$BUCKET" \
+  --lifecycle-configuration file://lifecycle.json
+aws s3api get-bucket-lifecycle-configuration --bucket "$BUCKET" | tee lifecycle-applied.json
+grep -q ExpireOldPublicLogs lifecycle-applied.json
+aws s3api list-object-versions --bucket "$BUCKET" --output json > all-versions.json
+python3 delete-versions.py > delete-batch.json
+if jq -e '.Objects | length > 0' delete-batch.json >/dev/null 2>&1; then
+  aws s3api delete-objects --bucket "$BUCKET" --delete file://delete-batch.json
+fi
+aws s3api delete-bucket --bucket "$BUCKET"
+echo "bucket deleted" | tee cleanup-ok.txt
+```
+
+!!! example "Expected output"
+    Lifecycle rule present; `cleanup-ok.txt` confirms bucket deletion.
 
 
 ### Validation steps
 
-- [ ] identity.json present
-- [ ] No long-lived keys committed to the repo
+- [ ] Bucket had BPA, versioning Enabled, and SSE-S3 (AES256)
+- [ ] Overwrite created two versions of `public/hello.txt`
+- [ ] Bucket policy deny blocked `restricted/` read; public read worked
+- [ ] After policy removal, restricted object readable again
+- [ ] Lifecycle applied; all versions deleted; bucket gone
 
 ### Common errors and fixes
 
 | Error | Cause | Fix |
 |-------|-------|-----|
-| Unable to locate credentials | No profile/SSO | Run `aws sso login` or export sandbox keys |
-| AccessDenied | Least privilege | Use a role that can read the service — or document the deny |
-| UnauthorizedOperation | Wrong region/account | Check `AWS_REGION` and account id |
+| BucketAlreadyExists | Name not globally unique | Append account ID + timestamp |
+| IllegalLocationConstraintException | `us-east-1` special case | Omit `LocationConstraint` for `us-east-1` |
+| BucketNotEmpty on delete | Versioned objects remain | Run `delete-versions.py` batch delete |
+| AccessDenied on put-bucket-policy | Missing IAM permission | Use sandbox admin role |
 
 ### Challenge exercise
 
-Enable a cost budget alarm in the sandbox (or document the console clicks) and screenshot/CLI-describe it.
+Create `storage-class-picker.sh` that prints which S3 class you would pick for three scenarios (active website assets, monthly audit logs, seven-year legal archive) — a script interviewers accept as “you thought about cost”.
+
+```bash title="storage-class-picker.sh"
+#!/bin/bash
+set -euo pipefail
+echo "active-website-assets -> S3 Standard"
+echo "monthly-audit-logs -> S3 Standard-IA (30-day minimum applies)"
+echo "seven-year-legal-archive -> S3 Glacier Flexible Retrieval or Deep Archive"
+```
+
+``` {.bash .ra-terminal title="Terminal"}
+cd ~/rebash-aws/module-05
+chmod +x storage-class-picker.sh
+./storage-class-picker.sh | tee storage-class-output.txt
+grep -qi glacier storage-class-output.txt
+grep -qi intelligent storage-class-output.txt || grep -qi standard-ia storage-class-output.txt
+echo "storage challenge OK" | tee challenge.txt
+```
 
 ### Learning outcomes
 
-- Authenticated safely
-- Captured read-only evidence
-- Avoided unmanaged spend
+- You hardened S3 with BPA, versioning, and encryption
+- You proved explicit Deny on a prefix via bucket policy
+- You applied lifecycle rules and deleted a versioned bucket completely
+- You can map S3 to backups and static assets in production designs
 
 ### Cleanup
 
-```bash
-# Revoke/lab-expire any temporary keys you exported
-# Do not leave EC2/ELB/NAT running
+``` {.bash .ra-terminal title="Terminal"}
+cd ~/rebash-aws/module-05
+BUCKET=$(cat bucket-name.txt 2>/dev/null || echo "")
+if [[ -n "$BUCKET" ]] && aws s3api head-bucket --bucket "$BUCKET" 2>/dev/null; then
+  aws s3api list-object-versions --bucket "$BUCKET" --output json > all-versions.json
+  python3 delete-versions.py > delete-batch.json 2>/dev/null || true
+  if jq -e '.Objects | length > 0' delete-batch.json >/dev/null 2>&1; then
+    aws s3api delete-objects --bucket "$BUCKET" --delete file://delete-batch.json
+  fi
+  aws s3api delete-bucket --bucket "$BUCKET" 2>/dev/null || true
+fi
+rm -f create-bucket.json versioning.json deny-get.txt evidence.txt
 ```
 
 ## Validation
 
-
-
-
-
-
-- [ ] Lab commands run under `~/rebash-aws/module-05/`
-- [ ] You can explain each Theory section in your own words
-- [ ] You used modern tooling where it applies to this topic
-- [ ] You can describe one production failure mode for this topic
+- [ ] Lab completed under `~/rebash-aws/module-05` with deny/restore evidence
+- [ ] You can explain S3 vs EBS vs EFS without notes
+- [ ] You can describe why explicit Deny beats Allow
+- [ ] No lab buckets left in the account
 
 ## Code Walkthrough
 
-
-
-
-
-
-Production practice for **Storage: S3, EBS, and EFS** always combines:
-
-1. Inspect before you change (status, plan, logs, dry-run)
-2. Prefer reversible, documented changes (Git, IaC, drop-ins, version pins)
-3. Capture evidence (command output, pipeline logs) for handovers
-4. Prefer current tools and APIs over legacy shortcuts
-5. Least privilege — escalate credentials only when required
-
-Keep runbooks short enough to follow under pressure. Automate checks; keep humans for judgement.
+1. **Globally unique bucket names** — embed account ID; never hard-code in Terraform without a random suffix.
+2. **Versioning before lifecycle** — noncurrent version expiration needs versioning enabled.
+3. **Explicit Deny** — test with evidence files; public prefix unaffected if policy scopes correctly.
+4. **Delete markers and versions** — always `list-object-versions` before `delete-bucket`.
+5. **`us-east-1` bucket create** — no `LocationConstraint` (common fresher exam trap).
 
 ## Security Considerations
 
-
-
-
-
-
-- Treat credentials and tokens for aws as privileged — never commit them
-- Prefer short-lived auth (OIDC, roles, SSO) over long-lived keys
-- Validate blast radius before apply/deploy/delete operations
-- Restrict who can approve production changes
-- Collect audit logs; limit who can read sensitive traces
+- Keep **Block Public Access** enabled at account level.
+- Use bucket policies **and** IAM together for cross-account access.
+- Enable access logging or CloudTrail data events on sensitive buckets.
+- Prefer **SSE-KMS** in regulated environments (Module 10 goes deeper).
+- Apply least-privilege `s3:ListBucket` with prefix conditions for multi-tenant apps.
 
 ## Common Mistakes
 
+!!! warning "Public bucket by mistake"
+    Legacy ACLs and disabled BPA still cause breaches. Keep BPA on; use policies only for intentional sharing.
 
+!!! warning "Forgotten EBS volumes"
+    Detached volumes still bill. Delete snapshots you no longer need.
 
-
-
-
-!!! warning "Public buckets “for just a minute”  "
-    Validate assumptions against the Theory section and official docs before changing production.
-
-!!! warning "Assuming EBS survives instance terminate without checking `DeleteOnTermination`  "
-    Lab shortcuts (open security groups, admin roles, skip approvals) must not ship unchanged.
-
-!!! warning "Changing production without a rollback path"
-    Always know how to revert (previous artefact, prior release, state rollback, DNS failback).
+!!! warning "Lifecycle without understanding minimum duration"
+    Infrequent Access and Glacier classes charge for minimum storage duration even if you delete early.
 
 ## Best Practices
 
-
-
-
-
-
-- Encode Storage: S3, EBS, and EFS changes as code and review them in pull requests
-- Pin versions (images, modules, actions, provider plugins)
-- Separate environments with clear promotion gates
-- Alert on symptoms with runbooks attached
-- Destroy lab resources; tag everything with owner and expiry where possible
+- Default encrypt all buckets; prefer KMS with key policies in production
+- Match storage class to access pattern; review costs monthly
+- For EBS: use `gp3`, right-size IOPS, snapshot with lifecycle
+- For EFS: use lifecycle to Infrequent Access for cold files
+- Use S3 Inventory or Storage Lens for FinOps reporting
 
 ## Troubleshooting
 
-
-
-
-
-
 | Symptom | Likely cause | Fix |
 |---------|--------------|-----|
-| Auth / permission denied | Wrong identity, policy, or scope | Check caller identity, roles, and least-privilege policies |
-| Timeout / no route | Network, DNS, security group, or endpoint | Trace path, DNS, and allow-lists before retrying |
-| Drift / unexpected plan | Manual change or wrong state/workspace | Reconcile desired vs actual; avoid click-ops on managed resources |
-| Pipeline/job red | Flaky step, cache, or missing secret | Read failing step logs; bisect recent workflow/config changes |
-| Cost spike | Idle load balancer, NAT, oversized compute | Inventory billable resources; stop/delete labs promptly |
+| 403 on GetObject | Bucket policy Deny, KMS key, or wrong account | Check policy; KMS `Decrypt` permission |
+| Slow LIST on huge prefix | Hot prefix in flat namespace | Shard keys (`logs/2026/08/03/`) |
+| EBS attach fails | AZ mismatch | Create volume in instance AZ |
+| EFS mount timeout | Security group missing TCP 2049 | Allow NFS from client to EFS SG |
 
 ## Summary
 
+**S3** is the default durable object store on AWS. **EBS** and **EFS** cover block and shared file needs on EC2. Master **BPA, versioning, encryption, lifecycle, and bucket policies** — and prove deny/restore with CLI evidence. That is how storage shows up in interviews and incident response.
 
-
-
-
-
-**Storage: S3, EBS, and EFS** is essential for Cloud and DevOps engineers working with aws. Practise the lab until the inspection and change path is muscle memory, then continue the track.
+Next: [Databases on AWS](databases-on-aws.md).
 
 ## Interview Questions
 
+**1. S3 vs EBS — when do you pick each?**
 
+??? success "Reveal answer"
+    Choose **S3** for durable objects accessed over HTTP/API — backups, static assets, logs, data lakes — when many clients need read access without attaching a disk. Choose **EBS** when one EC2 instance needs a block device (OS or database disk) with low-latency attachment in one AZ.
 
+**2. What does S3 versioning buy you?**
 
-1. S3 consistency model basics you rely on?
-2. EBS versus EFS versus S3 for different workloads?
-3. How do you prevent accidental public buckets?
-4. What is versioning useful for?
-5. Unattached EBS volumes — cost impact?
+??? success "Reveal answer"
+    Versioning keeps every overwrite as a distinct version ID so you can recover from accidental delete or overwrite (including delete markers). It enables lifecycle rules on old versions and replication. It is not a full backup strategy by itself — you still plan cross-Region copies for disasters.
 
-!!! tip "Sample answer — question 2"
-    For access issues check bucket policy, Block Public Access, IAM, and the exact object key/region.
+**3. Why can explicit Deny in a bucket policy block an admin Allow?**
 
-!!! tip "Sample answer — question 4"
-    Block public access by default, encrypt where required, and delete lab buckets/objects when finished.
+??? success "Reveal answer"
+    AWS policy evaluation gives **explicit Deny** precedence over Allow. A bucket policy Deny on `s3:GetObject` for `restricted/*` applies to all principals unless another boundary applies. That is how compliance guardrails work.
+
+**4. EBS vs EFS — key trade-off?**
+
+??? success "Reveal answer"
+    **EBS** is block storage for one instance (AZ-bound), ideal for boot/data volumes with controlled IOPS. **EFS** is multi-AZ NFS shared across many Linux instances with elastic capacity — better for shared content, different cost and latency profile. Neither replaces S3 for object storage.
+
+**5. What breaks when you delete a versioned bucket with objects inside?**
+
+??? success "Reveal answer"
+    `DeleteBucket` returns `BucketNotEmpty` until all object versions and delete markers are removed. Automation must paginate `list-object-versions` and batch `delete-objects`, then delete the bucket.
+
+**6. What is Block Public Access (BPA)?**
+
+??? success "Reveal answer"
+    BPA is an account- or bucket-level setting that blocks public ACLs and public bucket policies that would expose data to the internet. It is a safety rail — you still design intentional private cross-account access with IAM and policies.
+
+**7. SSE-S3 vs SSE-KMS in one sentence each?**
+
+??? success "Reveal answer"
+    **SSE-S3** uses keys managed entirely by S3 with simple setup. **SSE-KMS** uses AWS Key Management Service keys with separate key policies and CloudTrail audit of decrypt operations — better for regulated data, with KMS quota and latency trade-offs.
+
+**8. How do you prevent accidental public S3 exposure?**
+
+??? success "Reveal answer"
+    Enable account and bucket **Block Public Access**, avoid public ACLs, use bucket policies only for intentional cross-account access, monitor with IAM Access Analyzer for S3, and require encryption plus logging on sensitive buckets.
 
 ## Related Tutorials
 
-
-
-
-
-
-- [Course overview](index.md)
-- [Databases on AWS](databases-on-aws.md)
+- Previous: [Compute: EC2, ASG, and Load Balancing](compute-ec2-asg-and-load-balancing.md)
+- Next: [Databases on AWS](databases-on-aws.md)
+- Lab: [AWS SSM and S3](../labs/aws-ssm-s3.md)
+- [AWS Security Services](aws-security-services.md) — KMS encryption depth
 
 ## References
 
-
-
-
-
-
-- [Amazon S3 User Guide](https://docs.aws.amazon.com/AmazonS3/latest/userguide/Welcome.html)  
-- [Amazon EBS](https://docs.aws.amazon.com/ebs/latest/userguide/what-is-ebs.html)  
-- [Amazon EFS](https://docs.aws.amazon.com/efs/latest/ug/whatisefs.html)  
-- [Amazon FSx](https://aws.amazon.com/fsx/)
+- [Amazon S3 User Guide](https://docs.aws.amazon.com/AmazonS3/latest/userguide/Welcome.html)
+- [S3 security best practices](https://docs.aws.amazon.com/AmazonS3/latest/userguide/security-best-practices.html)
+- [Amazon EBS](https://docs.aws.amazon.com/ebs/latest/userguide/what-is-ebs.html)
+- [Amazon EFS](https://docs.aws.amazon.com/efs/latest/ug/whatisefs.html)
+- [S3 lifecycle configuration](https://docs.aws.amazon.com/AmazonS3/latest/userguide/object-lifecycle-mgmt.html)

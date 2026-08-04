@@ -1,8 +1,8 @@
 ---
 title: "Troubleshooting AWS"
-description: "Debug production Amazon Web Services issues with a fixed ladder — EC2, IAM, VPC, DNS, storage, Lambda, EKS, and cost analysis — for Cloud, DevOps, and SRE on-call."
-difficulty: expert
-estimated_time: "55–75 min"
+description: "AWS troubleshooting systematic triage for IAM, VPC, EC2, and cost — then a mini security-group break/fix lab with curl proof."
+difficulty: beginner
+estimated_time: "75–90 min"
 technology: aws
 category: aws
 module: "Module 16 · Troubleshooting"
@@ -17,19 +17,23 @@ skills:
   - troubleshooting
   - iam
   - vpc
-  - eks
-  - lambda
+  - ec2
+  - observability
+  - finops
 prerequisites:
   - aws/production-aws-landing-zones
-next:
-  - aws/index
-related:
-  - aws/compute-ec2-asg-and-load-balancing
   - aws/vpc-networking-on-aws
-  - aws/containers-ecs-eks-ecr
-  - aws/serverless-on-aws
+  - aws/compute-ec2-asg-and-load-balancing
+  - aws/iam-identity-access-and-organizations
+next: []
+related:
+  - labs/aws-iam-vpc-triage
+  - labs/aws-ssm-s3
+  - aws/monitoring-and-observability-on-aws
   - aws/cost-optimisation-on-aws
-labs: []
+labs:
+  - labs/aws-iam-vpc-triage
+  - labs/aws-ssm-s3
 projects: []
 interview: interview/aws
 certifications:
@@ -39,381 +43,427 @@ certifications:
 tags:
   - aws
   - troubleshooting
-  - ec2
-  - iam
-  - vpc
-  - lambda
-  - eks
+  - on-call
+  - triage
+  - beginners
 author: Shaik Basha
-last_updated: "2026-07-31"
+last_updated: "2026-08-03"
 comments: false
 ---
-
 
 # Troubleshooting AWS
 
 ## Overview
 
+**Troubleshooting** is the skill that separates “I read tutorials” from “I can help on day one.” This module builds a calm method: identity first, then network versus application, with a break-and-fix lab.
 
+**Problem in plain English:** Monitoring says “website down.” The server status shows **running**. Panic clicks begin — reboot, change security settings, redeploy — and nobody writes down what they tried.
 
+**What good triage means:** Follow **evidence first** — confirm who you are logged in as, classify the symptom (permission error vs timeout vs application error), check one layer at a time, make **one change**, validate, repeat.
 
+**Analogy:** A doctor checks temperature and symptoms before surgery — not the other way around.
 
+**AWS approach:** Use `describe-*` commands, Security Token Service (STS) identity checks, security groups, route tables, CloudWatch logs, and CloudTrail — in a **fixed order** so you do not confuse IAM problems with network problems.
 
-Diagnose Amazon Web Services (AWS) production failures with a fixed order: confirm identity and blast radius, then walk the **EC2 → IAM → VPC → DNS → storage → Lambda → EKS → cost** ladder without random console clicking.
+This is **Tutorial 1** in **Module 16: Troubleshooting** — the capstone connecting Modules 1–15. You will run a **mini triage lab**: prove caller identity, launch a tiny web server, `curl` it, break security group ingress, restore service, and tear down. For full multi-layer practice, continue to [Lab — AWS IAM and VPC Reachability Triage](../labs/aws-iam-vpc-triage.md) and [Lab — Secure EC2 via SSM and S3](../labs/aws-ssm-s3.md).
 
-Most “AWS is down” tickets are permission denials, security group / route mistakes, DNS mispoints, or exhausted quotas — not Region-wide outages. Separate **control-plane errors** (API denied, wrong Region) from **data-plane symptoms** (timeouts, 5xx, CrashLoop). Capture evidence before you change anything.
-
-!!! warning "Cost hygiene"
-    Debugging can create expensive resources (NAT Gateways, extra load balancers, large CloudWatch Logs Insights queries). Delete temporary helpers and bound log query time ranges.
-
-This is a core tutorial in **Module 16 · Troubleshooting** of the REBASH Academy **AWS for Cloud & DevOps Engineers** series — written for Cloud, DevOps, Platform, and SRE engineers.
+!!! warning "Cost"
+    Use `t3.micro`/`t2.micro` in the default VPC. Terminate the instance and delete the security group when finished.
 
 ## Prerequisites
 
+- [VPC Networking on AWS](vpc-networking-on-aws.md) *(Module 3)* — security groups and routes
+- [Compute: EC2, ASG, and Load Balancing](compute-ec2-asg-and-load-balancing.md) *(Module 4)*
+- [IAM, Identity Access, and Organizations](iam-identity-access-and-organizations.md) *(Module 2)*
+- [Production AWS Landing Zones](production-aws-landing-zones.md) *(Module 15)* — where logs live in multi-account setups
 
-
-
-
-
-- [Production AWS Landing Zones](production-aws-landing-zones.md)
-- Working knowledge of Modules 2–11 (IAM, VPC, compute, storage, containers, serverless, observability)
-- AWS CLI v2 and read access to the affected account
+You do **not** need prior on-call experience.
 
 ## Learning Objectives
 
-
-
-
-
-
 By the end of this tutorial, you will be able to:
 
-- [ ] Start every incident with caller identity, Region, and recent CloudTrail  
-- [ ] Triage EC2 instance reachability vs application failure  
-- [ ] Decode IAM explicit denies and missing `sts:AssumeRole`  
-- [ ] Trace VPC path: SG → NACL → route → NAT/IGW → endpoint  
-- [ ] Isolate DNS (Route 53) vs target health  
-- [ ] Debug Lambda and EKS with logs, events, and auth  
-- [ ] Use cost spikes as a signal (runaway resources)
+- [ ] Follow a beginner-safe triage order (identity → symptom → layer)
+- [ ] Separate `AccessDenied` from network timeout using STS
+- [ ] Break and fix security group ingress with curl proof
+- [ ] Know when to use the full [IAM and VPC Triage](../labs/aws-iam-vpc-triage.md) and [SSM and S3](../labs/aws-ssm-s3.md) labs
+- [ ] Name first checks for Lambda, EKS, DNS, and cost spikes at interview level
+- [ ] Answer fresher scenario questions without guessing randomly
 
 ## Architecture
 
+Incidents flow from alert → identity check → service health → dependency map → layer isolation → fix → validation → post-incident review. Cross-account and landing-zone context (Module 15) determines which logs and roles you may access.
 
-
-
-
-
-This topic’s control points and relationships are shown below.
-
-![Troubleshooting ladder](../assets/excalidraw/aws-troubleshooting.svg)
+![AWS troubleshooting decision flow](../assets/excalidraw/aws-troubleshooting.svg)
 
 ## Theory
 
+### The problem (before the decision tree)
 
+**Problem:** “Site down” could mean wrong AWS account, firewall blocking port 80, missing internet route, nginx not installed, or DNS pointing to an old IP — five different fixes.
 
+**Analogy:** Phone “no signal” — could be aeroplane mode, unpaid bill, broken tower, or broken phone. Check the cheap tests first.
 
+**Interview one-liner:** “I confirm identity with STS, classify the symptom, then isolate one layer at a time with describe commands and curl — one fix per attempt.”
 
+### Master triage order (memorise this)
 
-### What it is
+1. **Scope** — one user, one Region, or whole org? Check [AWS Health Dashboard](https://health.aws.amazon.com/health/status).
+2. **Identity** — `aws sts get-caller-identity` — correct account and role?
+3. **Recent change** — CloudTrail: security group, route, deploy?
+4. **Symptom branch:**
+   - **`AccessDenied`** → IAM, SCP, resource policy (Module 2, 15)
+   - **Timeout to IP** → security group → route table → NACL (Module 3)
+   - **HTTP 5xx** → app logs, load balancer target health (Module 4)
+   - **DNS failure** → Route 53 record wrong (Module 7+)
+   - **Bill spike** → Cost Explorer by service (Module 13)
+5. **One fix → re-validate**
 
-**Troubleshooting AWS** narrows failure domains with a fixed ladder (reorder only when the symptom already proves a layer). Prefer read-only evidence (CloudWatch, CloudTrail, Flow Logs, Health) before mutate.
+### Symptom table for beginners
 
-| Step | Focus | First evidence |
-|------|-------|----------------|
-| 0 | Context | `sts get-caller-identity`, Region, Health, change window |
-| 1 | EC2 | State, status checks, console output, SSM |
-| 2 | IAM | Explicit Deny, missing Allow, SCP, resource policy |
-| 3 | VPC | SG, NACL, routes, NAT/endpoints, Flow Logs |
-| 4 | DNS | Route 53, health checks, resolver, TTL |
-| 5 | Storage | EBS attach/KMS; S3 403 vs 404 |
-| 6 | Lambda | Timeout, concurrency, VPC, IAM, DLQ |
-| 7 | EKS | API / nodes / pods; access entries; CNI |
-| 8 | Cost | Spend spike → runaway capacity, transfer, logs |
+| What you see | Likely layer | First command |
+|--------------|--------------|---------------|
+| `AccessDenied` in CLI | IAM / SCP | `aws sts get-caller-identity` |
+| `curl` hangs to public IP | Network path | `describe-security-groups`, `describe-route-tables` |
+| TCP works; HTTP 502 | Application / LB | Target group health, app logs |
+| Wrong IP in browser | DNS | `dig`, Route 53 records |
+| Lambda error in test | Function config | CloudWatch Logs for function |
 
-### Why it matters
+### IAM vs network — the mistake juniors make
 
-MTTR collapses when you confuse IAM with routing. SRE on-call needs a playbook juniors can follow. SysOps/DevOps exams test “next diagnostic API.” Cost belongs on the ladder — “outage” can be five hundred GPUs or an unbounded Logs Insights bill.
+| Failure type | How it feels | What NOT to do |
+|--------------|--------------|----------------|
+| **IAM** | Immediate `AccessDenied` text | Open security groups when CLI already denied |
+| **Network** | `curl` timeout; describe APIs work | Keep rebooting when SG blocks port 80 |
 
-### How it works
+**Tiny example:** `aws ec2 describe-instances` returns `UnauthorizedOperation` → fix profile/role first. If describe works but `curl` times out → check security group and routes.
 
-1. Stabilise: page owners, freeze risky deploys, note start time.
-2. Prove identity, account, Region; define the symptom precisely.
-3. Walk the ladder; never skip IAM on `AccessDenied`.
-4. Compare working vs broken; check last deploy and CloudTrail.
-5. Smallest reversible fix; validate; write the timeline.
+### Security group vs route table (Module 3 recap)
 
-### Concept deep dive
+| Layer | Plain job | Symptom if broken |
+|-------|-----------|-------------------|
+| **Security group** | Door lock on the server | Timeout to port even if server healthy |
+| **Route table** | Road to the internet | Timeout even if SG allows — no path |
 
-Method per layer: symptom → evidence → decide → next action.
+**Interview one-liner:** “SG is the lock on the door; route table is whether a road exists to the building.”
 
-**EC2 failures.** `describe-instances` → `describe-instance-status` (system vs instance) → console/serial log → SSM reachability → app logs. System check ≈ host/path; instance check ≈ guest OS/disk. Running but unreachable → VPC/IAM (instance profile) before reboot; capture console output first.
+### When to escalate to full labs
 
-**IAM issues.** Reproduce as the same principal → CloudTrail `AccessDenied` → identity policy, boundary, **SCP**, resource policy, session tags → Policy Simulator. **Explicit Deny wins**; AdministratorAccess still fails under SCP. Cross-account: trust (`sts:AssumeRole`) *and* role permissions. Wrong Region often looks like “missing resource.”
-
-**VPC connectivity.** Source ENI → SG egress → dest SG ingress → NACL (ephemeral ports) → route → NAT/IGW/endpoint → Flow Logs. For ALB: listener → target group → `describe-target-health` before changing SGs. Private subnet needs NAT or VPC endpoints for public AWS APIs.
-
-**DNS problems.** `dig` from the client path → public/private zone → record correctness → Route 53 health/failover → resolver/TTL. Separate “wrong target in DNS” from “DNS right, target unhealthy.”
-
-**Storage issues.** EBS: state → attachment → KMS usable? → guest mount/disk full. S3: `NoSuchKey` (404) vs `AccessDenied` (403) vs wrong Region → bucket policy + IAM + SSE-KMS → Block Public Access → lifecycle. Restores need matching Region/AZ and KMS key.
-
-**Lambda failures.** Logs → duration vs timeout → throttling/concurrency → execution role → VPC ENI/subnet/SG → event source + DLQ → X-Ray. “Works locally” ≈ missing IAM, VPC egress, or timeout. Check DLQs for async failures.
-
-**EKS troubleshooting.** Reach API server? → nodes Ready? → `kubectl describe`/events (Pending, ImagePull, CrashLoop) → capacity/AZ → CNI/SGs → IAM (IRSA/Pod Identity/access entries/`aws-auth`) → control-plane logs/CloudTrail. Separate control plane, data plane, and workload. Image pulls need ECR auth *and* network path.
-
-**Cost analysis.** Cost Explorer by service → account/tag → inventory (ASG, NAT, transfer, log ingestion) → CloudTrail Create* bursts → scale down with change control. Spikes are usually misconfig, not a pricing bug.
-
-### Key concepts and comparisons
-
-| Symptom | Likely layer | First checks |
-|---------|--------------|--------------|
-| SSM fails, app OK | Instance profile / endpoints | SSM + IAM role |
-| Timeout to ALB | SG / targets / NACL | Target health, Flow Logs |
-| `AccessDenied` | IAM / SCP / resource policy | CloudTrail, simulator |
-| NXDOMAIN / wrong IP | DNS | `dig`, Route 53 |
-| Lambda OK locally | IAM / VPC / timeout | Logs, concurrency |
-| Pods Pending | Capacity / CNI / quotas | `kubectl describe` |
-| Bill doubled | Cost / runaway | Cost Explorer |
-
-| Term | Meaning |
-|------|---------|
-| Explicit Deny | Wins over Allow |
-| Status checks | EC2 path vs guest OS |
-| Target health | LB view of backends |
-| Quotas | Limits that look like random failure |
+| Your situation | Next step |
+|----------------|-----------|
+| Mini lab SG break/fix done | [Lab — AWS IAM and VPC Reachability Triage](../labs/aws-iam-vpc-triage.md) — IAM profile + route + NACL faults |
+| Need access without opening SSH to world | [Lab — Secure EC2 via SSM and S3](../labs/aws-ssm-s3.md) — Session Manager and instance role |
 
 ### Common pitfalls
 
-- Changing SGs before listener/target health.
-- Ignoring SCPs when AdministratorAccess “fails.”
-- Wrong Region or account.
-- Rebooting to “fix” IAM or DNS.
-- Unbounded Logs Insights creating a cost incident.
-- Calling every timeout an app bug before Flow Logs/Health.
-- Mutating before capturing evidence.
+- **Changing three things at once** — you never know what fixed it.
+- **Skipping STS** — hour wasted in wrong account.
+- **Rebooting before SG check** — classic junior move on timeout.
+- **Opening SSH 0.0.0.0/0** — use SSM patterns from the SSM lab instead.
 
 ## Hands-on Lab
 
-
-
-!!! warning "Cost and account safety"
-    Use a sandbox account. Prefer read-only calls. Destroy anything you create before leaving the lab.
-
 ### Objective
 
-Use read-only AWS APIs to inventory and verify aspects of **Troubleshooting AWS** in a sandbox account.
+Run a **lite IAM/VPC triage**: confirm STS identity, launch a minimal nginx EC2 in the default VPC, prove HTTP with `curl`, revoke port 80 ingress to simulate outage, restore ingress, re-validate, terminate.
 
 ### Prerequisites
 
-- AWS CLI v2
-- Credentials for a **sandbox** account (SSO or short-lived keys)
+| Tool | Notes |
+|------|--------|
+| AWS CLI v2 | EC2, STS |
+| `curl` | HTTP proof |
+| Default VPC | Required for simplified lab |
 
 ### Lab environment
 
-Workspace: `~/rebash-aws/module-16`
-
-Prefer `describe`/`list`/`get` APIs. Create resources only with an explicit destroy path.
-
 ``` {.bash .ra-terminal title="Terminal"}
 mkdir -p ~/rebash-aws/module-16 && cd ~/rebash-aws/module-16
+export AWS_REGION="${AWS_REGION:-eu-west-2}"
+export AWS_PAGER=""
+aws sts get-caller-identity --output json | tee identity.json
+jq -e '.Account and .Arn' identity.json
+aws ec2 describe-vpcs --filters Name=isDefault,Values=true \
+  --query 'Vpcs[0].VpcId' --output text | tee default-vpc.txt
 ```
 
 ### Real-world scenario
 
-Security asks for evidence that **Troubleshooting AWS** is configured correctly. You gather CLI proof without click-ops drift.
+Monitoring alerts: **“rebash-status endpoint down — instance running.”** Before opening a change ticket, you must prove **who you are** (STS), **whether HTTP works**, inject an SG fault like a bad change window, restore with evidence — the same story as Module 4 and the full [IAM and VPC Triage lab](../labs/aws-iam-vpc-triage.md).
 
 ### Step-by-step tasks
 
-#### Task 1 – Prove caller identity
+#### Task 1 – Identity baseline and triage note
 
-Every AWS change starts by knowing which account/role you are.
+Create `triage-checklist.md`:
+
+```markdown title="triage-checklist.md"
+# REBASH Module 16 — mini triage order
+
+1. `aws sts get-caller-identity` — correct account/role?
+2. Symptom: AccessDenied → IAM/SCP; timeout → network path
+3. `describe-instances` — state, public IP, SG IDs
+4. `describe-security-groups` — ingress on service port
+5. `describe-route-tables` — 0.0.0.0/0 → IGW for public subnet
+6. Application proof: `curl` HTTP body
+7. One change → re-validate
+```
 
 ``` {.bash .ra-terminal title="Terminal"}
-aws sts get-caller-identity | tee identity.json
-aws configure get region || true
-test -s identity.json
+cd ~/rebash-aws/module-16
+test -f triage-checklist.md
+aws sts get-caller-identity --query Account --output text | tee account.txt
+echo "identity baseline OK" | tee identity-evidence.txt
 ```
 
 !!! example "Expected output"
-    JSON includes Account, Arn, and UserId.
+    `identity.json` shows `Account`, `Arn`, `UserId`; `identity-evidence.txt` confirms baseline.
 
 
-#### Task 2 – Collect topic signals
+#### Task 2 – Security group, user data, launch instance
 
-Inventory the service surface related to this module.
+Create `user-data.sh`:
+
+```bash title="user-data.sh"
+#!/bin/bash
+set -euxo pipefail
+dnf install -y nginx || yum install -y nginx
+systemctl enable --now nginx
+echo "rebash-m16 triage ok from $(hostname -f)" > /usr/share/nginx/html/index.html
+```
 
 ``` {.bash .ra-terminal title="Terminal"}
-aws ec2 describe-vpcs --query 'Vpcs[].{Id:VpcId,Cidr:CidrBlock}' --output table 2>/dev/null | tee vpcs.txt || true
-aws iam get-account-summary 2>/dev/null | tee iam-summary.json || true
-tee notes.txt << 'EOF'
-Record which APIs apply to this topic and any NotAuthorized errors for follow-up.
-EOF
-cat notes.txt
+cd ~/rebash-aws/module-16
+VPC_ID=$(cat default-vpc.txt)
+test "$VPC_ID" != "None" && test -n "$VPC_ID"
+SG_ID=$(aws ec2 create-security-group --vpc-id "$VPC_ID" \
+  --group-name rebash-m16-triage --description "REBASH module-16 triage SG" \
+  --query GroupId --output text)
+echo "$SG_ID" | tee sg-id.txt
+aws ec2 authorize-security-group-ingress --group-id "$SG_ID" \
+  --protocol tcp --port 80 --cidr 0.0.0.0/0
+AMI_ID=$(aws ssm get-parameters \
+  --names /aws/service/ami-amazon-linux-latest/al2023-ami-kernel-default-x86_64 \
+  --query 'Parameters[0].Value' --output text)
+SUBNET_ID=$(aws ec2 describe-subnets --filters Name=vpc-id,Values="$VPC_ID" \
+  --query 'Subnets[0].SubnetId' --output text)
+echo "$SUBNET_ID" | tee subnet-id.txt
+INSTANCE_TYPE="t3.micro"
+aws ec2 run-instances --image-id "$AMI_ID" --instance-type "$INSTANCE_TYPE" \
+  --subnet-id "$SUBNET_ID" --security-group-ids "$SG_ID" \
+  --user-data file://user-data.sh --associate-public-ip-address \
+  --tag-specifications 'ResourceType=instance,Tags=[{Key=Name,Value=rebash-m16-triage}]' \
+  --query 'Instances[0].InstanceId' --output text | tee instance-id.txt \
+  || aws ec2 run-instances --image-id "$AMI_ID" --instance-type t2.micro \
+       --subnet-id "$SUBNET_ID" --security-group-ids "$SG_ID" \
+       --user-data file://user-data.sh --associate-public-ip-address \
+       --tag-specifications 'ResourceType=instance,Tags=[{Key=Name,Value=rebash-m16-triage}]' \
+       --query 'Instances[0].InstanceId' --output text | tee instance-id.txt
 ```
 
 !!! example "Expected output"
-    Evidence files created even if some APIs are denied.
+    `instance-id.txt` contains `i-…`; security group allows TCP 80.
+
+
+#### Task 3 – Prove reachability with curl
+
+``` {.bash .ra-terminal title="Terminal"}
+cd ~/rebash-aws/module-16
+IID=$(cat instance-id.txt)
+aws ec2 wait instance-running --instance-ids "$IID"
+aws ec2 wait instance-status-ok --instance-ids "$IID"
+PUBLIC_IP=$(aws ec2 describe-instances --instance-ids "$IID" \
+  --query 'Reservations[0].Instances[0].PublicIpAddress' --output text)
+echo "$PUBLIC_IP" | tee public-ip.txt
+sleep 20
+curl -fsS "http://${PUBLIC_IP}/" | tee curl-ok.txt
+grep -q rebash-m16 curl-ok.txt
+aws ec2 describe-security-groups --group-ids "$(cat sg-id.txt)" \
+  --output json | tee sg-before.json
+echo "reachability OK" | tee reach-evidence.txt
+```
+
+!!! example "Expected output"
+    `curl-ok.txt` contains `rebash-m16 triage ok`; `reach-evidence.txt` confirms success.
+
+
+#### Task 4 – Break SG, prove failure, restore (core triage loop)
+
+``` {.bash .ra-terminal title="Terminal"}
+cd ~/rebash-aws/module-16
+PUBLIC_IP=$(cat public-ip.txt)
+SG_ID=$(cat sg-id.txt)
+aws ec2 revoke-security-group-ingress --group-id "$SG_ID" \
+  --protocol tcp --port 80 --cidr 0.0.0.0/0
+aws ec2 describe-security-groups --group-ids "$SG_ID" \
+  --query 'SecurityGroups[0].IpPermissions' --output json | tee sg-broken.json
+set +e
+curl -m 8 -fsS "http://${PUBLIC_IP}/" 2>&1 | tee curl-broken.txt
+CURL_EXIT=$?
+set -e
+test "$CURL_EXIT" -ne 0 || grep -Eiq 'timed out|failed|refused|000|timeout' curl-broken.txt
+aws ec2 authorize-security-group-ingress --group-id "$SG_ID" \
+  --protocol tcp --port 80 --cidr 0.0.0.0/0
+curl -fsS "http://${PUBLIC_IP}/" | tee curl-fixed.txt
+grep -q rebash-m16 curl-fixed.txt
+echo "break-fix triage OK" | tee breakfix.txt
+```
+
+!!! example "Expected output"
+    `curl-broken.txt` shows timeout or failure; after restore, `curl-fixed.txt` contains the success body; `breakfix.txt` confirms loop.
 
 
 ### Validation steps
 
-- [ ] identity.json present
-- [ ] No long-lived keys committed to the repo
+- [ ] STS identity captured in `identity.json`
+- [ ] Instance launched and HTTP verified before fault
+- [ ] SG revoke caused curl failure with describe evidence
+- [ ] SG restore returned HTTP 200 body
+- [ ] Triage checklist artefact documents order
 
 ### Common errors and fixes
 
 | Error | Cause | Fix |
 |-------|-------|-----|
-| Unable to locate credentials | No profile/SSO | Run `aws sso login` or export sandbox keys |
-| AccessDenied | Least privilege | Use a role that can read the service — or document the deny |
-| UnauthorizedOperation | Wrong region/account | Check `AWS_REGION` and account id |
+| `curl` hangs | SG/route or cloud-init not finished | Wait; check SG and nginx via SSM if configured |
+| No default VPC | Account cleaned | Recreate default VPC or reuse Module 3 VPC |
+| `UnauthorizedOperation` on describe | Wrong IAM user | Fix role/profile; distinguish from network fault |
+| Instance has no public IP | Subnet not public | Enable auto-assign public IP or use public subnet |
 
 ### Challenge exercise
 
-Enable a cost budget alarm in the sandbox (or document the console clicks) and screenshot/CLI-describe it.
+Extend triage with **route table break/fix** (delete `0.0.0.0/0` → IGW on default subnet route table, prove curl fail, restore) — mirror Module 3. For full multi-fault practice, complete [Lab — AWS IAM and VPC Reachability Triage](../labs/aws-iam-vpc-triage.md). When the scenario forbids public HTTP/SSH, use [Lab — Secure EC2 via SSM and S3](../labs/aws-ssm-s3.md).
 
 ### Learning outcomes
 
-- Authenticated safely
-- Captured read-only evidence
-- Avoided unmanaged spend
+- You executed STS-first triage discipline
+- You proved SG-caused outage vs healthy nginx with curl evidence
+- You have portfolio files under `~/rebash-aws/module-16`
+- You know when to escalate to standalone triage and SSM labs
 
 ### Cleanup
 
-```bash
-# Revoke/lab-expire any temporary keys you exported
-# Do not leave EC2/ELB/NAT running
+``` {.bash .ra-terminal title="Terminal"}
+cd ~/rebash-aws/module-16
+IID=$(cat instance-id.txt 2>/dev/null || true)
+SG_ID=$(cat sg-id.txt 2>/dev/null || true)
+[[ -n "${IID:-}" ]] && aws ec2 terminate-instances --instance-ids "$IID"
+[[ -n "${IID:-}" ]] && aws ec2 wait instance-terminated --instance-ids "$IID"
+[[ -n "${SG_ID:-}" ]] && aws ec2 delete-security-group --group-id "$SG_ID" || true
+echo "cleanup complete" | tee cleanup-log.txt
 ```
 
 ## Validation
 
-
-
-
-
-
-- [ ] Lab commands run under `~/rebash-aws/module-16/`
-- [ ] You can explain each Theory section in your own words
-- [ ] You used modern tooling where it applies to this topic
-- [ ] You can describe one production failure mode for this topic
+- [ ] Mini triage lab completed with break/fix evidence
+- [ ] Can recite triage order without looking at notes
+- [ ] Can reference Module 3/4/13/15 ties in incident narrative
+- [ ] Knows full labs for deeper practice
 
 ## Code Walkthrough
 
-
-
-
-
-
-Production practice for **Troubleshooting AWS** always combines:
-
-1. Inspect before you change (status, plan, logs, dry-run)
-2. Prefer reversible, documented changes (Git, IaC, drop-ins, version pins)
-3. Capture evidence (command output, pipeline logs) for handovers
-4. Prefer current tools and APIs over legacy shortcuts
-5. Least privilege — escalate credentials only when required
-
-Keep runbooks short enough to follow under pressure. Automate checks; keep humans for judgement.
+1. **STS before anything** — wrong account makes all `describe-*` misleading or denied.
+2. **User data file fence** — cloud-init installs nginx; failures show in console output.
+3. **Revoke specific ingress rule** — mirrors bad change ticket, not deleting the SG.
+4. **`curl -m 8`** — bounded wait distinguishes timeout from HTTP error body.
+5. **Terminate then delete SG** — dependency order prevents `DependencyViolation`.
 
 ## Security Considerations
 
-
-
-
-
-
-- Treat credentials and tokens for aws as privileged — never commit them
-- Prefer short-lived auth (OIDC, roles, SSO) over long-lived keys
-- Validate blast radius before apply/deploy/delete operations
-- Restrict who can approve production changes
-- Collect audit logs; limit who can read sensitive traces
+- Lab opens HTTP to `0.0.0.0/0` — never copy to admin interfaces; use SSM for shell ([SSM lab](../labs/aws-ssm-s3.md)).
+- CloudTrail records SG changes — alert on prod SG modifications.
+- Read-only break-glass roles for triage before granting write access.
+- VPC Reachability Analyzer for complex paths instead of guessing.
+- Redact ARNs and account IDs in public post-mortems.
 
 ## Common Mistakes
 
+!!! warning "Rebooting before SG check"
+    If curl times out and SG lacks ingress, rebooting wastes minutes. Check SG and routes first.
 
+!!! warning "Shared prod credentials on laptop"
+    Use named profiles and Identity Center roles; STS proves which principal you actually use.
 
-
-
-
-!!! warning "Changing SGs before listener/target health."
-    Validate assumptions against the Theory section and official docs before changing production.
-
-!!! warning "Ignoring SCPs when AdministratorAccess “fails.”"
-    Lab shortcuts (open security groups, admin roles, skip approvals) must not ship unchanged.
-
-!!! warning "Changing production without a rollback path"
-    Always know how to revert (previous artefact, prior release, state rollback, DNS failback).
+!!! warning "Closing ticket on first green curl"
+    Validate monitoring, logs, and dependent systems — partial fixes hide secondary faults.
 
 ## Best Practices
 
-
-
-
-
-
-- Encode Troubleshooting AWS changes as code and review them in pull requests
-- Pin versions (images, modules, actions, provider plugins)
-- Separate environments with clear promotion gates
-- Alert on symptoms with runbooks attached
-- Destroy lab resources; tag everything with owner and expiry where possible
+- Runbooks with ordered checks and expected CLI snippets
+- Tag instances with owner and environment for faster Cost Explorer correlation
+- Automate post-incident guardrails (Config rule, unit test in IaC pipeline)
+- Game days combining IAM deny + SG fault + DNS typo
+- Central log account access documented for on-call (Module 15)
 
 ## Troubleshooting
 
-
-
-
-
-
 | Symptom | Likely cause | Fix |
 |---------|--------------|-----|
-| Auth / permission denied | Wrong identity, policy, or scope | Check caller identity, roles, and least-privilege policies |
-| Timeout / no route | Network, DNS, security group, or endpoint | Trace path, DNS, and allow-lists before retrying |
-| Drift / unexpected plan | Manual change or wrong state/workspace | Reconcile desired vs actual; avoid click-ops on managed resources |
-| Pipeline/job red | Flaky step, cache, or missing secret | Read failing step logs; bisect recent workflow/config changes |
-| Cost spike | Idle load balancer, NAT, oversized compute | Inventory billable resources; stop/delete labs promptly |
+| `AccessDenied` on `describe-instances` | IAM/SCP | `get-caller-identity`; fix policy or switch role |
+| Timeout to public IP | SG, NACL, missing IGW route | Module 3 path; Reachability Analyzer |
+| HTTP 403 from S3 | IAM or bucket policy | Separate from EC2; check `aws s3api head-object` |
+| Lambda timeout in VPC | ENI/subnet IP exhaustion | Add subnet capacity or remove VPC config if not needed |
+| EKS `ImagePullBackOff` | ECR IAM or repo policy | Node/instance role `ecr:BatchGetImage` |
+| Sudden bill spike | NAT, new GPU, orphaned EIP | Module 13 CE drill; CloudTrail creators |
 
 ## Summary
 
-
-
-
-
-
-Sixteen modules cover design, security, automation, cost, recovery — and on-call debugging with a shared playbook.
+AWS troubleshooting is **ordered evidence**: confirm identity with STS, classify the symptom, isolate one layer, make one fix, validate. You completed a lite **STS + security group + curl** loop. Scale up with [IAM and VPC Triage](../labs/aws-iam-vpc-triage.md) and [SSM and S3](../labs/aws-ssm-s3.md) when interviews or on-call demand deeper practice.
 
 ## Interview Questions
 
+**1. First three commands when a web app on EC2 is “down”?**
 
+??? success "Reveal answer"
+    `aws sts get-caller-identity` (confirm you can investigate), `aws ec2 describe-instances` (state, IP, SG), `aws ec2 describe-security-groups` on attached SGs for inbound service port. If operator gets AccessDenied, fix IAM before network. If instance healthy, curl to distinguish network timeout from application 5xx.
 
+**2. How do you tell IAM failure from network failure?**
 
-1. Your standard AWS incident triage order?
-2. How does CloudTrail help API failures?
-3. Wrong region symptoms?
-4. Throttling versus access denied — how to tell?
-5. How do you capture evidence for a post-incident review?
+??? success "Reveal answer"
+    IAM failures return explicit `AccessDenied` or `UnauthorizedOperation` on API calls — often immediately. Network failures to EC2 typically time out on curl with describe APIs still working. STS and CloudTrail show which principal attempted the call.
 
-!!! tip "Sample answer — question 2"
-    STS identity → region → exact error → CloudTrail/event history → blast radius.
+**3. Security group vs NACL vs route table — triage order?**
 
-!!! tip "Sample answer — question 4"
-    Limit who can disable logging during incidents; use temporary elevated roles with expiry.
+??? success "Reveal answer"
+    Check instance state → SG (stateful, most common app fault) → route table (IGW/NAT for internet) → NACL (stateless, subnet level) → host firewall/app. SG is fastest to verify; routes explain “no path”; NACL when SG looks correct but traffic still drops.
+
+**4. Lambda works in console test but fails in VPC — why?**
+
+??? success "Reveal answer"
+    VPC-attached Lambda needs subnets with available IPs for ENIs, security group egress to the target, and often NAT or VPC endpoints for AWS APIs. Cold start ENI creation delays first invoke. Check CloudWatch Logs, subnet IP utilization, and SG rules.
+
+**5. EKS pod stuck Pending — what do you check?**
+
+??? success "Reveal answer"
+    `kubectl describe pod` Events (insufficient CPU, PVC bind failure), node capacity and taints, Cluster Autoscaler logs, IAM roles for service accounts (IRSA) if accessing AWS APIs, and node security groups allowing control plane communication.
+
+**6. Route 53 failover not happening — causes?**
+
+??? success "Reveal answer"
+    Health check misconfigured (wrong path/port), TTL too high prolonging old IP, weighted records not as expected, or alias target unhealthy. Verify health check status in console and `dig` against authoritative name servers.
+
+**7. Cost spike triage after deploy pipeline run?**
+
+??? success "Reveal answer"
+    Check Budgets/Cost Explorer by service and linked account, CloudTrail for `RunInstances`, `CreateNatGateway`, OpenSearch domains. Module 12 pipelines can leak environments if destroy failed. Terminate untagged resources; fix IaC cleanup stage.
+
+**8. When do you use the full IAM/VPC triage lab vs this mini lab?**
+
+??? success "Reveal answer"
+    Mini lab proves SG break/fix with STS discipline in one session. Full [IAM and VPC Triage](../labs/aws-iam-vpc-triage.md) adds restricted IAM profile, NACL/route faults, and structured multi-layer narrative for interview depth. Use [SSM and S3](../labs/aws-ssm-s3.md) when the scenario forbids public SSH and needs instance-role S3 proof.
 
 ## Related Tutorials
 
-
-
-
-
-
-- [Course overview](index.md)
-- [Course overview](index.md) · [AWS interview prep](../interview/aws.md) · [Cheat sheet](../cheatsheets/aws.md)
+- Previous: [Production AWS Landing Zones](production-aws-landing-zones.md) *(Module 15)*
+- Foundation: [VPC Networking](vpc-networking-on-aws.md) *(Module 3)* · [Compute EC2](compute-ec2-asg-and-load-balancing.md) *(Module 4)* · [IAM](iam-identity-access-and-organizations.md) *(Module 2)*
+- [AWS Security Services](aws-security-services.md) *(Module 10)* · [Cost Optimisation](cost-optimisation-on-aws.md) *(Module 13)* · [Monitoring and Observability](monitoring-and-observability-on-aws.md) *(Module 9)*
+- Labs: [IAM and VPC Reachability Triage](../labs/aws-iam-vpc-triage.md) · [Secure EC2 via SSM and S3](../labs/aws-ssm-s3.md)
+- Course index: [AWS for Cloud & DevOps Engineers](index.md)
 
 ## References
 
-
-
-
-
-
-- [AWS Health Dashboard](https://health.aws.amazon.com/health/status)  
-- [VPC Flow Logs](https://docs.aws.amazon.com/vpc/latest/userguide/flow-logs.html)  
-- [IAM policy evaluation logic](https://docs.aws.amazon.com/IAM/latest/UserGuide/reference_policies_evaluation-logic.html)  
+- [AWS Troubleshooting documentation hub](https://docs.aws.amazon.com/awsconsolehelpdocs/latest/gsg/learn-tutorials.html)
+- [VPC Reachability Analyzer](https://docs.aws.amazon.com/vpc/latest/reachability/what-is-reachability-analyzer.html)
+- [CloudTrail LookupEvents](https://docs.aws.amazon.com/awscloudtrail/latest/userguide/view-cloudtrail-events.html)
 - [Amazon EKS troubleshooting](https://docs.aws.amazon.com/eks/latest/userguide/troubleshooting.html)
+- [Lambda networking](https://docs.aws.amazon.com/lambda/latest/dg/foundation-networking.html)

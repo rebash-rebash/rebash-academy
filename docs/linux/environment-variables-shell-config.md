@@ -1,24 +1,30 @@
 ---
 title: "Environment Variables and Shell Configuration"
-description: "Set and inspect environment variables for Linux ops — export, shell startup files, and systemd Environment= — with an Ubuntu lab."
+description: "Linux environment variables, PATH, shell startup files, and systemd Environment= — with a cron-vs-SSH break-and-fix lab."
 difficulty: beginner
-estimated_time: "40–50 min"
+estimated_time: "45–55 min"
 author: Shaik Basha
-last_updated: "2026-08-02"
+last_updated: "2026-08-04"
 category: linux
 technology: linux
 module: "Module 2 · Command Line"
+career_paths:
+  - linux-administrator
+  - devops-engineer
+  - cloud-engineer
 tags:
   - linux
   - environment
   - bash
   - systemd
+  - beginners
 prerequisites:
   - linux/essential-linux-commands
 next:
-  - linux/filesystem-paths-links-mounts-and-inodes
+  - linux/shell-scripting-fundamentals
 related:
   - ../shell/index.md
+  - linux/shell-scripting-fundamentals
 interview: interview/linux
 comments: false
 ---
@@ -27,328 +33,342 @@ comments: false
 
 ## Overview
 
-An **environment variable** is a named string value that processes inherit. Shells use variables such as **`PATH`** (where to find commands), **`HOME`**, and **`LANG`**. Applications and Continuous Integration (CI) jobs read variables for configuration (urls, feature flags — not secrets in world-readable files).
+You will see `export API_URL=...` in tutorials and wonder why it “disappears” tomorrow. Environment variables are how Linux passes **configuration** into programs for a session — and into services for their whole lifetime.
 
-On Linux servers you meet variables in three common places: your interactive shell (`export`), shell startup files (`.bashrc`, `/etc/profile.d/`), and **systemd** units (`Environment=` / `EnvironmentFile=`). Cron jobs use a smaller environment than your SSH session — a classic cause of “works in my shell, fails in cron”. In this tutorial you will inspect variables, create a lab `profile.d` script, run a command with a one-shot env override, and save proof under `~/rebash-linux/lab-env`.
+**Plain problem:** A script works in your SSH session but fails in **cron** with “command not found”. Same script — different **environment**. Cron did not load your `.bashrc`; **`PATH`** was shorter.
 
-For deeper Bash scripting, continue in the [Shell Scripting](../shell/index.md) track after this ops-focused page.
+An **environment variable** is a named string every child process inherits: **`PATH`** (where to find commands), **`HOME`**, **`LANG`**, app settings. They live in three common places: interactive shell, startup files, and **systemd** units.
+
+This is a **Command Line** tutorial in the REBASH Academy **Linux for Cloud & DevOps Engineers** series — practical Linux for Cloud and DevOps work.
 
 ## Prerequisites
 
+- Ubuntu practice VM or WSL2
 - [Essential Linux Commands](essential-linux-commands.md)
-- A **practice Ubuntu 22.04/24.04 VM** with `sudo` (for `/etc/profile.d`)
-- Bash as your login shell (Ubuntu default)
+- Basic comfort typing commands in bash
 
 ## Learning Objectives
 
 By the end of this tutorial, you will be able to:
 
-- [ ] Print and explain key variables (`PATH`, `HOME`, `USER`)
-- [ ] Use `export` and one-shot `VAR=value command` overrides
-- [ ] Add a safe drop-in under `/etc/profile.d/` and prove it in a login shell
-- [ ] Show how systemd exposes `Environment=` on a oneshot unit
-- [ ] Pack evidence under `~/rebash-linux/lab-env`
+- [ ] Explain environment variables in plain language
+- [ ] Inspect and set variables with `export`, `env`, and `printenv`
+- [ ] Add a lab-safe snippet under `/etc/profile.d/`
+- [ ] Understand why cron jobs miss SSH environment variables
+- [ ] Set **`Environment=`** in a systemd unit
+- [ ] Answer fresher interview questions on environment and shell config
 
 ## Architecture
 
-Environment values flow from system/profile files and service managers into shells and child processes.
+Login shell reads profile files → sets environment → starts processes that inherit copies. Non-interactive cron/systemd paths skip most of your personal `.bashrc` unless you configure them.
 
-![Architecture diagram for CLI and environment](../assets/excalidraw/linux-cli-workflow.svg)
+![Linux CLI workflow — shell, env, PATH, systemd](../assets/excalidraw/linux-cli-workflow.svg)
 
 ## Theory
 
-### What it is
+### The problem (before any jargon)
 
-Variables live in a process environment. Children inherit a copy. `export VAR=value` marks a shell variable for inheritance. `env` / `printenv` list the environment.
+You add a tool to `~/bin` and it works after `export PATH=$PATH:~/bin` in SSH. Night cron job still says `mytool: not found`. You did not persist **`PATH`** where cron looks.
 
-```bash
-printenv PATH
-echo "$HOME"
-export REBASH_LAB=1
-VAR=tmp printenv VAR
+### What is an environment variable? (simple words)
+
+**Analogy:** Environment variables are **sticky notes on your desk** every helper (process) reads when they start — “find tools in these folders”, “use this language”, “API lives here”.
+
+| Variable | Typical role |
+|----------|----------------|
+| **PATH** | Directories searched for command names |
+| **HOME** | Your home directory |
+| **USER** | Username |
+| **SHELL** | Default shell program |
+| **LANG** | Locale / language |
+
+**Interview line:** “Processes inherit environment at fork time; cron and systemd need explicit PATH or env files.”
+
+### View and set (session vs persistent)
+
+``` {.bash .ra-terminal title="Terminal"}
+echo "$PATH"
+export REBASH_LAB=hello
+env | grep REBASH
 ```
 
-### Why it matters
+Session-only `export` dies when you log out unless written to startup files.
 
-Wrong `PATH` breaks deploys. Missing variables break apps. Putting secrets in exported variables that leak into logs or `ps` is a security problem. systemd and cron each have their own environment rules.
+### Startup files (Ubuntu bash — simplified)
 
-### How it works
+| File | When |
+|------|------|
+| `/etc/profile` | Login shells |
+| `/etc/profile.d/*.sh` | Modular login snippets (good for admins) |
+| `~/.bashrc` | Interactive non-login bash |
+| `~/.profile` | User login |
 
-| Place | Typical use |
-|-------|-------------|
-| Current shell | `export`, one-shot prefix |
-| `~/.bashrc` / `~/.profile` | Per-user interactive defaults |
-| `/etc/profile.d/*.sh` | System-wide login defaults |
-| systemd `Environment=` | Service configuration |
-| cron | Minimal env — set variables in the crontab |
+**Do not** edit system files recklessly on production — use drop-ins under `profile.d` with clear names.
+
+### systemd Environment=
+
+Services do not read your `.bashrc`. Set env in the unit:
+
+```ini
+[Service]
+Environment="APP_MODE=production"
+EnvironmentFile=/etc/myapp/env
+```
+
+### Cron vs SSH environment
+
+Cron runs with minimal env. **Fix:** absolute paths in scripts, or `PATH=` line at top of crontab, or wrap in systemd timer (prior scheduling tutorial).
 
 ### Common pitfalls
 
-- Editing `.bashrc` but testing with a non-interactive script.  
-- Assuming cron has your SSH `PATH`.  
-- Storing passwords in `Environment=` without restricting unit file permissions.  
-- Forgetting quotes when values contain spaces.
+- Putting secrets in world-readable env files
+- Expecting `~` expansion in systemd `Environment=` (use full paths)
+- Mixing login vs non-login shell behaviour
+- `export` in script without `export` keyword — child processes miss it
 
 ## Hands-on Lab
 
 ### Objective
 
-Inspect the environment, install a lab `/etc/profile.d` script, prove a login shell sees it, run a systemd oneshot with `Environment=`, and save evidence under `~/rebash-linux/lab-env`.
+Set lab variables, add a **`profile.d`** snippet, demonstrate **cron missing PATH**, **fix** with absolute path, add **systemd Environment=**, prove — under `~/rebash-linux/lab-env`.
 
 ### Prerequisites
 
-- Ubuntu with Bash and systemd
+| Item | Notes |
+|------|--------|
+| Ubuntu VM | bash default |
+| `sudo` | For profile.d and systemd drop-in |
 
 ### Lab environment
 
-Workspace: `~/rebash-linux/lab-env`
-
 ``` {.bash .ra-terminal title="Terminal"}
-mkdir -p ~/rebash-linux/lab-env && cd ~/rebash-linux/lab-env
-set -euo pipefail
-echo "$SHELL" | tee shell.txt
-printenv PATH | tee path.txt
-printenv HOME USER | tee home-user.txt
+mkdir -p ~/rebash-linux/lab-env/bin && cd ~/rebash-linux/lab-env
 ```
-
-!!! example "Expected output"
-    `shell.txt` shows a bash path; PATH and HOME captured.
-
 
 ### Real-world scenario
 
-Your team wants every engineer login on a practice jump VM to see `REBASH_LAB_ENV=1`, and a small maintenance unit should run with `APP_ENV=lab`. You implement both and keep proof for the onboarding guide.
+App team adds `~/bin/deploy-helper`. Works interactively; cron deploy fails. You document environment inheritance and fix cron path — ticket style.
 
 ### Step-by-step tasks
 
-#### Task 1 – Export and one-shot override
+#### Task 1 – Custom tool and PATH
+
+Create `deploy-helper`:
+
+```bash title="deploy-helper"
+#!/usr/bin/env bash
+echo "deploy-helper ran OK at $(date -Is)"
+```
 
 ``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-linux/lab-env
-set -euo pipefail
-
-export REBASH_SESSION='session-value'
-printenv REBASH_SESSION | tee export-session.txt
-REBASH_ONESHOT='oneshot-value' printenv REBASH_ONESHOT | tee oneshot.txt
-# Parent shell should not keep the oneshot-only assignment unless exported beforehand
-if printenv REBASH_ONESHOT >/dev/null 2>&1; then
-  echo 'unexpected: oneshot leaked' >&2
-  exit 1
-fi
-echo 'oneshot-not-in-parent=ok' | tee oneshot-scope.txt
-test "$(cat export-session.txt)" = 'session-value'
+chmod +x bin/deploy-helper
+export PATH="$HOME/rebash-linux/lab-env/bin:$PATH"
+deploy-helper | tee path-session-proof.txt
+grep -q 'deploy-helper ran OK' path-session-proof.txt
 ```
 
 !!! example "Expected output"
-    exported value persists in the shell; oneshot value does not remain in the parent environment.
+    Helper runs when `~/rebash-linux/lab-env/bin` is on PATH.
 
 
-#### Task 2 – `/etc/profile.d` drop-in (login shell)
+#### Task 2 – profile.d persistence
+
+Create `rebash-lab-env.sh`:
+
+```bash title="rebash-lab-env.sh"
+# REBASH lab-env — append lab bin to PATH for login shells
+export PATH="$HOME/rebash-linux/lab-env/bin:$PATH"
+export REBASH_APP_ENV=lab
+```
 
 ``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-linux/lab-env
-set -euo pipefail
-
-sudo tee /etc/profile.d/rebash-lab-env.sh >/dev/null << 'EOF'
-# REBASH lab-env — remove in cleanup
-export REBASH_LAB_ENV=1
-EOF
+sudo cp rebash-lab-env.sh /etc/profile.d/rebash-lab-env.sh
 sudo chmod 644 /etc/profile.d/rebash-lab-env.sh
-
-# Bash login shell should source profile.d
-bash --login -c 'printenv REBASH_LAB_ENV' | tee profile-d-login.txt
-test "$(cat profile-d-login.txt)" = '1'
-
-# Non-login non-interactive may not see it — capture for learning
-bash -c 'printenv REBASH_LAB_ENV || true' | tee profile-d-nologin.txt || true
+bash -lc 'echo PATH=$PATH; echo REBASH_APP_ENV=$REBASH_APP_ENV' | tee login-shell-env.txt
+grep -q 'lab-env/bin' login-shell-env.txt
 ```
 
 !!! example "Expected output"
-    `profile-d-login.txt` is `1`. Non-login output may be empty — that difference is the lesson.
+    Login shell simulation shows lab bin on PATH and `REBASH_APP_ENV=lab`.
 
 
-#### Task 3 – systemd Environment= + evidence
+#### Task 3 – Break cron env, fix, systemd Environment=
 
 ``` {.bash .ra-terminal title="Terminal"}
 cd ~/rebash-linux/lab-env
-set -euo pipefail
+( crontab -l 2>/dev/null; echo '* * * * * deploy-helper >> '"$HOME"'/rebash-linux/lab-env/logs/cron-broken.log 2>&1' ) | crontab -
+mkdir -p logs
+sleep 65
+tail -3 logs/cron-broken.log 2>/dev/null | tee cron-broken-tail.txt || true
+grep -q 'not found' cron-broken-tail.txt && echo "cron missed PATH — expected break" | tee break-notes.txt
+crontab -r
+( crontab -l 2>/dev/null; echo '* * * * * '"$HOME"'/rebash-linux/lab-env/bin/deploy-helper >> '"$HOME"'/rebash-linux/lab-env/logs/cron-fixed.log 2>&1' ) | crontab -
+sleep 65
+grep -q 'deploy-helper ran OK' logs/cron-fixed.log
+echo "lab-env OK" | tee evidence.txt
+```
 
-sudo tee /etc/systemd/system/rebash-lab-env.service >/dev/null << 'EOF'
+Create `rebash-env-demo.service`:
+
+```ini title="rebash-env-demo.service"
 [Unit]
-Description=REBASH lab env printer
+Description=REBASH lab env demo oneshot
+
 [Service]
 Type=oneshot
-Environment=APP_ENV=lab
-Environment=REBASH_UNIT=1
-ExecStart=/usr/bin/bash -c 'printenv APP_ENV REBASH_UNIT > /var/tmp/rebash-lab-env.out'
-[Install]
-WantedBy=multi-user.target
-EOF
+Environment="REBASH_APP_ENV=systemd-demo"
+ExecStart=/usr/bin/env bash -c 'echo REBASH_APP_ENV=$REBASH_APP_ENV >> /tmp/rebash-systemd-env.log'
+```
 
+``` {.bash .ra-terminal title="Terminal"}
+cd ~/rebash-linux/lab-env
+sed "s|/tmp/rebash-systemd-env.log|$HOME/rebash-linux/lab-env/logs/systemd-env.log|" rebash-env-demo.service | sudo tee /etc/systemd/system/rebash-env-demo.service >/dev/null
 sudo systemctl daemon-reload
-sudo systemctl start rebash-lab-env.service
-sudo cat /var/tmp/rebash-lab-env.out | tee unit-env.txt
-grep -F 'lab' unit-env.txt
-grep -F '1' unit-env.txt
-
-tar -czf env-evidence.tgz \
-  shell.txt path.txt home-user.txt \
-  export-session.txt oneshot.txt oneshot-scope.txt \
-  profile-d-login.txt profile-d-nologin.txt unit-env.txt
-ls -l env-evidence.tgz | tee evidence-ls.txt
+sudo systemctl start rebash-env-demo.service
+grep systemd-demo logs/systemd-env.log
+crontab -r 2>/dev/null || true
 ```
 
 !!! example "Expected output"
-    `unit-env.txt` contains `lab` and `1`; evidence archive exists.
+    Cron fails without full path; succeeds with absolute path. systemd log shows `systemd-demo`.
 
 
 ### Validation steps
 
-- [ ] You can explain export vs one-shot assignment
-- [ ] Login shell shows `REBASH_LAB_ENV=1`
-- [ ] systemd oneshot wrote `/var/tmp/rebash-lab-env.out`
-- [ ] `env-evidence.tgz` exists under `~/rebash-linux/lab-env`
+- [ ] Session PATH demo works
+- [ ] profile.d affects login shell simulation
+- [ ] Cron break/fix documented
+- [ ] systemd Environment= proven in log file
 
 ### Common errors and fixes
 
 | Error | Cause | Fix |
 |-------|-------|-----|
-| profile.d value missing | Not a login shell | Use `bash --login -c …` or SSH login |
-| Unit file ignored | No daemon-reload | `sudo systemctl daemon-reload` |
-| `printenv` empty | Typo / not exported | Check `export` and spelling |
-| Secrets visible in `systemctl show` | Env on unit | Prefer locked-down `EnvironmentFile=` with mode `0600` |
+| command not found in cron | PATH | Absolute path or PATH= in crontab |
+| Variable empty in systemd | Not in unit | Environment= or EnvironmentFile= |
+| profile.d not loaded | Non-login shell | Use `bash -l` or correct file |
+| Permission denied profile.d | Bad perms | 644, root-owned |
 
 ### Challenge exercise
 
-Create `/etc/profile.d/rebash-lab-path.sh` that **prepends** `$HOME/rebash-linux/lab-env/bin` to `PATH` if that directory exists. Create a tiny `bin/hello-rebash` script, prove `bash --login -c 'command -v hello-rebash'` works, and save output to `path-prepend.txt`.
+Add `printenv > ~/rebash-linux/lab-env/env-snapshot.txt` from SSH and from a one-line cron job — compare line counts in your notes.
 
 ### Learning outcomes
 
-- Used export and one-shot environment overrides
-- Installed a system `profile.d` script and proved login behaviour
-- Passed variables into a systemd oneshot
-- Saved environment evidence for onboarding docs
+- You understand inheritance vs cron/systemd config
+- You fixed a classic “works in SSH only” bug
+- You can explain PATH to an interviewer
 
 ### Cleanup
 
 ``` {.bash .ra-terminal title="Terminal"}
-cd ~/rebash-linux/lab-env
-set -euo pipefail
-sudo rm -f /etc/profile.d/rebash-lab-env.sh /etc/profile.d/rebash-lab-path.sh
-sudo systemctl stop rebash-lab-env.service 2>/dev/null || true
-sudo rm -f /etc/systemd/system/rebash-lab-env.service
+crontab -r 2>/dev/null || true
+sudo rm -f /etc/profile.d/rebash-lab-env.sh /etc/systemd/system/rebash-env-demo.service
 sudo systemctl daemon-reload
-sudo rm -f /var/tmp/rebash-lab-env.out
-# Keep env-evidence.tgz if you want it
 ```
 
 ## Validation
 
-- [ ] Lab finished under `~/rebash-linux/lab-env/` with evidence files
-- [ ] You know cron/systemd may not share your interactive PATH
-- [ ] You avoid putting secrets in world-readable profile scripts
-- [ ] You can choose shell export vs unit Environment= appropriately
+- [ ] Evidence under `~/rebash-linux/lab-env`
+- [ ] Can explain three places env vars are set
+- [ ] Ready for filesystem paths tutorial next
 
 ## Code Walkthrough
 
-Ops configuration order:
-
-1. Inspect current env (`printenv`)  
-2. Prefer unit `Environment=` / `EnvironmentFile=` for services  
-3. Use `profile.d` for human login defaults  
-4. Set variables inside cron entries when needed  
-5. Redact secrets from tickets and debug dumps  
+1. **`export PATH=...`** — session only until profile.d or unit file persists.
+2. **`/etc/profile.d/`** — modular admin-friendly login snippets.
+3. **Cron without PATH** — deliberate break; mirrors production incidents.
+4. **Absolute path fix** — simplest reliable cron fix.
+5. **systemd Environment=** — services ignore `.bashrc` by design.
 
 ## Security Considerations
 
-- Do not commit secrets into `profile.d` or unit files in git without encryption/sealed secrets  
-- Mode `0600` for environment files with credentials  
-- Remember `systemctl show` can expose unit environment  
-- Clear sensitive variables from shells you leave open  
-- Prefer secret managers for production credentials  
+- Never put passwords or API keys in world-readable profile.d or unit files in Git.
+- Use secret managers or restricted `EnvironmentFile` (`0600`, root-only).
+- Audit `/etc/environment` and profile.d for stale exports.
+- Limit who can edit systemd unit drop-ins.
+- Scrub env snapshots before sharing in tickets.
 
 ## Common Mistakes
 
-!!! warning "Fixing cron by only editing `.bashrc`"
-    Cron does not read `.bashrc` by default. **Fix:** set `PATH=` and variables in the crontab or call a wrapper script.
+!!! warning "Secrets in export lines"
+    Environment leaks via `ps`, logs, and core dumps — use proper secret storage.
 
-!!! warning "Assuming every `bash -c` is a login shell"
-    `/etc/profile.d` may not run. **Fix:** test with `bash --login -c` or document the shell type.
+!!! warning "Assuming cron loads .bashrc"
+    It does not — configure env explicitly.
 
-!!! warning "Exporting secrets in world-readable scripts"
-    Any local user can read them. **Fix:** restricted files, secret stores, least privilege.
-
-!!! warning "Appending PATH forever in nested shells"
-    PATH grows duplicates. **Fix:** idempotent path helpers; prepend only if missing.
+!!! warning "Tilde in systemd paths"
+    Use full paths like `/home/user/bin/app`.
 
 ## Best Practices
 
-- Document required variables for each app  
-- Use systemd environment for services, not ad-hoc SSH exports  
-- Keep `profile.d` scripts tiny and idempotent  
-- Quote variables (`"$VAR"`) in scripts  
-- Continue Bash depth in the Shell track  
+- Document required env vars in README/runbook
+- Use `EnvironmentFile` for services; keep out of Git
+- Prefer systemd timers over cron when you need journald + env in one place
+- Test jobs with `sudo -u appuser env` to simulate service user
+- Version-control non-secret defaults only
 
 ## Troubleshooting
 
 | Symptom | Likely cause | Fix |
 |---------|--------------|-----|
-| Command not found in cron | Short PATH | Set full paths / PATH in crontab |
-| Variable missing in service | Not in unit env | `Environment=` / `EnvironmentFile=` |
-| profile.d not applied | Non-login shell | Use login shell or user systemd |
-| Wrong value wins | Multiple exports | Trace order: unit vs shell vs script |
-| Secret leaked in process list | Env on command line | Prefer files with tight modes |
+| Variable unset in cron | Minimal env | Absolute paths; PATH= line |
+| Works sudo, not cron | Different user | Crontab user; file perms |
+| Empty in systemd service | Missing Environment | Unit drop-in |
+| Lost after reboot | Never persisted | profile.d or unit file |
 
 ## Summary
 
-Environment variables configure shells and services. Know where they are set (shell, profile.d, systemd, cron), prove inheritance with login vs non-login tests, and keep secrets out of world-readable places. Next filesystem work: [Paths, Links, Mounts, and Inodes](filesystem-paths-links-mounts-and-inodes.md). For scripting depth, see the [Shell](../shell/index.md) track.
+**Environment variables** configure processes via inheritance. **`PATH`** is the classic trap — SSH vs **cron** vs **systemd** load different context. Use **`export`**, **`/etc/profile.d/`**, and **`Environment=`** deliberately, and prefer **absolute paths** in scheduled jobs.
 
 ## Interview Questions
 
-**1. What does `export` do in Bash?**
+**1. What is an environment variable?**
 
 ??? success "Reveal answer"
-    `export` marks a shell variable for inclusion in the environment of **child processes**. Without export, a variable may exist in the shell but not be visible to commands it starts. `printenv NAME` is a quick check.
+    A named string in a process environment inherited by child processes — e.g. **PATH** (command search path), **HOME**, **LANG**. Set with `export VAR=value`; view with `printenv` or `echo $VAR`.
 
-**2. Why can a script fail in cron but work in your SSH session?**
-
-??? success "Reveal answer"
-    Cron starts with a **minimal environment**, especially a short `PATH`, and does not load your interactive `.bashrc` the way you expect. Use absolute paths, set variables in the crontab, or call a wrapper that prepares the environment.
-
-**3. Where should a systemd service get its configuration variables?**
+**2. Why do cron jobs fail to find commands that work in SSH?**
 
 ??? success "Reveal answer"
-    Prefer `Environment=` or `EnvironmentFile=` on the unit (with tight file permissions for secrets). Relying on an admin’s interactive shell exports is not reproducible.
+    Cron provides a **minimal environment** — often a short PATH, no `.bashrc`. Fix with **absolute paths** to scripts/binaries, explicit `PATH=` in crontab, or use systemd timer/service with Environment set.
 
-**4. What is the difference between a login shell and a non-login shell for `profile.d`?**
-
-??? success "Reveal answer"
-    Login shells typically read `/etc/profile` and `/etc/profile.d/*.sh`. Non-login interactive shells often read `~/.bashrc` instead. That is why a `profile.d` variable can appear over SSH login but not in `bash -c` tests.
-
-**5. How can environment variables become a security problem?**
+**3. Difference between shell variable and exported variable?**
 
 ??? success "Reveal answer"
-    Secrets in env can appear in logs, core dumps, `systemctl show`, or child process environments. Prefer secret stores and locked-down environment files; never put production passwords in world-readable `profile.d` scripts.
+    Shell variable exists in current shell only. **`export`** puts it in the environment so **child processes** inherit it. Scripts and cron child shells need export (or set in their context).
 
-**6. How do you run one command with a temporary variable without exporting it permanently?**
-
-??? success "Reveal answer"
-    Use a one-shot prefix: `VAR=value command args`. The assignment applies to that command’s environment. Confirm the parent shell did not keep it unless you also exported it.
-
-**7. How does this topic connect to CI pipelines?**
+**4. Where would you set env for a systemd service?**
 
 ??? success "Reveal answer"
-    CI injects environment variables for build settings and credentials. Pipelines fail when required variables are missing or when secrets are echoed. Treat CI env like production config: documented, least privilege, and not printed.
+    In the unit file: **`Environment=`** lines or **`EnvironmentFile=`** pointing to a file. Then `daemon-reload` and restart. Services do not read interactive `.bashrc`.
+
+**5. What is PATH?**
+
+??? success "Reveal answer"
+    Colon-separated list of directories the shell searches for executable **by name**. If directory is not on PATH, you need `./script` or full path.
+
+**6. /etc/profile.d vs ~/.bashrc — when each?**
+
+??? success "Reveal answer"
+    **`/etc/profile.d/`** — system-wide login snippets (admins, all users). **`~/.bashrc`** — per-user interactive bash. Know login vs non-login shell rules to predict which runs.
+
+**7. How do you debug missing env in a job?**
+
+??? success "Reveal answer"
+    Log environment at job start (`env >> /tmp/job-env.log`), compare SSH vs cron vs systemd (`systemctl show unit -p Environment`), fix with absolute paths or explicit Environment/EnvironmentFile.
 
 ## Related Tutorials
 
-- [Linux for Cloud & DevOps – Overview](index.md)
-- [Essential Linux Commands](essential-linux-commands.md) *(previous)*
-- [Paths, Links, Mounts, and Inodes](filesystem-paths-links-mounts-and-inodes.md) *(next)*
-- [Shell Scripting track](../shell/index.md) *(deeper Bash)*
+- Previous: [Essential Linux Commands](essential-linux-commands.md)
+- Next: [Filesystem Paths, Links, Mounts, and Inodes](filesystem-paths-links-mounts-and-inodes.md)
+- Related: [Shell Scripting Fundamentals](shell-scripting-fundamentals.md)
+- Deeper track: [Shell Scripting](../shell/index.md)
 
 ## References
 
-- [`environ(7)`](https://manpages.ubuntu.com/manpages/jammy/en/man7/environ.7.html) — environment overview  
-- [systemd environment](https://www.freedesktop.org/software/systemd/man/systemd.exec.html) — `Environment=` / `EnvironmentFile=`  
-- Track index: [Linux for Cloud & DevOps Engineers](index.md)
+- [bash invocation man page](https://manpages.ubuntu.com/manpages/noble/man1/bash.1.html)
+- [systemd.exec Environment](https://www.freedesktop.org/software/systemd/man/latest/systemd.exec.html#Environment=)
+- [Ubuntu environment variables guide](https://help.ubuntu.com/community/EnvironmentVariables)

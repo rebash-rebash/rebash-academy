@@ -2,7 +2,7 @@ title: AWS
 icon: material/aws
 
 nav:
-  - index.md
+  - Overview: index.md
   - Module 1 · AWS Fundamentals:
     - aws-fundamentals-and-global-infrastructure.md
   - Module 2 · Identity & Access Management:

@@ -1,8 +1,8 @@
 ---
 title: "Infrastructure as Code on AWS"
-description: "Choose among Terraform, CloudFormation, AWS CDK, and Service Catalog for AWS IaC — when to use which, with a low-cost local/CLI lab."
-difficulty: advanced
-estimated_time: "55–70 min"
+description: "Infrastructure as Code what IaC means, CloudFormation vs Terraform vs CDK — then deploy an encrypted S3 bucket stack, prove it, and destroy it cleanly."
+difficulty: beginner
+estimated_time: "65–80 min"
 technology: aws
 category: aws
 module: "Module 11 · Infrastructure as Code"
@@ -14,10 +14,11 @@ career_paths:
   - devsecops-engineer
 skills:
   - aws
-  - terraform
   - cloudformation
+  - terraform
   - cdk
   - service-catalog
+  - iac
 prerequisites:
   - aws/aws-security-services
   - aws/aws-fundamentals-and-global-infrastructure
@@ -26,371 +27,469 @@ next:
 related:
   - terraform/index
   - aws/production-aws-landing-zones
+  - aws/cicd-on-aws
 labs: []
 projects: []
 interview: interview/aws
 certifications:
-  - AWS DevOps Engineer Professional
-  - AWS Developer Associate
-  - AWS Solutions Architect Associate
+  - AWS Certified DevOps Engineer – Professional
+  - AWS Certified Developer – Associate
+  - AWS Certified Solutions Architect – Associate
 tags:
   - aws
   - iac
-  - terraform
   - cloudformation
+  - terraform
   - cdk
+  - beginners
 author: Shaik Basha
-last_updated: "2026-07-31"
+last_updated: "2026-08-03"
 comments: false
 ---
-
 
 # Infrastructure as Code on AWS
 
 ## Overview
 
+Every Cloud and DevOps team expects **Infrastructure as Code (IaC)** — define networks and servers in files you can review, repeat, and destroy safely.
 
+**Problem in plain English:** A senior engineer clicks around the AWS website and creates a storage bucket. It works. Six months later nobody remembers the exact settings. A new hire creates a second bucket with different security. An audit fails. A disaster recovery drill cannot rebuild the environment.
 
+**What IaC means:** You write a **recipe file** (YAML, JSON, or code) that describes what cloud resources should exist — encryption on, public access off, versioning on. You store that file in **Git** (like application code). A tool reads the file and creates or updates AWS resources the same way every time.
 
+**AWS term:** On AWS, the native recipe engine is **AWS CloudFormation**. It turns templates into **stacks** — groups of resources AWS tracks together. Other popular tools include **HashiCorp Terraform**, the **AWS Cloud Development Kit (CDK)**, and **AWS Service Catalog** for governed self-service.
 
+This is **Tutorial 1** in **Module 11: Infrastructure as Code** of the REBASH Academy **AWS for Cloud & DevOps Engineers** series — practical AWS for Cloud and DevOps work.
 
-Compare HashiCorp Terraform, AWS CloudFormation, the AWS Cloud Development Kit (CDK), and AWS Service Catalog so you can pick an Infrastructure as Code (IaC) approach for a team and practise a **zero-cost or near-zero-cost** template validate/plan loop.
-
-**Infrastructure as Code** defines cloud resources in files reviewed through Git, applied by pipelines, and reconciled to a desired state. On AWS you commonly meet four options: **Terraform** (multi-cloud HCL, huge ecosystem), **CloudFormation** (native declarative templates/stacks), **CDK** (TypeScript/Python/etc. that synthesise CloudFormation), and **Service Catalog** (governed products for end users). The “best” tool is the one your organisation can secure, review, and operate — not the newest blog post.
-
-This is a core tutorial in **Module 11 · Infrastructure as Code** of the REBASH Academy **AWS for Cloud & DevOps Engineers** series — written for Cloud, DevOps, Platform, and SRE engineers.
+!!! warning "Cost"
+    The lab S3 bucket costs pennies if deleted promptly. Empty the bucket before stack delete or CloudFormation will fail on `DELETE_FAILED`.
 
 ## Prerequisites
 
+- [AWS Fundamentals and Global Infrastructure](aws-fundamentals-and-global-infrastructure.md) — account, Region, CLI, `get-caller-identity`
+- [AWS Security Services](aws-security-services.md) *(Module 10)* — encryption and least privilege (helpful, not mandatory on day one)
+- [Git](../git/index.md) basics — you will store templates in version control later
+- AWS CLI v2 configured for a sandbox account
 
-
-
-
-
-- [AWS Security Services](aws-security-services.md)
-- Git and AWS CLI fundamentals
-- Helpful: prior Terraform or CloudFormation exposure
+You do **not** need prior Terraform or CloudFormation experience.
 
 ## Learning Objectives
 
-
-
-
-
-
 By the end of this tutorial, you will be able to:
 
-- [ ] State strengths and trade-offs of Terraform, CloudFormation, CDK, and Service Catalog for organisational fit  
-- [ ] Compare Terraform remote state with CloudFormation stack state (and CDK’s relationship to both)  
-- [ ] Explain CloudFormation change sets and StackSets for multi-account rollout  
-- [ ] Run a CloudFormation `validate-template` (and optional Terraform plan) without leaving spend behind  
-- [ ] Know when Service Catalog fits platform self-service
+- [ ] Explain IaC to a friend using a “recipe in Git” analogy
+- [ ] Name four AWS IaC tools and when teams pick each
+- [ ] Write a CloudFormation template with encryption, versioning, and Block Public Access
+- [ ] Create, describe, and delete a stack with CLI evidence
+- [ ] Explain drift in plain English and why console hotfixes are risky
+- [ ] Answer fresher interview questions on state, rollback, and stack delete failures
 
 ## Architecture
 
+IaC flows from Git through review into an apply engine (Terraform CLI, CloudFormation service, CDK synth/deploy, Service Catalog). The desired state becomes live AWS resources; drift detection and pipelines close the loop.
 
-
-
-
-
-This topic’s control points and relationships are shown below.
-
-![IaC on AWS](../assets/excalidraw/aws-iac.svg)
+![Infrastructure as Code on AWS — templates, stacks, and pipelines](../assets/excalidraw/aws-iac.svg)
 
 ## Theory
 
+### The problem (before any tool names)
 
+**Problem:** Manual console work does not scale. Two engineers configure the same bucket differently. Nobody can reproduce production after an outage. Auditors ask “show me the approved configuration” and you have screenshots, not files.
 
+**Analogy:** Building IKEA furniture from memory vs following the printed instruction sheet stored in a shared folder everyone can review.
 
+**AWS approach:** Put the instruction sheet in Git. Run a tool that reads it and creates AWS resources identically in dev, test, and prod.
 
+### What Infrastructure as Code is
 
-### What it is
+| Plain idea | AWS / industry term |
+|------------|---------------------|
+| Recipe file | Template (CloudFormation YAML/JSON) or HCL (Terraform) |
+| One deployment unit | CloudFormation **stack** |
+| “What exists now” record | Stack state (AWS-managed) or Terraform **state file** |
+| File changed in Git | Pull request review before apply |
+| Live resource differs from file | **Drift** |
 
-**Infrastructure as Code (IaC)** defines resources in Git-reviewed files and reconciles them to a desired state. On AWS the common choices are **Terraform** (HCL; *you* operate remote state, often S3 + DynamoDB lock), **CloudFormation** (YAML/JSON **stacks**; AWS stores state; **change sets** preview updates; **StackSets** fan out across accounts/Regions), **CDK** (TypeScript/Python constructs that `cdk synth` into CloudFormation), and **Service Catalog** (approved products/portfolios so builders launch constrained stacks without full admin).
+**Tiny example:** A template says “S3 bucket with versioning enabled.” CloudFormation creates the bucket and remembers that versioning must stay on. If someone disables versioning in the console, the next stack update can put it back.
 
-| Tool | Language | State | Org fit |
-|------|----------|-------|---------|
-| Terraform | HCL | You manage | Multi-cloud / modules |
-| CloudFormation | YAML/JSON | AWS stack | AWS-native, StackSets |
-| CDK | TS/Python/… | Via CFN stack | AWS-first constructs |
-| Service Catalog | Products | Provisioned products | Governed self-service |
+**Interview one-liner:** “IaC means infrastructure is version-controlled, reviewable, and repeatable — not tribal knowledge in one engineer’s head.”
 
-### Why it matters
+### CloudFormation, Terraform, CDK, Service Catalog
 
-ClickOps fails audits and does not scale. IaC makes VPC, IAM, and compute peer-reviewable. Multi-cloud estates often standardise on Terraform; AWS-centric platforms lean on CloudFormation/CDK and StackSets. Service Catalog offers golden stacks without `AdministratorAccess`. Interviews probe state risk, CDK synth surprises, and StackSets versus per-account apply.
+| Tool | Plain description | When teams pick it |
+|------|-------------------|-------------------|
+| **CloudFormation** | AWS-native YAML/JSON templates → stacks | AWS-only shops, Control Tower customisations |
+| **Terraform** | Multi-cloud language (HCL) + providers | Mixed AWS/Azure/GCP estates |
+| **AWS CDK** | Write infrastructure in TypeScript/Python; compiles to CloudFormation | Developer teams who want typed code |
+| **Service Catalog** | Approved product catalogue teams can launch | Enterprise guardrails and self-service |
 
-### How it works
+**Analogy for CDK:** CloudFormation is assembly instructions in YAML. CDK is a program that *generates* those instructions — useful when you reuse patterns many times.
 
-1. Author HCL, templates, or CDK constructs in Git.
-2. CI runs `terraform plan`, change sets / `cfn-lint`, or `cdk synth` + diff.
-3. Apply via short-lived OIDC roles — not laptop admin keys.
-4. Terraform updates state; CloudFormation updates stacks; CDK bootstraps once then deploys.
-5. Service Catalog admins version products; users launch under launch roles and tag options.
-6. Day-two: drift detection, imports, module/construct refactors (pipelines in Module 12).
+**Depth — state models:**
 
-### Concept deep dive
+| Concern | CloudFormation | Terraform |
+|---------|----------------|-----------|
+| Who stores “what exists” | AWS service (the stack) | Your state file (often S3 + DynamoDB lock) |
+| Rollback on failure | Automatic stack rollback (configurable) | You plan and apply reverse changes |
+| Multi-cloud | AWS only | Strong multi-provider support |
 
-**Terraform on AWS.** Providers call AWS APIs; state holds IDs and attributes. Encrypt and lock the backend; never commit state. Strengths: multi-cloud, registry modules, mature plan workflow. Risks: secrets in state, lock/partial-apply runbooks, provider version pins.
+### Why IaC matters for your first job
 
-**CloudFormation.** A **stack** is a managed unit (plus nested stacks); failed updates may roll back. **Change sets** preview production IAM/network deltas before execute. **Drift detection** compares live config to the template. **StackSets** deploy one template across OUs/accounts with failure tolerance — the native “baseline every account” tool.
+- **CI/CD pipelines** (Module 12) deploy templates — not console clicks — to production.
+- **Landing zones** (Module 15) ship as stacks and organisation-wide baselines.
+- **Interviews** ask: What is drift? Why did stack delete fail? CloudFormation vs Terraform?
 
-**CDK.** L2/L3 constructs synth to CloudFormation. You gain IDE refactoring and construct reuse; you risk unexpected roles, buckets, and custom resources. Always review `cdk diff` in CI. Deploy-time state is still the stack; `cdk bootstrap` creates staging resources.
+### How the lifecycle works
 
-**Service Catalog.** Versioned products in portfolios, with launch/template constraints and tag options. Fit: self-service app stacks. Anti-fit: unversioned dumping grounds.
-
-**State models and org fit.** Terraform: you operate state → multi-cloud and existing modules; separate state per env/account. CloudFormation/CDK: AWS operates stacks → AWS-only estates, StackSets, Service Catalog packaging. Enterprises often **mix**: Terraform for platform modules, StackSets for account baselines, Service Catalog for builder self-service.
-
-### Key concepts and comparisons
-
-| Situation | Prefer |
-|-----------|--------|
-| Multi-cloud / TF modules | Terraform |
-| Org-wide baselines | CloudFormation StackSets |
-| Typed constructs | CDK (review synth) |
-| Guardrailed self-service | Service Catalog |
-| Preview risky delta | Change set / `terraform plan` |
-
-| Concern | Terraform | CloudFormation / CDK |
-|---------|-----------|----------------------|
-| Who stores state? | You | AWS stack |
-| Multi-account | Pipelines / workspaces | StackSets |
-| Drift | `plan` + import | Drift detection |
-| Abstraction risk | Module quality | Unexpected synth |
+1. **Author** — write template describing resources and dependencies.
+2. **Validate** — `aws cloudformation validate-template` or `terraform validate`.
+3. **Preview** — change set (CloudFormation) or plan (Terraform).
+4. **Apply** — create or update resources in dependency order.
+5. **Operate** — detect drift; fix template, not only console.
+6. **Destroy** — delete stack; empty S3 buckets first.
 
 ### Common pitfalls
 
-- State (with secrets) in Git or public buckets.
-- CDK deploy without reviewing synth.
-- ClickOps on managed resources → permanent drift.
-- Unversioned Service Catalog without launch constraints.
-- Apply from personal admin keys.
-- NAT/EKS “hello IaC” left running — prefer validate/plan first.
-- Treating Terraform and CloudFormation as mutually exclusive.
+- **Deleting stacks with full S3 buckets** — CloudFormation cannot delete non-empty buckets. Empty with `aws s3 rm --recursive` first.
+- **Secrets in Git** — never commit passwords; use AWS Secrets Manager or Parameter Store references.
+- **Console hotfixes** — manual edits cause drift; the next deploy may overwrite or fail.
+- **Over-privileged deploy roles** — CI should not have `AdministratorAccess`.
+
+**Fix for console hotfixes:** Change the template, run through review, apply via pipeline.
 
 ## Hands-on Lab
 
-
-
-!!! warning "Cost and account safety"
-    Use a sandbox account. Prefer read-only calls. Destroy anything you create before leaving the lab.
-
 ### Objective
 
-Use read-only AWS APIs to inventory and verify aspects of **Infrastructure as Code on AWS** in a sandbox account.
+Deploy a CloudFormation stack that creates an S3 bucket with versioning, default encryption, and Block Public Access; prove with `describe-stacks` and `head-bucket`; delete the stack after emptying the bucket.
 
 ### Prerequisites
 
-- AWS CLI v2
-- Credentials for a **sandbox** account (SSO or short-lived keys)
+| Tool | Notes |
+|------|--------|
+| AWS CLI v2 | `cloudformation:*`, `s3:*` on lab bucket |
+| jq | Parse stack outputs |
+| Sandbox account | No production data |
 
 ### Lab environment
 
-Workspace: `~/rebash-aws/module-11`
-
-Prefer `describe`/`list`/`get` APIs. Create resources only with an explicit destroy path.
-
 ``` {.bash .ra-terminal title="Terminal"}
 mkdir -p ~/rebash-aws/module-11 && cd ~/rebash-aws/module-11
+export AWS_REGION="${AWS_REGION:-eu-west-2}"
+export AWS_PAGER=""
+export STACK_NAME="rebash-m11-iac-$(date +%s)"
 ```
 
 ### Real-world scenario
 
-Security asks for evidence that **Infrastructure as Code on AWS** is configured correctly. You gather CLI proof without click-ops drift.
+Platform receives a ticket: **“Create a compliant artefact bucket for CI logs — encrypted, versioned, no public access — and document how we tear it down.”** You deliver IaC instead of a console click-path so the same template can run in CI after Module 12.
 
 ### Step-by-step tasks
 
-#### Task 1 – Prove caller identity
+#### Task 1 – Author the CloudFormation template
 
-Every AWS change starts by knowing which account/role you are.
+Create `rebash-m11-bucket.yaml`:
+
+```yaml title="rebash-m11-bucket.yaml"
+AWSTemplateFormatVersion: "2010-09-09"
+Description: REBASH Module 11 — encrypted versioned S3 bucket (lab)
+
+Parameters:
+  BucketSuffix:
+    Type: String
+    Default: lab
+    AllowedPattern: "^[a-z0-9-]{3,12}$"
+    Description: Short suffix for globally unique bucket name
+
+Resources:
+  ArtefactBucket:
+    Type: AWS::S3::Bucket
+    DeletionPolicy: Delete
+    UpdateReplacePolicy: Delete
+    Properties:
+      BucketName: !Sub "rebash-m11-${BucketSuffix}-${AWS::AccountId}-${AWS::Region}"
+      VersioningConfiguration:
+        Status: Enabled
+      BucketEncryption:
+        ServerSideEncryptionConfiguration:
+          - ServerSideEncryptionByDefault:
+              SSEAlgorithm: AES256
+      PublicAccessBlockConfiguration:
+        BlockPublicAcls: true
+        BlockPublicPolicy: true
+        IgnorePublicAcls: true
+        RestrictPublicBuckets: true
+      Tags:
+        - Key: Name
+          Value: rebash-m11-artefacts
+        - Key: rebash:module
+          Value: "11"
+
+Outputs:
+  BucketName:
+    Description: Name of the artefact bucket
+    Value: !Ref ArtefactBucket
+    Export:
+      Name: !Sub "${AWS::StackName}-BucketName"
+  BucketArn:
+    Description: ARN of the artefact bucket
+    Value: !GetAtt ArtefactBucket.Arn
+```
+
+Validate syntax locally:
 
 ``` {.bash .ra-terminal title="Terminal"}
-aws sts get-caller-identity | tee identity.json
-aws configure get region || true
-test -s identity.json
+cd ~/rebash-aws/module-11
+aws cloudformation validate-template --template-body file://rebash-m11-bucket.yaml | tee validate.json
 ```
 
 !!! example "Expected output"
-    JSON includes Account, Arn, and UserId.
+    `validate.json` shows `"Description"` and `"Parameters"` — no validation error.
 
 
-#### Task 2 – Collect topic signals
-
-Inventory the service surface related to this module.
+#### Task 2 – Create stack and capture outputs
 
 ``` {.bash .ra-terminal title="Terminal"}
-aws ec2 describe-vpcs --query 'Vpcs[].{Id:VpcId,Cidr:CidrBlock}' --output table 2>/dev/null | tee vpcs.txt || true
-aws iam get-account-summary 2>/dev/null | tee iam-summary.json || true
-tee notes.txt << 'EOF'
-Record which APIs apply to this topic and any NotAuthorized errors for follow-up.
-EOF
-cat notes.txt
+cd ~/rebash-aws/module-11
+aws cloudformation create-stack \
+  --stack-name "$STACK_NAME" \
+  --template-body file://rebash-m11-bucket.yaml \
+  --parameters ParameterKey=BucketSuffix,ParameterValue=lab \
+  --tags Key=Name,Value=rebash-m11-stack \
+  | tee create-stack.json
+aws cloudformation wait stack-create-complete --stack-name "$STACK_NAME"
+aws cloudformation describe-stacks --stack-name "$STACK_NAME" \
+  --query 'Stacks[0].{Status:StackStatus,Outputs:Outputs}' --output json | tee stack.json
+BUCKET=$(jq -r '.Outputs[] | select(.OutputKey=="BucketName") | .OutputValue' stack.json)
+echo "$BUCKET" | tee bucket-name.txt
+echo "$STACK_NAME" | tee stack-name.txt
+test -n "$BUCKET"
 ```
 
 !!! example "Expected output"
-    Evidence files created even if some APIs are denied.
+    `stack.json` shows `"StackStatus": "CREATE_COMPLETE"` and a bucket name like `rebash-m11-lab-123456789012-eu-west-2`.
+
+
+#### Task 3 – Prove bucket properties and upload test object
+
+``` {.bash .ra-terminal title="Terminal"}
+cd ~/rebash-aws/module-11
+BUCKET=$(cat bucket-name.txt)
+echo "rebash-m11 proof $(date -u +%Y-%m-%dT%H:%M:%SZ)" > proof.txt
+aws s3 cp proof.txt "s3://${BUCKET}/proof.txt"
+aws s3api head-bucket --bucket "$BUCKET"
+aws s3api get-bucket-versioning --bucket "$BUCKET" | tee versioning.json
+aws s3api get-bucket-encryption --bucket "$BUCKET" | tee encryption.json
+aws s3api get-public-access-block --bucket "$BUCKET" | tee public-block.json
+grep -q '"Status": "Enabled"' versioning.json
+grep -q 'AES256' encryption.json
+echo "bucket proof OK" | tee evidence.txt
+```
+
+!!! example "Expected output"
+    `versioning.json` shows `"Status": "Enabled"`; `encryption.json` lists AES256 default; `evidence.txt` contains `bucket proof OK`.
+
+
+#### Task 4 – Introduce drift, detect, and reconcile
+
+Simulate console drift by toggling a tag, then show stack update restores declared state:
+
+``` {.bash .ra-terminal title="Terminal"}
+cd ~/rebash-aws/module-11
+BUCKET=$(cat bucket-name.txt)
+STACK_NAME=$(cat stack-name.txt)
+aws s3api put-bucket-tagging --bucket "$BUCKET" \
+  --tagging 'TagSet=[{Key=drift,Value=manual-console}]'
+aws s3api get-bucket-tagging --bucket "$BUCKET" | tee tags-drift.json
+aws cloudformation update-stack \
+  --stack-name "$STACK_NAME" \
+  --template-body file://rebash-m11-bucket.yaml \
+  --parameters ParameterKey=BucketSuffix,ParameterValue=lab 2>&1 | tee update-stack.json || true
+aws cloudformation wait stack-update-complete --stack-name "$STACK_NAME" 2>/dev/null || \
+  aws cloudformation wait stack-create-complete --stack-name "$STACK_NAME"
+aws cloudformation describe-stack-resource-drifts --stack-name "$STACK_NAME" \
+  --output json | tee drifts.json
+echo "drift exercise done" | tee drift.txt
+```
+
+!!! example "Expected output"
+    `tags-drift.json` shows the manual tag before update; drift API may list `MODIFIED` properties or empty if already reconciled.
 
 
 ### Validation steps
 
-- [ ] identity.json present
-- [ ] No long-lived keys committed to the repo
+- [ ] Template validated with `validate-template`
+- [ ] Stack reached `CREATE_COMPLETE` with bucket output
+- [ ] Versioning, encryption, and public access block confirmed via API
+- [ ] Test object uploaded successfully
+- [ ] You can explain why emptying the bucket matters before delete
 
 ### Common errors and fixes
 
 | Error | Cause | Fix |
 |-------|-------|-----|
-| Unable to locate credentials | No profile/SSO | Run `aws sso login` or export sandbox keys |
-| AccessDenied | Least privilege | Use a role that can read the service — or document the deny |
-| UnauthorizedOperation | Wrong region/account | Check `AWS_REGION` and account id |
+| `AlreadyExistsException` for bucket name | Name collision | Change `BucketSuffix` parameter |
+| `DELETE_FAILED` on stack | Bucket not empty | `aws s3 rm s3://bucket --recursive` then retry delete |
+| `InsufficientCapabilities` | Template creates IAM with custom names | Pass `--capabilities CAPABILITY_NAMED_IAM` when template includes IAM |
+| `ValidationError` on template | YAML indentation | Run `validate-template` and fix line cited |
 
 ### Challenge exercise
 
-Enable a cost budget alarm in the sandbox (or document the console clicks) and screenshot/CLI-describe it.
+Add a `AWS::S3::BucketPolicy` denying insecure transport in `rebash-m11-bucket-policy.yaml` (separate snippet file), merge into the template, update the stack, and prove `aws s3api get-bucket-policy` returns `"aws:SecureTransport": "false"` deny. Document the change in one sentence for interview storytelling.
+
+```json title="rebash-m11-deny-insecure.json"
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Sid": "DenyInsecureTransport",
+      "Effect": "Deny",
+      "Principal": "*",
+      "Action": "s3:*",
+      "Resource": [
+        "arn:aws:s3:::BUCKET_NAME",
+        "arn:aws:s3:::BUCKET_NAME/*"
+      ],
+      "Condition": {
+        "Bool": {
+          "aws:SecureTransport": "false"
+        }
+      }
+    }
+  ]
+}
+```
+
+Replace `BUCKET_NAME` with your bucket, attach via `BucketPolicy` resource or `aws s3api put-bucket-policy`.
 
 ### Learning outcomes
 
-- Authenticated safely
-- Captured read-only evidence
-- Avoided unmanaged spend
+- You authored compliant S3 IaC with encryption and versioning
+- You executed the full stack lifecycle with CLI evidence
+- You touched drift — a common production IaC interview theme
+- You have artefacts under `~/rebash-aws/module-11` for portfolio discussion
 
 ### Cleanup
 
-```bash
-# Revoke/lab-expire any temporary keys you exported
-# Do not leave EC2/ELB/NAT running
+``` {.bash .ra-terminal title="Terminal"}
+cd ~/rebash-aws/module-11
+BUCKET=$(cat bucket-name.txt)
+STACK_NAME=$(cat stack-name.txt)
+aws s3 rm "s3://${BUCKET}" --recursive
+aws cloudformation delete-stack --stack-name "$STACK_NAME"
+aws cloudformation wait stack-delete-complete --stack-name "$STACK_NAME"
+rm -f bucket-name.txt stack-name.txt evidence.txt proof.txt
+echo "cleanup complete" | tee cleanup-log.txt
 ```
 
 ## Validation
 
-
-
-
-
-
-- [ ] Lab commands run under `~/rebash-aws/module-11/`
-- [ ] You can explain each Theory section in your own words
-- [ ] You used modern tooling where it applies to this topic
-- [ ] You can describe one production failure mode for this topic
+- [ ] Stack created and deleted without manual console dependency
+- [ ] Can explain CloudFormation vs Terraform state models in plain English
+- [ ] Can name when CDK or Service Catalog fits over raw YAML
+- [ ] Understands empty-bucket requirement before stack delete
 
 ## Code Walkthrough
 
-
-
-
-
-
-Production practice for **Infrastructure as Code on AWS** always combines:
-
-1. Inspect before you change (status, plan, logs, dry-run)
-2. Prefer reversible, documented changes (Git, IaC, drop-ins, version pins)
-3. Capture evidence (command output, pipeline logs) for handovers
-4. Prefer current tools and APIs over legacy shortcuts
-5. Least privilege — escalate credentials only when required
-
-Keep runbooks short enough to follow under pressure. Automate checks; keep humans for judgement.
+1. **Parameters over hard-coding** — `BucketSuffix` keeps names unique without editing the template per account.
+2. **`DeletionPolicy: Delete`** — lab buckets should not retain by default; production may use `Retain`.
+3. **Block Public Access four flags** — defence in depth for artefact buckets.
+4. **Stack outputs + exports** — downstream stacks and CI jobs consume `BucketName` without parsing resources.
+5. **Wait conditions** — `wait stack-create-complete` avoids racing describe calls in scripts.
 
 ## Security Considerations
 
-
-
-
-
-
-- Treat credentials and tokens for aws as privileged — never commit them
-- Prefer short-lived auth (OIDC, roles, SSO) over long-lived keys
-- Validate blast radius before apply/deploy/delete operations
-- Restrict who can approve production changes
-- Collect audit logs; limit who can read sensitive traces
+- Scope deploy roles to `cloudformation:*` on stack ARN prefixes, not `*`.
+- Deny S3 public ACLs/policies at organisation level (Module 15 SCPs).
+- Never store secrets in template parameters — use dynamic references to Secrets Manager.
+- Enable CloudTrail for stack events; alert on `DeleteStack` in production accounts.
+- Sign and scan templates in CI (cfn-lint, cfn-guard, Checkov).
 
 ## Common Mistakes
 
+!!! warning "Console hotfixes"
+    Manual console edits cause drift and surprise replacements on the next deploy. Fix the template and pipeline, not only the symptom.
 
+!!! warning "PassRole too broad"
+    CI roles with unrestricted `iam:PassRole` let attackers attach admin policies to new roles. Condition on role name prefix and service.
 
-
-
-
-!!! warning "State (with secrets) in Git or public buckets."
-    Validate assumptions against the Theory section and official docs before changing production.
-
-!!! warning "CDK deploy without reviewing synth."
-    Lab shortcuts (open security groups, admin roles, skip approvals) must not ship unchanged.
-
-!!! warning "Changing production without a rollback path"
-    Always know how to revert (previous artefact, prior release, state rollback, DNS failback).
+!!! warning "Skipping change sets in production"
+    Always review change sets for destructive updates — especially RDS replacements and security group renames.
 
 ## Best Practices
 
-
-
-
-
-
-- Encode Infrastructure as Code on AWS changes as code and review them in pull requests
-- Pin versions (images, modules, actions, provider plugins)
-- Separate environments with clear promotion gates
-- Alert on symptoms with runbooks attached
-- Destroy lab resources; tag everything with owner and expiry where possible
+- Store templates in Git; tag releases; require pull request review
+- Use nested stacks or modules for repeated patterns (VPC, logging bucket)
+- Pin provider/CDK versions; test upgrades in a sandbox OU first
+- Separate state/stack per environment (`dev`, `staging`, `prod`)
+- Document rollback: CloudFormation auto-rollback vs Terraform targeted destroy
 
 ## Troubleshooting
 
-
-
-
-
-
 | Symptom | Likely cause | Fix |
 |---------|--------------|-----|
-| Auth / permission denied | Wrong identity, policy, or scope | Check caller identity, roles, and least-privilege policies |
-| Timeout / no route | Network, DNS, security group, or endpoint | Trace path, DNS, and allow-lists before retrying |
-| Drift / unexpected plan | Manual change or wrong state/workspace | Reconcile desired vs actual; avoid click-ops on managed resources |
-| Pipeline/job red | Flaky step, cache, or missing secret | Read failing step logs; bisect recent workflow/config changes |
-| Cost spike | Idle load balancer, NAT, oversized compute | Inventory billable resources; stop/delete labs promptly |
+| Stack stuck `ROLLBACK_COMPLETE` | Resource failed during create | `describe-stack-events`; fix template; delete stack and retry |
+| Update replaces bucket unexpectedly | Name or replacement policy change | Use stable logical IDs; `UpdateReplacePolicy` |
+| Terraform/CFN fight same resource | Duplicate management | Import into one tool or remove duplicate |
+| CDK synth differs from deploy | Context/environment mismatch | Commit `cdk.context.json` or pin context keys |
 
 ## Summary
 
-
-
-
-
-
-**Infrastructure as Code on AWS** is essential for Cloud and DevOps engineers working with aws. Practise the lab until the inspection and change path is muscle memory, then continue the track.
+**Infrastructure as Code** means cloud resources are defined in files, reviewed in Git, and applied repeatably. CloudFormation is AWS’s native engine; Terraform suits multi-cloud; CDK suits developer teams. You proved the full lifecycle with a real encrypted S3 stack. Next, wire similar templates into **CI/CD on AWS**.
 
 ## Interview Questions
 
+**1. What is Infrastructure as Code in simple words?**
 
+??? success "Reveal answer"
+    IaC means you describe servers, storage, and networks in text files stored in version control instead of clicking in a console. A tool reads those files and creates or updates cloud resources the same way every time — so teams can review, reproduce, and audit infrastructure like application code.
 
+**2. CloudFormation vs Terraform — how does state differ?**
 
-1. CloudFormation versus Terraform/CDK trade-offs?
-2. Why validate templates before create-stack?
-3. How do you recover from a ROLLBACK_COMPLETE stack?
-4. Change sets — when required?
-5. How do you keep credentials out of templates?
+??? success "Reveal answer"
+    CloudFormation stores stack state inside AWS — you describe stacks and AWS tracks resources. Terraform keeps a separate state file (often in S3 with DynamoDB locking) mapping your HCL addresses to real resource IDs. Terraform supports many cloud providers; CloudFormation is AWS-only with automatic rollback options on stack failure.
 
-!!! tip "Sample answer — question 2"
-    Read stack events for the first failing resource. Delete failed lab stacks so names can be reused.
+**3. When would you choose AWS CDK over raw CloudFormation YAML?**
 
-!!! tip "Sample answer — question 4"
-    Use roles for deployment and never hardcode secrets in templates.
+??? success "Reveal answer"
+    When developers need typed languages, reuse via constructs, and unit tests on infrastructure logic. CDK synthesises CloudFormation — you still operate stacks in AWS. Raw YAML suits simple stacks, third-party tools that only accept templates, or teams that forbid additional build steps.
+
+**4. What is drift and how do you handle it?**
+
+??? success "Reveal answer"
+    Drift is when live resources differ from the declared template or state file — often because someone changed settings in the console. Detect with CloudFormation drift detection or Terraform plan. Fix by updating the template for intentional changes or applying to revert accidental console edits.
+
+**5. Why did stack delete fail on an S3 bucket?**
+
+??? success "Reveal answer"
+    Non-empty buckets (and buckets with `DeletionPolicy: Retain`) block stack deletion. Empty objects with `aws s3 rm --recursive`, delete bucket policy/lifecycle if needed, then retry `delete-stack`. For retained buckets, delete the stack and clean the bucket separately.
+
+**6. What is AWS Service Catalog’s role?**
+
+??? success "Reveal answer"
+    It publishes approved products (often CloudFormation templates) to portfolios so application teams self-provision within guardrails — tagging, allowed instance types, network placement. Platform teams govern; users launch constrained products instead of free-form templates.
+
+**7. How do you secure IaC pipelines?**
+
+??? success "Reveal answer"
+    Least-privilege deploy roles, OIDC federation from GitHub/GitLab (no long-lived keys), signed commits, plan/change-set review gates, secret scanning, and separate accounts per environment. Never run production applies from unreviewed feature branches.
+
+**8. When is importing an existing resource necessary?**
+
+??? success "Reveal answer"
+    When resources were created manually or by another tool and you need to bring them under IaC without recreation. CloudFormation supports resource import; Terraform uses `terraform import`. Imports require matching logical IDs and careful first-plan review to avoid unintended changes.
 
 ## Related Tutorials
 
-
-
-
-
-
-- [Course overview](index.md)
-- [CI/CD on AWS](cicd-on-aws.md)
+- Previous: [AWS Security Services](aws-security-services.md) *(Module 10)*
+- Next: [CI/CD on AWS](cicd-on-aws.md) *(Module 12)*
+- [Production AWS Landing Zones](production-aws-landing-zones.md) *(Module 15)*
+- Course index: [AWS for Cloud & DevOps Engineers](index.md)
 
 ## References
 
-
-
-
-
-
-- [AWS CloudFormation User Guide](https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/Welcome.html)  
-- [AWS CDK Developer Guide](https://docs.aws.amazon.com/cdk/v2/guide/home.html)  
-- [AWS Service Catalog](https://docs.aws.amazon.com/servicecatalog/latest/adminguide/introduction.html)  
-- [Terraform AWS Provider](https://registry.terraform.io/providers/hashicorp/aws/latest/docs)  
-- [AWS Well-Architected — Operational Excellence](https://docs.aws.amazon.com/wellarchitected/latest/framework/operational-excellence.html)
+- [AWS CloudFormation User Guide](https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/)
+- [CloudFormation drift detection](https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/using-cfn-stack-drift.html)
+- [AWS CDK Developer Guide](https://docs.aws.amazon.com/cdk/v2/guide/)
+- [AWS Service Catalog](https://docs.aws.amazon.com/servicecatalog/latest/adg/)
+- [Terraform AWS provider](https://registry.terraform.io/providers/hashicorp/aws/latest/docs)
