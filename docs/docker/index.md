@@ -80,4 +80,4 @@ python3 scripts/generate-excalidraw-svg.py
 ## Related
 
 - [Linux](../linux/index.md) · [Kubernetes](../kubernetes/index.md) · [GitHub Actions](../github-actions/index.md)
-- [DevOps Engineer path](../career-paths/devops-engineer/index.md)
+- [DevOps Engineer path](../learning-paths/devops-engineer/index.md)

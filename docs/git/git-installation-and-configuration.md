@@ -6,7 +6,7 @@ estimated_time: "45–60 min"
 technology: git
 category: git
 module: "Module 2 · Installing Git"
-career_paths:
+learning_paths:
   - beginner
   - devops-engineer
   - cloud-engineer

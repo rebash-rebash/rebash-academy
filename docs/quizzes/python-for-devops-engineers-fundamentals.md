@@ -1051,4 +1051,4 @@ Default behaviour for a Docker cleanup CLI in shared CI agents should be:
 - Interview: [Python interview prep](../interview/python.md)
 - Labs: [Python Log Analyser](../labs/python-log-analyser.md)
 - Capstone: [Production DevOps Automation Platform](../projects/python-devops-automation-framework.md)
-- Learning path: [Python for DevOps Engineers](../learning-paths/python-for-devops.md)
+- Learning path: [Python for DevOps Engineers](../learning-paths/devops-engineer/)

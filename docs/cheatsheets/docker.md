@@ -42,4 +42,4 @@ Scannable commands and patterns for the [Docker track](../docker/index.md). Pref
 - Track: [Docker](../docker/index.md)
 - Start: [Docker introduction](../docker/introduction-to-containers-and-docker.md)
 - Interview bank: [Docker interview prep](../interview/docker.md)
-- Learning path: [DevOps Engineer](../learning-paths/devops-engineer.md)
+- Learning path: [DevOps Engineer](../learning-paths/devops-engineer/)

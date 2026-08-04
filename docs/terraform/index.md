@@ -92,4 +92,4 @@ Reusable modules · remote state · pinned providers · CI plan gates · multi-c
 
 - [AWS](../aws/index.md) · [Azure](../azure/index.md) · [GCP](../gcp/index.md)
 - [Kubernetes](../kubernetes/index.md) · [Helm](../helm/index.md) · [Ansible](../ansible/index.md)
-- [DevOps Engineer path](../career-paths/devops-engineer/index.md)
+- [DevOps Engineer path](../learning-paths/devops-engineer/index.md)

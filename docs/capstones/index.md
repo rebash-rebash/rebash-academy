@@ -9,7 +9,7 @@ tags:
 
 # Capstones
 
-A capstone is the final build of a career path: an end-to-end system that combines
+A capstone is the final build of a learning path: an end-to-end system that combines
 several technologies the way a real platform team would. Each capstone is
 portfolio-ready — you can publish the result on GitHub and talk through it in
 an interview.

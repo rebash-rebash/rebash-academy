@@ -1,6 +1,6 @@
 ---
 title: Capstones backlog
-description: Associate through architect capstone backlog for REBASH Academy — ordered by level and career path.
+description: Associate through architect capstone backlog for REBASH Academy — ordered by level and learning path.
 author: Shaik Basha
 category: curriculum
 tags:
@@ -17,7 +17,7 @@ Master backlog for career-path capstones. Align IDs and metadata with [`capstone
 
 ## Published — path-ending builds (via projects)
 
-| Capstone ID | Career path | Title | Level | Difficulty | Duration | Technologies | Related projects | Skills | Priority | Status |
+| Capstone ID | Learning path | Title | Level | Difficulty | Duration | Technologies | Related projects | Skills | Priority | Status |
 |-------------|-------------|-------|-------|------------|----------|--------------|------------------|--------|----------|--------|
 | `linux-enterprise-ops-platform` | linux-administrator, site-reliability-engineer | Enterprise Linux Server Platform | expert | expert | 20–30 h | linux, shell | projects/linux-production-operations-platform | hardening, backup, alerting | P1 | published |
 | `shell-automation-framework` | devops-engineer, platform-engineer | Production Shell Automation Framework | expert | expert | 20–30 h | shell, linux | projects/shell-production-automation-framework | modular Bash, strict mode, logging | P1 | published |
@@ -27,7 +27,7 @@ Master backlog for career-path capstones. Align IDs and metadata with [`capstone
 
 ## Planned — Cloud Engineering
 
-| Capstone ID | Career path | Title | Level | Difficulty | Duration | Technologies | Priority | Status |
+| Capstone ID | Learning path | Title | Level | Difficulty | Duration | Technologies | Priority | Status |
 |-------------|-------------|-------|-------|------------|----------|--------------|----------|--------|
 | `terraform-enterprise-landing-zone` | cloud-engineer, cloud-architect | Enterprise Landing Zone | architect | expert | 40–60 h | terraform, aws | P1 | planned |
 | `aws-production-platform` | cloud-engineer | Production AWS Platform | expert | expert | 30–45 h | aws, terraform, networking | P1 | planned |
@@ -37,7 +37,7 @@ Master backlog for career-path capstones. Align IDs and metadata with [`capstone
 
 ## Planned — DevOps & delivery
 
-| Capstone ID | Career path | Title | Level | Difficulty | Duration | Technologies | Priority | Status |
+| Capstone ID | Learning path | Title | Level | Difficulty | Duration | Technologies | Priority | Status |
 |-------------|-------------|-------|-------|------------|----------|--------------|----------|--------|
 | `enterprise-devops-platform` | devops-engineer | Enterprise DevOps Platform | expert | expert | 30–45 h | gitlab, docker, kubernetes, terraform | P1 | planned |
 | `github-actions-ci-platform` | devops-engineer | Enterprise CI Platform | professional | advanced | 20–30 h | github-actions, docker | P2 | planned |
@@ -47,7 +47,7 @@ Master backlog for career-path capstones. Align IDs and metadata with [`capstone
 
 ## Planned — Kubernetes & platform
 
-| Capstone ID | Career path | Title | Level | Difficulty | Duration | Technologies | Priority | Status |
+| Capstone ID | Learning path | Title | Level | Difficulty | Duration | Technologies | Priority | Status |
 |-------------|-------------|-------|-------|------------|----------|--------------|----------|--------|
 | `kubernetes-enterprise-platform` | kubernetes-engineer, platform-engineer | Enterprise Kubernetes Platform | expert | expert | 35–50 h | kubernetes, helm, terraform | P1 | planned |
 | `argocd-gitops-platform` | kubernetes-engineer, platform-engineer | Enterprise GitOps Platform | expert | expert | 30–45 h | argocd, kubernetes, gitlab | P1 | planned |
@@ -56,7 +56,7 @@ Master backlog for career-path capstones. Align IDs and metadata with [`capstone
 
 ## Planned — Observability & SRE
 
-| Capstone ID | Career path | Title | Level | Difficulty | Duration | Technologies | Priority | Status |
+| Capstone ID | Learning path | Title | Level | Difficulty | Duration | Technologies | Priority | Status |
 |-------------|-------------|-------|-------|------------|----------|--------------|----------|--------|
 | `prometheus-monitoring-platform` | site-reliability-engineer | Enterprise Monitoring Platform | professional | advanced | 20–30 h | prometheus, grafana | P2 | planned |
 | `loki-logging-platform` | site-reliability-engineer | Centralised Logging Platform | professional | advanced | 20–30 h | loki, grafana | P2 | planned |
@@ -66,7 +66,7 @@ Master backlog for career-path capstones. Align IDs and metadata with [`capstone
 
 ## Planned — Architecture, operations & AI
 
-| Capstone ID | Career path | Title | Level | Difficulty | Duration | Technologies | Priority | Status |
+| Capstone ID | Learning path | Title | Level | Difficulty | Duration | Technologies | Priority | Status |
 |-------------|-------------|-------|-------|------------|----------|--------------|----------|--------|
 | `enterprise-hybrid-network` | cloud-engineer, cloud-architect | Enterprise Hybrid Network | expert | expert | 25–35 h | networking, aws, terraform | P2 | planned |
 | `ai-assisted-platform-ops` | ai-for-devops, site-reliability-engineer | AI-assisted Platform Operations | expert | expert | 25–40 h | python, ai-for-devops, kubernetes | P2 | planned |

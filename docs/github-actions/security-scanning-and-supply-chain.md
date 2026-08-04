@@ -6,7 +6,7 @@ estimated_time: "50–70 min"
 technology: github-actions
 category: github-actions
 module: "Module 11 · Security"
-career_paths:
+learning_paths:
   - devops-engineer
   - devsecops-engineer
   - platform-engineer

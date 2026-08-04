@@ -8,7 +8,7 @@ last_updated: "2026-08-04"
 category: ai
 technology: ai
 module: "Module 4 · Evaluation"
-career_paths:
+learning_paths:
   - ai-for-devops
   - devops-engineer
   - platform-engineer
@@ -587,4 +587,4 @@ Next: [Embeddings and Semantic Search](embeddings-and-semantic-search.md).
 
 - [OpenAI — Evals guide](https://platform.openai.com/docs/guides/evals)
 - [Google Cloud — Responsible AI testing](https://cloud.google.com/discover/what-is-responsible-ai)
-- [REBASH Academy — AI for DevOps career path](../career-paths/ai-for-devops/index.md)
+- [REBASH Academy — AI for DevOps learning path](../learning-paths/ai-for-devops/index.md)

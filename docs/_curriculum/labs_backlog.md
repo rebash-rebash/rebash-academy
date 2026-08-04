@@ -19,7 +19,7 @@ Master list for lab authoring and curriculum alignment. Align frontmatter with [
 
 Ordered beginner → expert within each technology group.
 
-| Lab ID | Technology | Module | Title | Level | Type | Difficulty | Time | Career paths | Prerequisites | Related tutorials | Related projects | Priority | Status |
+| Lab ID | Technology | Module | Title | Level | Type | Difficulty | Time | Learning paths | Prerequisites | Related tutorials | Related projects | Priority | Status |
 |--------|------------|--------|-------|-------|------|------------|------|--------------|---------------|-------------------|------------------|----------|--------|
 | `labs/linux-install-and-first-boot` | linux | Fundamentals | Install Linux and First Boot | guided | guided | intermediate | 60–120 min | beginner, linux-administrator | — | linux track M1 | — | P0 | published |
 | `labs/linux-ssh-secure-access` | linux | Security | Configure SSH Secure Access | guided | security | intermediate | 60 min | devops-engineer, linux-administrator | linux-install-and-first-boot | linux SSH tutorials | — | P0 | published |
@@ -104,9 +104,9 @@ Technologies with tutorial tracks but no dedicated lab series yet. Add rows here
 Tutorial → Guided lab → Practice lab → Challenge lab → Project → Capstone
 ```
 
-## Career path mapping
+## Learning path mapping
 
-Labs declare `career_paths` in frontmatter. Path detail pages link back to recommended labs via curriculum ids — keep slugs stable under `docs/labs/`.
+Labs declare `learning_paths` in frontmatter. Path detail pages link back to recommended labs via curriculum ids — keep slugs stable under `docs/labs/`.
 
 ## Navigation
 

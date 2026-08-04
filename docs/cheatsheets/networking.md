@@ -49,4 +49,4 @@ Scannable commands and patterns for the [Networking track](../networking/index.m
 - Lab: [Edge Failover](../labs/networking-edge-failover.md)
 - Quiz: [Networking Production](../quizzes/networking-production.md)
 - Interview bank: [Networking interview prep](../interview/networking.md)
-- Learning path: [DevOps Engineer](../learning-paths/devops-engineer.md)
+- Learning path: [DevOps Engineer](../learning-paths/devops-engineer/)

@@ -6,7 +6,7 @@ estimated_time: "40–55 min"
 technology: kubernetes
 category: kubernetes
 module: "Module 2 · Cluster Setup"
-career_paths:
+learning_paths:
   - kubernetes-engineer
   - devops-engineer
   - platform-engineer

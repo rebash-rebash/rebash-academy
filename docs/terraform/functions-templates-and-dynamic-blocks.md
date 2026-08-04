@@ -6,7 +6,7 @@ estimated_time: "65–75 min"
 technology: terraform
 category: terraform
 module: "Module 10 · Expressions & Functions"
-career_paths:
+learning_paths:
   - devops-engineer
   - cloud-engineer
   - platform-engineer

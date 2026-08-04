@@ -6,7 +6,7 @@ estimated_time: "45–60 min"
 technology: docker
 category: docker
 module: "Module 9 · Docker Compose"
-career_paths:
+learning_paths:
   - devops-engineer
   - platform-engineer
   - software-engineer

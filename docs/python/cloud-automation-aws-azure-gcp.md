@@ -6,7 +6,7 @@ estimated_time: "60–75 min"
 technology: python
 category: python
 module: "Module 15 · Cloud Automation"
-career_paths:
+learning_paths:
   - devops-engineer
   - cloud-engineer
   - platform-engineer

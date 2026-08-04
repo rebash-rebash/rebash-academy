@@ -364,7 +364,7 @@ Related tutorial questions live in [Troubleshooting Linux Systems](../linux/trou
 - [Logging: syslog, journald, logrotate](../linux/logging-syslog-journald-logrotate.md)
 - Lab: [Manage Services and Analyse Logs](linux-services-and-logs-lab.md)
 - Cheat sheet: [Linux Cheat Sheet](../cheatsheets/linux.md)
-- Learning path: [Linux for Cloud & DevOps](../learning-paths/linux-for-cloud-devops.md)
+- Learning path: [Linux for Cloud & DevOps](../learning-paths/linux-administrator/)
 - Next lab: [Performance Troubleshooting](linux-performance-troubleshooting-lab.md)
 
 ## References

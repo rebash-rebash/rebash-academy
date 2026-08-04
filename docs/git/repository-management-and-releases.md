@@ -6,7 +6,7 @@ estimated_time: "50–65 min"
 technology: git
 category: git
 module: "Module 14 · Repository Management"
-career_paths:
+learning_paths:
   - devops-engineer
   - cloud-engineer
   - platform-engineer

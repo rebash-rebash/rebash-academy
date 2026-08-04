@@ -6,7 +6,7 @@ estimated_time: "35–50 min"
 technology: helm
 category: helm
 module: "Module 2 · Installing Helm"
-career_paths:
+learning_paths:
   - kubernetes-engineer
   - devops-engineer
   - platform-engineer

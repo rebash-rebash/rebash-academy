@@ -6,7 +6,7 @@ estimated_time: "50–70 min"
 technology: kubernetes
 category: kubernetes
 module: "Module 17 · Production Operations"
-career_paths:
+learning_paths:
   - kubernetes-engineer
   - platform-engineer
   - site-reliability-engineer

@@ -83,6 +83,6 @@ Include `examples/latest.html`, install instructions, and a dry-run mode (`--onc
 
 ## Related
 
-- Path: [Linux for Cloud & DevOps](../learning-paths/linux-for-cloud-devops.md)
+- Path: [Linux for Cloud & DevOps](../learning-paths/linux-administrator/)
 - Next: [Linux Operations Toolkit](linux-operations-toolkit.md)
 - Interview: [Linux Interview Prep](../interview/linux.md)

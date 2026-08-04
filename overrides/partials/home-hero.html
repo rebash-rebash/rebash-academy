@@ -1,0 +1,112 @@
+{#- REBASH Academy homepage hero — two-column landing composition -#}
+<section class="ra-landing-hero" id="ra-home-intro" aria-label="REBASH Academy introduction">
+  <div class="ra-landing-hero__inner">
+    <div class="ra-landing-hero__copy">
+      <div class="ra-landing-hero__badges">
+        <span class="ra-landing-hero__badge ra-landing-hero__badge--primary">Open</span>
+        <span class="ra-landing-hero__badge ra-landing-hero__badge--brand">
+          <img src="{{ 'assets/images/logo.svg' | url }}" alt="" width="18" height="18">
+          REBASH Academy
+        </span>
+        <span class="ra-landing-hero__badge">
+          <span class="ra-landing-hero__badge-icon" aria-hidden="true">{% include ".icons/material/account-hard-hat.svg" %}</span>
+          Built for Engineers
+        </span>
+      </div>
+
+      <h1 class="ra-landing-hero__title">
+        Build Production-Grade
+        <span class="ra-landing-hero__title-accent">Cloud and AI Systems</span>
+      </h1>
+
+      <p class="ra-landing-hero__lead">
+        Learn Linux, Kubernetes, Cloud, DevOps and AI through hands-on labs and projects.
+      </p>
+
+      <div class="ra-landing-hero__actions">
+        <a class="ra-landing-hero__btn ra-landing-hero__btn--primary" href="{{ 'getting-started/' | url }}">
+          Start Learning
+          <span class="ra-landing-hero__btn-icon" aria-hidden="true">{% include ".icons/material/arrow-right.svg" %}</span>
+        </a>
+        <a class="ra-landing-hero__btn ra-landing-hero__btn--ghost" href="{{ 'learning-paths/' | url }}">
+          Explore Learning Paths
+        </a>
+      </div>
+
+      <div class="ra-landing-hero__stats" role="list">
+        <div class="ra-landing-hero__stat" role="listitem">
+          <span class="ra-landing-hero__stat-value">270+</span>
+          <span class="ra-landing-hero__stat-label">Tutorials</span>
+        </div>
+        <div class="ra-landing-hero__stat" role="listitem">
+          <span class="ra-landing-hero__stat-value">50+</span>
+          <span class="ra-landing-hero__stat-label">Labs</span>
+        </div>
+        <div class="ra-landing-hero__stat" role="listitem">
+          <span class="ra-landing-hero__stat-value">10</span>
+          <span class="ra-landing-hero__stat-label">Paths</span>
+        </div>
+        <div class="ra-landing-hero__stat" role="listitem">
+          <span class="ra-landing-hero__stat-value">12</span>
+          <span class="ra-landing-hero__stat-label">Courses</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="ra-landing-hero__visual" aria-hidden="true">
+      <div class="ra-landing-hero__cloud">
+        <img class="ra-brand ra-brand--md" src="{{ 'assets/images/brands/google-cloud.svg' | url }}" alt="" width="28" height="28" decoding="async">
+        <img class="ra-brand ra-brand--md" src="{{ 'assets/images/brands/aws.svg' | url }}" alt="" width="28" height="28" decoding="async">
+        <img class="ra-brand ra-brand--md" src="{{ 'assets/images/brands/azure.svg' | url }}" alt="" width="28" height="28" decoding="async">
+      </div>
+
+      <div class="ra-landing-hero__stack">
+        <div class="ra-landing-hero__tier ra-landing-hero__tier--1">Cloud / AI Systems</div>
+        <div class="ra-landing-hero__tier ra-landing-hero__tier--2">
+          <img class="ra-brand ra-brand--sm" src="{{ 'assets/images/brands/kubernetes.svg' | url }}" alt="" width="16" height="16" decoding="async">
+          Kubernetes
+        </div>
+        <div class="ra-landing-hero__tier ra-landing-hero__tier--3">
+          <img class="ra-brand ra-brand--sm" src="{{ 'assets/images/brands/docker.svg' | url }}" alt="" width="16" height="16" decoding="async">
+          Containers
+        </div>
+      </div>
+
+      <div class="ra-landing-hero__foundations">
+        <div class="ra-landing-hero__foundation">
+          <img class="ra-brand ra-brand--sm" src="{{ 'assets/images/brands/linux.svg' | url }}" alt="" width="16" height="16" decoding="async">
+          <span>Linux</span>
+        </div>
+        <div class="ra-landing-hero__foundation">
+          <img class="ra-brand ra-brand--sm" src="{{ 'assets/images/brands/terraform.svg' | url }}" alt="" width="16" height="16" decoding="async">
+          <span>IaC / Terraform</span>
+        </div>
+        <div class="ra-landing-hero__foundation">
+          <img class="ra-brand ra-brand--sm" src="{{ 'assets/images/brands/gitlab.svg' | url }}" alt="" width="16" height="16" decoding="async">
+          <span>CI/CD</span>
+        </div>
+        <div class="ra-landing-hero__foundation">
+          <span class="ra-landing-hero__foundation-icon" aria-hidden="true">{% include ".icons/material/shield-check.svg" %}</span>
+          <span>Security</span>
+        </div>
+        <div class="ra-landing-hero__foundation">
+          <span class="ra-landing-hero__foundation-icon" aria-hidden="true">{% include ".icons/material/monitor-dashboard.svg" %}</span>
+          <span>Observability</span>
+        </div>
+      </div>
+
+      <div class="ra-landing-hero__terminal">
+        <span class="ra-landing-hero__prompt">$</span>
+        <span class="ra-landing-hero__cmd ra-landing-hero__cmd--1">learn</span>
+        <span class="ra-landing-hero__arrow">-&gt;</span>
+        <span class="ra-landing-hero__cmd ra-landing-hero__cmd--2">practice</span>
+        <span class="ra-landing-hero__arrow">-&gt;</span>
+        <span class="ra-landing-hero__cmd ra-landing-hero__cmd--3">build</span>
+        <span class="ra-landing-hero__arrow">-&gt;</span>
+        <span class="ra-landing-hero__cmd ra-landing-hero__cmd--4">grow</span>
+        <span class="ra-landing-hero__arrow">-&gt;</span>
+        <span class="ra-landing-hero__cmd ra-landing-hero__cmd--5">lead</span>
+      </div>
+    </div>
+  </div>
+</section>

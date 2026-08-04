@@ -16,7 +16,7 @@ comments: false
 
 # Project — Linux System Information Utility
 
-Beginner portfolio build for the [Linux for Cloud & DevOps](../learning-paths/linux-for-cloud-devops.md) track — ship a small, reliable host inventory CLI.
+Beginner portfolio build for the [Linux for Cloud & DevOps](../learning-paths/linux-administrator/) track — ship a small, reliable host inventory CLI.
 
 ## Project Overview
 
@@ -78,7 +78,7 @@ Default human report; optional `--kv` or `--json` (JSON may use `python3 -c` or 
 
 ## Related
 
-- Course path: [Linux for Cloud & DevOps](../learning-paths/linux-for-cloud-devops.md)
+- Course path: [Linux for Cloud & DevOps](../learning-paths/linux-administrator/)
 - Lab: [Linux Ops Toolkit](../labs/linux-ops-toolkit-lab.md)
 - Next project: [Linux Server Health Dashboard](linux-server-health-dashboard.md)
 - Cheat sheet: [Linux](../cheatsheets/linux.md)

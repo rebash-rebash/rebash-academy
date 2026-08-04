@@ -6,7 +6,7 @@ estimated_time: "45–60 min"
 technology: docker
 category: docker
 module: "Module 6 · Image Optimisation"
-career_paths:
+learning_paths:
   - devops-engineer
   - platform-engineer
   - site-reliability-engineer

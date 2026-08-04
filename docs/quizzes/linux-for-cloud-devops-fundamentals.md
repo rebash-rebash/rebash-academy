@@ -1057,7 +1057,7 @@ Production Linux hardening commonly includes all EXCEPT:
 
 ## Related
 
-- Path: [Linux for Cloud & DevOps](../learning-paths/linux-for-cloud-devops.md)
+- Path: [Linux for Cloud & DevOps](../learning-paths/linux-administrator/)
 - Cheat sheet: [Linux](../cheatsheets/linux.md)
 - Interview: [Linux Interview Prep](../interview/linux.md)
 - Lab: [Linux Ops Toolkit](../labs/linux-ops-toolkit-lab.md)

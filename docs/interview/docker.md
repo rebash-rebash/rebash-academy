@@ -42,4 +42,4 @@ Use this page as a revision map. Every tutorial in the [Docker track](../docker/
 
 - Track: [Docker](../docker/index.md)
 - Cheat sheet: [Docker cheat sheet](../cheatsheets/docker.md)
-- Learning path: [DevOps Engineer](../learning-paths/devops-engineer.md)
+- Learning path: [DevOps Engineer](../learning-paths/devops-engineer/)

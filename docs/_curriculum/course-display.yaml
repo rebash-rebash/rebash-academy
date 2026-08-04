@@ -15,7 +15,7 @@ linux:
     - Package management and service configuration with systemd
     - Container fundamentals and production hardening patterns
   related: [shell, python, networking, docker]
-  career_paths: [devops-engineer, linux-administrator, cloud-engineer, site-reliability-engineer]
+  learning_paths: [devops-engineer, linux-administrator, cloud-engineer, site-reliability-engineer]
   labs: 10
   quizzes: 1
   projects: 2
@@ -30,7 +30,7 @@ shell:
   eyebrow: Automation course
   tagline: Bash scripting for Linux administration, pipelines, and production automation.
   related: [linux, python, git, docker]
-  career_paths: [devops-engineer, linux-administrator, platform-engineer]
+  learning_paths: [devops-engineer, linux-administrator, platform-engineer]
   labs: 15
   quizzes: 1
   projects: 2
@@ -45,7 +45,7 @@ python:
   eyebrow: DevOps automation course
   tagline: Python for CLI tools, APIs, cloud SDKs, and Kubernetes automation.
   related: [shell, linux, docker, kubernetes]
-  career_paths: [devops-engineer, platform-engineer, cloud-engineer]
+  learning_paths: [devops-engineer, platform-engineer, cloud-engineer]
   labs: 17
   quizzes: 1
   projects: 3
@@ -60,7 +60,7 @@ networking:
   eyebrow: Production networking course
   tagline: TCP/IP, DNS, HTTP, load balancing, and cloud network operations.
   related: [linux, aws, kubernetes, security]
-  career_paths: [cloud-engineer, devops-engineer, site-reliability-engineer]
+  learning_paths: [cloud-engineer, devops-engineer, site-reliability-engineer]
   labs: 2
   quizzes: 0
   projects: 0
@@ -75,7 +75,7 @@ git:
   eyebrow: Version control course
   tagline: Branching, remotes, pull requests, and Git workflows for engineering teams.
   related: [linux, shell, gitlab, github-actions]
-  career_paths: [devops-engineer, platform-engineer]
+  learning_paths: [devops-engineer, platform-engineer]
   labs: 1
   quizzes: 0
   projects: 0
@@ -90,7 +90,7 @@ docker:
   eyebrow: Containers course
   tagline: Images, Compose, networking, storage, and production container patterns.
   related: [linux, kubernetes, python, gitlab]
-  career_paths: [devops-engineer, kubernetes-engineer, platform-engineer]
+  learning_paths: [devops-engineer, kubernetes-engineer, platform-engineer]
   labs: 1
   quizzes: 0
   projects: 0
@@ -105,7 +105,7 @@ kubernetes:
   eyebrow: Orchestration course
   tagline: Workloads, networking, storage, security, and cluster operations.
   related: [docker, helm, terraform, python]
-  career_paths: [kubernetes-engineer, devops-engineer, platform-engineer, site-reliability-engineer]
+  learning_paths: [kubernetes-engineer, devops-engineer, platform-engineer, site-reliability-engineer]
   labs: 1
   quizzes: 0
   projects: 0
@@ -120,7 +120,7 @@ terraform:
   eyebrow: Infrastructure as Code course
   tagline: Providers, state, modules, and IaC patterns for cloud platforms.
   related: [aws, azure, gcp, ansible]
-  career_paths: [cloud-engineer, devops-engineer, platform-engineer]
+  learning_paths: [cloud-engineer, devops-engineer, platform-engineer]
   labs: 1
   quizzes: 0
   projects: 0
@@ -135,7 +135,7 @@ aws:
   eyebrow: Cloud platform course
   tagline: IAM, VPC, EC2, S3, load balancing, and production AWS operations.
   related: [terraform, networking, linux, kubernetes]
-  career_paths: [cloud-engineer, devops-engineer, site-reliability-engineer]
+  learning_paths: [cloud-engineer, devops-engineer, site-reliability-engineer]
   labs: 2
   quizzes: 0
   projects: 0
@@ -150,7 +150,7 @@ gitlab:
   eyebrow: CI/CD course
   tagline: Pipelines, runners, environments, and enterprise delivery patterns.
   related: [git, docker, kubernetes, devsecops]
-  career_paths: [devops-engineer, devsecops-engineer, platform-engineer]
+  learning_paths: [devops-engineer, devsecops-engineer, platform-engineer]
   labs: 2
   quizzes: 0
   projects: 0
@@ -165,7 +165,7 @@ helm:
   eyebrow: Kubernetes packaging course
   tagline: Charts, releases, and package management for Kubernetes applications.
   related: [kubernetes, argocd, docker]
-  career_paths: [kubernetes-engineer, platform-engineer]
+  learning_paths: [kubernetes-engineer, platform-engineer]
   labs: 0
   quizzes: 0
   projects: 0
@@ -180,7 +180,7 @@ ansible:
   eyebrow: Configuration management course
   tagline: Playbooks, roles, inventory, and idempotent configuration management.
   related: [linux, terraform, aws]
-  career_paths: [devops-engineer, cloud-engineer]
+  learning_paths: [devops-engineer, cloud-engineer]
   labs: 0
   quizzes: 0
   projects: 0
@@ -195,7 +195,7 @@ azure:
   eyebrow: Cloud platform course
   tagline: Azure fundamentals, compute, networking, and identity — track expanding.
   related: [terraform, networking, kubernetes]
-  career_paths: [cloud-engineer, devops-engineer]
+  learning_paths: [cloud-engineer, devops-engineer]
   labs: 0
   quizzes: 0
   projects: 0
@@ -210,7 +210,7 @@ gcp:
   eyebrow: Cloud platform course
   tagline: GCP core services, IAM, networking, and GKE foundations.
   related: [terraform, kubernetes, networking]
-  career_paths: [cloud-engineer, devops-engineer]
+  learning_paths: [cloud-engineer, devops-engineer]
   labs: 0
   quizzes: 0
   projects: 0
@@ -225,7 +225,7 @@ github-actions:
   eyebrow: CI/CD course
   tagline: Workflows, reusable actions, and repository automation.
   related: [git, docker, kubernetes]
-  career_paths: [devops-engineer, platform-engineer]
+  learning_paths: [devops-engineer, platform-engineer]
   labs: 0
   quizzes: 0
   projects: 0
@@ -240,7 +240,7 @@ jenkins:
   eyebrow: CI/CD course
   tagline: Jobs, pipelines, agents, and plugin-based continuous integration.
   related: [git, docker, kubernetes]
-  career_paths: [devops-engineer]
+  learning_paths: [devops-engineer]
   labs: 0
   quizzes: 0
   projects: 0
@@ -255,7 +255,7 @@ argocd:
   eyebrow: GitOps course
   tagline: Continuous delivery and drift remediation for Kubernetes workloads.
   related: [kubernetes, gitlab, helm]
-  career_paths: [kubernetes-engineer, platform-engineer]
+  learning_paths: [kubernetes-engineer, platform-engineer]
   labs: 0
   quizzes: 0
   projects: 0
@@ -270,7 +270,7 @@ prometheus:
   eyebrow: Observability course
   tagline: Metrics collection, PromQL, alerting, and SRE signals.
   related: [grafana, kubernetes, opentelemetry]
-  career_paths: [site-reliability-engineer, platform-engineer]
+  learning_paths: [site-reliability-engineer, platform-engineer]
   labs: 0
   quizzes: 0
   projects: 0
@@ -285,7 +285,7 @@ grafana:
   eyebrow: Observability course
   tagline: Dashboards, datasources, and visualisation for operations teams.
   related: [prometheus, loki, tempo]
-  career_paths: [site-reliability-engineer, platform-engineer]
+  learning_paths: [site-reliability-engineer, platform-engineer]
   labs: 0
   quizzes: 0
   projects: 0
@@ -300,7 +300,7 @@ loki:
   eyebrow: Observability course
   tagline: Log aggregation aligned with Prometheus and Grafana.
   related: [grafana, prometheus, opentelemetry]
-  career_paths: [site-reliability-engineer]
+  learning_paths: [site-reliability-engineer]
   labs: 0
   quizzes: 0
   projects: 0
@@ -315,7 +315,7 @@ tempo:
   eyebrow: Observability course
   tagline: Distributed tracing backend for microservices.
   related: [opentelemetry, grafana, prometheus]
-  career_paths: [site-reliability-engineer]
+  learning_paths: [site-reliability-engineer]
   labs: 0
   quizzes: 0
   projects: 0
@@ -330,7 +330,7 @@ opentelemetry:
   eyebrow: Observability course
   tagline: Vendor-neutral instrumentation for metrics, logs, and traces.
   related: [prometheus, grafana, tempo]
-  career_paths: [site-reliability-engineer, platform-engineer]
+  learning_paths: [site-reliability-engineer, platform-engineer]
   labs: 0
   quizzes: 0
   projects: 0
@@ -345,7 +345,7 @@ devsecops:
   eyebrow: Security engineering course
   tagline: Shift-left security across pipelines, containers, and cloud.
   related: [gitlab, kubernetes, aws]
-  career_paths: [devsecops-engineer, devops-engineer]
+  learning_paths: [devsecops-engineer, devops-engineer]
   labs: 0
   quizzes: 0
   projects: 0
@@ -360,7 +360,7 @@ platform-engineering:
   eyebrow: Platform engineering course
   tagline: Internal developer platforms, golden paths, and self-service infrastructure.
   related: [kubernetes, terraform, gitlab]
-  career_paths: [platform-engineer, devops-engineer]
+  learning_paths: [platform-engineer, devops-engineer]
   labs: 0
   quizzes: 0
   projects: 0
@@ -375,7 +375,7 @@ sre:
   eyebrow: Reliability course
   tagline: SLOs, error budgets, incident response, and production reliability.
   related: [prometheus, kubernetes, platform-engineering]
-  career_paths: [site-reliability-engineer, platform-engineer]
+  learning_paths: [site-reliability-engineer, platform-engineer]
   labs: 0
   quizzes: 0
   projects: 0
@@ -390,7 +390,7 @@ architecture:
   eyebrow: Architecture course
   tagline: Cloud landing zones, multi-account design, and scalable system patterns.
   related: [aws, terraform, kubernetes]
-  career_paths: [cloud-engineer, platform-engineer]
+  learning_paths: [cloud-engineer, platform-engineer]
   labs: 0
   quizzes: 0
   projects: 0
@@ -405,7 +405,7 @@ ai:
   eyebrow: AI for operations course
   tagline: AI-assisted triage, automation, and operational workflows.
   related: [python, platform-engineering, devsecops]
-  career_paths: [ai-for-devops, devops-engineer]
+  learning_paths: [ai-for-devops, devops-engineer]
   labs: 0
   quizzes: 0
   projects: 0
@@ -420,7 +420,7 @@ monitoring:
   eyebrow: Monitoring course
   tagline: Cross-cutting monitoring patterns and operational dashboards.
   related: [prometheus, grafana, sre]
-  career_paths: [site-reliability-engineer]
+  learning_paths: [site-reliability-engineer]
   labs: 0
   quizzes: 0
   projects: 0
@@ -435,7 +435,7 @@ security:
   eyebrow: Security fundamentals course
   tagline: Security fundamentals for infrastructure and platform teams.
   related: [devsecops, linux, networking]
-  career_paths: [devsecops-engineer, cloud-engineer]
+  learning_paths: [devsecops-engineer, cloud-engineer]
   labs: 0
   quizzes: 0
   projects: 0

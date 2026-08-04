@@ -17,7 +17,7 @@ Master backlog for certification mapping pages. Align with [`certification-front
 
 ## Mapped — active Academy alignment
 
-| Certification ID | Vendor | Certification | Level | Difficulty | Career paths | Technologies | Tutorials | Labs | Priority | Status |
+| Certification ID | Vendor | Certification | Level | Difficulty | Learning paths | Technologies | Tutorials | Labs | Priority | Status |
 |------------------|--------|---------------|-------|------------|--------------|--------------|-----------|------|----------|--------|
 | `rhcsa` | redhat | RHCSA | associate | intermediate | linux-administrator | linux | ~25 | linux labs | P1 | mapped |
 | `rhce` | redhat | RHCE | professional | advanced | linux-administrator | linux, shell | ~43 | linux, shell labs | P1 | mapped |
@@ -30,13 +30,13 @@ Master backlog for certification mapping pages. Align with [`certification-front
 
 ## Planned — Red Hat & Linux Foundation
 
-| Certification ID | Vendor | Certification | Level | Career paths | Priority | Status |
+| Certification ID | Vendor | Certification | Level | Learning paths | Priority | Status |
 |------------------|--------|---------------|-------|--------------|----------|--------|
 | `kcna` | cncf | KCNA | foundational | kubernetes-engineer, beginner | P2 | planned |
 
 ## Planned — AWS
 
-| Certification ID | Vendor | Certification | Level | Career paths | Priority | Status |
+| Certification ID | Vendor | Certification | Level | Learning paths | Priority | Status |
 |------------------|--------|---------------|-------|--------------|----------|--------|
 | `aws-cloud-practitioner` | aws | Cloud Practitioner | foundational | cloud-engineer, beginner | P2 | planned |
 | `aws-developer-associate` | aws | Developer Associate | associate | devops-engineer, cloud-engineer | P2 | planned |
@@ -45,7 +45,7 @@ Master backlog for certification mapping pages. Align with [`certification-front
 
 ## Planned — Azure
 
-| Certification ID | Vendor | Certification | Level | Career paths | Priority | Status |
+| Certification ID | Vendor | Certification | Level | Learning paths | Priority | Status |
 |------------------|--------|---------------|-------|--------------|----------|--------|
 | `az-900` | azure | AZ-900 | foundational | cloud-engineer, beginner | P2 | planned |
 | `az-104` | azure | AZ-104 | associate | cloud-engineer | P1 | planned |
@@ -54,7 +54,7 @@ Master backlog for certification mapping pages. Align with [`certification-front
 
 ## Planned — Google Cloud
 
-| Certification ID | Vendor | Certification | Level | Career paths | Priority | Status |
+| Certification ID | Vendor | Certification | Level | Learning paths | Priority | Status |
 |------------------|--------|---------------|-------|--------------|----------|--------|
 | `gcp-cdl` | gcp | Cloud Digital Leader | foundational | cloud-engineer, beginner | P3 | planned |
 | `gcp-ace` | gcp | Associate Cloud Engineer | associate | cloud-engineer | P1 | planned |
@@ -63,16 +63,16 @@ Master backlog for certification mapping pages. Align with [`certification-front
 
 ## Planned — GitHub, Docker & observability
 
-| Certification ID | Vendor | Certification | Level | Career paths | Priority | Status |
+| Certification ID | Vendor | Certification | Level | Learning paths | Priority | Status |
 |------------------|--------|---------------|-------|--------------|----------|--------|
 | `github-foundations` | github | GitHub Foundations | foundational | devops-engineer, beginner | P3 | planned |
 | `github-actions` | github | GitHub Actions | associate | devops-engineer | P2 | planned |
 | `docker-dca` | docker | Docker Certified Associate | associate | devops-engineer | P3 | planned |
 | `prometheus-pca` | prometheus | Prometheus Certified Associate | associate | site-reliability-engineer | P2 | planned |
 
-## Career path → certification matrix
+## Learning path → certification matrix
 
-| Career path | Recommended certifications (in order) |
+| Learning path | Recommended certifications (in order) |
 |-------------|--------------------------------------|
 | Linux Administrator | RHCSA → RHCE |
 | Cloud Engineer | AWS SAA or AZ-104 or GCP ACE → specialty |

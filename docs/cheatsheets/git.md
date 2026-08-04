@@ -42,4 +42,4 @@ Scannable commands and patterns for the [Git track](../git/index.md). Prefer the
 - Track: [Git](../git/index.md)
 - Start: [Git introduction](../git/introduction-to-git-and-version-control.md)
 - Interview bank: [Git interview prep](../interview/git.md)
-- Learning path: [DevOps Engineer](../learning-paths/devops-engineer.md)
+- Learning path: [DevOps Engineer](../learning-paths/devops-engineer/)

@@ -6,7 +6,7 @@ estimated_time: "40–55 min"
 technology: helm
 category: helm
 module: "Module 3 · Working with Charts"
-career_paths:
+learning_paths:
   - kubernetes-engineer
   - devops-engineer
   - platform-engineer

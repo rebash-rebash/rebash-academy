@@ -8,7 +8,7 @@ last_updated: "2026-08-04"
 category: ai
 technology: ai
 module: "Module 1 · Foundations"
-career_paths:
+learning_paths:
   - ai-for-devops
   - devops-engineer
   - platform-engineer
@@ -574,5 +574,5 @@ Next: [LLM and API Fundamentals](llm-and-api-fundamentals.md).
 
 ## References
 
-- [REBASH Academy — AI for DevOps career path](../career-paths/ai-for-devops/index.md)
+- [REBASH Academy — AI for DevOps learning path](../learning-paths/ai-for-devops/index.md)
 - [OWASP Top 10 for Large Language Model Applications](https://owasp.org/www-project-top-10-for-large-language-model-applications/)

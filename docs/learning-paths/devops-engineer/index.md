@@ -1,11 +1,11 @@
 ---
-title: "DevOps Engineer Career Path"
+title: "DevOps Engineer Learning Path"
 description: "Full-stack platform skills from Linux through CI/CD, containers, Kubernetes, and IaC."
 difficulty: intermediate
 estimated_time: "20–28 weeks"
-category: career-paths
+category: learning-paths
 tags:
-  - career-paths
+  - learning-paths
   - devops-engineer
 author: Shaik Basha
 ---
@@ -119,7 +119,7 @@ Choose a capstone that exercises the final phases of this path (for example Stat
 
 CKA, Terraform Associate, AWS SAA
 
-## Related career paths
+## Related learning paths
 
 - [Beginner](../beginner/index.md)
 - [Linux Administrator](../linux-administrator/index.md)

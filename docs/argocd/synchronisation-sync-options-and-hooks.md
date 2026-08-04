@@ -6,7 +6,7 @@ estimated_time: "50–65 min"
 technology: argocd
 category: argocd
 module: "Module 6 · Synchronisation"
-career_paths:
+learning_paths:
   - kubernetes-engineer
   - devops-engineer
   - platform-engineer

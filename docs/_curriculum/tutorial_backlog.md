@@ -11,7 +11,7 @@ tags:
 
 Generated from `curriculum.yaml`. Ready tutorials are listed first in technology order; planned technologies appear as stubs.
 
-| ID | Technology | Module | Tutorial Name | Difficulty | Prerequisites | Career Paths | Estimated Time | Status | Priority |
+| ID | Technology | Module | Tutorial Name | Difficulty | Prerequisites | Learning Paths | Estimated Time | Status | Priority |
 |----|------------|--------|---------------|------------|---------------|--------------|----------------|--------|----------|
 | `linux/linux-fundamentals-distributions-and-architecture` | linux | Module 1 · Fundamentals | Linux Fundamentals — Distributions and Architecture | beginner | — | ai-for-devops, beginner, cloud-engineer, devops-engineer, devsecops-engineer, kubernetes-engineer, linux-administrator, platform-engineer, site-reliability-engineer | 45–90 min | ready | P0 |
 | `linux/boot-process-and-filesystem-hierarchy` | linux | Module 1 · Fundamentals | Boot Process and Filesystem Hierarchy | beginner | linux/linux-fundamentals-distributions-and-architecture | ai-for-devops, beginner, cloud-engineer, devops-engineer, devsecops-engineer, kubernetes-engineer, linux-administrator, platform-engineer, site-reliability-engineer | 45–90 min | ready | P0 |

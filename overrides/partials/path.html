@@ -1,0 +1,142 @@
+{#-
+  REBASH Academy breadcrumbs — curated IA (not MkDocs section parents):
+  Home › Technologies › Networking › …
+  Home › Learning Paths › DevOps Engineer
+-#}
+{% if page.meta and page.meta.hide %}
+  {% set hidden = "hidden" if "path" in page.meta.hide %}
+{% endif %}
+
+{% set url = page.url | default('', true) %}
+{% set crumbs = namespace(items=[]) %}
+
+{% if not page.is_homepage %}
+  {% set _ = crumbs.items.append({
+    "label": "Home",
+    "href": nav.homepage.url if nav.homepage else ".",
+    "current": false
+  }) %}
+
+  {% set tech = namespace(root="", label="") %}
+  {% set tech_roots = [
+    ("linux/", "Linux"),
+    ("shell/", "Shell Scripting"),
+    ("networking/", "Networking"),
+    ("python/", "Python for DevOps"),
+    ("git/", "Git & GitHub"),
+    ("docker/", "Docker"),
+    ("kubernetes/", "Kubernetes"),
+    ("helm/", "Helm"),
+    ("gitlab/", "GitLab CI/CD"),
+    ("github-actions/", "GitHub Actions"),
+    ("jenkins/", "Jenkins"),
+    ("argocd/", "Argo CD"),
+    ("terraform/", "Terraform"),
+    ("ansible/", "Ansible"),
+    ("aws/", "AWS"),
+    ("gcp/", "Google Cloud"),
+    ("azure/", "Azure"),
+    ("devsecops/", "DevSecOps"),
+    ("security/", "Security"),
+    ("sre/", "Site Reliability Engineering"),
+    ("monitoring/", "Monitoring"),
+    ("prometheus/", "Prometheus"),
+    ("grafana/", "Grafana"),
+    ("loki/", "Loki"),
+    ("tempo/", "Tempo"),
+    ("opentelemetry/", "OpenTelemetry"),
+    ("platform-engineering/", "Platform Engineering"),
+    ("architecture/", "Architecture"),
+    ("ai/", "AI for DevOps")
+  ] %}
+  {% for root, label in tech_roots %}
+    {% if not tech.root and url.startswith(root) %}
+      {% set tech.root = root %}
+      {% set tech.label = label %}
+    {% endif %}
+  {% endfor %}
+
+  {% if tech.root %}
+    {% set _ = crumbs.items.append({"label": "Technologies", "href": "technologies/", "current": false}) %}
+    {% if url == tech.root or url == tech.root.rstrip("/") ~ "/" %}
+      {% set _ = crumbs.items.append({"label": tech.label, "href": tech.root, "current": true}) %}
+    {% else %}
+      {% set _ = crumbs.items.append({"label": tech.label, "href": tech.root, "current": false}) %}
+      {% set _ = crumbs.items.append({"label": page.title, "href": page.url, "current": true}) %}
+    {% endif %}
+
+  {% elif url.startswith("learning-paths/") or url == "learning-paths" %}
+    {% if url == "learning-paths/" or url == "learning-paths" %}
+      {% set _ = crumbs.items.append({"label": "Learning Paths", "href": "learning-paths/", "current": true}) %}
+    {% else %}
+      {% set _ = crumbs.items.append({"label": "Learning Paths", "href": "learning-paths/", "current": false}) %}
+      {% set _ = crumbs.items.append({"label": page.title, "href": page.url, "current": true}) %}
+    {% endif %}
+
+  {% elif url.startswith("getting-started") %}
+    {% set _ = crumbs.items.append({"label": "Getting Started", "href": "getting-started/", "current": true}) %}
+
+  {% elif url.startswith("technologies/") %}
+    {% set _ = crumbs.items.append({"label": "Technologies", "href": "technologies/", "current": true}) %}
+
+  {% elif url.startswith("cheatsheets/") %}
+    {% set _ = crumbs.items.append({"label": "Cheat Sheets", "href": "cheatsheets/", "current": url == "cheatsheets/" or url.rstrip("/") == "cheatsheets"}) %}
+    {% if url != "cheatsheets/" and url.rstrip("/") != "cheatsheets" %}
+      {% set _ = crumbs.items.append({"label": page.title, "href": page.url, "current": true}) %}
+    {% endif %}
+
+  {% elif url.startswith("interview/") %}
+    {% set _ = crumbs.items.append({"label": "Interview Guide", "href": "interview/", "current": url == "interview/" or url.rstrip("/") == "interview"}) %}
+    {% if url != "interview/" and url.rstrip("/") != "interview" %}
+      {% set _ = crumbs.items.append({"label": page.title, "href": page.url, "current": true}) %}
+    {% endif %}
+
+  {% elif url.startswith("books/") %}
+    {% set _ = crumbs.items.append({"label": "Books", "href": "books/", "current": true}) %}
+
+  {% elif url.startswith("community/") %}
+    {% set _ = crumbs.items.append({"label": "Community", "href": "community/", "current": true}) %}
+
+  {% elif url.startswith("labs/") or url.startswith("quizzes/") or url.startswith("projects/") or url.startswith("capstones/") or url.startswith("certifications/") %}
+    {% set section = url.split("/")[0] %}
+    {% set labels = {
+      "labs": "Labs",
+      "quizzes": "Quizzes",
+      "projects": "Projects",
+      "capstones": "Capstones",
+      "certifications": "Certifications"
+    } %}
+    {% set section_label = labels[section] %}
+    {% set section_href = section ~ "/" %}
+    {% set parts = url.strip("/").split("/") %}
+    {% if parts | length == 1 %}
+      {% set _ = crumbs.items.append({"label": section_label, "href": section_href, "current": true}) %}
+    {% else %}
+      {% set _ = crumbs.items.append({"label": section_label, "href": section_href, "current": false}) %}
+      {% set _ = crumbs.items.append({"label": page.title, "href": page.url, "current": true}) %}
+    {% endif %}
+
+  {% else %}
+    {% set _ = crumbs.items.append({"label": page.title, "href": page.url, "current": true}) %}
+  {% endif %}
+{% endif %}
+
+{% if crumbs.items | length > 1 %}
+  <nav class="md-path ra-path" aria-label="{{ lang.t('nav') }}" {{ hidden }}>
+    <ol class="md-path__list ra-path__list">
+      {% for crumb in crumbs.items %}
+        <li class="md-path__item ra-path__item{% if crumb.current %} ra-path__item--current{% endif %}">
+          {% if crumb.current %}
+            <span class="md-path__link ra-path__link ra-path__link--current">
+              <span class="md-ellipsis">{{ crumb.label }}</span>
+            </span>
+          {% else %}
+            <a href="{{ crumb.href | url }}" class="md-path__link ra-path__link">
+              <span class="md-ellipsis">{{ crumb.label }}</span>
+            </a>
+          {% endif %}
+        </li>
+      {% endfor %}
+    </ol>
+  </nav>
+{% endif %}

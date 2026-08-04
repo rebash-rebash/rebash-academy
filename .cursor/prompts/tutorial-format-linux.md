@@ -241,7 +241,7 @@ comments: false
 ---
 ```
 
-Optional curriculum fields (`technology`, `module`, `career_paths`, `skills`, `next`, `related`, `interview`, `certifications`, `labs`) may remain for tooling. **Body structure above is mandatory.**
+Optional curriculum fields (`technology`, `module`, `learning_paths`, `skills`, `next`, `related`, `interview`, `certifications`, `labs`) may remain for tooling. **Body structure above is mandatory.**
 
 ---
 

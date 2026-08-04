@@ -285,7 +285,7 @@ Tell this build story in interviews. Continue with [Linux Interview Prep](../int
 - [Production Linux Hardening and Performance](../linux/production-linux-hardening-and-performance.md)
 - [Backup, Disaster Recovery, and Capacity](../linux/backup-disaster-recovery-and-capacity.md)
 - [Linux Production Incident Triage](linux-production-incident-triage.md)
-- Path: [Linux for Cloud & DevOps](../learning-paths/linux-for-cloud-devops.md)
+- Path: [Linux for Cloud & DevOps](../learning-paths/linux-administrator/)
 - [Docker](../docker/index.md)
 
 ## References

@@ -6,7 +6,7 @@ estimated_time: "45–60 min"
 technology: jenkins
 category: jenkins
 module: "Module 1 · Introduction to Jenkins and CI/CD"
-career_paths:
+learning_paths:
   - devops-engineer
   - cloud-engineer
   - platform-engineer

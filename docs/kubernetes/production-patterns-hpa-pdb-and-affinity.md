@@ -548,7 +548,7 @@ kubectl get events -n votestack --sort-by='.lastTimestamp'
 - [Kubernetes – Category Overview](index.md)
 - Cheat sheet: [Kubernetes Cheat Sheet](../cheatsheets/kubernetes.md)
 - Interview prep: [Kubernetes Interview Prep](../interview/kubernetes.md)
-- Learning path: [DevOps Engineer](../learning-paths/devops-engineer.md)
+- Learning path: [DevOps Engineer](../learning-paths/devops-engineer/)
 
 ## References
 

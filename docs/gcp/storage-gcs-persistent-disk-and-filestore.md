@@ -6,7 +6,7 @@ estimated_time: "45–75 min"
 technology: gcp
 category: gcp
 module: "Module 5 · Storage"
-career_paths:
+learning_paths:
   - cloud-engineer
   - devops-engineer
   - platform-engineer

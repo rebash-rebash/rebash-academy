@@ -6,7 +6,7 @@ estimated_time: "65–80 min"
 technology: aws
 category: aws
 module: "Module 10 · Security Services"
-career_paths:
+learning_paths:
   - cloud-engineer
   - devops-engineer
   - platform-engineer

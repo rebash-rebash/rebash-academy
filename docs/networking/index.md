@@ -89,4 +89,4 @@ python3 scripts/generate-excalidraw-svg.py
 ## Related
 
 - [Linux](../linux/index.md) · [Docker](../docker/index.md) · [Kubernetes](../kubernetes/index.md) · [AWS](../aws/index.md)
-- [DevOps Engineer path](../career-paths/devops-engineer/index.md)
+- [DevOps Engineer path](../learning-paths/devops-engineer/index.md)

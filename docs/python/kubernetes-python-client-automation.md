@@ -6,7 +6,7 @@ estimated_time: "55–70 min"
 technology: python
 category: python
 module: "Module 18 · Kubernetes Automation"
-career_paths:
+learning_paths:
   - kubernetes-engineer
   - platform-engineer
   - devops-engineer

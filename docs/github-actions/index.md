@@ -92,4 +92,4 @@ python3 scripts/generate-excalidraw-svg.py
 
 - [Git](../git/index.md) · [Docker](../docker/index.md) · [Kubernetes](../kubernetes/index.md)
 - [Terraform](../terraform/index.md) · [Jenkins](../jenkins/index.md) · [GitLab CI/CD](../gitlab/index.md)
-- [DevOps Engineer path](../career-paths/devops-engineer/index.md)
+- [DevOps Engineer path](../learning-paths/devops-engineer/index.md)

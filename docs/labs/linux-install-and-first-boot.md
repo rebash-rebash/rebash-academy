@@ -212,7 +212,7 @@ Expect: “Walk me through bringing up a Linux VM and what you check first.” L
 - [Linux Fundamentals: Distributions and Architecture](../linux/linux-fundamentals-distributions-and-architecture.md)
 - [Boot Process and Filesystem Hierarchy](../linux/boot-process-and-filesystem-hierarchy.md)
 - Cheat sheet: [Linux](../cheatsheets/linux.md)
-- Path: [Linux for Cloud & DevOps](../learning-paths/linux-for-cloud-devops.md)
+- Path: [Linux for Cloud & DevOps](../learning-paths/linux-administrator/)
 
 ## References
 

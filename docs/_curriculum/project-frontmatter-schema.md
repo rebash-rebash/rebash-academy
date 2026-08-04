@@ -23,7 +23,7 @@ technology: linux                 # primary curriculum technology id
 technologies:                     # all stacks used
   - linux
   - shell
-career_paths:
+learning_paths:
   - devops-engineer
   - linux-administrator
 skills:
@@ -137,9 +137,9 @@ LICENSE
 
 Include only directories relevant to the project — do not scaffold empty folders.
 
-## Career path mapping
+## Learning path mapping
 
-Every project declares one or more `career_paths` ids from `curriculum.yaml`. Examples:
+Every project declares one or more `learning_paths` ids from `curriculum.yaml`. Examples:
 
 | Project theme | Typical paths |
 |---------------|---------------|

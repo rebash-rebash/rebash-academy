@@ -8,7 +8,7 @@ last_updated: "2026-08-04"
 category: ai
 technology: ai
 module: "Module 7 · RAG"
-career_paths:
+learning_paths:
   - ai-for-devops
   - devops-engineer
   - platform-engineer

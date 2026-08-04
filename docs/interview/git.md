@@ -42,4 +42,4 @@ Use this page as a revision map. Every tutorial in the [Git track](../git/index.
 
 - Track: [Git](../git/index.md)
 - Cheat sheet: [Git cheat sheet](../cheatsheets/git.md)
-- Learning path: [DevOps Engineer](../learning-paths/devops-engineer.md)
+- Learning path: [DevOps Engineer](../learning-paths/devops-engineer/)

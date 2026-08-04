@@ -234,4 +234,4 @@ build-image:
 - Lab: [Docker Build, Scan, and Deploy Gate](../labs/cicd-docker-secure-gate.md)
 - Quiz: [CI/CD Fundamentals](../quizzes/cicd-fundamentals.md)
 - Interview bank: [CI/CD interview prep](../interview/cicd.md)
-- Learning path: [DevOps Engineer](../learning-paths/devops-engineer.md)
+- Learning path: [DevOps Engineer](../learning-paths/devops-engineer/)

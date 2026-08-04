@@ -543,7 +543,7 @@ DATABASE_HOST=localhost
 - [Environment Variables and Shell Config](../linux/environment-variables-shell-config.md)
 - Cheat sheet: [Docker Cheat Sheet](../cheatsheets/docker.md)
 - Interview prep: [Docker Interview Prep](../interview/docker.md)
-- Learning path: [DevOps Engineer](../learning-paths/devops-engineer.md)
+- Learning path: [DevOps Engineer](../learning-paths/devops-engineer/)
 
 ## References
 

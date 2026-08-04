@@ -6,7 +6,7 @@ estimated_time: "50–65 min"
 technology: terraform
 category: terraform
 module: "Module 17 · Multi-Cloud Infrastructure"
-career_paths:
+learning_paths:
   - devops-engineer
   - cloud-engineer
   - platform-engineer

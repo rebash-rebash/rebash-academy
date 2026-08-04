@@ -3,7 +3,7 @@
   Page TOC stays in the right sidebar only — not nested under the active nav item.
 -#}
 {% set section_icons = {
-  "Get Started": ["material/rocket-launch", "#fb8c00"],
+  "Learning Paths": ["material/map-marker-path", "#fb8c00"],
   "DevOps": ["material/infinity", "#1976d2"],
   "Cloud": ["material/cloud", "#00acc1"],
   "Security": ["material/security", "#e53935"],
@@ -22,7 +22,10 @@
   {% endif %}
 {% endmacro %}
 {% macro render_title(nav_item) %}
-  {% if nav_item.typeset %}
+  {#- Keep homepage labelled "Home" in the sidebar (page title is REBASH Academy) -#}
+  {% if nav_item.is_page and nav_item.is_homepage %}
+    Home
+  {% elif nav_item.typeset %}
     <span class="md-typeset">
       {{ nav_item.typeset.title }}
     </span>
@@ -32,8 +35,19 @@
 {% endmacro %}
 {% macro render_content(nav_item, ref) %}
   {% set ref = ref or nav_item %}
-  {% if nav_item.meta and nav_item.meta.icon %}
-    {% include ".icons/" ~ nav_item.meta.icon ~ ".svg" %}
+  {% set label = "Home" if (ref.is_page and ref.is_homepage) else ref.title %}
+  {% if label == "Getting Started" %}
+    <span class="rebash-nav-page-icon rebash-nav-page-icon--rocket" aria-hidden="true">
+      <img src="{{ 'assets/images/icons/nav-rocket.svg' | url }}" alt="" width="18" height="18" decoding="async">
+    </span>
+  {% elif nav_item.is_page and nav_item.is_homepage %}
+    <span class="rebash-nav-page-icon rebash-nav-page-icon--home" aria-hidden="true">
+      {% include ".icons/material/home-outline.svg" %}
+    </span>
+  {% elif nav_item.meta and nav_item.meta.icon %}
+    <span class="rebash-nav-page-icon" aria-hidden="true">
+      {% include ".icons/" ~ nav_item.meta.icon ~ ".svg" %}
+    </span>
   {% endif %}
   <span class="md-ellipsis">
     {{ render_title(ref) }}

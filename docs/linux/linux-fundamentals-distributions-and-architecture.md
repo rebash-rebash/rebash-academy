@@ -8,7 +8,7 @@ last_updated: "2026-08-04"
 category: linux
 technology: linux
 module: "Module 1 · Linux Fundamentals"
-career_paths:
+learning_paths:
   - linux-administrator
   - devops-engineer
   - cloud-engineer

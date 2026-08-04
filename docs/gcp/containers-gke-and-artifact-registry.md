@@ -6,7 +6,7 @@ estimated_time: "75–120 min"
 technology: gcp
 category: gcp
 module: "Module 7 · Containers"
-career_paths:
+learning_paths:
   - cloud-engineer
   - devops-engineer
   - platform-engineer

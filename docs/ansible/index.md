@@ -88,4 +88,4 @@ Multi-env repo layout · idempotent roles · Vault secrets · syntax-check in CI
 
 - [Terraform](../terraform/index.md) · [Kubernetes](../kubernetes/index.md) · [Helm](../helm/index.md)
 - [GitOps fundamentals](../git/gitops-fundamentals.md)
-- [DevOps Engineer path](../career-paths/devops-engineer/index.md)
+- [DevOps Engineer path](../learning-paths/devops-engineer/index.md)

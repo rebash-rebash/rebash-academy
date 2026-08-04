@@ -11,7 +11,7 @@ tags:
 
 Every technology track is a full course: tutorials in order, hands-on labs, projects,
 a cheat sheet, and interview themes. Pick a track below or follow a
-[career path](../career-paths/index.md) that sequences them for a job role.
+[learning path](../learning-paths/index.md) that sequences them for a job role.
 
 ## Foundations
 

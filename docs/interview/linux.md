@@ -14,7 +14,7 @@ comments: false
 
 # Linux Interview Prep
 
-Use this bank after the [Linux for Cloud & DevOps](../learning-paths/linux-for-cloud-devops.md) tutorials and labs. Answer out loud in two minutes, then name the first three debug commands.
+Use this bank after the [Linux for Cloud & DevOps](../learning-paths/linux-administrator/) tutorials and labs. Answer out loud in two minutes, then name the first three debug commands.
 
 !!! tip "How to practise"
     1. Answer without notes  
@@ -166,7 +166,7 @@ Use this bank after the [Linux for Cloud & DevOps](../learning-paths/linux-for-c
 ## Related
 
 - Track: [Linux](../linux/index.md)
-- Path: [Linux for Cloud & DevOps](../learning-paths/linux-for-cloud-devops.md)
+- Path: [Linux for Cloud & DevOps](../learning-paths/linux-administrator/)
 - Cheat sheet: [Linux](../cheatsheets/linux.md)
 - Quiz: [Linux for Cloud & DevOps Fundamentals](../quizzes/linux-for-cloud-devops-fundamentals.md)
 - Labs: [Labs index](../labs/index.md)

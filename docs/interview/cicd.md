@@ -85,4 +85,4 @@ Use this page as a revision map. Every tutorial in the [CI/CD track](../gitlab/i
 - Quiz: [CI/CD Fundamentals](../quizzes/cicd-fundamentals.md)
 - Lab: [Pipeline Failure Triage](../labs/cicd-pipeline-triage.md)
 - Lab: [Docker Build, Scan, and Deploy Gate](../labs/cicd-docker-secure-gate.md)
-- Learning path: [DevOps Engineer](../learning-paths/devops-engineer.md)
+- Learning path: [DevOps Engineer](../learning-paths/devops-engineer/)

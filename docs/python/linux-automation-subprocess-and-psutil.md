@@ -6,7 +6,7 @@ estimated_time: "50–65 min"
 technology: python
 category: python
 module: "Module 13 · Linux Automation"
-career_paths:
+learning_paths:
   - beginner
   - devops-engineer
   - cloud-engineer

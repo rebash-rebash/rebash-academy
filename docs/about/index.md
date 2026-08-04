@@ -15,7 +15,7 @@ comments: false
 
 # About REBASH Academy
 
-**REBASH Academy** is an open learning platform for engineers who want practical Cloud and DevOps skills. We publish structured career paths, technology tracks, hands-on labs, and portfolio projects so you can learn the way production teams work — not by memorising certification dumps.
+**REBASH Academy** is an open learning platform for engineers who want practical Cloud and DevOps skills. We publish structured learning paths, technology tracks, hands-on labs, and portfolio projects so you can learn the way production teams work — not by memorising certification dumps.
 
 The focus is real engineering: why a tool exists, when to use it, how to operate it safely, and how to recover when it fails.
 
@@ -33,7 +33,7 @@ We aim to:
 
 Over time, REBASH Academy should become a trusted place for Cloud and DevOps engineers to learn in public:
 
-- A large collection of production-focused tutorials, shared across career paths without duplication
+- A large collection of production-focused tutorials, shared across learning paths without duplication
 - Open knowledge sharing — free to read, open to contribution
 - Learning through practice first, with theory that supports the hands-on work
 - Clear paths from first Linux shell session to platform, SRE, security, and architecture roles
@@ -44,7 +44,7 @@ The academy combines several formats in one place:
 
 | Capability | Purpose |
 |------------|---------|
-| [Career paths](../career-paths/index.md) | Job-shaped roadmaps across technologies |
+| [Learning paths](../learning-paths/index.md) | Job-shaped roadmaps across technologies |
 | Hands-on [labs](../labs/index.md) | Scenario practice after modules |
 | [Projects](../projects/index.md) and [capstones](../capstones/index.md) | Portfolio-ready builds |
 | Production best practices | Defaults you can take into real environments |
@@ -96,7 +96,7 @@ New here? Start with [Getting Started](../getting-started/index.md).
 
 | Section | Purpose |
 |---------|---------|
-| [Career Paths](../career-paths/index.md) | Ordered roadmaps for job roles |
+| [Learning Paths](../learning-paths/index.md) | Ordered roadmaps for job roles |
 | Technologies | Deep tracks (Linux, Docker, Kubernetes, Terraform, …) |
 | Tutorials | Concept + lab lessons inside each technology |
 | [Labs](../labs/index.md) | Scenario drills grouped by course |
@@ -112,10 +112,10 @@ New here? Start with [Getting Started](../getting-started/index.md).
 
 You can browse in two ways:
 
-1. **By career path** — follow a job-shaped sequence  
+1. **By learning path** — follow a job-shaped sequence  
 2. **By technology** — deepen one skill at a time  
 
-A single tutorial (for example Docker networking) can appear on multiple career paths. We do **not** duplicate the lesson file — metadata and roadmaps point at the same page.
+A single tutorial (for example Docker networking) can appear on multiple learning paths. We do **not** duplicate the lesson file — metadata and roadmaps point at the same page.
 
 The repository curriculum (`curriculum.yaml`) is the source of truth for paths, technologies, and tutorial IDs.
 
@@ -152,7 +152,7 @@ REBASH Academy welcomes community contributions. You can:
 Near-term direction includes:
 
 - More technologies (Azure, GCP, observability, security tooling, and more)  
-- Deeper coverage on existing career paths  
+- Deeper coverage on existing learning paths  
 - Additional labs and enterprise-style projects  
 - Stronger AI-assisted learning materials  
 - Interactive learning features where they help practice  
@@ -187,7 +187,7 @@ REBASH Academy is built and maintained to document real engineering work so othe
 | Next step | Link |
 |-----------|------|
 | Onboarding guide | [Getting Started](../getting-started/index.md) |
-| Job-shaped roadmaps | [Career Paths](../career-paths/index.md) |
+| Job-shaped roadmaps | [Learning Paths](../learning-paths/index.md) |
 | Skill-shaped tracks | [Linux](../linux/index.md) (or any technology in the nav) |
 | Practice | [Labs](../labs/index.md) · [Projects](../projects/index.md) |
 

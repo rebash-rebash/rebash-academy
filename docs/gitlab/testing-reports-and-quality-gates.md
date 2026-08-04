@@ -6,7 +6,7 @@ estimated_time: "45–60 min"
 technology: gitlab
 category: gitlab
 module: "Module 13 · Testing"
-career_paths:
+learning_paths:
   - devops-engineer
   - cloud-engineer
   - platform-engineer

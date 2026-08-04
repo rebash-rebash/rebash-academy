@@ -8,7 +8,7 @@ last_updated: "2026-08-03"
 category: ansible
 technology: ansible
 module: "Module 12 · Cloud Automation"
-career_paths:
+learning_paths:
   - cloud-engineer
   - devops-engineer
   - platform-engineer

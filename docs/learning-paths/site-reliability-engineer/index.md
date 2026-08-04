@@ -1,40 +1,40 @@
 ---
-title: "Linux Administrator Career Path"
-description: "Deep Linux operations — storage, systemd, security, and production hardening."
-difficulty: beginner
-estimated_time: "8–12 weeks"
-category: career-paths
+title: "Site Reliability Engineer Learning Path"
+description: "Reliability, observability, incident response, and production operations at scale."
+difficulty: advanced
+estimated_time: "16–24 weeks"
+category: learning-paths
 tags:
-  - career-paths
-  - linux-administrator
+  - learning-paths
+  - site-reliability-engineer
 author: Shaik Basha
 ---
 
-# Linux Administrator
+# Site Reliability Engineer
 
-**Duration:** 8–12 weeks · **Difficulty:** beginner · **Badge:** Ops
+**Duration:** 16–24 weeks · **Difficulty:** advanced · **Badge:** SRE
 { .ra-facts }
 
-Deep Linux operations — storage, systemd, security, and production hardening.
+Reliability, observability, incident response, and production operations at scale.
 
 
 ## Complete roadmap
 
-{{ roadmap(["linux", "shell", "networking", "python", "git"]) }}
+{{ roadmap(["linux", "networking", "python", "git", "kubernetes", "terraform", "gitlab", "prometheus", "grafana", "loki", "tempo", "opentelemetry", "sre"]) }}
 
 ## Target audience
 
-Engineers who want the **Linux Administrator** skill profile and job outcomes below.
+Engineers who want the **Site Reliability Engineer** skill profile and job outcomes below.
 
 ## Job roles
 
-- Linux Administrator
-- Systems Administrator
-- Infrastructure Engineer
+- Site Reliability Engineer
+- Production Engineer
+- Reliability Engineer
 
 ## Expected salary ranges
 
-Typically mid-level systems roles — treat as directional guidance only.
+Mid to senior SRE roles — treat as directional guidance only.
 
 ## Prerequisites
 
@@ -46,16 +46,27 @@ Typically mid-level systems roles — treat as directional guidance only.
 
 ## Phases
 
-### Core
+### Foundations
 
 - [Linux](../../linux/) — ready · 25 tutorials
-- [Shell Scripting](../../shell/) — ready · 18 tutorials
 - [Networking](../../networking/) — ready · 25 tutorials
-
-### Automation
-
 - [Python for DevOps](../../python/) — ready · 27 tutorials
 - [Git](../../git/) — ready · 20 tutorials
+
+### Platform
+
+- [Kubernetes](../../kubernetes/) — ready · 20 tutorials
+- [Terraform](../../terraform/) — ready · 20 tutorials
+- [GitLab CI/CD](../../gitlab/) — ready · 20 tutorials
+
+### Observability
+
+- **Prometheus** — planned
+- **Grafana** — planned
+- **Loki** — planned
+- **Tempo** — planned
+- **OpenTelemetry** — planned
+- **Site Reliability Engineering** — planned
 
 
 ## Skills gained
@@ -80,15 +91,15 @@ Choose a capstone that exercises the final phases of this path (for example Stat
 
 ## Certification roadmap
 
-RHCSA, RHCE
+CKA, PCA
 
-## Related career paths
+## Related learning paths
 
 - [Beginner](../beginner/index.md)
+- [Linux Administrator](../linux-administrator/index.md)
 - [Cloud Engineer](../cloud-engineer/index.md)
 - [DevOps Engineer](../devops-engineer/index.md)
-- [Kubernetes Engineer](../kubernetes-engineer/index.md)
 
 ## Estimated duration
 
-**8–12 weeks** of focused study (tutorials + labs). Stretch if you are new to Linux or cloud.
+**16–24 weeks** of focused study (tutorials + labs). Stretch if you are new to Linux or cloud.

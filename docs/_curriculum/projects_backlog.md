@@ -15,7 +15,7 @@ Master backlog for portfolio projects. Align IDs and metadata with [`project-fro
 
 ## Published — Foundations (Linux, Shell, Python)
 
-| Project ID | Technology | Level | Title | Duration | Career paths | Related tutorials | Related labs | Skills | Priority | Status |
+| Project ID | Technology | Level | Title | Duration | Learning paths | Related tutorials | Related labs | Skills | Priority | Status |
 |------------|------------|-------|-------|----------|--------------|-------------------|--------------|--------|----------|--------|
 | `linux-system-information-utility` | linux | mini | Linux System Information Utility | 3–5 h | linux-administrator, beginner | linux/linux-essential-commands | labs/linux-install-and-first-boot | bash, /proc, ip | P1 | published |
 | `shell-linux-automation-scripts` | shell | mini | Linux Automation Scripts | 3–5 h | devops-engineer, linux-administrator | shell/shell-intro-ops | labs/shell-first-script | bash, host facts, backup | P1 | published |
@@ -33,13 +33,13 @@ Master backlog for portfolio projects. Align IDs and metadata with [`project-fro
 
 ## Published — Portfolio (multi-stack)
 
-| Project ID | Technology | Level | Title | Duration | Career paths | Related tutorials | Related labs | Skills | Priority | Status |
+| Project ID | Technology | Level | Title | Duration | Learning paths | Related tutorials | Related labs | Skills | Priority | Status |
 |------------|------------|-------|-------|----------|--------------|-------------------|--------------|--------|----------|--------|
 | `status-api-portfolio` | git, docker, kubernetes, terraform | intermediate | Status API Portfolio Build | 3–4 h | devops-engineer, kubernetes-engineer | docker/, kubernetes/, terraform/ | labs/docker-compose-stack-recovery, labs/kubernetes-deployment-triage | Git, Docker, K8s, Terraform | P1 | published |
 
 ## Planned — Cloud
 
-| Project ID | Technology | Level | Title | Duration | Career paths | Priority | Status |
+| Project ID | Technology | Level | Title | Duration | Learning paths | Priority | Status |
 |------------|------------|-------|-------|----------|--------------|----------|--------|
 | `aws-ec2-provision-mini` | aws, terraform | mini | Provision an EC2 VM | 3–5 h | cloud-engineer | P2 | planned |
 | `aws-terraform-modules` | aws, terraform | intermediate | Reusable Terraform Modules | 8–12 h | cloud-engineer, devops-engineer | P2 | planned |
@@ -50,7 +50,7 @@ Master backlog for portfolio projects. Align IDs and metadata with [`project-fro
 
 ## Planned — Containers & orchestration
 
-| Project ID | Technology | Level | Title | Duration | Career paths | Priority | Status |
+| Project ID | Technology | Level | Title | Duration | Learning paths | Priority | Status |
 |------------|------------|-------|-------|----------|--------------|----------|--------|
 | `docker-containerise-app` | docker | mini | Containerise an Application | 3–5 h | devops-engineer | P2 | planned |
 | `docker-compose-stack` | docker | intermediate | Production Compose Stack | 8–12 h | devops-engineer | P2 | planned |
@@ -63,7 +63,7 @@ Master backlog for portfolio projects. Align IDs and metadata with [`project-fro
 
 ## Planned — Infrastructure as Code
 
-| Project ID | Technology | Level | Title | Duration | Career paths | Priority | Status |
+| Project ID | Technology | Level | Title | Duration | Learning paths | Priority | Status |
 |------------|------------|-------|-------|----------|--------------|----------|--------|
 | `terraform-ec2-mini` | terraform, aws | mini | Provision an EC2 Instance | 3–5 h | cloud-engineer | P2 | planned |
 | `terraform-reusable-modules` | terraform | intermediate | Reusable Terraform Modules | 8–12 h | devops-engineer, cloud-engineer | P2 | planned |
@@ -73,7 +73,7 @@ Master backlog for portfolio projects. Align IDs and metadata with [`project-fro
 
 ## Planned — CI/CD & GitOps
 
-| Project ID | Technology | Level | Title | Duration | Career paths | Priority | Status |
+| Project ID | Technology | Level | Title | Duration | Learning paths | Priority | Status |
 |------------|------------|-------|-------|----------|--------------|----------|--------|
 | `gitlab-pipeline-mini` | gitlab | mini | First GitLab Pipeline | 3–5 h | devops-engineer | P2 | planned |
 | `github-actions-delivery` | github-actions | intermediate | GitHub Actions Delivery Pipeline | 8–12 h | devops-engineer | P3 | planned |
@@ -83,7 +83,7 @@ Master backlog for portfolio projects. Align IDs and metadata with [`project-fro
 
 ## Planned — Observability
 
-| Project ID | Technology | Level | Title | Duration | Career paths | Priority | Status |
+| Project ID | Technology | Level | Title | Duration | Learning paths | Priority | Status |
 |------------|------------|-------|-------|----------|--------------|----------|--------|
 | `prometheus-alerting-mini` | prometheus | mini | First Prometheus Alert | 3–5 h | site-reliability-engineer | P3 | planned |
 | `grafana-dashboard-platform` | grafana, prometheus | intermediate | Grafana Dashboard Platform | 8–12 h | site-reliability-engineer | P3 | planned |
@@ -92,7 +92,7 @@ Master backlog for portfolio projects. Align IDs and metadata with [`project-fro
 
 ## Planned — Security, platform & AI
 
-| Project ID | Technology | Level | Title | Duration | Career paths | Priority | Status |
+| Project ID | Technology | Level | Title | Duration | Learning paths | Priority | Status |
 |------------|------------|-------|-------|----------|--------------|----------|--------|
 | `devsecops-scan-gates` | devsecops, gitlab | intermediate | Pipeline Security Gates | 8–12 h | devsecops-engineer | P2 | planned |
 | `internal-developer-platform` | platform-engineering, kubernetes | capstone | Internal Developer Platform | 30–40 h | platform-engineer | P1 | planned |

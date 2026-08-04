@@ -74,4 +74,4 @@ python3 scripts/generate-excalidraw-svg.py
 ## Related
 
 - [Kubernetes](../kubernetes/index.md) · [Argo CD](../argocd/index.md) · [GitOps (Git)](../git/gitops-fundamentals.md)
-- [Kubernetes Engineer path](../career-paths/kubernetes-engineer/index.md)
+- [Kubernetes Engineer path](../learning-paths/kubernetes-engineer/index.md)

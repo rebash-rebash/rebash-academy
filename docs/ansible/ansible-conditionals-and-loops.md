@@ -8,7 +8,7 @@ last_updated: "2026-08-03"
 category: ansible
 technology: ansible
 module: "Module 7 · Conditionals & Loops"
-career_paths:
+learning_paths:
   - devops-engineer
   - cloud-engineer
   - platform-engineer

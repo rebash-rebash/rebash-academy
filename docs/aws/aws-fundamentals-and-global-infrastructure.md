@@ -6,7 +6,7 @@ estimated_time: "60–75 min"
 technology: aws
 category: aws
 module: "Module 1 · AWS Fundamentals"
-career_paths:
+learning_paths:
   - cloud-engineer
   - devops-engineer
   - platform-engineer
@@ -26,7 +26,7 @@ next:
 related:
   - aws/cost-optimisation-on-aws
   - aws/troubleshooting-aws
-  - career-paths/cloud-engineer/index
+  - learning-paths/cloud-engineer/index
 labs: []
 projects: []
 interview: interview/aws

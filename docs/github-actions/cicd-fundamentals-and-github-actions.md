@@ -6,7 +6,7 @@ estimated_time: "45–55 min"
 technology: github-actions
 category: github-actions
 module: "Module 1 · CI/CD Fundamentals"
-career_paths:
+learning_paths:
   - devops-engineer
   - cloud-engineer
   - platform-engineer

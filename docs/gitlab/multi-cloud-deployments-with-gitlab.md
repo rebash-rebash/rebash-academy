@@ -6,7 +6,7 @@ estimated_time: "50–65 min"
 technology: gitlab
 category: gitlab
 module: "Module 11 · Cloud Deployments"
-career_paths:
+learning_paths:
   - devops-engineer
   - cloud-engineer
   - platform-engineer

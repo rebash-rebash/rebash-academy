@@ -91,4 +91,4 @@ Excalidraw SVGs live under `docs/assets/excalidraw/` (for example `jenkins-archi
 
 - [Git](../git/index.md) · [Docker](../docker/index.md) · [Kubernetes](../kubernetes/index.md)
 - [Terraform](../terraform/index.md) · [GitHub Actions](../github-actions/index.md) · [GitLab CI/CD](../gitlab/index.md)
-- [DevOps Engineer path](../career-paths/devops-engineer/index.md)
+- [DevOps Engineer path](../learning-paths/devops-engineer/index.md)

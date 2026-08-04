@@ -6,7 +6,7 @@ estimated_time: "40–55 min"
 technology: docker
 category: docker
 module: "Module 4 · Images"
-career_paths:
+learning_paths:
   - beginner
   - devops-engineer
   - platform-engineer

@@ -22,7 +22,7 @@ level: associate                         # foundational | associate | profession
 difficulty: advanced
 estimated_duration: "8–12 weeks"
 recommended_experience: "6 months hands-on Kubernetes"
-career_paths:
+learning_paths:
   - kubernetes-engineer
   - devops-engineer
 technologies:
@@ -56,7 +56,7 @@ Every certification page follows this structure:
 4. **Difficulty and preparation time** — honest estimate using Academy content
 5. **Exam objectives** — vendor objective domains as headings
 6. **Objective mapping** — table linking each domain to Academy content (see model below)
-7. **Recommended learning path** — career path link and module order
+7. **Recommended learning path** — learning path link and module order
 8. **Required tutorials** — checklist with links
 9. **Required labs** — hands-on proof points
 10. **Required quizzes** — self-assessment gates
@@ -123,9 +123,9 @@ Update [`certification_mapping.md`](certification_mapping.md) when tutorial-leve
 | Prometheus | `prometheus` | Prometheus Certified Associate |
 | Docker | `docker` | Docker Certified Associate (historical reference) |
 
-## Career path mapping
+## Learning path mapping
 
-| Career path | Primary certifications |
+| Learning path | Primary certifications |
 |-------------|------------------------|
 | `linux-administrator` | RHCSA, RHCE |
 | `cloud-engineer` | AWS SAA, AZ-104, Google ACE |
@@ -157,7 +157,7 @@ Dashboard concept (`docs/certifications/progress/` future): one row per certific
 
 Standard progression for any certification:
 
-1. Choose **career path** aligned to the cert
+1. Choose **learning path** aligned to the cert
 2. Complete **tutorials** for mapped technologies
 3. Pass **labs** for hands-on domains
 4. Pass **quizzes** at 70%+
@@ -189,13 +189,13 @@ docs/certifications/
   progress/                   # future dashboard
 ```
 
-Nav groups by vendor in `.pages` as pages ship. Until detail pages exist, the landing page links to career paths and technology tracks with live mapping.
+Nav groups by vendor in `.pages` as pages ship. Until detail pages exist, the landing page links to learning paths and technology tracks with live mapping.
 
 ## Cross-reference model
 
 Every certification page links outward:
 
-- **Career path** — primary study sequence
+- **Learning path** — primary study sequence
 - **Technology index** — tutorial catalogue
 - **Labs / quizzes / projects** — filtered by `certifications` frontmatter tag
 - **Interview prep** — exam-adjacent scenarios

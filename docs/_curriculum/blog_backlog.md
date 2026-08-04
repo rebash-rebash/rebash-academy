@@ -17,7 +17,7 @@ No articles are published yet. The landing page and nav ship with the framework;
 
 ## Planned — Release notes & product
 
-| Article ID | Category | Title | Type | Difficulty | Reading time | Technologies | Career paths | Priority | Status |
+| Article ID | Category | Title | Type | Difficulty | Reading time | Technologies | Learning paths | Priority | Status |
 |------------|----------|-------|------|------------|--------------|--------------|--------------|----------|--------|
 | `release-notes-launch` | release-notes | REBASH Academy launch — what is live today | release-notes | beginner | 5 min | — | beginner | P1 | planned |
 | `release-notes-monthly-template` | release-notes | Monthly content release template | release-notes | beginner | 3 min | — | — | P2 | planned |
@@ -25,7 +25,7 @@ No articles are published yet. The landing page and nav ship with the framework;
 
 ## Planned — Engineering & DevOps
 
-| Article ID | Category | Title | Type | Difficulty | Reading time | Technologies | Career paths | Priority | Status |
+| Article ID | Category | Title | Type | Difficulty | Reading time | Technologies | Learning paths | Priority | Status |
 |------------|----------|-------|------|------------|--------------|--------------|--------------|----------|--------|
 | `why-linux-first` | engineering | Why Linux still comes first in DevOps hiring | opinion | beginner | 8 min | linux | beginner, devops-engineer | P1 | planned |
 | `git-recovery-stories` | engineering | Git recovery patterns every team needs | lessons-learned | intermediate | 10 min | git | devops-engineer | P2 | planned |
@@ -34,7 +34,7 @@ No articles are published yet. The landing page and nav ship with the framework;
 
 ## Planned — Cloud & infrastructure
 
-| Article ID | Category | Title | Type | Difficulty | Reading time | Technologies | Career paths | Priority | Status |
+| Article ID | Category | Title | Type | Difficulty | Reading time | Technologies | Learning paths | Priority | Status |
 |------------|----------|-------|------|------------|--------------|--------------|--------------|----------|--------|
 | `aws-landing-zone-intro` | cloud | Landing zones without the buzzwords | architecture-discussion | advanced | 12 min | aws, terraform | cloud-engineer, cloud-architect | P1 | planned |
 | `terraform-state-lessons` | infrastructure | Terraform state mistakes and fixes | lessons-learned | intermediate | 10 min | terraform | devops-engineer, cloud-engineer | P1 | planned |
@@ -42,7 +42,7 @@ No articles are published yet. The landing page and nav ship with the framework;
 
 ## Planned — Containers & Kubernetes
 
-| Article ID | Category | Title | Type | Difficulty | Reading time | Technologies | Career paths | Priority | Status |
+| Article ID | Category | Title | Type | Difficulty | Reading time | Technologies | Learning paths | Priority | Status |
 |------------|----------|-------|------|------------|--------------|--------------|--------------|----------|--------|
 | `k8s-deep-dive-01-control-plane` | containers | Kubernetes deep dive — control plane | engineering-insights | advanced | 15 min | kubernetes | kubernetes-engineer | P1 | planned |
 | `k8s-deep-dive-02-networking` | containers | Kubernetes deep dive — networking | engineering-insights | advanced | 15 min | kubernetes | kubernetes-engineer | P1 | planned |
@@ -51,7 +51,7 @@ No articles are published yet. The landing page and nav ship with the framework;
 
 ## Planned — Security, observability & SRE
 
-| Article ID | Category | Title | Type | Difficulty | Reading time | Technologies | Career paths | Priority | Status |
+| Article ID | Category | Title | Type | Difficulty | Reading time | Technologies | Learning paths | Priority | Status |
 |------------|----------|-------|------|------------|--------------|--------------|--------------|----------|--------|
 | `pipeline-security-gates` | security | Security gates that teams keep enabled | best-practices | intermediate | 10 min | devsecops, gitlab | devsecops-engineer | P1 | planned |
 | `incident-postmortem-template` | observability | Writing postmortems that change behaviour | best-practices | intermediate | 10 min | sre | site-reliability-engineer | P1 | planned |
@@ -60,7 +60,7 @@ No articles are published yet. The landing page and nav ship with the framework;
 
 ## Planned — Platform, architecture & AI
 
-| Article ID | Category | Title | Type | Difficulty | Reading time | Technologies | Career paths | Priority | Status |
+| Article ID | Category | Title | Type | Difficulty | Reading time | Technologies | Learning paths | Priority | Status |
 |------------|----------|-------|------|------------|--------------|--------------|--------------|----------|--------|
 | `idp-golden-paths` | architecture | Golden paths without boiling the ocean | architecture-discussion | advanced | 12 min | platform-engineering, kubernetes | platform-engineer | P1 | planned |
 | `platform-team-boundaries` | architecture | Where platform teams should stop | opinion | advanced | 10 min | platform-engineering | platform-engineer | P2 | planned |
@@ -68,9 +68,9 @@ No articles are published yet. The landing page and nav ship with the framework;
 
 ## Planned — Career & community
 
-| Article ID | Category | Title | Type | Difficulty | Reading time | Technologies | Career paths | Priority | Status |
+| Article ID | Category | Title | Type | Difficulty | Reading time | Technologies | Learning paths | Priority | Status |
 |------------|----------|-------|------|------------|--------------|--------------|--------------|----------|--------|
-| `devops-career-path-2026` | career | DevOps career paths in 2026 — skills that matter | career-advice | beginner | 10 min | — | devops-engineer, beginner | P1 | planned |
+| `devops-career-path-2026` | career | DevOps learning paths in 2026 — skills that matter | career-advice | beginner | 10 min | — | devops-engineer, beginner | P1 | planned |
 | `portfolio-projects-interviews` | career | Portfolio projects that survive technical interviews | career-advice | intermediate | 10 min | — | devops-engineer, kubernetes-engineer | P1 | planned |
 | `community-contributor-guide` | community | Contributing to REBASH Academy | community-update | beginner | 6 min | — | — | P2 | planned |
 | `kubecon-summary-template` | community | Conference takeaways — what to publish after KubeCon | conference-summary | intermediate | 8 min | kubernetes | — | P3 | planned |

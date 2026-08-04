@@ -741,7 +741,7 @@ If your organisation standardizes on GitLab, port the VoteStack CI workflow — 
 - [Learning Paths](../learning-paths/index.md)
 - Cheat sheet: [Kubernetes Cheat Sheet](../cheatsheets/kubernetes.md)
 - Interview prep: [Kubernetes Interview Prep](../interview/kubernetes.md)
-- Learning path: [DevOps Engineer](../learning-paths/devops-engineer.md)
+- Learning path: [DevOps Engineer](../learning-paths/devops-engineer/)
 
 ## References
 

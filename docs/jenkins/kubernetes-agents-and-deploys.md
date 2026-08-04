@@ -6,7 +6,7 @@ estimated_time: "60–80 min"
 technology: jenkins
 category: jenkins
 module: "Module 13 · Kubernetes Agents"
-career_paths:
+learning_paths:
   - devops-engineer
   - cloud-engineer
   - platform-engineer

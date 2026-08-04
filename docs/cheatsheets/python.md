@@ -267,4 +267,4 @@ def test_counts(sample_log):
 - Lab: [Python Log Analyser](../labs/python-log-analyser.md)
 - Interview: [Python interview prep](../interview/python.md)
 - Quiz: [Python for DevOps Engineers Fundamentals](../quizzes/python-for-devops-engineers-fundamentals.md)
-- Learning path: [Python for DevOps Engineers](../learning-paths/python-for-devops.md)
+- Learning path: [Python for DevOps Engineers](../learning-paths/devops-engineer/)

@@ -82,4 +82,4 @@ Learn Google Cloud the way operators use it: start from a clear problem, build a
 - [AWS](../aws/index.md) — parallel cloud course (same module spine)
 - [Linux](../linux/index.md) · [Networking](../networking/index.md) · [Docker](../docker/index.md)
 - [Kubernetes](../kubernetes/index.md) · [Terraform](../terraform/index.md)
-- [Cloud Engineer path](../career-paths/cloud-engineer/index.md)
+- [Cloud Engineer path](../learning-paths/cloud-engineer/index.md)

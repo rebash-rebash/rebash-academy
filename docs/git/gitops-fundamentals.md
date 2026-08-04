@@ -6,7 +6,7 @@ estimated_time: "55–70 min"
 technology: git
 category: git
 module: "Module 12 · GitOps"
-career_paths:
+learning_paths:
   - devops-engineer
   - cloud-engineer
   - platform-engineer

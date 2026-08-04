@@ -19,7 +19,7 @@ Master list for quiz authoring and curriculum alignment. Align frontmatter with 
 
 Ordered beginner → expert within each technology group.
 
-| Quiz ID | Technology | Module | Title | Type | Difficulty | Questions | Pass | Career paths | Related tutorials | Related labs | Certifications | Priority | Status |
+| Quiz ID | Technology | Module | Title | Type | Difficulty | Questions | Pass | Learning paths | Related tutorials | Related labs | Certifications | Priority | Status |
 |---------|------------|--------|-------|------|------------|-----------|------|--------------|-------------------|--------------|----------------|----------|--------|
 | `quizzes/linux-for-cloud-devops-fundamentals` | linux | Course | Linux for Cloud & DevOps Fundamentals | course | intermediate | 40 | 70% | devops-engineer, linux-administrator | linux track | linux-production-incident-triage | RHCSA | P0 | published |
 | `quizzes/linux-fundamentals` | linux | Course | Linux Fundamentals | course | intermediate | 40 | 70% | devops-engineer, linux-administrator | linux track | linux-services-and-logs-lab | RHCSA | P0 | published |
@@ -66,7 +66,7 @@ Ordered beginner → expert within each technology group.
 | Module quiz | 25 questions | 70% (18) | End of module |
 | Course quiz | 40 questions | 70% (28) | End of technology track |
 | Technology assessment | 50+ questions | 75% | Pre-project gate |
-| Career path assessment | Multi-quiz | 70% each | Path milestone |
+| Learning path assessment | Multi-quiz | 70% each | Path milestone |
 | Certification readiness | Exam-domain mapped | 80% | Pre-exam check |
 
 ## Learning progression

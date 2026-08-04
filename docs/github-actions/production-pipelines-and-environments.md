@@ -6,7 +6,7 @@ estimated_time: "55–75 min"
 technology: github-actions
 category: github-actions
 module: "Module 15 · Production Pipelines"
-career_paths:
+learning_paths:
   - devops-engineer
   - platform-engineer
   - site-reliability-engineer

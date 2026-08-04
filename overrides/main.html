@@ -27,7 +27,15 @@
 {% endblock %}
 
 {% block content %}
-  {{ super() }}
+  {% if page.is_homepage %}
+    {#- Custom home content: hero → paths → courses → why (no markdown below) -#}
+    {% include "partials/home-hero.html" %}
+    {% include "partials/home-paths.html" %}
+    {% include "partials/home-courses.html" %}
+    {% include "partials/home-why.html" %}
+  {% else %}
+    {{ super() }}
+  {% endif %}
   {% if config.extra.giscus and page.meta and page.meta.comments %}
   <section class="giscus-container">
     <script src="https://giscus.app/client.js"

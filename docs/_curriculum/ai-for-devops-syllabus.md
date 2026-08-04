@@ -19,7 +19,7 @@ version: "1.0"
 
 Canonical generation prompt: [`.cursor/prompts/technologies/ai.md`](../../.cursor/prompts/technologies/ai.md)  
 Course URL prefix: `docs/ai/`  
-Career path: `ai-for-devops`
+Learning path: `ai-for-devops`
 
 ---
 
@@ -29,7 +29,7 @@ Career path: `ai-for-devops`
 |----------|--------|
 | Module count | **14** modules · **14** tutorials (one tutorial per module) |
 | Difficulty | Intermediate (plain teaching voice; prereqs carry foundations) |
-| Duration | 8–10 weeks course · 10–14 weeks with Docker/Kubernetes on the career path |
+| Duration | 8–10 weeks course · 10–14 weeks with Docker/Kubernetes on the learning path |
 | LLM runtime | **Mock-first.** Optional OpenAI-compatible API if `OPENAI_API_KEY` is set. **Ollama** documented as preferred local path. Paid API never required. |
 | Kubernetes in v1 | **Mock** cluster / fake API clients only (no kind required) |
 | Course nav | Overview (roadmap on page) + Module 1–14 only. No Labs / Quizzes / Projects / Capstone / Cheatsheets / Interview / Certifications / FAQ / Roadmap sidebar hubs |
@@ -138,7 +138,7 @@ Learners should defend:
 | C | 5–7 | Working RAG lab |
 | D | 8–10 | Safe tool/agent loop |
 | E | 11–14 | CI + gov + production + capstone |
-| F | Career path, Python M26 cross-links, catalogs | Mark course ready |
+| F | Learning path, Python M26 cross-links, catalogs | Mark course ready |
 
 **Phase B (Modules 1–4):** published 2026-08-04.
 

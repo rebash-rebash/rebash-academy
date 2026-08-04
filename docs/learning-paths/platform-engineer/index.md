@@ -1,40 +1,40 @@
 ---
-title: "DevSecOps Engineer Career Path"
-description: "Shift-left security across containers, Kubernetes, pipelines, and cloud."
+title: "Platform Engineer Learning Path"
+description: "Internal developer platforms — Kubernetes, GitOps, observability, and self-service."
 difficulty: advanced
-estimated_time: "14–20 weeks"
-category: career-paths
+estimated_time: "16–24 weeks"
+category: learning-paths
 tags:
-  - career-paths
-  - devsecops-engineer
+  - learning-paths
+  - platform-engineer
 author: Shaik Basha
 ---
 
-# DevSecOps Engineer
+# Platform Engineer
 
-**Duration:** 14–20 weeks · **Difficulty:** advanced · **Badge:** Security
+**Duration:** 16–24 weeks · **Difficulty:** advanced · **Badge:** Platform
 { .ra-facts }
 
-Shift-left security across containers, Kubernetes, pipelines, and cloud.
+Internal developer platforms — Kubernetes, GitOps, observability, and self-service.
 
 
 ## Complete roadmap
 
-{{ roadmap(["linux", "docker", "kubernetes", "git", "gitlab", "devsecops", "security", "aws", "terraform"]) }}
+{{ roadmap(["linux", "docker", "kubernetes", "helm", "terraform", "gitlab", "argocd", "python", "prometheus", "grafana", "loki", "opentelemetry", "platform-engineering", "sre"]) }}
 
 ## Target audience
 
-Engineers who want the **DevSecOps Engineer** skill profile and job outcomes below.
+Engineers who want the **Platform Engineer** skill profile and job outcomes below.
 
 ## Job roles
 
-- DevSecOps Engineer
-- Security Engineer (Cloud)
-- AppSec Engineer
+- Platform Engineer
+- Developer Experience Engineer
+- Infrastructure Platform Lead
 
 ## Expected salary ranges
 
-Mid to senior security engineering roles — treat as directional guidance only.
+Senior platform / DX roles — treat as directional guidance only.
 
 ## Prerequisites
 
@@ -46,23 +46,31 @@ Mid to senior security engineering roles — treat as directional guidance only.
 
 ## Phases
 
-### Foundations
+### Core
 
 - [Linux](../../linux/) — ready · 25 tutorials
 - [Docker](../../docker/) — ready · 20 tutorials
 - [Kubernetes](../../kubernetes/) — ready · 20 tutorials
-- [Git](../../git/) — ready · 20 tutorials
-- [GitLab CI/CD](../../gitlab/) — ready · 20 tutorials
-
-### Security
-
-- [DevSecOps](../../devsecops/) — stub / coming soon
-- [Security](../../security/) — stub / coming soon
-
-### Cloud
-
-- [AWS](../../aws/) — ready · 20 tutorials
+- **Helm** — planned
 - [Terraform](../../terraform/) — ready · 20 tutorials
+
+### Delivery
+
+- [GitLab CI/CD](../../gitlab/) — ready · 20 tutorials
+- **Argo CD** — planned
+- [Python for DevOps](../../python/) — ready · 27 tutorials
+
+### Observability
+
+- **Prometheus** — planned
+- **Grafana** — planned
+- **Loki** — planned
+- **OpenTelemetry** — planned
+
+### Platform
+
+- **Platform Engineering** — planned
+- **Site Reliability Engineering** — planned
 
 
 ## Skills gained
@@ -87,9 +95,9 @@ Choose a capstone that exercises the final phases of this path (for example Stat
 
 ## Certification roadmap
 
-CKS, AWS Security Specialty
+CKA, CKS
 
-## Related career paths
+## Related learning paths
 
 - [Beginner](../beginner/index.md)
 - [Linux Administrator](../linux-administrator/index.md)
@@ -98,4 +106,4 @@ CKS, AWS Security Specialty
 
 ## Estimated duration
 
-**14–20 weeks** of focused study (tutorials + labs). Stretch if you are new to Linux or cloud.
+**16–24 weeks** of focused study (tutorials + labs). Stretch if you are new to Linux or cloud.

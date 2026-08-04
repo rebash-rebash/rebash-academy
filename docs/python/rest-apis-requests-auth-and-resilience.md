@@ -6,7 +6,7 @@ estimated_time: "55–70 min"
 technology: python
 category: python
 module: "Module 14 · REST APIs"
-career_paths:
+learning_paths:
   - beginner
   - devops-engineer
   - cloud-engineer

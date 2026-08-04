@@ -15,7 +15,7 @@ Master backlog for quick-reference sheets. Align IDs and metadata with [`cheatsh
 
 ## Published — consolidated technology sheets
 
-| Cheat sheet ID | Technology | Category | Title | Difficulty | Reading time | Career paths | Related tutorials | Priority | Status |
+| Cheat sheet ID | Technology | Category | Title | Difficulty | Reading time | Learning paths | Related tutorials | Priority | Status |
 |----------------|------------|----------|-------|------------|--------------|--------------|-------------------|----------|--------|
 | `linux` | linux | command-reference | Linux Cheat Sheet | beginner | 15 min | linux-administrator, devops-engineer, beginner | linux/ | P1 | published |
 | `shell` | shell | command-reference | Shell Scripting Cheat Sheet | beginner | 15 min | devops-engineer, linux-administrator | shell/ | P1 | published |

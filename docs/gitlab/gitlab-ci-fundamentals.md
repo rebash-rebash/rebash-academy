@@ -6,7 +6,7 @@ estimated_time: "35–50 min"
 technology: gitlab
 category: gitlab
 module: "Module 1 · GitLab CI/CD Fundamentals"
-career_paths:
+learning_paths:
   - devops-engineer
   - cloud-engineer
   - platform-engineer

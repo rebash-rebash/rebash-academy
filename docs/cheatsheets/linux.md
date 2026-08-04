@@ -14,7 +14,7 @@ comments: false
 
 # Linux Cheat Sheet
 
-Scannable commands for the [Linux for Cloud & DevOps](../learning-paths/linux-for-cloud-devops.md) track. Prefer full tutorials when you need *why*, not only *how*.
+Scannable commands for the [Linux for Cloud & DevOps](../learning-paths/linux-administrator/) track. Prefer full tutorials when you need *why*, not only *how*.
 
 ## Commands
 
@@ -136,7 +136,7 @@ Scannable commands for the [Linux for Cloud & DevOps](../learning-paths/linux-fo
 ## Related
 
 - Track: [Linux](../linux/index.md)
-- Path: [Linux for Cloud & DevOps](../learning-paths/linux-for-cloud-devops.md)
+- Path: [Linux for Cloud & DevOps](../learning-paths/linux-administrator/)
 - Interview: [Linux interview prep](../interview/linux.md)
 - Quiz: [Linux for Cloud & DevOps Fundamentals](../quizzes/linux-for-cloud-devops-fundamentals.md)
 - Labs: [Labs index](../labs/index.md)

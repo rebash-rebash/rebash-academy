@@ -92,4 +92,4 @@ python3 scripts/generate-excalidraw-svg.py
 ## Related
 
 - [Course index](index.md) · [FAQ](faq.md)
-- [DevOps Engineer path](../career-paths/devops-engineer/index.md)
+- [DevOps Engineer path](../learning-paths/devops-engineer/index.md)

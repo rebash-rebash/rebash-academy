@@ -6,7 +6,7 @@ estimated_time: "50–70 min"
 technology: docker
 category: docker
 module: "Module 11 · Security"
-career_paths:
+learning_paths:
   - devops-engineer
   - platform-engineer
   - site-reliability-engineer

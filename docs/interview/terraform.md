@@ -42,4 +42,4 @@ Use this page as a revision map. Every tutorial in the [Terraform track](../terr
 
 - Track: [Terraform](../terraform/index.md)
 - Cheat sheet: [Terraform cheat sheet](../cheatsheets/terraform.md)
-- Learning path: [DevOps Engineer](../learning-paths/devops-engineer.md)
+- Learning path: [DevOps Engineer](../learning-paths/devops-engineer/)

@@ -6,7 +6,7 @@ estimated_time: "50–60 min"
 technology: github-actions
 category: github-actions
 module: "Module 2 · GitHub Actions Basics"
-career_paths:
+learning_paths:
   - devops-engineer
   - cloud-engineer
   - platform-engineer

@@ -8,7 +8,7 @@ last_updated: "2026-08-03"
 category: ansible
 technology: ansible
 module: "Module 10 · Collections"
-career_paths:
+learning_paths:
   - devops-engineer
   - platform-engineer
 skills:

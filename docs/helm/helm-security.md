@@ -6,7 +6,7 @@ estimated_time: "45–60 min"
 technology: helm
 category: helm
 module: "Module 9 · Security"
-career_paths:
+learning_paths:
   - kubernetes-engineer
   - platform-engineer
   - site-reliability-engineer

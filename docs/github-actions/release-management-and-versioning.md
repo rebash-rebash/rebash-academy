@@ -6,7 +6,7 @@ estimated_time: "45–60 min"
 technology: github-actions
 category: github-actions
 module: "Module 13 · Release Management"
-career_paths:
+learning_paths:
   - devops-engineer
   - platform-engineer
   - software-engineer

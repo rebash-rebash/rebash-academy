@@ -267,7 +267,7 @@ SHELL=/bin/bash
 - Lab: [Shell Ops Script Hardening](../labs/shell-ops-script-hardening.md)
 - Quiz: [Shell Scripting for DevOps Fundamentals](../quizzes/shell-scripting-for-devops-fundamentals.md)
 - Interview: [Shell Scripting](../interview/shell.md)
-- Learning path: [DevOps Engineer](../learning-paths/devops-engineer.md)
+- Learning path: [DevOps Engineer](../learning-paths/devops-engineer/)
 
 ## References
 

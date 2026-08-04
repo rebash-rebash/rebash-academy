@@ -6,7 +6,7 @@ estimated_time: "55–70 min"
 technology: argocd
 category: argocd
 module: "Module 14 · CI/CD Integration"
-career_paths:
+learning_paths:
   - devops-engineer
   - platform-engineer
   - kubernetes-engineer

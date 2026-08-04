@@ -27,10 +27,10 @@ System design patterns, diagrams, and reference architectures.
 | [Networking](../networking/index.md) | Cloud networking and load balancing |
 | [Kubernetes](../kubernetes/index.md) | Production patterns and capstone |
 | [Terraform](../terraform/index.md) | Modules and production patterns |
-| [Career Paths](../career-paths/index.md) | Career-shaped architecture of study |
+| [Learning Paths](../learning-paths/index.md) | Career-shaped architecture of study |
 
 ## Related
 
 - [Getting Started](../getting-started/index.md) — recommended order for ready content
-- [Career Paths](../career-paths/index.md) — career-shaped roadmaps
+- [Learning Paths](../learning-paths/index.md) — career-shaped roadmaps
 - [Roadmap](../roadmap.md) — publication plan

@@ -6,7 +6,7 @@ estimated_time: "50–65 min"
 technology: ansible
 category: ansible
 module: "Module 13 · Kubernetes Automation"
-career_paths:
+learning_paths:
   - devops-engineer
   - platform-engineer
   - kubernetes-engineer

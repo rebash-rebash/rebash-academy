@@ -6,7 +6,7 @@ estimated_time: "50–65 min"
 technology: git
 category: git
 module: "Related depth · Advanced workflows"
-career_paths:
+learning_paths:
   - devops-engineer
   - cloud-engineer
   - platform-engineer

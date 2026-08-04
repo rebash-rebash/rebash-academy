@@ -6,7 +6,7 @@ estimated_time: "50–70 min"
 technology: kubernetes
 category: kubernetes
 module: "Module 18 · Troubleshooting"
-career_paths:
+learning_paths:
   - kubernetes-engineer
   - devops-engineer
   - platform-engineer

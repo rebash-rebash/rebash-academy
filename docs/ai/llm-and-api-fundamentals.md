@@ -8,7 +8,7 @@ last_updated: "2026-08-04"
 category: ai
 technology: ai
 module: "Module 2 · LLM & APIs"
-career_paths:
+learning_paths:
   - ai-for-devops
   - devops-engineer
   - platform-engineer
@@ -592,4 +592,4 @@ Next: [Prompt Engineering for Ops](prompt-engineering-for-ops.md).
 
 - [OpenAI API — Chat completions](https://platform.openai.com/docs/api-reference/chat)
 - [Ollama API documentation](https://github.com/ollama/ollama/blob/main/docs/api.md)
-- [REBASH Academy — AI for DevOps career path](../career-paths/ai-for-devops/index.md)
+- [REBASH Academy — AI for DevOps learning path](../learning-paths/ai-for-devops/index.md)

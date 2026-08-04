@@ -6,7 +6,7 @@ estimated_time: "50–70 min"
 technology: terraform
 category: terraform
 module: "Module 13 · Terraform Cloud & Enterprise"
-career_paths:
+learning_paths:
   - devops-engineer
   - cloud-engineer
   - platform-engineer

@@ -1,40 +1,40 @@
 ---
-title: "Kubernetes Engineer Career Path"
-description: "Containers, Kubernetes workloads, Helm, GitOps, and cluster operations."
+title: "AI for DevOps Engineer Learning Path"
+description: "Practical AI for automation — APIs, agents, and DevOps tooling on a solid Python base."
 difficulty: intermediate
-estimated_time: "12–16 weeks"
-category: career-paths
+estimated_time: "10–14 weeks"
+category: learning-paths
 tags:
-  - career-paths
-  - kubernetes-engineer
+  - learning-paths
+  - ai-for-devops
 author: Shaik Basha
 ---
 
-# Kubernetes Engineer
+# AI for DevOps Engineer
 
-**Duration:** 12–16 weeks · **Difficulty:** intermediate · **Badge:** Containers
+**Duration:** 10–14 weeks · **Difficulty:** intermediate · **Badge:** AI
 { .ra-facts }
 
-Containers, Kubernetes workloads, Helm, GitOps, and cluster operations.
+Practical AI for automation — APIs, agents, and DevOps tooling on a solid Python base.
 
 
 ## Complete roadmap
 
-{{ roadmap(["linux", "networking", "docker", "git", "kubernetes", "helm", "argocd", "gitlab", "terraform"]) }}
+{{ roadmap(["linux", "shell", "python", "git", "ai", "docker", "kubernetes"]) }}
 
 ## Target audience
 
-Engineers who want the **Kubernetes Engineer** skill profile and job outcomes below.
+Engineers who want the **AI for DevOps Engineer** skill profile and job outcomes below.
 
 ## Job roles
 
-- Kubernetes Engineer
-- Container Platform Engineer
-- SRE (Kubernetes)
+- AI for DevOps Engineer
+- Automation Engineer
+- MLOps Associate
 
 ## Expected salary ranges
 
-Mid to senior container platform roles — treat as directional guidance only.
+Emerging automation / AI-ops roles — treat as directional guidance only.
 
 ## Prerequisites
 
@@ -49,20 +49,18 @@ Mid to senior container platform roles — treat as directional guidance only.
 ### Prerequisites
 
 - [Linux](../../linux/) — ready · 25 tutorials
-- [Networking](../../networking/) — ready · 25 tutorials
-- [Docker](../../docker/) — ready · 20 tutorials
+- [Shell Scripting](../../shell/) — ready · 18 tutorials
+- [Python for DevOps](../../python/) — ready · 27 tutorials
 - [Git](../../git/) — ready · 20 tutorials
 
-### Kubernetes
+### AI
 
+- [AI for DevOps](../../ai/index.md) — complete (14 modules published)
+
+### Platform context
+
+- [Docker](../../docker/) — ready · 20 tutorials
 - [Kubernetes](../../kubernetes/) — ready · 20 tutorials
-- **Helm** — planned
-- **Argo CD** — planned
-
-### Delivery
-
-- [GitLab CI/CD](../../gitlab/) — ready · 20 tutorials
-- [Terraform](../../terraform/) — ready · 20 tutorials
 
 
 ## Skills gained
@@ -87,9 +85,9 @@ Choose a capstone that exercises the final phases of this path (for example Stat
 
 ## Certification roadmap
 
-CKA, CKAD
+See [Certifications](../../certifications/index.md)
 
-## Related career paths
+## Related learning paths
 
 - [Beginner](../beginner/index.md)
 - [Linux Administrator](../linux-administrator/index.md)
@@ -98,4 +96,4 @@ CKA, CKAD
 
 ## Estimated duration
 
-**12–16 weeks** of focused study (tutorials + labs). Stretch if you are new to Linux or cloud.
+**10–14 weeks** of focused study (tutorials + labs). Stretch if you are new to Linux or cloud.

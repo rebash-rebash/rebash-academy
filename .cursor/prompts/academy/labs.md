@@ -29,7 +29,7 @@ The Labs section should help learners:
 - Gain real experience
 - Prepare for production environments
 - Build confidence
-- Complete career paths
+- Complete learning paths
 
 The design should scale to thousands of labs.
 
@@ -209,7 +209,7 @@ Estimated Time
 
 Prerequisites
 
-Career Paths
+Learning Paths
 
 Technologies
 
@@ -257,7 +257,7 @@ technology
 
 module
 
-career_paths
+learning_paths
 
 skills
 
@@ -385,7 +385,7 @@ Cloud Landing Zone
 CAREER PATH MAPPING
 ==================================================
 
-Every lab should belong to one or more career paths.
+Every lab should belong to one or more learning paths.
 
 Example
 
@@ -501,7 +501,7 @@ Estimated Time
 
 Prerequisites
 
-Career Paths
+Learning Paths
 
 Related Tutorials
 
@@ -567,7 +567,7 @@ Generate only
 
 5. Lab roadmap
 
-6. Career path mapping
+6. Learning path mapping
 
 7. labs_backlog.md design
 

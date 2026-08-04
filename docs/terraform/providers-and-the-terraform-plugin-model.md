@@ -6,7 +6,7 @@ estimated_time: "50–60 min"
 technology: terraform
 category: terraform
 module: "Module 5 · Providers"
-career_paths:
+learning_paths:
   - devops-engineer
   - cloud-engineer
   - platform-engineer

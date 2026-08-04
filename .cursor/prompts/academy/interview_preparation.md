@@ -47,7 +47,7 @@ Design
 - Question framework
 - Interview roadmap
 - Assessment strategy
-- Career path mapping
+- Learning path mapping
 
 Do NOT generate interview questions.
 
@@ -205,7 +205,7 @@ Experience Level
 
 Estimated Preparation Time
 
-Career Paths
+Learning Paths
 
 Related Tutorials
 
@@ -241,7 +241,7 @@ experience_level
 
 question_type
 
-career_paths
+learning_paths
 
 skills
 
@@ -569,7 +569,7 @@ Experience Level
 
 Question Count
 
-Career Paths
+Learning Paths
 
 Related Tutorials
 
@@ -643,7 +643,7 @@ Generate only
 
 6. Mock interview framework
 
-7. Career path mapping
+7. Learning path mapping
 
 8. Certification mapping
 

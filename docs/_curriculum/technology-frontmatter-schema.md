@@ -24,7 +24,7 @@ category: foundations          # foundations | containers | iac | cloud | cicd |
 difficulty: beginner             # beginner | intermediate | advanced | expert
 estimated_duration: "8–10 weeks"
 status: ready                    # ready | planned | stub
-career_paths:
+learning_paths:
   - devops-engineer
   - linux-administrator
 modules: []                      # optional inline; canonical list in curriculum.yaml
@@ -67,7 +67,7 @@ Every technology index should include these headings (ready tracks fill them in;
 13. **Interview preparation**
 14. **Certification mapping**
 15. **Related technologies**
-16. **Related career paths**
+16. **Related learning paths**
 17. **References** — official documentation first
 
 ## Module template
@@ -105,7 +105,7 @@ Link to sibling sections without duplicating tutorials:
 - [Cheat sheets](../cheatsheets/index.md)
 - [Interview guides](../interview/index.md)
 - [Certifications](../certifications/index.md)
-- [Career paths](../career-paths/index.md)
+- [Learning paths](../learning-paths/index.md)
 - [Technologies overview](../technologies/index.md)
 
 ## Visual catalog

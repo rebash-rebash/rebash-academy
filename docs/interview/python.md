@@ -143,4 +143,4 @@ Practice answers for DevOps, platform, and SRE interviews. Prefer concrete examp
 - Lab: [Python Log Analyser](../labs/python-log-analyser.md)
 - Quiz: [Python for DevOps Engineers Fundamentals](../quizzes/python-for-devops-engineers-fundamentals.md)
 - Capstone: [Production DevOps Automation Platform](../projects/python-devops-automation-framework.md)
-- Learning path: [Python for DevOps Engineers](../learning-paths/python-for-devops.md)
+- Learning path: [Python for DevOps Engineers](../learning-paths/devops-engineer/)

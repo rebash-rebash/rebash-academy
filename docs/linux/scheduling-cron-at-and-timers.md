@@ -8,7 +8,7 @@ last_updated: "2026-08-04"
 category: linux
 technology: linux
 module: "Module 11 · Scheduling & Automation"
-career_paths:
+learning_paths:
   - linux-administrator
   - devops-engineer
   - cloud-engineer

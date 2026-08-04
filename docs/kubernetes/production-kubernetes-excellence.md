@@ -6,7 +6,7 @@ estimated_time: "50–70 min"
 technology: kubernetes
 category: kubernetes
 module: "Module 20 · Production Kubernetes"
-career_paths:
+learning_paths:
   - kubernetes-engineer
   - platform-engineer
   - site-reliability-engineer
@@ -528,7 +528,7 @@ You can design and operate production Kubernetes platforms end to end — from f
 
 - [Course overview](index.md)
 - [Kubernetes Capstone and Next Steps](kubernetes-capstone-and-next-steps.md)
-- [Kubernetes Engineer path](../career-paths/kubernetes-engineer/index.md)
+- [Kubernetes Engineer path](../learning-paths/kubernetes-engineer/index.md)
 
 ## References
 

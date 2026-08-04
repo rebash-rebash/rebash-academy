@@ -6,7 +6,7 @@ estimated_time: "45–60 min"
 technology: argocd
 category: argocd
 module: "Module 12 · Notifications"
-career_paths:
+learning_paths:
   - kubernetes-engineer
   - platform-engineer
   - devops-engineer

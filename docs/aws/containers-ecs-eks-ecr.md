@@ -6,7 +6,7 @@ estimated_time: "65–80 min"
 technology: aws
 category: aws
 module: "Module 7 · Containers"
-career_paths:
+learning_paths:
   - cloud-engineer
   - devops-engineer
   - platform-engineer

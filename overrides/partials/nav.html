@@ -1,0 +1,23 @@
+{#-
+  REBASH Academy: always use the curated product sidebar.
+  Course modules expand in place under Technologies (never swap to the old tree).
+-#}
+{% set class = "md-nav md-nav--primary md-nav--rebash-hub" %}
+{% if "navigation.tabs" in features %}
+  {% set class = class ~ " md-nav--lifted" %}
+{% endif %}
+{% if "toc.integrate" in features %}
+  {% set class = class ~ " md-nav--integrated" %}
+{% endif %}
+<nav class="{{ class }}" aria-label="{{ lang.t('nav') }}" data-md-level="0">
+  <label class="md-nav__title" for="__drawer" title="Close navigation">
+    <span class="md-nav__icon md-icon"></span>
+    Menu
+  </label>
+  {% if config.repo_url %}
+    <div class="md-nav__source">
+      {% include "partials/source.html" %}
+    </div>
+  {% endif %}
+  {% include "partials/rebash-sidebar.html" %}
+</nav>

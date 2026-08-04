@@ -30,5 +30,5 @@ Treat AI systems like any other production platform — with identity, observabi
 ## Related courses
 
 - [AI Engineering](../ai/index.md)
-- [AI for DevOps path](../career-paths/ai-for-devops/index.md)
+- [AI for DevOps path](../learning-paths/ai-for-devops/index.md)
 - [Platform Engineering](../platform-engineering/index.md)

@@ -15,7 +15,7 @@ Master backlog for interview guides, mock interviews, and system design prompts.
 
 ## Published — technology guides
 
-| Interview ID | Technology | Module | Experience level | Questions | Career paths | Related tutorials | Related labs | Priority | Status |
+| Interview ID | Technology | Module | Experience level | Questions | Learning paths | Related tutorials | Related labs | Priority | Status |
 |--------------|------------|--------|------------------|-----------|--------------|-------------------|--------------|----------|--------|
 | `linux` | linux | full track | mid-level | ~28 | linux-administrator, devops-engineer, beginner | linux/ | labs/linux-* | P1 | published |
 | `shell` | shell | full track | mid-level | ~25–30 | devops-engineer, linux-administrator | shell/ | labs/shell-* | P1 | published |
@@ -30,7 +30,7 @@ Master backlog for interview guides, mock interviews, and system design prompts.
 
 ## Planned — technology guides
 
-| Interview ID | Technology | Experience level | Career paths | Priority | Status |
+| Interview ID | Technology | Experience level | Learning paths | Priority | Status |
 |--------------|------------|------------------|--------------|----------|--------|
 | `helm` | helm | mid-level | kubernetes-engineer | P2 | planned |
 | `ansible` | ansible | mid-level | linux-administrator, devops-engineer | P3 | planned |
@@ -53,7 +53,7 @@ Master backlog for interview guides, mock interviews, and system design prompts.
 
 ## Planned — mock interviews
 
-| Mock ID | Format | Duration | Experience level | Career path | Priority | Status |
+| Mock ID | Format | Duration | Experience level | Learning path | Priority | Status |
 |---------|--------|----------|------------------|-------------|----------|--------|
 | `mock-junior-screen` | Quick screen | 30 min | junior | beginner | P2 | planned |
 | `mock-mid-standard` | Standard technical | 60 min | mid-level | devops-engineer | P1 | planned |
@@ -67,7 +67,7 @@ Master backlog for interview guides, mock interviews, and system design prompts.
 
 ## Planned — system design prompts
 
-| Design ID | Topic | Experience level | Career paths | Priority | Status |
+| Design ID | Topic | Experience level | Learning paths | Priority | Status |
 |-----------|-------|------------------|--------------|----------|--------|
 | `sd-cloud-architecture` | Cloud architecture | architect | cloud-architect, cloud-engineer | P1 | planned |
 | `sd-kubernetes-platform` | Kubernetes platform design | senior | kubernetes-engineer, platform-engineer | P1 | planned |
@@ -82,7 +82,7 @@ Master backlog for interview guides, mock interviews, and system design prompts.
 
 ## Planned — production scenario banks
 
-| Scenario ID | Theme | Experience level | Career paths | Priority | Status |
+| Scenario ID | Theme | Experience level | Learning paths | Priority | Status |
 |-------------|-------|------------------|--------------|----------|--------|
 | `scenario-outage` | Production outages | senior | site-reliability-engineer, devops-engineer | P1 | planned |
 | `scenario-incident` | Incident response | senior | site-reliability-engineer | P1 | planned |

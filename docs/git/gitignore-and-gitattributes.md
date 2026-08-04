@@ -6,7 +6,7 @@ estimated_time: "45–60 min"
 technology: git
 category: git
 module: "Module 4 · Working with Repositories"
-career_paths:
+learning_paths:
   - devops-engineer
   - cloud-engineer
   - platform-engineer

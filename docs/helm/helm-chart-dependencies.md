@@ -6,7 +6,7 @@ estimated_time: "40–55 min"
 technology: helm
 category: helm
 module: "Module 6 · Chart Dependencies"
-career_paths:
+learning_paths:
   - kubernetes-engineer
   - platform-engineer
   - devops-engineer

@@ -6,7 +6,7 @@ estimated_time: "45–60 min"
 technology: git
 category: git
 module: "Module 5 · Branching"
-career_paths:
+learning_paths:
   - devops-engineer
   - cloud-engineer
   - platform-engineer

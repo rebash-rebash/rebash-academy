@@ -6,7 +6,7 @@ estimated_time: "35–50 min"
 technology: docker
 category: docker
 module: "Module 1 · Container Fundamentals"
-career_paths:
+learning_paths:
   - beginner
   - devops-engineer
   - platform-engineer

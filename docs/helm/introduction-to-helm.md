@@ -6,7 +6,7 @@ estimated_time: "30–45 min"
 technology: helm
 category: helm
 module: "Module 1 · Helm Fundamentals"
-career_paths:
+learning_paths:
   - kubernetes-engineer
   - devops-engineer
   - platform-engineer

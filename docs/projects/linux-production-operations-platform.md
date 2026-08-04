@@ -17,7 +17,7 @@ comments: false
 
 # Project — Production Linux Operations Platform
 
-Capstone for [Linux for Cloud & DevOps Engineers](../learning-paths/linux-for-cloud-devops.md) — integrate administration, security, and reliability into one coherent platform (scripts + docs + schedule), not a SaaS product.
+Capstone for [Linux for Cloud & DevOps Engineers](../learning-paths/linux-administrator/) — integrate administration, security, and reliability into one coherent platform (scripts + docs + schedule), not a SaaS product.
 
 ## Project Overview
 
@@ -105,7 +105,7 @@ Document blast radius, secrets handling (no passwords in git), and cleanup.
 
 ## Related
 
-- Path: [Linux for Cloud & DevOps](../learning-paths/linux-for-cloud-devops.md)
+- Path: [Linux for Cloud & DevOps](../learning-paths/linux-administrator/)
 - Interview: [Linux Interview Prep](../interview/linux.md)
 - Quiz: [Linux for Cloud & DevOps Fundamentals](../quizzes/linux-for-cloud-devops-fundamentals.md)
 - Labs index: [Labs](../labs/index.md)

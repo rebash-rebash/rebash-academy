@@ -6,7 +6,7 @@ estimated_time: "55–75 min"
 technology: jenkins
 category: jenkins
 module: "Module 14 · Terraform Pipelines"
-career_paths:
+learning_paths:
   - devops-engineer
   - cloud-engineer
   - platform-engineer

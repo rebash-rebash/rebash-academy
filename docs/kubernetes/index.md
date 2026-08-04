@@ -82,4 +82,4 @@ python3 scripts/generate-excalidraw-svg.py
 ## Related
 
 - [Docker](../docker/index.md) · [Helm](../helm/index.md) · [Argo CD](../argocd/index.md)
-- [Kubernetes Engineer path](../career-paths/kubernetes-engineer/index.md)
+- [Kubernetes Engineer path](../learning-paths/kubernetes-engineer/index.md)

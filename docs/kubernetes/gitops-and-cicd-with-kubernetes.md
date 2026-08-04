@@ -6,7 +6,7 @@ estimated_time: "50–70 min"
 technology: kubernetes
 category: kubernetes
 module: "Module 15 · GitOps"
-career_paths:
+learning_paths:
   - kubernetes-engineer
   - devops-engineer
   - platform-engineer

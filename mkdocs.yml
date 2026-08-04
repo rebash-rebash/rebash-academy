@@ -1,7 +1,7 @@
 # REBASH Academy – MkDocs Configuration
 
 site_name: REBASH Academy
-site_description: Learn by Building. Career paths and hands-on tutorials for Cloud, DevOps, Kubernetes, and Platform Engineering.
+site_description: Learn by Building. Learning paths and hands-on tutorials for Cloud, DevOps, Kubernetes, and Platform Engineering.
 site_author: Shaik Basha
 site_url: https://rebash.in/
 
@@ -16,10 +16,12 @@ extra:
     tagline: Learn by Building.
     description: Hands-on tutorials for Linux, Cloud, Kubernetes, Terraform, DevSecOps, and more.
   social:
+    - icon: fontawesome/brands/github
+      link: https://github.com/rebash-rebash
     - icon: fontawesome/brands/linkedin
       link: https://www.linkedin.com/in/shaikkhadarbasha/
     - icon: fontawesome/brands/youtube
-      link: "#"
+      link: https://www.youtube.com/@re-bash
     - icon: fontawesome/brands/x-twitter
       link: "#"
   analytics:
@@ -137,6 +139,7 @@ markdown_extensions:
   - toc:
       permalink: true
       toc_depth: 3
+      title: On this page
   - pymdownx.arithmatex:
       generic: true
   - pymdownx.betterem:

@@ -6,7 +6,7 @@ estimated_time: "55–70 min"
 technology: argocd
 category: argocd
 module: "Module 13 · Progressive Delivery"
-career_paths:
+learning_paths:
   - kubernetes-engineer
   - platform-engineer
   - site-reliability-engineer

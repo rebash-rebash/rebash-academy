@@ -6,7 +6,7 @@ estimated_time: "45–60 min"
 technology: kubernetes
 category: kubernetes
 module: "Module 6 · Ingress & Gateway API"
-career_paths:
+learning_paths:
   - kubernetes-engineer
   - devops-engineer
   - platform-engineer

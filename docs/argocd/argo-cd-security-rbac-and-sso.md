@@ -6,7 +6,7 @@ estimated_time: "55–70 min"
 technology: argocd
 category: argocd
 module: "Module 11 · Security"
-career_paths:
+learning_paths:
   - kubernetes-engineer
   - platform-engineer
   - devsecops-engineer

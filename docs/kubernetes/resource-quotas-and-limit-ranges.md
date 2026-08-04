@@ -6,7 +6,7 @@ estimated_time: "35–50 min"
 technology: kubernetes
 category: kubernetes
 module: "Module 8 · Configuration"
-career_paths:
+learning_paths:
   - kubernetes-engineer
   - platform-engineer
   - site-reliability-engineer

@@ -6,7 +6,7 @@ estimated_time: "50–70 min"
 technology: jenkins
 category: jenkins
 module: "Module 6 · Agents, Nodes, and Executors"
-career_paths:
+learning_paths:
   - devops-engineer
   - cloud-engineer
   - platform-engineer

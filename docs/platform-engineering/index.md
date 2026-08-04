@@ -13,18 +13,18 @@ This technology track is **planned** in the academy curriculum.
 
 ## Overview
 
-Platform Engineering will be taught as a production-focused course aligned with REBASH Academy career paths.
+Platform Engineering will be taught as a production-focused course aligned with REBASH Academy learning paths.
 
 ## Learning objectives
 
 - Understand core Platform Engineering concepts used in Cloud and DevOps roles
 - Practise with labs once tutorials ship
-- Connect to related career paths below
+- Connect to related learning paths below
 
 ## Prerequisites
 
 - Linux fundamentals (recommended)
-- See [Career Paths](../career-paths/index.md) for the recommended order
+- See [Learning Paths](../learning-paths/index.md) for the recommended order
 
 ## Course modules
 
@@ -58,6 +58,6 @@ See [Certifications](../certifications/index.md).
 
 Browse neighbouring tracks under **Technologies** in the site navigation.
 
-## Related career paths
+## Related learning paths
 
-Browse [Career Paths](../career-paths/index.md).
+Browse [Learning Paths](../learning-paths/index.md).

@@ -6,7 +6,7 @@ estimated_time: "50–60 min"
 technology: ansible
 category: ansible
 module: "Module 3 · Inventory"
-career_paths:
+learning_paths:
   - devops-engineer
   - cloud-engineer
   - platform-engineer

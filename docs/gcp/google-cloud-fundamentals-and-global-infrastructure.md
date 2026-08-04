@@ -6,7 +6,7 @@ estimated_time: "60–75 min"
 technology: gcp
 category: gcp
 module: "Module 1 · Google Cloud Fundamentals"
-career_paths:
+learning_paths:
   - cloud-engineer
   - devops-engineer
   - platform-engineer
@@ -28,7 +28,7 @@ related:
   - gcp/cost-optimisation-on-gcp
   - gcp/troubleshooting-gcp
   - aws/aws-fundamentals-and-global-infrastructure
-  - career-paths/cloud-engineer/index
+  - learning-paths/cloud-engineer/index
 labs: []
 projects: []
 interview: interview/gcp

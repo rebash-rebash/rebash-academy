@@ -6,7 +6,7 @@ estimated_time: "55–75 min"
 technology: jenkins
 category: jenkins
 module: "Module 15 · JCasC, Scaling, and Operations"
-career_paths:
+learning_paths:
   - devops-engineer
   - cloud-engineer
   - platform-engineer

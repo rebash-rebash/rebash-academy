@@ -6,7 +6,7 @@ estimated_time: "70–85 min"
 technology: aws
 category: aws
 module: "Module 3 · Networking"
-career_paths:
+learning_paths:
   - cloud-engineer
   - devops-engineer
   - platform-engineer

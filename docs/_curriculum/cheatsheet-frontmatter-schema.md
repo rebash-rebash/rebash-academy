@@ -19,7 +19,7 @@ technology: linux                 # curriculum technology id
 category: command-reference         # see types below
 difficulty: beginner                # beginner | intermediate | advanced
 estimated_time: "15 min"
-career_paths:
+learning_paths:
   - devops-engineer
   - linux-administrator
 skills:
@@ -108,9 +108,9 @@ Cheat sheets reinforce learning between tutorials and hands-on practice:
 
 See [`cheatsheet-learning-flow.d2`](../assets/d2/cheatsheet-learning-flow.d2) for the visual progression.
 
-## Career path mapping
+## Learning path mapping
 
-Every cheat sheet declares one or more `career_paths` ids. Examples:
+Every cheat sheet declares one or more `learning_paths` ids. Examples:
 
 | Cheat sheet | Typical paths |
 |-------------|---------------|

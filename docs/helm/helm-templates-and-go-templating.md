@@ -6,7 +6,7 @@ estimated_time: "50–70 min"
 technology: helm
 category: helm
 module: "Module 4 · Templates"
-career_paths:
+learning_paths:
   - kubernetes-engineer
   - devops-engineer
   - platform-engineer

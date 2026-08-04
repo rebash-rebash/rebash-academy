@@ -6,7 +6,7 @@ estimated_time: "45–60 min"
 technology: docker
 category: docker
 module: "Module 5 · Dockerfile"
-career_paths:
+learning_paths:
   - beginner
   - devops-engineer
   - platform-engineer

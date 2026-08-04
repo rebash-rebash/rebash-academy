@@ -6,7 +6,7 @@ estimated_time: "50–65 min"
 technology: gitlab
 category: gitlab
 module: "Module 18 · Enterprise GitLab"
-career_paths:
+learning_paths:
   - devops-engineer
   - cloud-engineer
   - platform-engineer
@@ -533,7 +533,7 @@ Keep runbooks short enough to follow under pressure. Automate checks; keep human
 
 
 - [Course overview](index.md)
-- [Course overview](index.md) · [DevOps Engineer path](../career-paths/devops-engineer/index.md)
+- [Course overview](index.md) · [DevOps Engineer path](../learning-paths/devops-engineer/index.md)
 
 ## References
 

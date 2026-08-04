@@ -256,7 +256,7 @@ Another engineer can clone your toolkit directory pattern, run `bin/health-check
 - [Scheduling: cron, at, and Timers](../linux/scheduling-cron-at-and-timers.md)
 - [Host Monitoring: vmstat, iostat, sar](../linux/host-monitoring-vmstat-iostat-sar.md)
 - Project: [Linux Operations Toolkit](../projects/linux-operations-toolkit.md)
-- Path: [Linux for Cloud & DevOps](../learning-paths/linux-for-cloud-devops.md)
+- Path: [Linux for Cloud & DevOps](../learning-paths/linux-administrator/)
 
 ## References
 

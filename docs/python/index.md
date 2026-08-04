@@ -270,4 +270,4 @@ Per-tutorial interview banks (5 Q) live inside each tutorial.
 
 - Start: [Install, venv, and Tooling](python-fundamentals-install-venv-and-tooling.md)
 - Prerequisites: [Linux](../linux/index.md) · [Shell Scripting](../shell/index.md)
-- [Labs](../labs/index.md) · [DevOps Engineer path](../career-paths/devops-engineer/index.md) · [Getting Started](../getting-started/index.md)
+- [Labs](../labs/index.md) · [DevOps Engineer path](../learning-paths/devops-engineer/index.md) · [Getting Started](../getting-started/index.md)

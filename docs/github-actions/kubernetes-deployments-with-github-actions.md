@@ -6,7 +6,7 @@ estimated_time: "60–70 min"
 technology: github-actions
 category: github-actions
 module: "Module 8 · Kubernetes Deployments"
-career_paths:
+learning_paths:
   - devops-engineer
   - cloud-engineer
   - platform-engineer

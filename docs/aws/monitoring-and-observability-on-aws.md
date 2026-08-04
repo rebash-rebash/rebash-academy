@@ -6,7 +6,7 @@ estimated_time: "60–75 min"
 technology: aws
 category: aws
 module: "Module 9 · Monitoring & Observability"
-career_paths:
+learning_paths:
   - cloud-engineer
   - devops-engineer
   - platform-engineer

@@ -6,7 +6,7 @@ estimated_time: "45–55 min"
 technology: terraform
 category: terraform
 module: "Module 1 · IaC Fundamentals"
-career_paths:
+learning_paths:
   - devops-engineer
   - cloud-engineer
   - platform-engineer

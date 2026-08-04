@@ -6,7 +6,7 @@ estimated_time: "35–50 min"
 technology: gitlab
 category: gitlab
 module: "Module 2 · GitLab Projects"
-career_paths:
+learning_paths:
   - devops-engineer
   - cloud-engineer
   - platform-engineer

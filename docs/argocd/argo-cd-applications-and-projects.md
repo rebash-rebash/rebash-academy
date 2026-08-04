@@ -6,7 +6,7 @@ estimated_time: "55–70 min"
 technology: argocd
 category: argocd
 module: "Module 4 · Applications"
-career_paths:
+learning_paths:
   - kubernetes-engineer
   - devops-engineer
   - platform-engineer

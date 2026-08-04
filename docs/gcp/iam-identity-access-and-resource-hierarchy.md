@@ -6,7 +6,7 @@ estimated_time: "65–80 min"
 technology: gcp
 category: gcp
 module: "Module 2 · Identity & Access Management"
-career_paths:
+learning_paths:
   - cloud-engineer
   - devops-engineer
   - platform-engineer

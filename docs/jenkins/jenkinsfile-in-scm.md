@@ -6,7 +6,7 @@ estimated_time: "50–70 min"
 technology: jenkins
 category: jenkins
 module: "Module 5 · Jenkinsfile in SCM"
-career_paths:
+learning_paths:
   - devops-engineer
   - cloud-engineer
   - platform-engineer

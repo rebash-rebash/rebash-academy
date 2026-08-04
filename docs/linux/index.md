@@ -203,5 +203,5 @@ None beyond basic computer knowledge. A disposable Ubuntu 22.04/24.04 (or Rocky/
 ## Related
 
 - Next: [Shell Scripting](../shell/index.md)
-- [DevOps Engineer path](../career-paths/devops-engineer/index.md)
+- [DevOps Engineer path](../learning-paths/devops-engineer/index.md)
 - [Getting Started](../getting-started/index.md)

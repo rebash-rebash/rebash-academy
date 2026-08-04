@@ -993,7 +993,7 @@ Misses in Sections 1–2 → revisit early Linux tutorials. Misses in 3–4 → 
 - Lab: [Linux Production Incident Triage](../labs/linux-production-incident-triage.md)
 - Cheat sheet: [Linux](../cheatsheets/linux.md)
 - Interview prep: [Linux](../interview/linux.md)
-- Path: [DevOps Engineer](../learning-paths/devops-engineer.md)
+- Path: [DevOps Engineer](../learning-paths/devops-engineer/)
 
 ## Interview Connection
 

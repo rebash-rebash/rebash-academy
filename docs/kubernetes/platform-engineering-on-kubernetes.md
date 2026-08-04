@@ -6,7 +6,7 @@ estimated_time: "50–70 min"
 technology: kubernetes
 category: kubernetes
 module: "Module 16 · Platform Engineering"
-career_paths:
+learning_paths:
   - platform-engineer
   - kubernetes-engineer
   - devops-engineer

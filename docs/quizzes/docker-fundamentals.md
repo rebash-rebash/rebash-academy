@@ -974,7 +974,7 @@ Weak on Dockerfile/Compose → Docker track modules 2–4. Weak on failures → 
 - Lab: [Docker Compose Stack Recovery](../labs/docker-compose-stack-recovery.md)
 - Cheat sheet: [Docker](../cheatsheets/docker.md)
 - Interview prep: [Docker](../interview/docker.md)
-- Path: [DevOps Engineer](../learning-paths/devops-engineer.md)
+- Path: [DevOps Engineer](../learning-paths/devops-engineer/)
 
 ## Interview Connection
 

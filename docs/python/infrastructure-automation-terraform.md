@@ -6,7 +6,7 @@ estimated_time: "50–65 min"
 technology: python
 category: python
 module: "Module 19 · Infrastructure"
-career_paths:
+learning_paths:
   - devops-engineer
   - platform-engineer
   - cloud-engineer

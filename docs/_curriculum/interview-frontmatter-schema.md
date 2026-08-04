@@ -22,7 +22,7 @@ difficulty: intermediate          # beginner | intermediate | advanced | expert
 experience_level: mid-level       # beginner | junior | mid-level | senior | architect
 estimated_time: "45–60 min"
 question_count: 28                # approximate count for the guide
-career_paths:
+learning_paths:
   - devops-engineer
   - linux-administrator
 skills:
@@ -56,7 +56,7 @@ Every interview guide page follows this structure:
 4. **Production scenarios** — outage, scaling, security incident prompts
 5. **System design prompts** — when the technology appears in design interviews
 6. **Reference materials** — cheat sheets, quizzes, official docs
-7. **Related resources** — career paths, certifications, projects
+7. **Related resources** — learning paths, certifications, projects
 
 ## Question metadata
 
@@ -70,7 +70,7 @@ Each question (inline today; structured YAML in future) should support:
 | `difficulty` | beginner · intermediate · advanced · expert |
 | `experience_level` | beginner · junior · mid-level · senior · architect |
 | `question_type` | See types below |
-| `career_paths` | Paths this question supports |
+| `learning_paths` | Paths this question supports |
 | `skills` | Skill tags tested |
 | `certifications` | Exam domains where applicable |
 | `related_tutorials` | Deep-dive links |
@@ -174,9 +174,9 @@ Scenario banks under each technology guide or `docs/interview/scenarios/` (plann
 - Cloud provider failures
 - Disaster recovery execution
 
-## Career path mapping
+## Learning path mapping
 
-| Career path | Primary interview guides |
+| Learning path | Primary interview guides |
 |-------------|-------------------------|
 | `beginner` | Linux, Git, Networking fundamentals |
 | `linux-administrator` | Linux, Shell, Networking |

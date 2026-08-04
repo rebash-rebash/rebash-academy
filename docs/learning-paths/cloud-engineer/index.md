@@ -1,40 +1,40 @@
 ---
-title: "Beginner Career Path"
-description: "First steps into Linux, the shell, networking basics, and Git."
-difficulty: beginner
-estimated_time: "4–6 weeks"
-category: career-paths
+title: "Cloud Engineer Learning Path"
+description: "Build and operate cloud infrastructure on AWS (Azure and GCP next)."
+difficulty: intermediate
+estimated_time: "12–16 weeks"
+category: learning-paths
 tags:
-  - career-paths
-  - beginner
+  - learning-paths
+  - cloud-engineer
 author: Shaik Basha
 ---
 
-# Beginner
+# Cloud Engineer
 
-**Duration:** 4–6 weeks · **Difficulty:** beginner · **Badge:** Start here
+**Duration:** 12–16 weeks · **Difficulty:** intermediate · **Badge:** Cloud
 { .ra-facts }
 
-First steps into Linux, the shell, networking basics, and Git.
+Build and operate cloud infrastructure on AWS (Azure and GCP next).
 
 
 ## Complete roadmap
 
-{{ roadmap(["linux", "shell", "networking", "git"]) }}
+{{ roadmap(["linux", "networking", "shell", "python", "git", "aws", "terraform", "azure", "gcp"]) }}
 
 ## Target audience
 
-Engineers who want the **Beginner** skill profile and job outcomes below.
+Engineers who want the **Cloud Engineer** skill profile and job outcomes below.
 
 ## Job roles
 
-- Junior Linux Admin
-- IT Support Engineer
-- Helpdesk Engineer
+- Cloud Engineer
+- Cloud Operations Engineer
+- Junior Solutions Architect
 
 ## Expected salary ranges
 
-Entry-level / varies by region — treat as directional guidance only.
+Mid-level cloud roles — treat as directional guidance only.
 
 ## Prerequisites
 
@@ -49,9 +49,20 @@ Entry-level / varies by region — treat as directional guidance only.
 ### Foundations
 
 - [Linux](../../linux/) — ready · 25 tutorials
-- [Shell Scripting](../../shell/) — ready · 18 tutorials
 - [Networking](../../networking/) — ready · 25 tutorials
+- [Shell Scripting](../../shell/) — ready · 18 tutorials
+- [Python for DevOps](../../python/) — ready · 27 tutorials
 - [Git](../../git/) — ready · 20 tutorials
+
+### Cloud
+
+- [AWS](../../aws/) — ready · 20 tutorials
+- [Terraform](../../terraform/) — ready · 20 tutorials
+
+### Multi-cloud
+
+- [Azure](../../azure/) — stub / coming soon
+- [Google Cloud](../../gcp/) — complete (16 modules)
 
 
 ## Skills gained
@@ -76,15 +87,15 @@ Choose a capstone that exercises the final phases of this path (for example Stat
 
 ## Certification roadmap
 
-RHCSA
+AWS SAA, Azure AZ-104, Google ACE
 
-## Related career paths
+## Related learning paths
 
+- [Beginner](../beginner/index.md)
 - [Linux Administrator](../linux-administrator/index.md)
-- [Cloud Engineer](../cloud-engineer/index.md)
 - [DevOps Engineer](../devops-engineer/index.md)
 - [Kubernetes Engineer](../kubernetes-engineer/index.md)
 
 ## Estimated duration
 
-**4–6 weeks** of focused study (tutorials + labs). Stretch if you are new to Linux or cloud.
+**12–16 weeks** of focused study (tutorials + labs). Stretch if you are new to Linux or cloud.

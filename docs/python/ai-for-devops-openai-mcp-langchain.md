@@ -6,7 +6,7 @@ estimated_time: "45–60 min"
 technology: python
 category: python
 module: "Module 26 · AI for DevOps"
-career_paths:
+learning_paths:
   - devops-engineer
   - platform-engineer
   - site-reliability-engineer

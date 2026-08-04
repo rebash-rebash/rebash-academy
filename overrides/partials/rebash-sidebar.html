@@ -1,0 +1,208 @@
+{#-
+  Curated hub sidebar, or a focused course sidebar when inside a technology.
+  Course modules take over the left nav (not buried under Technologies).
+  Page TOC stays in the right Material secondary sidebar.
+-#}
+{% set path = page.url | default('', true) %}
+
+{% set tech_catalog = [
+  {"href": "linux/", "label": "Linux", "prefixes": ["linux/"], "brand": "linux.svg"},
+  {"href": "networking/", "label": "Networking", "prefixes": ["networking/"], "tint": "teal", "mdi": "lan"},
+  {"href": "docker/", "label": "Docker", "prefixes": ["docker/"], "brand": "docker.svg"},
+  {"href": "kubernetes/", "label": "Kubernetes", "prefixes": ["kubernetes/"], "brand": "kubernetes.svg"},
+  {"href": "terraform/", "label": "Terraform", "prefixes": ["terraform/"], "brand": "terraform.svg"},
+  {"href": "aws/", "label": "AWS", "prefixes": ["aws/"], "brand": "aws.svg"},
+  {"href": "azure/", "label": "Azure", "prefixes": ["azure/"], "brand": "azure.svg"},
+  {"href": "gcp/", "label": "Google Cloud", "prefixes": ["gcp/"], "brand": "google-cloud.svg"},
+  {"href": "gitlab/", "label": "CI/CD", "prefixes": ["gitlab/", "github-actions/", "jenkins/", "argocd/"], "tint": "purple", "mdi": "infinity"},
+  {"href": "security/", "label": "Security", "prefixes": ["security/", "devsecops/"], "tint": "red", "mdi": "shield-lock"},
+  {"href": "sre/", "label": "SRE", "prefixes": ["sre/", "monitoring/", "prometheus/", "grafana/", "loki/", "tempo/", "opentelemetry/"], "tint": "cyan", "mdi": "speedometer"},
+  {"href": "ai/", "label": "AI Engineering", "prefixes": ["ai/"], "tint": "magenta", "mdi": "brain"},
+  {"href": "architecture/", "label": "Architecture", "prefixes": ["architecture/"], "tint": "indigo", "mdi": "sitemap"}
+] %}
+
+{% set current = namespace(tech=none, course=none) %}
+{% for tech in tech_catalog %}
+  {% if not current.tech %}
+    {% for p in tech.prefixes %}
+      {% if path.startswith(p) %}
+        {% set current.tech = tech %}
+      {% endif %}
+    {% endfor %}
+  {% endif %}
+{% endfor %}
+
+{#-
+  Find a course section under prefix.
+  Awesome-pages course nodes often have url=None; the index child holds e.g. linux/.
+-#}
+{% macro find_course(items, prefix, found) %}
+  {% for item in items %}
+    {% if found.course %}
+    {% elif item.children %}
+      {% set hit = namespace(match=false) %}
+      {% for child in item.children %}
+        {% if child.url and child.url.startswith(prefix) %}
+          {% set hit.match = true %}
+        {% endif %}
+      {% endfor %}
+      {% if hit.match %}
+        {% set found.course = item %}
+      {% else %}
+        {{ find_course(item.children, prefix, found) }}
+      {% endif %}
+    {% endif %}
+  {% endfor %}
+{% endmacro %}
+
+{% if current.tech %}
+  {% set found = namespace(course=none) %}
+  {% for p in current.tech.prefixes %}
+    {% if not found.course %}
+      {{ find_course(nav.items, p, found) }}
+    {% endif %}
+  {% endfor %}
+  {% set current.course = found.course %}
+{% endif %}
+
+{% macro course_tree(nav_item, focused=false) %}
+  {% if nav_item.children %}
+    <ul class="ra-sidebar__sub{% if focused %} ra-sidebar__sub--focus{% endif %}">
+      {% for child in nav_item.children %}
+        {% if child.is_index and not child.children %}
+          {% if focused %}
+            <li class="ra-sidebar__subitem">
+              <a href="{{ child.url | url }}" class="ra-sidebar__sublink{% if child == page or child.active %} ra-sidebar__sublink--active{% endif %}">
+                <span class="ra-sidebar__sublabel">Overview</span>
+              </a>
+            </li>
+          {% endif %}
+        {% elif child.children %}
+          <li class="ra-sidebar__subitem ra-sidebar__subitem--group">
+            <div class="ra-sidebar__subhead">{{ child.title }}</div>
+            {{ course_tree(child, focused) }}
+          </li>
+        {% elif child.url %}
+          <li class="ra-sidebar__subitem">
+            <a href="{{ child.url | url }}" class="ra-sidebar__sublink{% if child == page or child.active %} ra-sidebar__sublink--active{% endif %}">
+              <span class="ra-sidebar__sublabel">{{ child.title }}</span>
+            </a>
+          </li>
+        {% endif %}
+      {% endfor %}
+    </ul>
+  {% endif %}
+{% endmacro %}
+
+{% macro tech_icon(tech) %}
+  {% if tech.brand %}
+    <img class="ra-sidebar__brand" src="{{ ('assets/images/brands/' ~ tech.brand) | url }}" alt="" width="14" height="14" decoding="async">
+  {% elif tech.mdi %}
+    {% set icon_path = ".icons/material/" ~ tech.mdi ~ ".svg" %}
+    <span class="ra-sidebar__tint ra-sidebar__tint--{{ tech.tint }}">{% include icon_path %}</span>
+  {% endif %}
+{% endmacro %}
+
+{% macro row(href, label, active=false, chevron=false) %}
+  <a href="{{ href | url }}" class="ra-sidebar__link{% if active %} ra-sidebar__link--active{% endif %}">
+    <span class="ra-sidebar__icon" aria-hidden="true">{{ caller() }}</span>
+    <span class="ra-sidebar__label">{{ label }}</span>
+    {% if chevron %}
+      <span class="ra-sidebar__chevron" aria-hidden="true">{% include ".icons/material/chevron-right.svg" %}</span>
+    {% endif %}
+  </a>
+{% endmacro %}
+
+<nav class="ra-sidebar{% if current.tech %} ra-sidebar--course{% endif %}" aria-label="{{ lang.t('nav') }}">
+  {% if current.tech and current.course %}
+    {#- Focused course navigation (full left column) -#}
+    <a class="ra-sidebar__back" href="{{ (nav.homepage.url if nav.homepage else '.') | url }}#ra-nav-technologies">
+      <span class="ra-sidebar__back-icon" aria-hidden="true">{% include ".icons/material/arrow-left.svg" %}</span>
+      <span>All technologies</span>
+    </a>
+
+    <a href="{{ current.tech.href | url }}" class="ra-sidebar__course-title{% if path == current.tech.href or path.rstrip('/') == current.tech.href.rstrip('/') %} ra-sidebar__course-title--active{% endif %}">
+      <span class="ra-sidebar__icon" aria-hidden="true">{{ tech_icon(current.tech) }}</span>
+      <span class="ra-sidebar__label">{{ current.tech.label }}</span>
+    </a>
+
+    <div class="ra-sidebar__course-nav">
+      {{ course_tree(current.course, true) }}
+    </div>
+  {% else %}
+    {#- Hub menu -#}
+    <div class="ra-sidebar__block">
+      {% call row('.', 'Home', page.is_homepage) %}
+        {% include ".icons/material/home-outline.svg" %}
+      {% endcall %}
+      {% call row('getting-started/', 'Getting Started', path.startswith('getting-started')) %}
+        <img src="{{ 'assets/images/icons/nav-rocket.svg' | url }}" alt="" width="14" height="14" decoding="async">
+      {% endcall %}
+    </div>
+
+    <div class="ra-sidebar__section ra-sidebar__section--paths">
+      <div class="ra-sidebar__heading">
+        <span>Learning Paths</span>
+        <a class="ra-sidebar__view-all" href="{{ 'learning-paths/' | url }}">View all →</a>
+      </div>
+      <div class="ra-sidebar__list">
+        {% call row('learning-paths/devops-engineer/', 'DevOps Engineer', path.startswith('learning-paths/devops-engineer'), true) %}
+          <span class="ra-sidebar__tint ra-sidebar__tint--orange">{% include ".icons/material/cog.svg" %}</span>
+        {% endcall %}
+        {% call row('learning-paths/cloud-engineer/', 'Cloud Engineer', path.startswith('learning-paths/cloud-engineer'), true) %}
+          <span class="ra-sidebar__tint ra-sidebar__tint--blue">{% include ".icons/material/cloud.svg" %}</span>
+        {% endcall %}
+        {% call row('learning-paths/kubernetes-engineer/', 'Kubernetes Engineer', path.startswith('learning-paths/kubernetes-engineer'), true) %}
+          <img class="ra-sidebar__brand" src="{{ 'assets/images/brands/kubernetes.svg' | url }}" alt="" width="14" height="14" decoding="async">
+        {% endcall %}
+        {% call row('learning-paths/platform-engineer/', 'Platform Engineer', path.startswith('learning-paths/platform-engineer'), true) %}
+          <span class="ra-sidebar__tint ra-sidebar__tint--brown">{% include ".icons/material/layers-triple.svg" %}</span>
+        {% endcall %}
+        {% call row('learning-paths/devsecops-engineer/', 'DevSecOps Engineer', path.startswith('learning-paths/devsecops-engineer'), true) %}
+          <span class="ra-sidebar__tint ra-sidebar__tint--green">{% include ".icons/material/shield-check.svg" %}</span>
+        {% endcall %}
+        {% call row('learning-paths/ai-for-devops/', 'AI Engineer', path.startswith('learning-paths/ai-for-devops'), true) %}
+          <span class="ra-sidebar__tint ra-sidebar__tint--deep-orange">{% include ".icons/material/robot.svg" %}</span>
+        {% endcall %}
+        {% call row('learning-paths/cloud-architect/', 'Cloud Architect', path.startswith('learning-paths/cloud-architect'), true) %}
+          <span class="ra-sidebar__tint ra-sidebar__tint--pink">{% include ".icons/material/cloud-braces.svg" %}</span>
+        {% endcall %}
+      </div>
+    </div>
+
+    <div class="ra-sidebar__section ra-sidebar__section--tech" id="ra-nav-technologies">
+      <div class="ra-sidebar__heading">
+        <span>Technologies</span>
+      </div>
+      <div class="ra-sidebar__list">
+        {% for tech in tech_catalog %}
+          <a href="{{ tech.href | url }}" class="ra-sidebar__link">
+            <span class="ra-sidebar__icon" aria-hidden="true">{{ tech_icon(tech) }}</span>
+            <span class="ra-sidebar__label">{{ tech.label }}</span>
+            <span class="ra-sidebar__chevron" aria-hidden="true">{% include ".icons/material/chevron-right.svg" %}</span>
+          </a>
+        {% endfor %}
+      </div>
+    </div>
+
+    <div class="ra-sidebar__section ra-sidebar__section--resources">
+      <div class="ra-sidebar__heading">
+        <span>Resources</span>
+      </div>
+      <div class="ra-sidebar__list">
+        {% call row('cheatsheets/', 'Cheat Sheets', path.startswith('cheatsheets')) %}
+          {% include ".icons/material/file-table-outline.svg" %}
+        {% endcall %}
+        {% call row('interview/', 'Interview Guide', path.startswith('interview')) %}
+          {% include ".icons/material/account-tie.svg" %}
+        {% endcall %}
+        {% call row('books/', 'Books', path.startswith('books')) %}
+          {% include ".icons/material/book-open-page-variant.svg" %}
+        {% endcall %}
+        {% call row('community/', 'Community', path.startswith('community')) %}
+          {% include ".icons/material/account-group.svg" %}
+        {% endcall %}
+      </div>
+    </div>
+  {% endif %}
+</nav>

@@ -6,7 +6,7 @@ estimated_time: "60–90 min"
 technology: gcp
 category: gcp
 module: "Module 6 · Databases"
-career_paths:
+learning_paths:
   - cloud-engineer
   - devops-engineer
   - platform-engineer

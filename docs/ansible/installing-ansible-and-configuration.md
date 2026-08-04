@@ -6,7 +6,7 @@ estimated_time: "45–55 min"
 technology: ansible
 category: ansible
 module: "Module 2 · Installation and Configuration"
-career_paths:
+learning_paths:
   - devops-engineer
   - cloud-engineer
   - platform-engineer

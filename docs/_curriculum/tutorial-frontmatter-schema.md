@@ -19,7 +19,7 @@ difficulty: beginner          # beginner | intermediate | advanced | expert
 estimated_time: "45–90 min"
 technology: linux             # curriculum technology id
 module: "Module 1 · Fundamentals"
-career_paths:
+learning_paths:
   - devops-engineer
   - linux-administrator
 skills:
@@ -48,7 +48,7 @@ comments: false
 
 ## Rules
 
-- `technology` and `career_paths` must match ids in `curriculum.yaml`.
+- `technology` and `learning_paths` must match ids in `curriculum.yaml`.
 - Prefer stable slug paths (`technology/slug`) for `prerequisites`, `next`, and `related`.
 - Do not invent certifications not listed in the curriculum certification mapping.
 - Navigation (previous / next) can later be generated from `curriculum.yaml` without duplicating tutorials.

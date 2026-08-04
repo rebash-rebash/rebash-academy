@@ -1,40 +1,40 @@
 ---
-title: "AI for DevOps Engineer Career Path"
-description: "Practical AI for automation — APIs, agents, and DevOps tooling on a solid Python base."
-difficulty: intermediate
-estimated_time: "10–14 weeks"
-category: career-paths
+title: "Linux Administrator Learning Path"
+description: "Deep Linux operations — storage, systemd, security, and production hardening."
+difficulty: beginner
+estimated_time: "8–12 weeks"
+category: learning-paths
 tags:
-  - career-paths
-  - ai-for-devops
+  - learning-paths
+  - linux-administrator
 author: Shaik Basha
 ---
 
-# AI for DevOps Engineer
+# Linux Administrator
 
-**Duration:** 10–14 weeks · **Difficulty:** intermediate · **Badge:** AI
+**Duration:** 8–12 weeks · **Difficulty:** beginner · **Badge:** Ops
 { .ra-facts }
 
-Practical AI for automation — APIs, agents, and DevOps tooling on a solid Python base.
+Deep Linux operations — storage, systemd, security, and production hardening.
 
 
 ## Complete roadmap
 
-{{ roadmap(["linux", "shell", "python", "git", "ai", "docker", "kubernetes"]) }}
+{{ roadmap(["linux", "shell", "networking", "python", "git"]) }}
 
 ## Target audience
 
-Engineers who want the **AI for DevOps Engineer** skill profile and job outcomes below.
+Engineers who want the **Linux Administrator** skill profile and job outcomes below.
 
 ## Job roles
 
-- AI for DevOps Engineer
-- Automation Engineer
-- MLOps Associate
+- Linux Administrator
+- Systems Administrator
+- Infrastructure Engineer
 
 ## Expected salary ranges
 
-Emerging automation / AI-ops roles — treat as directional guidance only.
+Typically mid-level systems roles — treat as directional guidance only.
 
 ## Prerequisites
 
@@ -46,21 +46,16 @@ Emerging automation / AI-ops roles — treat as directional guidance only.
 
 ## Phases
 
-### Prerequisites
+### Core
 
 - [Linux](../../linux/) — ready · 25 tutorials
 - [Shell Scripting](../../shell/) — ready · 18 tutorials
+- [Networking](../../networking/) — ready · 25 tutorials
+
+### Automation
+
 - [Python for DevOps](../../python/) — ready · 27 tutorials
 - [Git](../../git/) — ready · 20 tutorials
-
-### AI
-
-- [AI for DevOps](../../ai/index.md) — complete (14 modules published)
-
-### Platform context
-
-- [Docker](../../docker/) — ready · 20 tutorials
-- [Kubernetes](../../kubernetes/) — ready · 20 tutorials
 
 
 ## Skills gained
@@ -85,15 +80,15 @@ Choose a capstone that exercises the final phases of this path (for example Stat
 
 ## Certification roadmap
 
-See [Certifications](../../certifications/index.md)
+RHCSA, RHCE
 
-## Related career paths
+## Related learning paths
 
 - [Beginner](../beginner/index.md)
-- [Linux Administrator](../linux-administrator/index.md)
 - [Cloud Engineer](../cloud-engineer/index.md)
 - [DevOps Engineer](../devops-engineer/index.md)
+- [Kubernetes Engineer](../kubernetes-engineer/index.md)
 
 ## Estimated duration
 
-**10–14 weeks** of focused study (tutorials + labs). Stretch if you are new to Linux or cloud.
+**8–12 weeks** of focused study (tutorials + labs). Stretch if you are new to Linux or cloud.

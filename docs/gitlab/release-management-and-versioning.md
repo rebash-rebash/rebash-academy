@@ -6,7 +6,7 @@ estimated_time: "40–55 min"
 technology: gitlab
 category: gitlab
 module: "Module 14 · Release Management"
-career_paths:
+learning_paths:
   - devops-engineer
   - cloud-engineer
   - platform-engineer

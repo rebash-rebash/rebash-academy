@@ -6,7 +6,7 @@ estimated_time: "55–65 min"
 technology: terraform
 category: terraform
 module: "Module 8 · State Management"
-career_paths:
+learning_paths:
   - devops-engineer
   - cloud-engineer
   - platform-engineer

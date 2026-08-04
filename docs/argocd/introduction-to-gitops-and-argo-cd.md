@@ -6,7 +6,7 @@ estimated_time: "45–55 min"
 technology: argocd
 category: argocd
 module: "Module 1 · GitOps Foundations"
-career_paths:
+learning_paths:
   - kubernetes-engineer
   - devops-engineer
   - platform-engineer

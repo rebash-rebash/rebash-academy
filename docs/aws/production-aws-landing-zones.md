@@ -6,7 +6,7 @@ estimated_time: "75–90 min"
 technology: aws
 category: aws
 module: "Module 15 · Production AWS"
-career_paths:
+learning_paths:
   - cloud-engineer
   - devops-engineer
   - platform-engineer

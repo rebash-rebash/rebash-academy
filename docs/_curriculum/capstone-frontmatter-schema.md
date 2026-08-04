@@ -18,7 +18,7 @@ description: "One or two sentences for SEO and search."
 difficulty: advanced                 # intermediate | advanced | expert
 capstone_level: professional         # associate | professional | expert | architect
 estimated_time: "24–40 hours"
-career_paths:
+learning_paths:
   - devops-engineer
   - platform-engineer
 technologies:
@@ -29,7 +29,7 @@ skills:
   - gitops-delivery
   - platform-design
 prerequisites:
-  - career-paths/devops-engineer
+  - learning-paths/devops-engineer
 related_courses:
   - kubernetes/
   - terraform/
@@ -63,7 +63,7 @@ Every capstone page follows this structure:
 5. **Non-functional requirements** — availability, security, cost, operability
 6. **Target audience** — role and experience level
 7. **Learning objectives**
-8. **Prerequisites** — career paths, tutorials, labs, and projects
+8. **Prerequisites** — learning paths, tutorials, labs, and projects
 9. **Architecture** — D2 diagram(s) for topology and data flow
 10. **Implementation phases** — ordered build stages with milestones
 11. **Milestones** — checkpoint deliverables per phase
@@ -138,11 +138,11 @@ Every capstone includes a self-review and peer-review checklist:
 | Lessons learned | Recommended in README |
 | Project presentation | Recommended — slides or demo script |
 
-## Career path mapping
+## Learning path mapping
 
-Each capstone declares one or more `career_paths` ids. Recommended capstone per path:
+Each capstone declares one or more `learning_paths` ids. Recommended capstone per path:
 
-| Career path | Example capstone |
+| Learning path | Example capstone |
 |-------------|------------------|
 | `cloud-engineer` | Production AWS Platform |
 | `devops-engineer` | Enterprise DevOps Platform |
@@ -154,13 +154,13 @@ Each capstone declares one or more `career_paths` ids. Recommended capstone per 
 | `ai-for-devops` | AI-assisted Platform Operations |
 | `linux-administrator` | Enterprise Linux Server Platform |
 
-Cross-link from [`career-paths/`](../career-paths/index.md) pages to the capstone that completes each path.
+Cross-link from [`learning-paths/`](../learning-paths/index.md) pages to the capstone that completes each path.
 
 ## Portfolio strategy
 
 Learners should graduate with **5–10 production-quality repositories** suitable for interviews:
 
-1. At least one **path-ending capstone** per target career path
+1. At least one **path-ending capstone** per target learning path
 2. One **multi-stack portfolio build** (e.g. Status API or GitOps platform)
 3. One **observability or SRE** proof where targeting SRE roles
 4. One **security or DevSecOps** proof where targeting DevSecOps roles
@@ -185,7 +185,7 @@ docs/capstones/
   ai/
 ```
 
-Each published capstone is a single markdown file or folder with `index.md`. Nav groups by career path in `.pages` as content ships.
+Each published capstone is a single markdown file or folder with `index.md`. Nav groups by learning path in `.pages` as content ships.
 
 ## Related project vs capstone
 

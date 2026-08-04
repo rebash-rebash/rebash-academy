@@ -6,7 +6,7 @@ estimated_time: "45–60 min"
 technology: terraform
 category: terraform
 module: "Module 14 · Testing & Validation"
-career_paths:
+learning_paths:
   - devops-engineer
   - cloud-engineer
   - platform-engineer

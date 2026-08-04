@@ -6,7 +6,7 @@ estimated_time: "45–55 min"
 technology: ansible
 category: ansible
 module: "Module 15 · Automation Platform"
-career_paths:
+learning_paths:
   - devops-engineer
   - platform-engineer
   - cloud-engineer

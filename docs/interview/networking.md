@@ -48,4 +48,4 @@ Use this page as a revision map. Every tutorial in the [Networking track](../net
 - Cheat sheet: [Networking cheat sheet](../cheatsheets/networking.md)
 - Quiz: [Networking Production](../quizzes/networking-production.md)
 - Lab: [Edge Failover](../labs/networking-edge-failover.md)
-- Learning path: [DevOps Engineer](../learning-paths/devops-engineer.md)
+- Learning path: [DevOps Engineer](../learning-paths/devops-engineer/)

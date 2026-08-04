@@ -6,7 +6,7 @@ estimated_time: "60–75 min"
 technology: argocd
 category: argocd
 module: "Module 15 · Production GitOps"
-career_paths:
+learning_paths:
   - platform-engineer
   - kubernetes-engineer
   - site-reliability-engineer

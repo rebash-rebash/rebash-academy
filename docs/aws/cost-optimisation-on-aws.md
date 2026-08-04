@@ -6,7 +6,7 @@ estimated_time: "60–75 min"
 technology: aws
 category: aws
 module: "Module 13 · Cost Optimisation"
-career_paths:
+learning_paths:
   - cloud-engineer
   - devops-engineer
   - platform-engineer

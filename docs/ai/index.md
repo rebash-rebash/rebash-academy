@@ -73,5 +73,5 @@ Use Large Language Models (LLMs) as assistants for DevOps work: propose → vali
 
 ## Related
 
-- [AI for DevOps Engineer career path](../career-paths/ai-for-devops/index.md)
+- [AI for DevOps Engineer learning path](../learning-paths/ai-for-devops/index.md)
 - [Python — OpenAI, MCP, and LangChain](../python/ai-for-devops-openai-mcp-langchain.md)

@@ -6,7 +6,7 @@ estimated_time: "70–90 min"
 technology: gcp
 category: gcp
 module: "Module 4 · Compute"
-career_paths:
+learning_paths:
   - cloud-engineer
   - devops-engineer
   - platform-engineer

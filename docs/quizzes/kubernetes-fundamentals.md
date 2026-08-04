@@ -967,7 +967,7 @@ Weak on API objects → early Kubernetes tutorials. Weak on probes/rollouts → 
 - Lab: [Kubernetes Deployment Triage](../labs/kubernetes-deployment-triage.md)
 - Cheat sheet: [Kubernetes](../cheatsheets/kubernetes.md)
 - Interview prep: [Kubernetes](../interview/kubernetes.md)
-- Path: [DevOps Engineer](../learning-paths/devops-engineer.md)
+- Path: [DevOps Engineer](../learning-paths/devops-engineer/)
 
 ## Interview Connection
 

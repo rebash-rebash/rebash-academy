@@ -1,0 +1,120 @@
+{#- Homepage right rail: On this page + site-only Quick Links -#}
+<nav class="md-nav md-nav--secondary ra-onthispage" aria-label="On this page">
+  <label class="md-nav__title ra-onthispage__title" for="__toc">
+    On this page
+  </label>
+  <ul class="md-nav__list ra-onthispage__list" data-md-component="toc" data-md-scrollfix>
+    <li class="md-nav__item">
+      <a href="#ra-home-intro" class="md-nav__link">
+        <span class="md-ellipsis">Introduction</span>
+      </a>
+    </li>
+    <li class="md-nav__item">
+      <a href="#ra-home-paths" class="md-nav__link">
+        <span class="md-ellipsis">Learning Paths</span>
+      </a>
+    </li>
+    <li class="md-nav__item">
+      <a href="#ra-home-courses" class="md-nav__link">
+        <span class="md-ellipsis">Featured Courses</span>
+      </a>
+    </li>
+    <li class="md-nav__item">
+      <a href="#ra-home-why" class="md-nav__link">
+        <span class="md-ellipsis">Why REBASH?</span>
+      </a>
+    </li>
+  </ul>
+</nav>
+
+<nav class="ra-quicklinks" aria-label="Quick links">
+  <h2 class="ra-quicklinks__title">Quick Links</h2>
+  <ul class="ra-quicklinks__list">
+    <li>
+      <a class="ra-quicklinks__link" href="{{ 'cheatsheets/' | url }}">
+        <span class="ra-quicklinks__icon" aria-hidden="true">{% include ".icons/material/file-table-outline.svg" %}</span>
+        Cheat Sheets
+      </a>
+    </li>
+    <li>
+      <a class="ra-quicklinks__link" href="{{ 'interview/' | url }}">
+        <span class="ra-quicklinks__icon" aria-hidden="true">{% include ".icons/material/clipboard-text-outline.svg" %}</span>
+        Interview Guide
+      </a>
+    </li>
+    <li>
+      <a class="ra-quicklinks__link" href="{{ 'architecture-guides/' | url }}">
+        <span class="ra-quicklinks__icon" aria-hidden="true">{% include ".icons/material/sitemap.svg" %}</span>
+        Architecture Diagrams
+      </a>
+    </li>
+    <li>
+      <a class="ra-quicklinks__link" href="{{ 'projects/' | url }}">
+        <span class="ra-quicklinks__icon" aria-hidden="true">{% include ".icons/material/briefcase-outline.svg" %}</span>
+        Projects
+      </a>
+    </li>
+    <li>
+      <a class="ra-quicklinks__link" href="{{ 'labs/' | url }}">
+        <span class="ra-quicklinks__icon" aria-hidden="true">{% include ".icons/material/flask-outline.svg" %}</span>
+        Labs
+      </a>
+    </li>
+    <li>
+      <a class="ra-quicklinks__link" href="{{ 'community/' | url }}">
+        <span class="ra-quicklinks__icon" aria-hidden="true">{% include ".icons/material/account-group-outline.svg" %}</span>
+        Community
+      </a>
+    </li>
+  </ul>
+</nav>
+
+<aside class="ra-connect" aria-label="Connect with us">
+  <h2 class="ra-connect__title">Connect with us</h2>
+  <ul class="ra-connect__list">
+    <li>
+      <a class="ra-connect__link" href="https://www.linkedin.com/in/shaikkhadarbasha/" target="_blank" rel="noopener">
+        <span class="ra-connect__icon ra-connect__icon--linkedin" aria-hidden="true">{% include ".icons/fontawesome/brands/linkedin.svg" %}</span>
+        <span class="ra-connect__copy">
+          <span class="ra-connect__label">LinkedIn</span>
+          <span class="ra-connect__hint">Follow for daily content</span>
+        </span>
+      </a>
+    </li>
+    <li>
+      <a class="ra-connect__link" href="https://www.youtube.com/@re-bash" target="_blank" rel="noopener">
+        <span class="ra-connect__icon ra-connect__icon--youtube" aria-hidden="true">{% include ".icons/fontawesome/brands/youtube.svg" %}</span>
+        <span class="ra-connect__copy">
+          <span class="ra-connect__label">YouTube</span>
+          <span class="ra-connect__hint">Video tutorials</span>
+        </span>
+      </a>
+    </li>
+    <li>
+      <a class="ra-connect__link" href="https://github.com/rebash-rebash" target="_blank" rel="noopener">
+        <span class="ra-connect__icon ra-connect__icon--github" aria-hidden="true">{% include ".icons/fontawesome/brands/github.svg" %}</span>
+        <span class="ra-connect__copy">
+          <span class="ra-connect__label">GitHub</span>
+          <span class="ra-connect__hint">Open source projects</span>
+        </span>
+      </a>
+    </li>
+    <li>
+      <a class="ra-connect__link" href="{{ 'community/' | url }}">
+        <span class="ra-connect__icon ra-connect__icon--community" aria-hidden="true">{% include ".icons/material/account-group.svg" %}</span>
+        <span class="ra-connect__copy">
+          <span class="ra-connect__label">Community</span>
+          <span class="ra-connect__hint">Join the discussion</span>
+        </span>
+      </a>
+    </li>
+  </ul>
+</aside>
+
+<aside class="ra-keep-learning" aria-label="Keep learning">
+  <img class="ra-keep-learning__logo" src="{{ 'assets/images/logo.svg' | url }}" alt="" width="28" height="28" decoding="async">
+  <p class="ra-keep-learning__quote">“The expert in anything was once a beginner.”</p>
+  <a class="ra-keep-learning__cta" href="{{ 'getting-started/' | url }}">
+    <span aria-hidden="true">›</span> Keep Learning
+  </a>
+</aside>

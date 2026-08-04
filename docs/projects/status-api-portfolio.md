@@ -369,7 +369,7 @@ To grow this project toward production:
 ## Related
 
 - Labs: [Docker](../labs/docker-compose-stack-recovery.md) · [Kubernetes](../labs/kubernetes-deployment-triage.md) · [Terraform](../labs/terraform-plan-review-workflow.md)
-- Path: [DevOps Engineer](../learning-paths/devops-engineer.md)
+- Path: [DevOps Engineer](../learning-paths/devops-engineer/)
 - Tracks: [Docker](../docker/index.md) · [Kubernetes](../kubernetes/index.md) · [Terraform](../terraform/index.md)
 
 ## References

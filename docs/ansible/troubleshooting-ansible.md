@@ -6,7 +6,7 @@ estimated_time: "45–60 min"
 technology: ansible
 category: ansible
 module: "Module 17 · Troubleshooting"
-career_paths:
+learning_paths:
   - devops-engineer
   - platform-engineer
   - cloud-engineer

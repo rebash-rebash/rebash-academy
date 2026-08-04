@@ -6,7 +6,7 @@ estimated_time: "45–60 min"
 technology: git
 category: git
 module: "Module 1 · Version Control Fundamentals"
-career_paths:
+learning_paths:
   - beginner
   - devops-engineer
   - platform-engineer

@@ -1,7 +1,13 @@
 title: Learning Paths
-icon: material/map-marker-path
 nav:
-  - index.md
-  - devops-engineer.md
-  - linux-for-cloud-devops.md
-  - python-for-devops.md
+  - Overview: index.md
+  - Beginner: beginner
+  - Linux Administrator: linux-administrator
+  - Cloud Engineer: cloud-engineer
+  - DevOps Engineer: devops-engineer
+  - Kubernetes Engineer: kubernetes-engineer
+  - Platform Engineer: platform-engineer
+  - DevSecOps Engineer: devsecops-engineer
+  - Site Reliability Engineer: site-reliability-engineer
+  - Cloud Architect: cloud-architect
+  - AI for DevOps Engineer: ai-for-devops

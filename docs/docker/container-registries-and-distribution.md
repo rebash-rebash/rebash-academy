@@ -6,7 +6,7 @@ estimated_time: "40–55 min"
 technology: docker
 category: docker
 module: "Module 10 · Registries"
-career_paths:
+learning_paths:
   - devops-engineer
   - platform-engineer
   - cloud-engineer

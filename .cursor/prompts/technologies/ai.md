@@ -37,7 +37,7 @@ Intermediate (plain language; prerequisites carry foundations)
 
 ## Estimated Duration
 
-8–10 weeks (course) · 10–14 weeks with Docker/Kubernetes on the career path
+8–10 weeks (course) · 10–14 weeks with Docker/Kubernetes on the learning path
 
 ---
 
@@ -269,5 +269,5 @@ Optional
 # Related
 
 - Python Module 26: `python/ai-for-devops-openai-mcp-langchain` (taster)
-- Career path: `docs/career-paths/ai-for-devops/`
+- Learning path: `docs/learning-paths/ai-for-devops/`
 - Rule: `.cursor/rules/40-technologies/48-ai-for-devops.mdc`

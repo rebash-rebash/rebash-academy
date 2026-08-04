@@ -22,7 +22,7 @@ technology: linux                 # curriculum technology id
 module: "Module 1 · Fundamentals"
 question_count: 40
 passing_score: "70% (28/40)"
-career_paths:
+learning_paths:
   - devops-engineer
   - linux-administrator
 skills:
@@ -73,7 +73,7 @@ Each question should support (inline or in a future structured format):
 | `difficulty` | beginner · intermediate · advanced · expert |
 | `question_type` | multiple-choice · multiple-select · true-false · scenario · troubleshooting |
 | `skills` | Skill tags tested |
-| `career_paths` | Paths this question supports |
+| `learning_paths` | Paths this question supports |
 | `certification_mapping` | Exam domains where applicable |
 | `tags` | Free-form tags |
 

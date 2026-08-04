@@ -6,7 +6,7 @@ estimated_time: "55–65 min"
 technology: github-actions
 category: github-actions
 module: "Module 4 · Workflow Syntax"
-career_paths:
+learning_paths:
   - devops-engineer
   - cloud-engineer
   - platform-engineer

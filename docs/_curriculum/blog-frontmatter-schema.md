@@ -22,7 +22,7 @@ category: engineering              # primary nav category — see categories bel
 type: engineering-insights         # article type — see types below
 difficulty: intermediate           # beginner | intermediate | advanced | expert
 estimated_reading_time: "8 min"
-career_paths:
+learning_paths:
   - devops-engineer
 technologies:
   - kubernetes
@@ -62,7 +62,7 @@ Every article follows this structure:
 6. **Related labs** — hands-on follow-ups
 7. **Related projects** — portfolio builds that apply the topic
 8. **Related cheat sheets** — quick reference
-9. **Related career paths** — when role context matters
+9. **Related learning paths** — when role context matters
 10. **References** — official documentation and primary sources first
 
 Blog articles **complement** tutorials. They may discuss opinions, trends, incidents, and trade-offs — they do not replace structured tutorial content.
@@ -134,7 +134,7 @@ Every article links outward to Academy assets readers should use next:
 | Labs | `related_labs` | Hands-on proof |
 | Projects | `related_projects` | Portfolio application |
 | Cheat sheets | `related_cheatsheets` | Command recall |
-| Career paths | `career_paths` | Role context |
+| Learning paths | `learning_paths` | Role context |
 | Certifications | `related_certifications` | Exam alignment |
 
 Reverse links: tutorials may reference blog articles in body when an article provides context (optional future field).

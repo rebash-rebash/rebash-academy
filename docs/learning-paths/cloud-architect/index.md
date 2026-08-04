@@ -1,11 +1,11 @@
 ---
-title: "Cloud Architect Career Path"
+title: "Cloud Architect Learning Path"
 description: "Multi-cloud design, IaC at scale, security architecture, and production patterns."
 difficulty: expert
 estimated_time: "20–28 weeks"
-category: career-paths
+category: learning-paths
 tags:
-  - career-paths
+  - learning-paths
   - cloud-architect
 author: Shaik Basha
 ---
@@ -89,7 +89,7 @@ Choose a capstone that exercises the final phases of this path (for example Stat
 
 AWS SAP, Azure AZ-305, Google PCA
 
-## Related career paths
+## Related learning paths
 
 - [Beginner](../beginner/index.md)
 - [Linux Administrator](../linux-administrator/index.md)

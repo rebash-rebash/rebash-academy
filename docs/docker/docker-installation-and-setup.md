@@ -6,7 +6,7 @@ estimated_time: "35–50 min"
 technology: docker
 category: docker
 module: "Module 2 · Installing Docker"
-career_paths:
+learning_paths:
   - beginner
   - devops-engineer
   - cloud-engineer

@@ -6,7 +6,7 @@ estimated_time: "50–65 min"
 technology: github-actions
 category: github-actions
 module: "Module 14 · Reusable Components"
-career_paths:
+learning_paths:
   - devops-engineer
   - platform-engineer
   - site-reliability-engineer

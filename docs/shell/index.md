@@ -256,6 +256,6 @@ Browse **Labs → Shell Scripting** in the sidebar, or:
 
 - Prerequisite: [Linux](../linux/index.md)
 - Next: [Python for DevOps](../python/index.md)
-- [DevOps Engineer path](../career-paths/devops-engineer/index.md)
+- [DevOps Engineer path](../learning-paths/devops-engineer/index.md)
 - [Getting Started](../getting-started/index.md)
 - [Labs](../labs/index.md)

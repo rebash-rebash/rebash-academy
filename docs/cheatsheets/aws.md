@@ -52,4 +52,4 @@ Scannable commands and patterns for the [AWS track](../aws/index.md). Prefer the
 - Lab: [SSM and S3](../labs/aws-ssm-s3.md)
 - Quiz: [AWS Fundamentals](../quizzes/aws-fundamentals.md)
 - Interview bank: [AWS interview prep](../interview/aws.md)
-- Learning path: [DevOps Engineer](../learning-paths/devops-engineer.md)
+- Learning path: [DevOps Engineer](../learning-paths/devops-engineer/)

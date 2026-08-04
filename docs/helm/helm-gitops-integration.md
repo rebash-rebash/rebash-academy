@@ -6,7 +6,7 @@ estimated_time: "45–60 min"
 technology: helm
 category: helm
 module: "Module 10 · GitOps Integration"
-career_paths:
+learning_paths:
   - kubernetes-engineer
   - devops-engineer
   - platform-engineer

@@ -76,4 +76,4 @@ GitOps layouts · Applications and AppProjects · auto-sync and self-heal · Hel
 
 - [Kubernetes GitOps](../kubernetes/gitops-and-cicd-with-kubernetes.md) · [Helm GitOps](../helm/helm-gitops-integration.md)
 - [Git GitOps fundamentals](../git/gitops-fundamentals.md)
-- [Kubernetes Engineer path](../career-paths/kubernetes-engineer/index.md)
+- [Kubernetes Engineer path](../learning-paths/kubernetes-engineer/index.md)

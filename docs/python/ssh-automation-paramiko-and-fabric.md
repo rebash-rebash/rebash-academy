@@ -6,7 +6,7 @@ estimated_time: "50–65 min"
 technology: python
 category: python
 module: "Module 20 · SSH Automation"
-career_paths:
+learning_paths:
   - devops-engineer
   - linux-administrator
   - platform-engineer

@@ -19,7 +19,7 @@ version: "1.0"
 
 Canonical generation prompt: [`.cursor/prompts/technologies/gcp.md`](../../.cursor/prompts/technologies/gcp.md)  
 Course URL prefix: `docs/gcp/`  
-Career paths: `cloud-engineer` · `devops-engineer` · `cloud-architect` · `platform-engineer` · `site-reliability-engineer`
+Learning paths: `cloud-engineer` · `devops-engineer` · `cloud-architect` · `platform-engineer` · `site-reliability-engineer`
 
 ---
 
@@ -146,7 +146,7 @@ Learners should defend:
 | B | 1–4 | Foundations: project, IAM, VPC, Compute Engine + cost hygiene |
 | C | 5–8 | Storage → databases → GKE/AR → Cloud Run |
 | D | 9–12 | Data ops → monitoring → security → Terraform |
-| E | 13–16 | CI/CD → cost → landing zone → troubleshooting; mark course `ready`; update career paths |
+| E | 13–16 | CI/CD → cost → landing zone → troubleshooting; mark course `ready`; update learning paths |
 
 **Phase A:** frozen 2026-08-04.
 

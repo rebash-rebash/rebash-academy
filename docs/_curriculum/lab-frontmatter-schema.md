@@ -21,7 +21,7 @@ lab_level: guided                 # guided | practice | challenge | production
 lab_type: scenario                # quick | guided | scenario | troubleshooting | challenge | migration | performance | security | automation | architecture | capstone
 technology: linux                 # curriculum technology id
 module: "Module 3 · Services"
-career_paths:
+learning_paths:
   - devops-engineer
   - linux-administrator
 skills:
@@ -113,9 +113,9 @@ Every lab must include a **Validation** section with:
 
 Automated verification scripts are optional but encouraged for repeatable labs.
 
-## Career path mapping
+## Learning path mapping
 
-`career_paths` must use ids from `curriculum.yaml`. Labs typically map to one or more paths — for example a Kubernetes networking lab may serve DevOps Engineer, Platform Engineer, and SRE paths.
+`learning_paths` must use ids from `curriculum.yaml`. Labs typically map to one or more paths — for example a Kubernetes networking lab may serve DevOps Engineer, Platform Engineer, and SRE paths.
 
 ## Project mapping
 

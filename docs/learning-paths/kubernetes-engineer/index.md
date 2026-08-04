@@ -1,40 +1,40 @@
 ---
-title: "Site Reliability Engineer Career Path"
-description: "Reliability, observability, incident response, and production operations at scale."
-difficulty: advanced
-estimated_time: "16–24 weeks"
-category: career-paths
+title: "Kubernetes Engineer Learning Path"
+description: "Containers, Kubernetes workloads, Helm, GitOps, and cluster operations."
+difficulty: intermediate
+estimated_time: "12–16 weeks"
+category: learning-paths
 tags:
-  - career-paths
-  - site-reliability-engineer
+  - learning-paths
+  - kubernetes-engineer
 author: Shaik Basha
 ---
 
-# Site Reliability Engineer
+# Kubernetes Engineer
 
-**Duration:** 16–24 weeks · **Difficulty:** advanced · **Badge:** SRE
+**Duration:** 12–16 weeks · **Difficulty:** intermediate · **Badge:** Containers
 { .ra-facts }
 
-Reliability, observability, incident response, and production operations at scale.
+Containers, Kubernetes workloads, Helm, GitOps, and cluster operations.
 
 
 ## Complete roadmap
 
-{{ roadmap(["linux", "networking", "python", "git", "kubernetes", "terraform", "gitlab", "prometheus", "grafana", "loki", "tempo", "opentelemetry", "sre"]) }}
+{{ roadmap(["linux", "networking", "docker", "git", "kubernetes", "helm", "argocd", "gitlab", "terraform"]) }}
 
 ## Target audience
 
-Engineers who want the **Site Reliability Engineer** skill profile and job outcomes below.
+Engineers who want the **Kubernetes Engineer** skill profile and job outcomes below.
 
 ## Job roles
 
-- Site Reliability Engineer
-- Production Engineer
-- Reliability Engineer
+- Kubernetes Engineer
+- Container Platform Engineer
+- SRE (Kubernetes)
 
 ## Expected salary ranges
 
-Mid to senior SRE roles — treat as directional guidance only.
+Mid to senior container platform roles — treat as directional guidance only.
 
 ## Prerequisites
 
@@ -46,27 +46,23 @@ Mid to senior SRE roles — treat as directional guidance only.
 
 ## Phases
 
-### Foundations
+### Prerequisites
 
 - [Linux](../../linux/) — ready · 25 tutorials
 - [Networking](../../networking/) — ready · 25 tutorials
-- [Python for DevOps](../../python/) — ready · 27 tutorials
+- [Docker](../../docker/) — ready · 20 tutorials
 - [Git](../../git/) — ready · 20 tutorials
 
-### Platform
+### Kubernetes
 
 - [Kubernetes](../../kubernetes/) — ready · 20 tutorials
-- [Terraform](../../terraform/) — ready · 20 tutorials
+- **Helm** — planned
+- **Argo CD** — planned
+
+### Delivery
+
 - [GitLab CI/CD](../../gitlab/) — ready · 20 tutorials
-
-### Observability
-
-- **Prometheus** — planned
-- **Grafana** — planned
-- **Loki** — planned
-- **Tempo** — planned
-- **OpenTelemetry** — planned
-- **Site Reliability Engineering** — planned
+- [Terraform](../../terraform/) — ready · 20 tutorials
 
 
 ## Skills gained
@@ -91,9 +87,9 @@ Choose a capstone that exercises the final phases of this path (for example Stat
 
 ## Certification roadmap
 
-CKA, PCA
+CKA, CKAD
 
-## Related career paths
+## Related learning paths
 
 - [Beginner](../beginner/index.md)
 - [Linux Administrator](../linux-administrator/index.md)
@@ -102,4 +98,4 @@ CKA, PCA
 
 ## Estimated duration
 
-**16–24 weeks** of focused study (tutorials + labs). Stretch if you are new to Linux or cloud.
+**12–16 weeks** of focused study (tutorials + labs). Stretch if you are new to Linux or cloud.

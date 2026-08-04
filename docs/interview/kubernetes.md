@@ -42,4 +42,4 @@ Use this page as a revision map. Every tutorial in the [Kubernetes track](../kub
 
 - Track: [Kubernetes](../kubernetes/index.md)
 - Cheat sheet: [Kubernetes cheat sheet](../cheatsheets/kubernetes.md)
-- Learning path: [DevOps Engineer](../learning-paths/devops-engineer.md)
+- Learning path: [DevOps Engineer](../learning-paths/devops-engineer/)

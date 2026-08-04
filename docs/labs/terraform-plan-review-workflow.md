@@ -420,7 +420,7 @@ Expect questions on **plan vs apply**, **lockfiles**, **state sensitivity**, and
 - [Installing Terraform and the CLI Workflow](../terraform/installing-terraform-and-the-cli-workflow.md)
 - [Terraform in CI/CD Pipelines](../terraform/terraform-in-ci-cd-pipelines.md)
 - Cheat sheet: [Terraform Cheat Sheet](../cheatsheets/terraform.md)
-- Learning path: [DevOps Engineer](../learning-paths/devops-engineer.md)
+- Learning path: [DevOps Engineer](../learning-paths/devops-engineer/)
 - Previous lab: [Linux Production Incident Triage](linux-production-incident-triage.md)
 
 ## References

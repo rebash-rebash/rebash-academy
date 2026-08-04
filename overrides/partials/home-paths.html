@@ -1,0 +1,80 @@
+{#- Featured learning paths under the homepage hero -#}
+<section class="ra-home-paths" id="ra-home-paths" aria-labelledby="ra-home-paths-title">
+  <div class="ra-home-paths__head">
+    <div class="ra-home-paths__intro">
+      <span class="ra-home-paths__mark" aria-hidden="true">{% include ".icons/material/map-marker-path.svg" %}</span>
+      <div>
+        <h2 id="ra-home-paths-title" class="ra-home-paths__title">Choose Your Learning Path</h2>
+        <p class="ra-home-paths__lead">Follow structured roadmaps to build production-ready skills</p>
+      </div>
+    </div>
+    <a class="ra-home-paths__all" href="{{ 'learning-paths/' | url }}">
+      View all paths
+      <span aria-hidden="true">{% include ".icons/material/arrow-right.svg" %}</span>
+    </a>
+  </div>
+
+  <div class="ra-home-paths__grid">
+    <a class="ra-home-paths__card" href="{{ 'learning-paths/devops-engineer/' | url }}">
+      <div class="ra-home-paths__card-top">
+        <span class="ra-home-paths__card-icon" aria-hidden="true">
+          <img class="ra-brand" src="{{ 'assets/images/brands/docker.svg' | url }}" alt="" width="20" height="20" decoding="async">
+        </span>
+        <h3 class="ra-home-paths__card-title">DevOps Engineer</h3>
+      </div>
+      <p class="ra-home-paths__skills">Linux · Docker · K8s<br>CI/CD · Cloud</p>
+      <div class="ra-home-paths__progress">
+        <span>Beginner</span>
+        <span class="ra-home-paths__progress-arrow" aria-hidden="true">→</span>
+        <span>Engineer</span>
+      </div>
+      <span class="ra-home-paths__cta">Start Path <span aria-hidden="true">→</span></span>
+    </a>
+
+    <a class="ra-home-paths__card" href="{{ 'learning-paths/cloud-engineer/' | url }}">
+      <div class="ra-home-paths__card-top">
+        <span class="ra-home-paths__card-icon" aria-hidden="true">
+          <img class="ra-brand" src="{{ 'assets/images/brands/aws.svg' | url }}" alt="" width="20" height="20" decoding="async">
+        </span>
+        <h3 class="ra-home-paths__card-title">Cloud Engineer</h3>
+      </div>
+      <p class="ra-home-paths__skills">AWS · Azure · GCP<br>Architecture · IaC</p>
+      <div class="ra-home-paths__progress">
+        <span>Beginner</span>
+        <span class="ra-home-paths__progress-arrow" aria-hidden="true">→</span>
+        <span>Architect</span>
+      </div>
+      <span class="ra-home-paths__cta">Start Path <span aria-hidden="true">→</span></span>
+    </a>
+
+    <a class="ra-home-paths__card" href="{{ 'learning-paths/kubernetes-engineer/' | url }}">
+      <div class="ra-home-paths__card-top">
+        <span class="ra-home-paths__card-icon" aria-hidden="true">
+          <img class="ra-brand" src="{{ 'assets/images/brands/kubernetes.svg' | url }}" alt="" width="20" height="20" decoding="async">
+        </span>
+        <h3 class="ra-home-paths__card-title">Kubernetes Engineer</h3>
+      </div>
+      <p class="ra-home-paths__skills">Containers · K8s<br>Networking · Security</p>
+      <div class="ra-home-paths__progress">
+        <span>Beginner</span>
+        <span class="ra-home-paths__progress-arrow" aria-hidden="true">→</span>
+        <span>Architect</span>
+      </div>
+      <span class="ra-home-paths__cta">Start Path <span aria-hidden="true">→</span></span>
+    </a>
+
+    <a class="ra-home-paths__card" href="{{ 'learning-paths/platform-engineer/' | url }}">
+      <div class="ra-home-paths__card-top">
+        <span class="ra-home-paths__card-icon" aria-hidden="true">{% include ".icons/material/layers.svg" %}</span>
+        <h3 class="ra-home-paths__card-title">Platform Engineer</h3>
+      </div>
+      <p class="ra-home-paths__skills">SRE · Platform<br>Automation · Security</p>
+      <div class="ra-home-paths__progress">
+        <span>Engineer</span>
+        <span class="ra-home-paths__progress-arrow" aria-hidden="true">→</span>
+        <span>Leader</span>
+      </div>
+      <span class="ra-home-paths__cta">Start Path <span aria-hidden="true">→</span></span>
+    </a>
+  </div>
+</section>

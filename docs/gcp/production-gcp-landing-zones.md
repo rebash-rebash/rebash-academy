@@ -6,7 +6,7 @@ estimated_time: "75–120 min"
 technology: gcp
 category: gcp
 module: "Module 15 · Production GCP"
-career_paths:
+learning_paths:
   - cloud-engineer
   - devops-engineer
   - platform-engineer

@@ -6,7 +6,7 @@ estimated_time: "40–55 min"
 technology: docker
 category: docker
 module: "Module 14 · Performance"
-career_paths:
+learning_paths:
   - devops-engineer
   - platform-engineer
   - site-reliability-engineer

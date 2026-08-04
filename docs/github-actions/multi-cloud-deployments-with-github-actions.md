@@ -6,7 +6,7 @@ estimated_time: "50–65 min"
 technology: github-actions
 category: github-actions
 module: "Module 10 · Cloud Deployments"
-career_paths:
+learning_paths:
   - devops-engineer
   - cloud-engineer
   - platform-engineer

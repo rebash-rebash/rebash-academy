@@ -1,8 +1,7 @@
 nav:
   - Home: index.md
-  - Get Started:
-    - getting-started
-    - career-paths
+  - Getting Started: getting-started
+  - Learning Paths: learning-paths
   - DevOps:
     - linux
     - shell

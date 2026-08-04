@@ -1,0 +1,73 @@
+{#- Featured technology courses under homepage learning paths -#}
+<section class="ra-home-courses" id="ra-home-courses" aria-labelledby="ra-home-courses-title">
+  <div class="ra-home-courses__head">
+    <div class="ra-home-courses__intro">
+      <span class="ra-home-courses__mark" aria-hidden="true">{% include ".icons/material/book-open-page-variant.svg" %}</span>
+      <div>
+        <h2 id="ra-home-courses-title" class="ra-home-courses__title">Featured Courses</h2>
+        <p class="ra-home-courses__lead">Deep-dive courses with architecture, labs and projects</p>
+      </div>
+    </div>
+    <a class="ra-home-courses__all" href="{{ 'technologies/' | url }}">
+      View all courses
+      <span aria-hidden="true">{% include ".icons/material/arrow-right.svg" %}</span>
+    </a>
+  </div>
+
+  <div class="ra-home-courses__grid">
+    <a class="ra-home-courses__card" href="{{ 'kubernetes/' | url }}">
+      <div class="ra-home-courses__card-top">
+        <span class="ra-home-courses__card-icon" aria-hidden="true">
+          <img class="ra-brand" src="{{ 'assets/images/brands/kubernetes.svg' | url }}" alt="" width="20" height="20" decoding="async">
+        </span>
+        <div class="ra-home-courses__heading">
+          <h3 class="ra-home-courses__card-title">Kubernetes</h3>
+          <span class="ra-home-courses__tag ra-home-courses__tag--green">Most Popular</span>
+        </div>
+      </div>
+      <p class="ra-home-courses__desc">From containers to production architecture</p>
+      <div class="ra-home-courses__meta">
+        <span><span aria-hidden="true">{% include ".icons/material/view-grid-outline.svg" %}</span> 30 modules</span>
+        <span><span aria-hidden="true">{% include ".icons/material/flask-outline.svg" %}</span> 30 labs</span>
+        <span class="ra-home-courses__cta">Start Course <span aria-hidden="true">→</span></span>
+      </div>
+    </a>
+
+    <a class="ra-home-courses__card" href="{{ 'linux/' | url }}">
+      <div class="ra-home-courses__card-top">
+        <span class="ra-home-courses__card-icon" aria-hidden="true">
+          <img class="ra-brand" src="{{ 'assets/images/brands/linux.svg' | url }}" alt="" width="20" height="20" decoding="async">
+        </span>
+        <div class="ra-home-courses__heading">
+          <h3 class="ra-home-courses__card-title">Linux</h3>
+          <span class="ra-home-courses__tag ra-home-courses__tag--green">Beginner</span>
+        </div>
+      </div>
+      <p class="ra-home-courses__desc">Complete Linux guide for DevOps and Cloud engineers</p>
+      <div class="ra-home-courses__meta">
+        <span><span aria-hidden="true">{% include ".icons/material/view-grid-outline.svg" %}</span> 28 modules</span>
+        <span><span aria-hidden="true">{% include ".icons/material/flask-outline.svg" %}</span> 28 labs</span>
+        <span class="ra-home-courses__cta">Start Course <span aria-hidden="true">→</span></span>
+      </div>
+    </a>
+
+    <a class="ra-home-courses__card" href="{{ 'terraform/' | url }}">
+      <div class="ra-home-courses__card-top">
+        <span class="ra-home-courses__card-icon" aria-hidden="true">
+          <img class="ra-brand" src="{{ 'assets/images/brands/terraform.svg' | url }}" alt="" width="20" height="20" decoding="async">
+        </span>
+        <div class="ra-home-courses__heading">
+          <h3 class="ra-home-courses__card-title">Terraform</h3>
+          <span class="ra-home-courses__tag ra-home-courses__tag--violet">IaC</span>
+        </div>
+      </div>
+      <p class="ra-home-courses__desc">Enterprise IaC patterns and workflows</p>
+      <div class="ra-home-courses__meta">
+        <span><span aria-hidden="true">{% include ".icons/material/view-grid-outline.svg" %}</span> 22 modules</span>
+        <span><span aria-hidden="true">{% include ".icons/material/flask-outline.svg" %}</span> 22 labs</span>
+        <span class="ra-home-courses__cta">Start Course <span aria-hidden="true">→</span></span>
+      </div>
+    </a>
+
+  </div>
+</section>

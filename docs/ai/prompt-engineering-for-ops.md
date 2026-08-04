@@ -8,7 +8,7 @@ last_updated: "2026-08-04"
 category: ai
 technology: ai
 module: "Module 3 · Prompt Engineering"
-career_paths:
+learning_paths:
   - ai-for-devops
   - devops-engineer
   - platform-engineer
@@ -618,4 +618,4 @@ Next: [Evaluation and Reliability](evaluation-and-reliability.md).
 
 - [OWASP Top 10 for LLM Applications — Sensitive information disclosure](https://owasp.org/www-project-top-10-for-large-language-model-applications/)
 - [OpenAI — Prompt engineering guide](https://platform.openai.com/docs/guides/prompt-engineering)
-- [REBASH Academy — AI for DevOps career path](../career-paths/ai-for-devops/index.md)
+- [REBASH Academy — AI for DevOps learning path](../learning-paths/ai-for-devops/index.md)

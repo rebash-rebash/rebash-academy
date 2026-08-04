@@ -32,4 +32,4 @@ Security controls only matter if teams keep them on when a release is late.
 
 - [DevSecOps](../devsecops/index.md)
 - [GitLab CI/CD](../gitlab/index.md)
-- [DevSecOps Engineer path](../career-paths/devsecops-engineer/index.md)
+- [DevSecOps Engineer path](../learning-paths/devsecops-engineer/index.md)

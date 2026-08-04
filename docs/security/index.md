@@ -32,5 +32,5 @@ Cloud security, hardening, compliance, and threat modelling.
 ## Related
 
 - [Getting Started](../getting-started/index.md) — recommended order for ready content
-- [Career Paths](../career-paths/index.md) — career-shaped roadmaps
+- [Learning Paths](../learning-paths/index.md) — career-shaped roadmaps
 - [Roadmap](../roadmap.md) — publication plan

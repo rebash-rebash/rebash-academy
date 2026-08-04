@@ -6,7 +6,7 @@ estimated_time: "45–75 min"
 technology: gcp
 category: gcp
 module: "Module 14 · Cost Optimisation"
-career_paths:
+learning_paths:
   - cloud-engineer
   - devops-engineer
   - platform-engineer

@@ -42,4 +42,4 @@ Scannable commands and patterns for the [Kubernetes track](../kubernetes/index.m
 - Track: [Kubernetes](../kubernetes/index.md)
 - Start: [Kubernetes introduction](../kubernetes/introduction-to-kubernetes-and-orchestration.md)
 - Interview bank: [Kubernetes interview prep](../interview/kubernetes.md)
-- Learning path: [DevOps Engineer](../learning-paths/devops-engineer.md)
+- Learning path: [DevOps Engineer](../learning-paths/devops-engineer/)

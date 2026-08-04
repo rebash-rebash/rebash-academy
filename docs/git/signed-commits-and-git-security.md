@@ -6,7 +6,7 @@ estimated_time: "55–70 min"
 technology: git
 category: git
 module: "Module 15 · Security"
-career_paths:
+learning_paths:
   - devops-engineer
   - devsecops-engineer
   - platform-engineer

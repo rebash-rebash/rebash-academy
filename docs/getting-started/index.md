@@ -1,6 +1,6 @@
 ---
 title: Getting Started
-description: "Start at REBASH Academy — who it is for, how to choose a career path or technology track, and how tutorials, labs, and projects fit together."
+description: "Start at REBASH Academy — who it is for, how to choose a learning path or technology track, and how tutorials, labs, and projects fit together."
 difficulty: beginner
 estimated_time: "15 min"
 author: Shaik Basha
@@ -22,7 +22,7 @@ What makes it different:
 - **Production-focused** — patterns used on real platforms, not toy demos
 - **Cloud-native** — containers, Kubernetes, GitOps, and observability in context
 - **Vendor-neutral where possible** — skills transfer across AWS, Azure, and GCP
-- **Career-shaped** — follow a [career path](../career-paths/index.md) or browse by [technology](../linux/index.md)
+- **Career-shaped** — follow a [learning path](../learning-paths/index.md) or browse by [technology](../linux/index.md)
 
 ## Who this is for
 
@@ -37,15 +37,15 @@ What makes it different:
 | **DevSecOps engineers** | Layer security onto containers, pipelines, and cloud |
 | **Cloud architects** | Combine multi-cloud design with IaC and delivery |
 
-If you are unsure, start with the **[Beginner](../career-paths/beginner/index.md)** or **[DevOps Engineer](../career-paths/devops-engineer/index.md)** path.
+If you are unsure, start with the **[Beginner](../learning-paths/beginner/index.md)** or **[DevOps Engineer](../learning-paths/devops-engineer/index.md)** path.
 
 ## How to use the academy
 
 There are two ways to navigate. Use both when it helps — tutorials are **shared**, not duplicated.
 
-### 1. Browse by career path
+### 1. Browse by learning path
 
-Open **[Career Paths](../career-paths/index.md)** when you have a job goal (for example DevOps Engineer or Kubernetes Engineer). The path gives an ordered roadmap across technologies, plus labs, projects, and certification hints.
+Open **[Learning Paths](../learning-paths/index.md)** when you have a job goal (for example DevOps Engineer or Kubernetes Engineer). The path gives an ordered roadmap across technologies, plus labs, projects, and certification hints.
 
 **Use this when:** you want a guided sequence and clear “what next”.
 
@@ -55,20 +55,20 @@ Open a technology under **Technologies** in the nav (Linux, Docker, Terraform, �
 
 **Use this when:** your team already uses a tool, or you are revising one topic deeply.
 
-## Career paths
+## Learning paths
 
 | Path | Level | Duration | Outcome |
 |------|--------|----------|---------|
-| [Beginner](../career-paths/beginner/index.md) | Beginner | 4–6 weeks | Linux, Shell, Networking, and Git foundations |
-| [Linux Administrator](../career-paths/linux-administrator/index.md) | Beginner | 8–12 weeks | Production Linux ops and automation habits |
-| [Cloud Engineer](../career-paths/cloud-engineer/index.md) | Intermediate | 12–16 weeks | Build and operate cloud infrastructure (AWS first) |
-| [DevOps Engineer](../career-paths/devops-engineer/index.md) | Intermediate | 20–28 weeks | Full delivery stack from OS to IaC and pipelines |
-| [Kubernetes Engineer](../career-paths/kubernetes-engineer/index.md) | Intermediate | 12–16 weeks | Containers, workloads, Helm, and cluster ops |
-| [Platform Engineer](../career-paths/platform-engineer/index.md) | Advanced | 16–24 weeks | Platform, GitOps, and observability skills |
-| [DevSecOps Engineer](../career-paths/devsecops-engineer/index.md) | Advanced | 14–20 weeks | Shift-left security across pipelines and cloud |
-| [Site Reliability Engineer](../career-paths/site-reliability-engineer/index.md) | Advanced | 16–24 weeks | Reliability, incidents, and observability |
-| [Cloud Architect](../career-paths/cloud-architect/index.md) | Expert | 20–28 weeks | Multi-cloud design and IaC at scale |
-| [AI for DevOps Engineer](../career-paths/ai-for-devops/index.md) | Intermediate | 10–14 weeks | Practical AI on a solid Python and ops base |
+| [Beginner](../learning-paths/beginner/index.md) | Beginner | 4–6 weeks | Linux, Shell, Networking, and Git foundations |
+| [Linux Administrator](../learning-paths/linux-administrator/index.md) | Beginner | 8–12 weeks | Production Linux ops and automation habits |
+| [Cloud Engineer](../learning-paths/cloud-engineer/index.md) | Intermediate | 12–16 weeks | Build and operate cloud infrastructure (AWS first) |
+| [DevOps Engineer](../learning-paths/devops-engineer/index.md) | Intermediate | 20–28 weeks | Full delivery stack from OS to IaC and pipelines |
+| [Kubernetes Engineer](../learning-paths/kubernetes-engineer/index.md) | Intermediate | 12–16 weeks | Containers, workloads, Helm, and cluster ops |
+| [Platform Engineer](../learning-paths/platform-engineer/index.md) | Advanced | 16–24 weeks | Platform, GitOps, and observability skills |
+| [DevSecOps Engineer](../learning-paths/devsecops-engineer/index.md) | Advanced | 14–20 weeks | Shift-left security across pipelines and cloud |
+| [Site Reliability Engineer](../learning-paths/site-reliability-engineer/index.md) | Advanced | 16–24 weeks | Reliability, incidents, and observability |
+| [Cloud Architect](../learning-paths/cloud-architect/index.md) | Expert | 20–28 weeks | Multi-cloud design and IaC at scale |
+| [AI for DevOps Engineer](../learning-paths/ai-for-devops/index.md) | Intermediate | 10–14 weeks | Practical AI on a solid Python and ops base |
 
 ## Technologies
 
@@ -91,7 +91,7 @@ Ready tracks today include Linux, Shell, Python, Networking, AWS, Git, GitLab CI
 ## Learning flow
 
 <div class="rebash-flow-grid" markdown="0">
-  <div class="rebash-flow-grid__step"><span class="rebash-flow-grid__num">1</span><span class="rebash-flow-grid__label">Career path</span></div>
+  <div class="rebash-flow-grid__step"><span class="rebash-flow-grid__num">1</span><span class="rebash-flow-grid__label">Learning path</span></div>
   <div class="rebash-flow-grid__step"><span class="rebash-flow-grid__num">2</span><span class="rebash-flow-grid__label">Tutorials</span></div>
   <div class="rebash-flow-grid__step"><span class="rebash-flow-grid__num">3</span><span class="rebash-flow-grid__label">Labs</span></div>
   <div class="rebash-flow-grid__step"><span class="rebash-flow-grid__num">4</span><span class="rebash-flow-grid__label">Projects</span></div>
@@ -99,7 +99,7 @@ Ready tracks today include Linux, Shell, Python, Networking, AWS, Git, GitLab CI
   <div class="rebash-flow-grid__step rebash-flow-grid__step--finish"><span class="rebash-flow-grid__num">6</span><span class="rebash-flow-grid__label">Interview &amp; certs</span></div>
 </div>
 
-Choose a **[career path](../career-paths/index.md)** (or one technology if you know your gap), work through **tutorials** and **labs**, build **projects** and a **capstone**, then use **interview** and **certification** material as exit gates.
+Choose a **[learning path](../learning-paths/index.md)** (or one technology if you know your gap), work through **tutorials** and **labs**, build **projects** and a **capstone**, then use **interview** and **certification** material as exit gates.
 
 ## Difficulty levels
 
@@ -166,7 +166,7 @@ Use [Interview Guides](../interview/index.md) after you finish a track’s labs 
 
 ## Recommended first path (DevOps)
 
-If your goal is a DevOps role, complete these ready tracks in order. Each checkpoint opens that course — same sequence as the [DevOps Engineer career path](../career-paths/devops-engineer/index.md).
+If your goal is a DevOps role, complete these ready tracks in order. Each checkpoint opens that course — same sequence as the [DevOps Engineer learning path](../learning-paths/devops-engineer/index.md).
 
 {{ roadmap(["linux", "shell", "python", "networking", "aws", "git", "gitlab", "docker", "kubernetes", "terraform"], prefix="../") }}
 
@@ -178,7 +178,7 @@ If your goal is a DevOps role, complete these ready tracks in order. Each checkp
 
 ## Best way to learn
 
-1. **Choose a career path** (or one technology if you already know the gap).  
+1. **Choose a learning path** (or one technology if you already know the gap).  
 2. **Complete tutorials in order** — prerequisites matter.  
 3. **Perform every lab** — type the commands; break and fix things.  
 4. **Build projects** from the catalog.  
@@ -199,7 +199,7 @@ Add tools as you reach each track (Python 3.12+, Docker, `kubectl`, Terraform, A
 
 | Go here | When |
 |---------|------|
-| [Career Paths](../career-paths/index.md) | You want a job-shaped roadmap |
+| [Learning Paths](../learning-paths/index.md) | You want a job-shaped roadmap |
 | [Technologies](../linux/index.md) | You want a specific skill (start with Linux if unsure) |
 | [Labs](../labs/index.md) | You want scenario practice |
 | [Projects](../projects/index.md) | You want portfolio builds |
@@ -208,4 +208,4 @@ Add tools as you reach each track (Python 3.12+, Docker, `kubectl`, Terraform, A
 | [Cheat Sheets](../cheatsheets/index.md) | You need a quick command reference |
 | [Certifications](../certifications/index.md) | You are mapping study to exams |
 
-**Suggested first click:** [Beginner career path](../career-paths/beginner/index.md) or [Linux Fundamentals](../linux/linux-fundamentals-distributions-and-architecture.md).
+**Suggested first click:** [Beginner learning path](../learning-paths/beginner/index.md) or [Linux Fundamentals](../linux/linux-fundamentals-distributions-and-architecture.md).

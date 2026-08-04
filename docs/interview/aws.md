@@ -52,4 +52,4 @@ Use this page as a revision map. Every tutorial in the [AWS track](../aws/index.
 - Quiz: [AWS Fundamentals](../quizzes/aws-fundamentals.md)
 - Lab: [IAM and VPC Triage](../labs/aws-iam-vpc-triage.md)
 - Lab: [SSM and S3](../labs/aws-ssm-s3.md)
-- Learning path: [DevOps Engineer](../learning-paths/devops-engineer.md)
+- Learning path: [DevOps Engineer](../learning-paths/devops-engineer/)

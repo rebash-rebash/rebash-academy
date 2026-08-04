@@ -51,7 +51,7 @@ This page tracks what is published on REBASH Academy and what comes next.
 - [x] Google Cloud Platform guides (syllabus frozen v1.0 · 16 modules published)
 - [ ] Monitoring and observability stack
 
-These sections keep stable URLs under `/azure/`, `/gcp/`, `/gitlab/`, and `/monitoring/`. AWS is live under `/aws/`. CI/CD is live under `/gitlab/`. Follow the [DevOps Engineer path](learning-paths/devops-engineer.md) for order.
+These sections keep stable URLs under `/azure/`, `/gcp/`, `/gitlab/`, and `/monitoring/`. AWS is live under `/aws/`. CI/CD is live under `/gitlab/`. Follow the [DevOps Engineer path](learning-paths/devops-engineer/) for order.
 
 ## Phase 4 – Security & Advanced Topics
 

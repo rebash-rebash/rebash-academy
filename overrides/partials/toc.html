@@ -1,0 +1,29 @@
+{#-
+  REBASH Academy: "On this page" right rail (styled in custom.css).
+  Homepage uses a curated TOC + site-only Quick Links.
+-#}
+{% if page.is_homepage %}
+  {% include "partials/home-toc.html" %}
+{% else %}
+  {% set title = "On this page" %}
+  {% if config.mdx_configs.toc and config.mdx_configs.toc.title %}
+    {% set title = config.mdx_configs.toc.title %}
+  {% endif %}
+  <nav class="md-nav md-nav--secondary ra-onthispage" aria-label="{{ title | e }}">
+    {% set toc = page.toc %}
+    {% set first = toc | first %}
+    {% if first and first.level == 1 %}
+      {% set toc = first.children %}
+    {% endif %}
+    {% if toc %}
+      <label class="md-nav__title ra-onthispage__title" for="__toc">
+        {{ title }}
+      </label>
+      <ul class="md-nav__list ra-onthispage__list" data-md-component="toc" data-md-scrollfix>
+        {% for toc_item in toc %}
+          {% include "partials/toc-item.html" %}
+        {% endfor %}
+      </ul>
+    {% endif %}
+  </nav>
+{% endif %}
