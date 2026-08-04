@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="760" height="200"
+     viewBox="0 0 760 200" role="img" aria-label="gcp-cost">
+  <rect width="100%" height="100%" fill="#fffef8"/>
+  <text x="380.0" y="28.0" text-anchor="middle" font-family="Virgil, Segoe Print, Comic Sans MS, cursive" font-size="18" font-weight="700" fill="#1e1e1e">Cost optimisation loop</text>
+
+  <path d="M 53.6,83.5 L 183.0,82.9 Q 193.0,82.9 193.0,92.9 L 193.8,143.0 Q 193.8,153.0 183.8,153.0 L 52.9,153.3 Q 42.9,153.3 42.9,143.3 L 43.6,93.5 Q 43.6,83.5 53.6,83.5 Z" fill="#00000022" stroke="none"/>
+  <path d="M 51.0,80.3 L 179.2,80.3 Q 189.2,80.3 189.2,90.3 L 189.8,140.3 Q 189.8,150.3 179.8,150.3 L 50.0,150.2 Q 40.0,150.2 40.0,140.2 L 41.0,90.3 Q 41.0,80.3 51.0,80.3 Z" fill="#a5d8ff" stroke="#1971c2" stroke-width="2"/>
+  
+  <text x="115.0" y="109.0" text-anchor="middle"
+        font-family="Virgil, Segoe Print, Comic Sans MS, cursive"
+        font-size="14" font-weight="700" fill="#1e1e1e">Measure</text>
+  <text x="115.0" y="129.0" text-anchor="middle" font-family="Virgil, Segoe Print, Comic Sans MS, cursive" font-size="12" fill="#1e1e1e">Billing reports</text>
+
+
+  <path d="M 223.3,82.1 L 353.1,82.7 Q 363.1,82.7 363.1,92.7 L 362.8,142.1 Q 362.8,152.1 352.8,152.1 L 223.0,152.5 Q 213.0,152.5 213.0,142.5 L 213.3,92.1 Q 213.3,82.1 223.3,82.1 Z" fill="#00000022" stroke="none"/>
+  <path d="M 220.2,80.6 L 350.4,79.4 Q 360.4,79.4 360.4,89.4 L 360.8,140.6 Q 360.8,150.6 350.8,150.6 L 220.3,149.9 Q 210.3,149.9 210.3,139.9 L 210.2,90.6 Q 210.2,80.6 220.2,80.6 Z" fill="#b2f2bb" stroke="#2f9e44" stroke-width="2"/>
+  
+  <text x="285.0" y="109.0" text-anchor="middle"
+        font-family="Virgil, Segoe Print, Comic Sans MS, cursive"
+        font-size="14" font-weight="700" fill="#1e1e1e">Budget</text>
+  <text x="285.0" y="129.0" text-anchor="middle" font-family="Virgil, Segoe Print, Comic Sans MS, cursive" font-size="12" fill="#1e1e1e">alarms</text>
+
+
+  <path d="M 392.6,83.4 L 532.6,83.8 Q 542.6,83.8 542.6,93.8 L 543.2,142.4 Q 543.2,152.4 533.2,152.4 L 393.7,152.5 Q 383.7,152.5 383.7,142.5 L 382.6,93.4 Q 382.6,83.4 392.6,83.4 Z" fill="#00000022" stroke="none"/>
+  <path d="M 389.1,79.9 L 529.4,80.1 Q 539.4,80.1 539.4,90.1 L 540.4,140.8 Q 540.4,150.8 530.4,150.8 L 389.1,149.9 Q 379.1,149.9 379.1,139.9 L 379.1,89.9 Q 379.1,79.9 389.1,79.9 Z" fill="#ffd8a8" stroke="#e8590c" stroke-width="2"/>
+  
+  <text x="460.0" y="109.0" text-anchor="middle"
+        font-family="Virgil, Segoe Print, Comic Sans MS, cursive"
+        font-size="14" font-weight="700" fill="#1e1e1e">Commit</text>
+  <text x="460.0" y="129.0" text-anchor="middle" font-family="Virgil, Segoe Print, Comic Sans MS, cursive" font-size="12" fill="#1e1e1e">CUDs</text>
+
+
+  <path d="M 572.2,82.4 L 713.4,82.9 Q 723.4,82.9 723.4,92.9 L 723.0,143.1 Q 723.0,153.1 713.0,153.1 L 572.2,153.7 Q 562.2,153.7 562.2,143.7 L 562.2,92.4 Q 562.2,82.4 572.2,82.4 Z" fill="#00000022" stroke="none"/>
+  <path d="M 569.1,79.4 L 710.7,79.4 Q 720.7,79.4 720.7,89.4 L 719.3,139.3 Q 719.3,149.3 709.3,149.3 L 570.2,151.0 Q 560.2,151.0 560.2,141.0 L 559.1,89.4 Q 559.1,79.4 569.1,79.4 Z" fill="#d0bfff" stroke="#7048e8" stroke-width="2"/>
+  
+  <text x="640.0" y="109.0" text-anchor="middle"
+        font-family="Virgil, Segoe Print, Comic Sans MS, cursive"
+        font-size="14" font-weight="700" fill="#1e1e1e">Rightsize</text>
+  <text x="640.0" y="129.0" text-anchor="middle" font-family="Virgil, Segoe Print, Comic Sans MS, cursive" font-size="12" fill="#1e1e1e">preemptible · idle</text>
+
+</svg>

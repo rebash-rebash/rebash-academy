@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="770" height="200"
+     viewBox="0 0 770 200" role="img" aria-label="gcp-compute">
+  <rect width="100%" height="100%" fill="#fffef8"/>
+  <text x="400.0" y="28.0" text-anchor="middle" font-family="Virgil, Segoe Print, Comic Sans MS, cursive" font-size="18" font-weight="700" fill="#1e1e1e">Compute building blocks</text>
+
+  <path d="M 53.4,83.1 L 183.2,82.2 Q 193.2,82.2 193.2,92.2 L 193.3,142.1 Q 193.3,152.1 183.3,152.1 L 52.8,152.1 Q 42.8,152.1 42.8,142.1 L 43.4,93.1 Q 43.4,83.1 53.4,83.1 Z" fill="#00000022" stroke="none"/>
+  <path d="M 50.3,80.5 L 180.7,79.8 Q 190.7,79.8 190.7,89.8 L 190.3,139.9 Q 190.3,149.9 180.3,149.9 L 49.1,149.9 Q 39.1,149.9 39.1,139.9 L 40.3,90.5 Q 40.3,80.5 50.3,80.5 Z" fill="#a5d8ff" stroke="#1971c2" stroke-width="2"/>
+  
+  <text x="115.0" y="109.0" text-anchor="middle"
+        font-family="Virgil, Segoe Print, Comic Sans MS, cursive"
+        font-size="14" font-weight="700" fill="#1e1e1e">GCE</text>
+  <text x="115.0" y="129.0" text-anchor="middle" font-family="Virgil, Segoe Print, Comic Sans MS, cursive" font-size="12" fill="#1e1e1e">VMs</text>
+
+
+  <path d="M 223.0,82.3 L 353.3,82.8 Q 363.3,82.8 363.3,92.8 L 362.2,142.4 Q 362.2,152.4 352.2,152.4 L 222.6,152.2 Q 212.6,152.2 212.6,142.2 L 213.0,92.3 Q 213.0,82.3 223.0,82.3 Z" fill="#00000022" stroke="none"/>
+  <path d="M 220.8,80.1 L 350.6,80.1 Q 360.6,80.1 360.6,90.1 L 359.4,139.2 Q 359.4,149.2 349.4,149.2 L 219.7,150.9 Q 209.7,150.9 209.7,140.9 L 210.8,90.1 Q 210.8,80.1 220.8,80.1 Z" fill="#b2f2bb" stroke="#2f9e44" stroke-width="2"/>
+  
+  <text x="285.0" y="109.0" text-anchor="middle"
+        font-family="Virgil, Segoe Print, Comic Sans MS, cursive"
+        font-size="14" font-weight="700" fill="#1e1e1e">MIG</text>
+  <text x="285.0" y="129.0" text-anchor="middle" font-family="Virgil, Segoe Print, Comic Sans MS, cursive" font-size="12" fill="#1e1e1e">scale</text>
+
+
+  <path d="M 393.2,83.3 L 522.5,83.2 Q 532.5,83.2 532.5,93.2 L 532.7,142.7 Q 532.7,152.7 522.7,152.7 L 392.8,152.8 Q 382.8,152.8 382.8,142.8 L 383.2,93.3 Q 383.2,83.3 393.2,83.3 Z" fill="#00000022" stroke="none"/>
+  <path d="M 390.0,79.2 L 520.2,79.9 Q 530.2,79.9 530.2,89.9 L 530.0,139.8 Q 530.0,149.8 520.0,149.8 L 389.5,150.4 Q 379.5,150.4 379.5,140.4 L 380.0,89.2 Q 380.0,79.2 390.0,79.2 Z" fill="#ffd8a8" stroke="#e8590c" stroke-width="2"/>
+  
+  <text x="455.0" y="109.0" text-anchor="middle"
+        font-family="Virgil, Segoe Print, Comic Sans MS, cursive"
+        font-size="14" font-weight="700" fill="#1e1e1e">Cloud LB</text>
+  <text x="455.0" y="129.0" text-anchor="middle" font-family="Virgil, Segoe Print, Comic Sans MS, cursive" font-size="12" fill="#1e1e1e">traffic</text>
+
+
+  <path d="M 562.6,83.3 L 723.8,82.2 Q 733.8,82.2 733.8,92.2 L 733.0,142.4 Q 733.0,152.4 723.0,152.4 L 562.9,153.0 Q 552.9,153.0 552.9,143.0 L 552.6,93.3 Q 552.6,83.3 562.6,83.3 Z" fill="#00000022" stroke="none"/>
+  <path d="M 559.9,80.3 L 720.7,79.7 Q 730.7,79.7 730.7,89.7 L 730.7,140.3 Q 730.7,150.3 720.7,150.3 L 559.4,150.0 Q 549.4,150.0 549.4,140.0 L 549.9,90.3 Q 549.9,80.3 559.9,80.3 Z" fill="#d0bfff" stroke="#7048e8" stroke-width="2"/>
+  
+  <text x="640.0" y="109.0" text-anchor="middle"
+        font-family="Virgil, Segoe Print, Comic Sans MS, cursive"
+        font-size="14" font-weight="700" fill="#1e1e1e">Instance template</text>
+  <text x="640.0" y="129.0" text-anchor="middle" font-family="Virgil, Segoe Print, Comic Sans MS, cursive" font-size="12" fill="#1e1e1e">image · startup</text>
+
+</svg>
