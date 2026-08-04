@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="770" height="176" viewBox="0 0 770 176" role="img" aria-label="ai-agents-for-ops">
+  <rect width="100%" height="100%" fill="#fffef8"/>
+  <defs><marker id="arrow" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#495057"/></marker></defs>
+  <line x1="130" y1="108" x2="160" y2="108" stroke="#495057" stroke-width="2" marker-end="url(#arrow)"/>
+  <line x1="280" y1="108" x2="310" y2="108" stroke="#495057" stroke-width="2" marker-end="url(#arrow)"/>
+  <line x1="440" y1="108" x2="470" y2="108" stroke="#495057" stroke-width="2" marker-end="url(#arrow)"/>
+  <line x1="590" y1="108" x2="620" y2="108" stroke="#495057" stroke-width="2" marker-end="url(#arrow)"/>
+  <rect x="20" y="80" width="110" height="56" rx="8" fill="#a5d8ff" stroke="#1971c2" stroke-width="2"/>
+  <text x="75.0" y="108.0" text-anchor="middle" font-family="Inter,Segoe UI,sans-serif" font-size="13" fill="#212529">Incident</text>
+  <rect x="160" y="80" width="120" height="56" rx="8" fill="#d0bfff" stroke="#7048e8" stroke-width="2"/>
+  <text x="220.0" y="108.0" text-anchor="middle" font-family="Inter,Segoe UI,sans-serif" font-size="13" fill="#212529">Classify</text>
+  <rect x="310" y="80" width="130" height="56" rx="8" fill="#ffec99" stroke="#f08c00" stroke-width="2"/>
+  <text x="375.0" y="100.0" text-anchor="middle" font-family="Inter,Segoe UI,sans-serif" font-size="13" fill="#212529">Suggest</text>
+  <text x="375.0" y="116.0" text-anchor="middle" font-family="Inter,Segoe UI,sans-serif" font-size="13" fill="#212529">checks</text>
+  <rect x="470" y="80" width="120" height="56" rx="8" fill="#b2f2bb" stroke="#2f9e44" stroke-width="2"/>
+  <text x="530.0" y="108.0" text-anchor="middle" font-family="Inter,Segoe UI,sans-serif" font-size="13" fill="#212529">Observe</text>
+  <rect x="620" y="80" width="110" height="56" rx="8" fill="#ffc9c9" stroke="#e03131" stroke-width="2"/>
+  <text x="675.0" y="100.0" text-anchor="middle" font-family="Inter,Segoe UI,sans-serif" font-size="13" fill="#212529">STOP</text>
+  <text x="675.0" y="116.0" text-anchor="middle" font-family="Inter,Segoe UI,sans-serif" font-size="13" fill="#212529">before mutate</text>
+</svg>

@@ -1007,11 +1007,67 @@ technologies:
   tutorial_count: 0
 - id: ai
   title: AI for DevOps
-  status: stub
+  status: ready
   path_prefix: ai/
   difficulty: intermediate
-  modules: []
-  tutorial_count: 0
+  modules:
+  - id: ai-m1
+    title: Module 1 · Foundations
+    tutorials:
+    - ai/ai-for-devops-foundations
+  - id: ai-m2
+    title: Module 2 · LLM & APIs
+    tutorials:
+    - ai/llm-and-api-fundamentals
+  - id: ai-m3
+    title: Module 3 · Prompt Engineering
+    tutorials:
+    - ai/prompt-engineering-for-ops
+  - id: ai-m4
+    title: Module 4 · Evaluation
+    tutorials:
+    - ai/evaluation-and-reliability
+  - id: ai-m5
+    title: Module 5 · Embeddings
+    tutorials:
+    - ai/embeddings-and-semantic-search
+  - id: ai-m6
+    title: Module 6 · Vector Stores
+    tutorials:
+    - ai/vector-stores-for-ops
+  - id: ai-m7
+    title: Module 7 · RAG
+    tutorials:
+    - ai/retrieval-augmented-generation-for-ops
+  - id: ai-m8
+    title: Module 8 · Tool Calling
+    tutorials:
+    - ai/tool-calling-and-function-apis
+  - id: ai-m9
+    title: Module 9 · MCP
+    tutorials:
+    - ai/mcp-for-devops
+  - id: ai-m10
+    title: Module 10 · Agents
+    tutorials:
+    - ai/agents-for-ops-workflows
+  - id: ai-m11
+    title: Module 11 · CI/CD
+    tutorials:
+    - ai/ai-in-ci-cd
+  - id: ai-m12
+    title: Module 12 · Observability
+    tutorials:
+    - ai/observability-copilots
+  - id: ai-m13
+    title: Module 13 · Governance
+    tutorials:
+    - ai/security-cost-and-governance
+  - id: ai-m14
+    title: Module 14 · Production
+    tutorials:
+    - ai/production-ai-for-devops
+  tutorial_count: 14
 - id: monitoring
   title: Monitoring
   status: stub
@@ -6454,6 +6510,324 @@ tutorials:
   estimated_time: 45–90 min
   prerequisites:
   - terraform/terraform-in-ci-cd-pipelines
+  next: []
+  related: []
+  labs: []
+  projects: []
+  certifications: []
+- id: ai/ai-for-devops-foundations
+  slug: ai-for-devops-foundations
+  title: AI for DevOps Foundations
+  path: ai/ai-for-devops-foundations.md
+  technology: ai
+  module: Module 1 · Foundations
+  order: 1
+  status: ready
+  career_paths:
+  - ai-for-devops
+  - devops-engineer
+  - platform-engineer
+  - site-reliability-engineer
+  difficulty: intermediate
+  estimated_time: 45–90 min
+  prerequisites: []
+  next:
+  - ai/llm-and-api-fundamentals
+  related: []
+  labs: []
+  projects: []
+  certifications: []
+- id: ai/llm-and-api-fundamentals
+  slug: llm-and-api-fundamentals
+  title: LLM and API Fundamentals
+  path: ai/llm-and-api-fundamentals.md
+  technology: ai
+  module: Module 2 · LLM & APIs
+  order: 2
+  status: ready
+  career_paths:
+  - ai-for-devops
+  - devops-engineer
+  - platform-engineer
+  - site-reliability-engineer
+  difficulty: intermediate
+  estimated_time: 45–90 min
+  prerequisites:
+  - ai/ai-for-devops-foundations
+  next:
+  - ai/prompt-engineering-for-ops
+  related: []
+  labs: []
+  projects: []
+  certifications: []
+- id: ai/prompt-engineering-for-ops
+  slug: prompt-engineering-for-ops
+  title: Prompt Engineering for Ops
+  path: ai/prompt-engineering-for-ops.md
+  technology: ai
+  module: Module 3 · Prompt Engineering
+  order: 3
+  status: ready
+  career_paths:
+  - ai-for-devops
+  - devops-engineer
+  - platform-engineer
+  - site-reliability-engineer
+  difficulty: intermediate
+  estimated_time: 45–90 min
+  prerequisites:
+  - ai/llm-and-api-fundamentals
+  next:
+  - ai/evaluation-and-reliability
+  related: []
+  labs: []
+  projects: []
+  certifications: []
+- id: ai/evaluation-and-reliability
+  slug: evaluation-and-reliability
+  title: Evaluation and Reliability
+  path: ai/evaluation-and-reliability.md
+  technology: ai
+  module: Module 4 · Evaluation
+  order: 4
+  status: ready
+  career_paths:
+  - ai-for-devops
+  - devops-engineer
+  - platform-engineer
+  - site-reliability-engineer
+  difficulty: intermediate
+  estimated_time: 45–90 min
+  prerequisites:
+  - ai/prompt-engineering-for-ops
+  next:
+  - ai/embeddings-and-semantic-search
+  related: []
+  labs: []
+  projects: []
+  certifications: []
+- id: ai/embeddings-and-semantic-search
+  slug: embeddings-and-semantic-search
+  title: Embeddings and Semantic Search
+  path: ai/embeddings-and-semantic-search.md
+  technology: ai
+  module: Module 5 · Embeddings
+  order: 5
+  status: ready
+  career_paths:
+  - ai-for-devops
+  - devops-engineer
+  - platform-engineer
+  - site-reliability-engineer
+  difficulty: intermediate
+  estimated_time: 45–90 min
+  prerequisites:
+  - ai/evaluation-and-reliability
+  next:
+  - ai/vector-stores-for-ops
+  related: []
+  labs: []
+  projects: []
+  certifications: []
+- id: ai/vector-stores-for-ops
+  slug: vector-stores-for-ops
+  title: Vector Stores for Ops
+  path: ai/vector-stores-for-ops.md
+  technology: ai
+  module: Module 6 · Vector Stores
+  order: 6
+  status: ready
+  career_paths:
+  - ai-for-devops
+  - devops-engineer
+  - platform-engineer
+  - site-reliability-engineer
+  difficulty: intermediate
+  estimated_time: 45–90 min
+  prerequisites:
+  - ai/embeddings-and-semantic-search
+  next:
+  - ai/retrieval-augmented-generation-for-ops
+  related: []
+  labs: []
+  projects: []
+  certifications: []
+- id: ai/retrieval-augmented-generation-for-ops
+  slug: retrieval-augmented-generation-for-ops
+  title: Retrieval-Augmented Generation for Ops
+  path: ai/retrieval-augmented-generation-for-ops.md
+  technology: ai
+  module: Module 7 · RAG
+  order: 7
+  status: ready
+  career_paths:
+  - ai-for-devops
+  - devops-engineer
+  - platform-engineer
+  - site-reliability-engineer
+  difficulty: intermediate
+  estimated_time: 45–90 min
+  prerequisites:
+  - ai/vector-stores-for-ops
+  next: []
+  related: []
+  labs: []
+  projects: []
+  certifications: []
+- id: ai/tool-calling-and-function-apis
+  slug: tool-calling-and-function-apis
+  title: Tool Calling and Function APIs
+  path: ai/tool-calling-and-function-apis.md
+  technology: ai
+  module: Module 8 · Tool Calling
+  order: 8
+  status: ready
+  career_paths:
+  - ai-for-devops
+  - devops-engineer
+  - platform-engineer
+  - site-reliability-engineer
+  difficulty: intermediate
+  estimated_time: 45–90 min
+  prerequisites:
+  - ai/retrieval-augmented-generation-for-ops
+  next:
+  - ai/mcp-for-devops
+  related: []
+  labs: []
+  projects: []
+  certifications: []
+- id: ai/mcp-for-devops
+  slug: mcp-for-devops
+  title: Model Context Protocol (MCP) for DevOps
+  path: ai/mcp-for-devops.md
+  technology: ai
+  module: Module 9 · MCP
+  order: 9
+  status: ready
+  career_paths:
+  - ai-for-devops
+  - devops-engineer
+  - platform-engineer
+  - site-reliability-engineer
+  difficulty: intermediate
+  estimated_time: 45–90 min
+  prerequisites:
+  - ai/tool-calling-and-function-apis
+  next:
+  - ai/agents-for-ops-workflows
+  related: []
+  labs: []
+  projects: []
+  certifications: []
+- id: ai/agents-for-ops-workflows
+  slug: agents-for-ops-workflows
+  title: Agents for Ops Workflows
+  path: ai/agents-for-ops-workflows.md
+  technology: ai
+  module: Module 10 · Agents
+  order: 10
+  status: ready
+  career_paths:
+  - ai-for-devops
+  - devops-engineer
+  - platform-engineer
+  - site-reliability-engineer
+  difficulty: intermediate
+  estimated_time: 45–90 min
+  prerequisites:
+  - ai/mcp-for-devops
+  next: []
+  related: []
+  labs: []
+  projects: []
+  certifications: []
+- id: ai/ai-in-ci-cd
+  slug: ai-in-ci-cd
+  title: AI in CI/CD
+  path: ai/ai-in-ci-cd.md
+  technology: ai
+  module: Module 11 · CI/CD
+  order: 11
+  status: ready
+  career_paths:
+  - ai-for-devops
+  - devops-engineer
+  - platform-engineer
+  - site-reliability-engineer
+  difficulty: intermediate
+  estimated_time: 45–90 min
+  prerequisites:
+  - ai/agents-for-ops-workflows
+  next:
+  - ai/observability-copilots
+  related: []
+  labs: []
+  projects: []
+  certifications: []
+- id: ai/observability-copilots
+  slug: observability-copilots
+  title: Observability Copilots
+  path: ai/observability-copilots.md
+  technology: ai
+  module: Module 12 · Observability
+  order: 12
+  status: ready
+  career_paths:
+  - ai-for-devops
+  - devops-engineer
+  - platform-engineer
+  - site-reliability-engineer
+  difficulty: intermediate
+  estimated_time: 45–90 min
+  prerequisites:
+  - ai/ai-in-ci-cd
+  next:
+  - ai/security-cost-and-governance
+  related: []
+  labs: []
+  projects: []
+  certifications: []
+- id: ai/security-cost-and-governance
+  slug: security-cost-and-governance
+  title: Security, Cost, and Governance
+  path: ai/security-cost-and-governance.md
+  technology: ai
+  module: Module 13 · Governance
+  order: 13
+  status: ready
+  career_paths:
+  - ai-for-devops
+  - devops-engineer
+  - platform-engineer
+  - site-reliability-engineer
+  difficulty: intermediate
+  estimated_time: 45–90 min
+  prerequisites:
+  - ai/observability-copilots
+  next:
+  - ai/production-ai-for-devops
+  related: []
+  labs: []
+  projects: []
+  certifications: []
+- id: ai/production-ai-for-devops
+  slug: production-ai-for-devops
+  title: Production AI for DevOps
+  path: ai/production-ai-for-devops.md
+  technology: ai
+  module: Module 14 · Production
+  order: 14
+  status: ready
+  career_paths:
+  - ai-for-devops
+  - devops-engineer
+  - platform-engineer
+  - site-reliability-engineer
+  difficulty: intermediate
+  estimated_time: 45–90 min
+  prerequisites:
+  - ai/security-cost-and-governance
   next: []
   related: []
   labs: []

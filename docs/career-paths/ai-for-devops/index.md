@@ -55,7 +55,7 @@ Emerging automation / AI-ops roles — treat as directional guidance only.
 
 ### AI
 
-- [AI for DevOps](../../ai/) — stub / coming soon
+- [AI for DevOps](../../ai/index.md) — complete (14 modules published)
 
 ### Platform context
 

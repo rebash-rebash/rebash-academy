@@ -270,6 +270,19 @@ Generated from `curriculum.yaml`. Ready tutorials are listed first in technology
 | `platform-engineering/TBD` | platform-engineering | — | _Platform Engineering course (planned)_ | intermediate | — | — | — | planned | P2 |
 | `sre/TBD` | sre | — | _Site Reliability Engineering course (planned)_ | intermediate | — | — | — | planned | P2 |
 | `architecture/TBD` | architecture | — | _Cloud Architecture course (planned)_ | intermediate | — | — | — | stub | P2 |
-| `ai/TBD` | ai | — | _AI for DevOps course (planned)_ | intermediate | — | — | — | stub | P2 |
+| `ai/ai-for-devops-foundations` | ai | Module 1 · Foundations | AI for DevOps Foundations | intermediate | — | ai-for-devops, devops-engineer, platform-engineer, site-reliability-engineer | 45–90 min | ready | P1 |
+| `ai/llm-and-api-fundamentals` | ai | Module 2 · LLM & APIs | LLM and API Fundamentals | intermediate | ai/ai-for-devops-foundations | ai-for-devops, devops-engineer, platform-engineer, site-reliability-engineer | 45–90 min | ready | P1 |
+| `ai/prompt-engineering-for-ops` | ai | Module 3 · Prompt Engineering | Prompt Engineering for Ops | intermediate | ai/llm-and-api-fundamentals | ai-for-devops, devops-engineer, platform-engineer, site-reliability-engineer | 45–90 min | ready | P1 |
+| `ai/evaluation-and-reliability` | ai | Module 4 · Evaluation | Evaluation and Reliability | intermediate | ai/prompt-engineering-for-ops | ai-for-devops, devops-engineer, platform-engineer, site-reliability-engineer | 45–90 min | ready | P1 |
+| `ai/embeddings-and-semantic-search` | ai | Module 5 · Embeddings | Embeddings and Semantic Search | intermediate | ai/evaluation-and-reliability | ai-for-devops, devops-engineer, platform-engineer, site-reliability-engineer | 45–90 min | ready | P1 |
+| `ai/vector-stores-for-ops` | ai | Module 6 · Vector Stores | Vector Stores for Ops | intermediate | ai/embeddings-and-semantic-search | ai-for-devops, devops-engineer, platform-engineer, site-reliability-engineer | 45–90 min | ready | P1 |
+| `ai/retrieval-augmented-generation-for-ops` | ai | Module 7 · RAG | Retrieval-Augmented Generation for Ops | intermediate | ai/vector-stores-for-ops | ai-for-devops, devops-engineer, platform-engineer, site-reliability-engineer | 45–90 min | ready | P1 |
+| `ai/tool-calling-and-function-apis` | ai | Module 8 · Tool Calling | Tool Calling and Function APIs | intermediate | ai/retrieval-augmented-generation-for-ops | ai-for-devops, devops-engineer, platform-engineer, site-reliability-engineer | 45–90 min | ready | P1 |
+| `ai/mcp-for-devops` | ai | Module 9 · MCP | Model Context Protocol (MCP) for DevOps | intermediate | ai/tool-calling-and-function-apis | ai-for-devops, devops-engineer, platform-engineer, site-reliability-engineer | 45–90 min | ready | P1 |
+| `ai/agents-for-ops-workflows` | ai | Module 10 · Agents | Agents for Ops Workflows | intermediate | ai/mcp-for-devops | ai-for-devops, devops-engineer, platform-engineer, site-reliability-engineer | 45–90 min | ready | P1 |
+| `ai/ai-in-ci-cd` | ai | Module 11 · CI/CD | AI in CI/CD | intermediate | ai/agents-for-ops-workflows | ai-for-devops, devops-engineer, platform-engineer, site-reliability-engineer | 45–90 min | ready | P1 |
+| `ai/observability-copilots` | ai | Module 12 · Observability | Observability Copilots | intermediate | ai/ai-in-ci-cd | ai-for-devops, devops-engineer, platform-engineer, site-reliability-engineer | 45–90 min | ready | P1 |
+| `ai/security-cost-and-governance` | ai | Module 13 · Governance | Security, Cost, and Governance | intermediate | ai/observability-copilots | ai-for-devops, devops-engineer, platform-engineer, site-reliability-engineer | 45–90 min | ready | P1 |
+| `ai/production-ai-for-devops` | ai | Module 14 · Production | Production AI for DevOps | intermediate | ai/security-cost-and-governance | ai-for-devops, devops-engineer, platform-engineer, site-reliability-engineer | 45–90 min | ready | P1 |
 | `monitoring/TBD` | monitoring | — | _Monitoring course (planned)_ | intermediate | — | — | — | stub | P2 |
 | `security/TBD` | security | — | _Security course (planned)_ | intermediate | — | — | — | stub | P2 |

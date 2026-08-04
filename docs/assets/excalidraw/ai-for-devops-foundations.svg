@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="720" height="176" viewBox="0 0 720 176" role="img" aria-label="ai-for-devops-foundations">
+  <rect width="100%" height="100%" fill="#fffef8"/>
+  <defs><marker id="arrow" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#495057"/></marker></defs>
+  <line x1="150" y1="108" x2="200" y2="108" stroke="#495057" stroke-width="2" marker-end="url(#arrow)"/>
+  <line x1="330" y1="108" x2="380" y2="108" stroke="#495057" stroke-width="2" marker-end="url(#arrow)"/>
+  <line x1="510" y1="108" x2="560" y2="108" stroke="#495057" stroke-width="2" marker-end="url(#arrow)"/>
+  <rect x="30" y="80" width="120" height="56" rx="8" fill="#a5d8ff" stroke="#1971c2" stroke-width="2"/>
+  <text x="90.0" y="100.0" text-anchor="middle" font-family="Inter,Segoe UI,sans-serif" font-size="13" fill="#212529">Incident</text>
+  <text x="90.0" y="116.0" text-anchor="middle" font-family="Inter,Segoe UI,sans-serif" font-size="13" fill="#212529">signal</text>
+  <rect x="200" y="80" width="130" height="56" rx="8" fill="#b2f2bb" stroke="#2f9e44" stroke-width="2"/>
+  <text x="265.0" y="100.0" text-anchor="middle" font-family="Inter,Segoe UI,sans-serif" font-size="13" fill="#212529">AI assistant</text>
+  <text x="265.0" y="116.0" text-anchor="middle" font-family="Inter,Segoe UI,sans-serif" font-size="13" fill="#212529">propose</text>
+  <rect x="380" y="80" width="130" height="56" rx="8" fill="#ffec99" stroke="#f08c00" stroke-width="2"/>
+  <text x="445.0" y="100.0" text-anchor="middle" font-family="Inter,Segoe UI,sans-serif" font-size="13" fill="#212529">Human / policy</text>
+  <text x="445.0" y="116.0" text-anchor="middle" font-family="Inter,Segoe UI,sans-serif" font-size="13" fill="#212529">gate</text>
+  <rect x="560" y="80" width="120" height="56" rx="8" fill="#ffc9c9" stroke="#e03131" stroke-width="2"/>
+  <text x="620.0" y="100.0" text-anchor="middle" font-family="Inter,Segoe UI,sans-serif" font-size="13" fill="#212529">Action</text>
+  <text x="620.0" y="116.0" text-anchor="middle" font-family="Inter,Segoe UI,sans-serif" font-size="13" fill="#212529">or stop</text>
+</svg>

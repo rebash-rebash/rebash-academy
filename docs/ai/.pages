@@ -1,2 +1,33 @@
 title: AI for DevOps
 icon: material/robot
+
+nav:
+  - Overview: index.md
+  - "Module 1 · Foundations":
+    - AI for DevOps Foundations: ai-for-devops-foundations.md
+  - "Module 2 · LLM & APIs":
+    - LLM and API Fundamentals: llm-and-api-fundamentals.md
+  - "Module 3 · Prompt Engineering":
+    - Prompt Engineering for Ops: prompt-engineering-for-ops.md
+  - "Module 4 · Evaluation":
+    - Evaluation and Reliability: evaluation-and-reliability.md
+  - "Module 5 · Embeddings":
+    - Embeddings and Semantic Search: embeddings-and-semantic-search.md
+  - "Module 6 · Vector Stores":
+    - Vector Stores for Ops: vector-stores-for-ops.md
+  - "Module 7 · RAG":
+    - Retrieval-Augmented Generation for Ops: retrieval-augmented-generation-for-ops.md
+  - "Module 8 · Tool Calling":
+    - Tool Calling and Function APIs: tool-calling-and-function-apis.md
+  - "Module 9 · MCP":
+    - Model Context Protocol (MCP) for DevOps: mcp-for-devops.md
+  - "Module 10 · Agents":
+    - Agents for Ops Workflows: agents-for-ops-workflows.md
+  - "Module 11 · CI/CD":
+    - AI in CI/CD: ai-in-ci-cd.md
+  - "Module 12 · Observability":
+    - Observability Copilots: observability-copilots.md
+  - "Module 13 · Governance":
+    - Security, Cost, and Governance: security-cost-and-governance.md
+  - "Module 14 · Production":
+    - Production AI for DevOps: production-ai-for-devops.md

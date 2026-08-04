@@ -16,7 +16,7 @@ Generated from [`curriculum.yaml`](../../curriculum.yaml). Tutorial URLs remain 
 | Git | Foundations | 6 | 20 | — | — | — | — | beginner | P0 | ready |
 | Linux | Foundations | 16 | 25 | — | — | — | — | beginner | P0 | ready |
 | Shell Scripting | Foundations | 18 | 18 | — | — | — | — | beginner | P0 | ready |
-| AI for DevOps | Artificial Intelligence | 0 | 0 | — | — | — | — | intermediate | P2 | stub |
+| AI for DevOps | Artificial Intelligence | 14 | 14 | — | — | — | — | intermediate | P0 | ready |
 | AWS | Cloud Platforms | 6 | 20 | — | — | — | — | intermediate | P0 | ready |
 | Ansible | Infrastructure as Code | 0 | 0 | — | — | — | — | intermediate | P1 | planned |
 | Argo CD | CI/CD | 0 | 0 | — | — | — | — | intermediate | P1 | planned |

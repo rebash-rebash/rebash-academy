@@ -58,7 +58,7 @@ These sections keep stable URLs under `/azure/`, `/gcp/`, `/gitlab/`, and `/moni
 - [ ] DevSecOps pipeline integration
 - [ ] Cloud security best practices
 - [x] Python for DevOps Engineers (27 modules · 27 tutorials + labs/quiz/cheatsheet/interview/projects)
-- [ ] AI for DevOps use cases
+- [x] AI for DevOps course (syllabus frozen v1.0 · 14 modules published)
 - [ ] Architecture reference guides
 
 ## Phase 5 – Community & Extras
