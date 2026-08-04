@@ -517,46 +517,6 @@
          <lastmod>2026-08-04</lastmod>
     </url>
     <url>
-         <loc>https://rebash.in/career-paths/ai-for-devops/</loc>
-         <lastmod>2026-08-04</lastmod>
-    </url>
-    <url>
-         <loc>https://rebash.in/career-paths/beginner/</loc>
-         <lastmod>2026-08-04</lastmod>
-    </url>
-    <url>
-         <loc>https://rebash.in/career-paths/cloud-architect/</loc>
-         <lastmod>2026-08-04</lastmod>
-    </url>
-    <url>
-         <loc>https://rebash.in/career-paths/cloud-engineer/</loc>
-         <lastmod>2026-08-04</lastmod>
-    </url>
-    <url>
-         <loc>https://rebash.in/career-paths/devops-engineer/</loc>
-         <lastmod>2026-08-04</lastmod>
-    </url>
-    <url>
-         <loc>https://rebash.in/career-paths/devsecops-engineer/</loc>
-         <lastmod>2026-08-04</lastmod>
-    </url>
-    <url>
-         <loc>https://rebash.in/career-paths/kubernetes-engineer/</loc>
-         <lastmod>2026-08-04</lastmod>
-    </url>
-    <url>
-         <loc>https://rebash.in/career-paths/linux-administrator/</loc>
-         <lastmod>2026-08-04</lastmod>
-    </url>
-    <url>
-         <loc>https://rebash.in/career-paths/platform-engineer/</loc>
-         <lastmod>2026-08-04</lastmod>
-    </url>
-    <url>
-         <loc>https://rebash.in/career-paths/site-reliability-engineer/</loc>
-         <lastmod>2026-08-04</lastmod>
-    </url>
-    <url>
          <loc>https://rebash.in/certifications/</loc>
          <lastmod>2026-08-04</lastmod>
     </url>
@@ -1877,15 +1837,43 @@
          <lastmod>2026-08-04</lastmod>
     </url>
     <url>
+         <loc>https://rebash.in/learning-paths/ai-for-devops/</loc>
+         <lastmod>2026-08-04</lastmod>
+    </url>
+    <url>
+         <loc>https://rebash.in/learning-paths/beginner/</loc>
+         <lastmod>2026-08-04</lastmod>
+    </url>
+    <url>
+         <loc>https://rebash.in/learning-paths/cloud-architect/</loc>
+         <lastmod>2026-08-04</lastmod>
+    </url>
+    <url>
+         <loc>https://rebash.in/learning-paths/cloud-engineer/</loc>
+         <lastmod>2026-08-04</lastmod>
+    </url>
+    <url>
          <loc>https://rebash.in/learning-paths/devops-engineer/</loc>
          <lastmod>2026-08-04</lastmod>
     </url>
     <url>
-         <loc>https://rebash.in/learning-paths/linux-for-cloud-devops/</loc>
+         <loc>https://rebash.in/learning-paths/devsecops-engineer/</loc>
          <lastmod>2026-08-04</lastmod>
     </url>
     <url>
-         <loc>https://rebash.in/learning-paths/python-for-devops/</loc>
+         <loc>https://rebash.in/learning-paths/kubernetes-engineer/</loc>
+         <lastmod>2026-08-04</lastmod>
+    </url>
+    <url>
+         <loc>https://rebash.in/learning-paths/linux-administrator/</loc>
+         <lastmod>2026-08-04</lastmod>
+    </url>
+    <url>
+         <loc>https://rebash.in/learning-paths/platform-engineer/</loc>
+         <lastmod>2026-08-04</lastmod>
+    </url>
+    <url>
+         <loc>https://rebash.in/learning-paths/site-reliability-engineer/</loc>
          <lastmod>2026-08-04</lastmod>
     </url>
     <url>

@@ -305,6 +305,48 @@ function initHeaderDropdowns() {
   });
 }
 
+/** Home + #ra-nav-technologies: scroll left hub nav to Technologies */
+function scrollHubNavToTechnologies() {
+  if (window.location.hash !== "#ra-nav-technologies") return;
+  var target = document.getElementById("ra-nav-technologies");
+  if (!target) return;
+  var wrap = target.closest(".md-sidebar__scrollwrap");
+  if (wrap) {
+    var wrapRect = wrap.getBoundingClientRect();
+    var elRect = target.getBoundingClientRect();
+    wrap.scrollTop += elRect.top - wrapRect.top - 8;
+  } else {
+    target.scrollIntoView({ block: "start", inline: "nearest" });
+  }
+}
+
+/** Keep the active course tutorial visible in the left sidebar */
+function scrollActiveCourseNav() {
+  var active =
+    document.querySelector(".ra-sidebar--course .ra-sidebar__sublink--active") ||
+    document.querySelector(".ra-sidebar--course .ra-sidebar__course-title--active");
+  if (!active) return;
+
+  var wrap = active.closest(".md-sidebar__scrollwrap");
+  if (!wrap) {
+    active.scrollIntoView({ block: "center", inline: "nearest" });
+    return;
+  }
+
+  var wrapRect = wrap.getBoundingClientRect();
+  var elRect = active.getBoundingClientRect();
+  var delta =
+    elRect.top - wrapRect.top - wrapRect.height / 2 + elRect.height / 2;
+  /* Only move when the active item is outside the comfortable middle band */
+  var edge = Math.min(96, wrapRect.height * 0.2);
+  var fullyVisible =
+    elRect.top >= wrapRect.top + edge &&
+    elRect.bottom <= wrapRect.bottom - edge;
+  if (!fullyVisible) {
+    wrap.scrollTop += delta;
+  }
+}
+
 function onPageReady() {
   closeHeaderDropdowns();
   markHeaderDropdownActive();
@@ -313,6 +355,12 @@ function onPageReady() {
   initRecommendedRoadmap();
   markLabCodeBlocks();
   initHeaderDropdowns();
+  window.requestAnimationFrame(function () {
+    window.requestAnimationFrame(function () {
+      scrollActiveCourseNav();
+      scrollHubNavToTechnologies();
+    });
+  });
 }
 
 if (typeof document$ !== "undefined") {
