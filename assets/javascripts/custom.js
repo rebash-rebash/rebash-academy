@@ -199,11 +199,120 @@ function markLabCodeBlocks() {
   });
 }
 
+function normalizeHeaderPath(pathname) {
+  if (!pathname) return "/";
+  var path = pathname.replace(/\/+$/, "");
+  return path || "/";
+}
+
+function closeHeaderDropdowns() {
+  document.querySelectorAll(".rebash-header-dd").forEach(function (dd) {
+    dd.classList.remove("rebash-header-dd--open");
+    dd.classList.add("rebash-header-dd--closed");
+  });
+  var active = document.activeElement;
+  if (
+    active &&
+    active.closest &&
+    active.closest(".rebash-header-dd") &&
+    typeof active.blur === "function"
+  ) {
+    active.blur();
+  }
+}
+
+/** Highlight the dropdown item that best matches the current URL */
+function markHeaderDropdownActive() {
+  var path = normalizeHeaderPath(window.location.pathname);
+  var items = document.querySelectorAll(".rebash-header-dd__item");
+  var best = null;
+  var bestLen = -1;
+
+  items.forEach(function (item) {
+    item.classList.remove("rebash-header-dd__item--active");
+    var href = item.getAttribute("href");
+    if (!href || href.charAt(0) === "#") return;
+    try {
+      var itemPath = normalizeHeaderPath(new URL(href, window.location.href).pathname);
+      if (itemPath === path || (itemPath !== "/" && path.indexOf(itemPath + "/") === 0)) {
+        if (itemPath.length > bestLen) {
+          best = item;
+          bestLen = itemPath.length;
+        }
+      }
+    } catch (e) {
+      /* ignore bad hrefs */
+    }
+  });
+
+  if (best) best.classList.add("rebash-header-dd__item--active");
+}
+
+/** Header dropdowns: one open at a time; close after picking a link (instant nav) */
+function initHeaderDropdowns() {
+  var menus = document.querySelectorAll(".rebash-header-dd");
+  if (!menus.length) return;
+
+  if (!document.documentElement.dataset.rebashDdEscBound) {
+    document.documentElement.dataset.rebashDdEscBound = "1";
+    document.addEventListener("keydown", function (event) {
+      if (event.key !== "Escape") return;
+      closeHeaderDropdowns();
+    });
+  }
+
+  menus.forEach(function (dd) {
+    if (dd.dataset.rebashDdBound) return;
+    dd.dataset.rebashDdBound = "1";
+
+    function armOpen() {
+      dd.classList.remove("rebash-header-dd--closed");
+      menus.forEach(function (other) {
+        if (other === dd) return;
+        other.classList.add("rebash-header-dd--closed");
+        var active = document.activeElement;
+        if (active && other.contains(active) && typeof active.blur === "function") {
+          active.blur();
+        }
+      });
+    }
+
+    dd.addEventListener("pointerenter", armOpen);
+    dd.addEventListener("focusin", armOpen);
+
+    dd.addEventListener("pointerleave", function () {
+      dd.classList.add("rebash-header-dd--closed");
+      var active = document.activeElement;
+      if (active && dd.contains(active) && typeof active.blur === "function") {
+        active.blur();
+      }
+    });
+
+    dd.addEventListener("click", function (event) {
+      var link = event.target.closest("a");
+      if (!link) return;
+      /* Close after choose — Material instant nav keeps focus on the item */
+      window.setTimeout(closeHeaderDropdowns, 0);
+    });
+
+    dd.addEventListener("focusout", function () {
+      window.setTimeout(function () {
+        if (!dd.contains(document.activeElement)) {
+          dd.classList.add("rebash-header-dd--closed");
+        }
+      }, 0);
+    });
+  });
+}
+
 function onPageReady() {
+  closeHeaderDropdowns();
+  markHeaderDropdownActive();
   initLearningPathPicker();
   markCustomTemplateLinks();
   initRecommendedRoadmap();
   markLabCodeBlocks();
+  initHeaderDropdowns();
 }
 
 if (typeof document$ !== "undefined") {

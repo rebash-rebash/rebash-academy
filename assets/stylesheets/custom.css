@@ -568,7 +568,7 @@
   color: var(--md-default-fg-color--light);
 }
 
-/* Header — slightly taller bar with quick links (About / Blog / Contact) */
+/* Header — quick links + Career Paths / Tutorials dropdowns */
 .md-header__inner {
   padding-top: 0.35rem;
   padding-bottom: 0.35rem;
@@ -578,10 +578,14 @@
   display: flex;
   align-items: center;
   gap: 0.15rem;
+  margin-left: 0.75rem;
   margin-right: 0.5rem;
+  flex-shrink: 1;
+  min-width: 0;
 }
 
-.rebash-header-links a {
+.rebash-header-links > a,
+.rebash-header-dd__trigger {
   color: var(--md-primary-bg-color);
   font-size: 0.7rem;
   font-weight: 600;
@@ -589,17 +593,208 @@
   border-radius: 0.2rem;
   opacity: 0.85;
   transition: opacity 0.15s ease, background-color 0.15s ease;
+  text-decoration: none;
+  white-space: nowrap;
 }
 
-.rebash-header-links a:hover {
+.rebash-header-links > a:hover,
+.rebash-header-dd:hover > .rebash-header-dd__trigger,
+.rebash-header-dd:focus-within > .rebash-header-dd__trigger {
   opacity: 1;
   background-color: rgba(255, 255, 255, 0.12);
+}
+
+.rebash-header-dd {
+  position: relative;
+}
+
+.rebash-header-dd__trigger {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.28rem;
+}
+
+.rebash-header-dd__caret {
+  width: 0;
+  height: 0;
+  border-left: 3.5px solid transparent;
+  border-right: 3.5px solid transparent;
+  border-top: 4px solid currentColor;
+  opacity: 0.85;
+}
+
+.rebash-header-dd__panel {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  z-index: 12;
+  min-width: 13.5rem;
+  max-height: min(70vh, 28rem);
+  overflow-y: auto;
+  /* Top padding bridges the trigger→panel gap so hover does not drop */
+  padding: 0.55rem 0 0.4rem;
+  margin-top: 0.15rem;
+  border-radius: 0.35rem;
+  background: var(--md-default-bg-color);
+  color: var(--md-default-fg-color);
+  box-shadow:
+    0 0.15rem 0.45rem rgba(0, 0, 0, 0.12),
+    0 0.55rem 1.4rem rgba(0, 0, 0, 0.14);
+  border: 1px solid var(--md-default-fg-color--lightest);
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(-0.15rem);
+  transition:
+    opacity 0.12s ease,
+    transform 0.12s ease,
+    visibility 0.12s;
+}
+
+.rebash-header-dd__panel::before {
+  content: "";
+  position: absolute;
+  top: -0.35rem;
+  left: 0;
+  right: 0;
+  height: 0.4rem;
+}
+
+.rebash-header-dd--wide .rebash-header-dd__panel {
+  min-width: 16.5rem;
+  left: 0;
+  right: auto;
+}
+
+.rebash-header-dd:hover:not(.rebash-header-dd--closed) > .rebash-header-dd__panel,
+.rebash-header-dd:focus-within:not(.rebash-header-dd--closed) > .rebash-header-dd__panel {
+  opacity: 1;
+  visibility: visible;
+  transform: translateY(0);
+}
+
+.rebash-header-dd--closed > .rebash-header-dd__panel {
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  transform: translateY(-0.15rem);
+}
+
+.rebash-header-dd--closed > .rebash-header-dd__trigger {
+  opacity: 0.85;
+  background-color: transparent;
+}
+
+/* Only one menu at a time: hover on B closes A still held by :focus-within */
+.rebash-header-links:has(.rebash-header-dd:hover:not(.rebash-header-dd--closed))
+  .rebash-header-dd:not(:hover)
+  > .rebash-header-dd__panel {
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  transform: translateY(-0.15rem);
+}
+
+.rebash-header-dd__item {
+  display: block;
+  padding: 0.38rem 0.85rem;
+  font-size: 0.72rem;
+  font-weight: 500;
+  color: var(--md-default-fg-color);
+  text-decoration: none;
+  opacity: 1;
+  border-radius: 0;
+  line-height: 1.35;
+}
+
+.rebash-header-dd__item:hover,
+.rebash-header-dd__item:focus {
+  background: var(--md-default-fg-color--lightest);
+  color: var(--md-typeset-a-color, #1976d2);
+}
+
+.rebash-header-dd__item--active {
+  font-weight: 700;
+  color: var(--md-typeset-a-color, #1976d2);
+  background: rgba(25, 118, 210, 0.08);
+}
+
+.rebash-header-dd__item--active:hover,
+.rebash-header-dd__item--active:focus {
+  color: var(--md-typeset-a-color, #1976d2);
+  background: rgba(25, 118, 210, 0.12);
+}
+
+.rebash-header-dd__item--emph {
+  font-weight: 700;
+  border-bottom: 1px solid var(--md-default-fg-color--lightest);
+  margin-bottom: 0.15rem;
+  padding-bottom: 0.5rem;
+}
+
+.rebash-header-dd__item--footer {
+  border-bottom: 0;
+  border-top: 1px solid var(--md-default-fg-color--lightest);
+  margin-top: 0.25rem;
+  margin-bottom: 0;
+  padding-top: 0.55rem;
+}
+
+.rebash-header-dd__panel--grouped {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 0.15rem;
+  padding: 0.5rem 0 0.35rem;
+}
+
+@media screen and (min-width: 48em) {
+  .rebash-header-dd__panel--grouped {
+    grid-template-columns: minmax(10.5rem, 1fr) minmax(10.5rem, 1fr);
+    column-gap: 0.35rem;
+    min-width: 22rem;
+  }
+
+  .rebash-header-dd__panel--grouped > .rebash-header-dd__item--footer {
+    grid-column: 1 / -1;
+  }
+}
+
+.rebash-header-dd__group {
+  padding: 0.15rem 0 0.25rem;
+}
+
+.rebash-header-dd__label {
+  margin: 0;
+  padding: 0.4rem 0.85rem 0.2rem;
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  color: #000;
+  /* Material Roboto tops out at 700 — slight enlarge reads heavier */
+  font-variation-settings: "wght" 700;
+}
+
+[data-md-color-scheme="slate"] .rebash-header-dd__label {
+  color: #fff;
+}
+
+.rebash-header-dd__group .rebash-header-dd__item {
+  padding-top: 0.28rem;
+  padding-bottom: 0.28rem;
 }
 
 /* On small screens the drawer menu covers navigation — hide quick links */
 @media screen and (max-width: 44.9375em) {
   .rebash-header-links {
     display: none;
+  }
+}
+
+/* Medium widths: keep dropdowns under the left-aligned nav */
+@media screen and (max-width: 76.1875em) {
+  .rebash-header-dd--wide .rebash-header-dd__panel {
+    left: 0;
+    right: auto;
   }
 }
 
