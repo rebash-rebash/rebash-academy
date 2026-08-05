@@ -2,7 +2,7 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="800" height="270"
      viewBox="0 0 800 270" role="img" aria-label="terraform-resources">
   <rect width="100%" height="100%" fill="#fffef8"/>
-  <text x="420.0" y="28.0" text-anchor="middle" font-family="Virgil, Segoe Print, Comic Sans MS, cursive" font-size="18" font-weight="700" fill="#1e1e1e">Resources & meta-arguments</text>
+  <text x="420.0" y="28.0" text-anchor="middle" font-family="Virgil, Segoe Print, Comic Sans MS, cursive" font-size="18" font-weight="700" fill="#1e1e1e">Resources &amp; meta-arguments</text>
 
   <path d="M 53.1,72.3 L 192.3,72.2 Q 202.3,72.2 202.3,82.2 L 203.8,133.3 Q 203.8,143.3 193.8,143.3 L 52.9,142.8 Q 42.9,142.8 42.9,132.8 L 43.1,82.3 Q 43.1,72.3 53.1,72.3 Z" fill="#00000022" stroke="none"/>
   <path d="M 49.0,71.0 L 190.6,69.1 Q 200.6,69.1 200.6,79.1 L 200.4,129.6 Q 200.4,139.6 190.4,139.6 L 49.7,139.7 Q 39.7,139.7 39.7,129.7 L 39.0,81.0 Q 39.0,71.0 49.0,71.0 Z" fill="#a5d8ff" stroke="#1971c2" stroke-width="2"/>

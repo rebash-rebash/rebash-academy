@@ -61,6 +61,6 @@
   <text x="400.0" y="204.0" text-anchor="middle"
         font-family="Virgil, Segoe Print, Comic Sans MS, cursive"
         font-size="14" font-weight="700" fill="#1e1e1e">Swap · df · iostat · smartctl</text>
-  <text x="400.0" y="224.0" text-anchor="middle" font-family="Virgil, Segoe Print, Comic Sans MS, cursive" font-size="12" fill="#1e1e1e">capacity & health</text>
+  <text x="400.0" y="224.0" text-anchor="middle" font-family="Virgil, Segoe Print, Comic Sans MS, cursive" font-size="12" fill="#1e1e1e">capacity &amp; health</text>
 
 </svg>

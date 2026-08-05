@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <svg xmlns="http://www.w3.org/2000/svg" width="780" height="220" viewBox="0 0 780 220" role="img" aria-label="ansible-conditionals-loops.svg">
 <rect width="100%" height="100%" fill="#fffef8"/>
-<text x="390.0" y="28" text-anchor="middle" font-family="Virgil, Segoe Print, Comic Sans MS, cursive" font-size="18" font-weight="700" fill="#1e1e1e">Conditionals & loops</text>
+<text x="390.0" y="28" text-anchor="middle" font-family="Virgil, Segoe Print, Comic Sans MS, cursive" font-size="18" font-weight="700" fill="#1e1e1e">Conditionals &amp; loops</text>
 <path d="M 96.6,72.6 L 226.6,73.6 Q 236.6,73.6 236.6,83.6 L 235.7,162 Q 235.7,172 225.7,172 L 96.7,163.2 Q 86.7,163.2 86.7,153.2 L 86.6,82.6 Q 86.6,72.6 96.6,72.6 Z" fill="#00000022" stroke="none"/>
 <path d="M 94,70 L 224,70.2 Q 234,70.2 234,80.2 L 234.1,160 Q 234.1,170 224,170 L 94.1,159.1 Q 84.1,159.1 84.1,149.1 L 94,80 Q 94,70 94,70 Z" fill="#a5d8ff" stroke="#1971c2" stroke-width="2"/>
 <text x="159.0" y="109.0" text-anchor="middle" font-family="Virgil, Segoe Print, Comic Sans MS, cursive" font-size="14" font-weight="700" fill="#1e1e1e">when</text>

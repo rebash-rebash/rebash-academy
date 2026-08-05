@@ -86,18 +86,29 @@ def _hachure(rng, x, y, w, h, stroke, gap=6):
     return "\n".join(lines)
 
 
+def _xml_escape(text: str) -> str:
+    """Escape text for safe embedding in SVG/XML."""
+    return (
+        text.replace("&", "&amp;")
+        .replace("<", "&lt;")
+        .replace(">", "&gt;")
+        .replace('"', "&quot;")
+    )
+
+
 def box(rng, x, y, w, h, title, subtitle="", color="blue", hatch=True):
     fill, stroke = COLORS[color]
     path = _rough_rect(rng, x, y, w, h)
     # soft shadow offset
     shadow = _rough_rect(rng, x + 3, y + 3, w, h)
     hatch_svg = _hachure(rng, x + 4, y + 4, w - 8, h - 8, stroke) if hatch else ""
+    title_esc = _xml_escape(title)
     sub = ""
     if subtitle:
         sub = (
             f'<text x="{x+w/2:.1f}" y="{y+h/2+14:.1f}" text-anchor="middle" '
             f'font-family="Virgil, Segoe Print, Comic Sans MS, cursive" '
-            f'font-size="12" fill="{STROKE}">{subtitle}</text>'
+            f'font-size="12" fill="{STROKE}">{_xml_escape(subtitle)}</text>'
         )
     title_y = y + h / 2 + (0 if not subtitle else -6)
     return f"""
@@ -106,7 +117,7 @@ def box(rng, x, y, w, h, title, subtitle="", color="blue", hatch=True):
   {hatch_svg}
   <text x="{x+w/2:.1f}" y="{title_y:.1f}" text-anchor="middle"
         font-family="Virgil, Segoe Print, Comic Sans MS, cursive"
-        font-size="14" font-weight="700" fill="{STROKE}">{title}</text>
+        font-size="14" font-weight="700" fill="{STROKE}">{title_esc}</text>
   {sub}
 """
 
@@ -115,7 +126,7 @@ def label(x, y, text, size=15, weight="700"):
     return (
         f'<text x="{x:.1f}" y="{y:.1f}" text-anchor="middle" '
         f'font-family="Virgil, Segoe Print, Comic Sans MS, cursive" '
-        f'font-size="{size}" font-weight="{weight}" fill="{STROKE}">{text}</text>'
+        f'font-size="{size}" font-weight="{weight}" fill="{STROKE}">{_xml_escape(text)}</text>'
     )
 
 
@@ -142,7 +153,7 @@ def arrow(rng, x1, y1, x2, y2, color=STROKE):
 def svg_doc(width, height, body, title):
     return f"""<?xml version="1.0" encoding="UTF-8"?>
 <svg xmlns="http://www.w3.org/2000/svg" width="{width}" height="{height}"
-     viewBox="0 0 {width} {height}" role="img" aria-label="{title}">
+     viewBox="0 0 {width} {height}" role="img" aria-label="{_xml_escape(title)}">
   <rect width="100%" height="100%" fill="#fffef8"/>
   {body}
 </svg>

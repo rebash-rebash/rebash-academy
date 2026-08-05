@@ -2,7 +2,7 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="810" height="250"
      viewBox="0 0 810 250" role="img" aria-label="gitlab-parent-child">
   <rect width="100%" height="100%" fill="#fffef8"/>
-  <text x="400.0" y="28.0" text-anchor="middle" font-family="Virgil, Segoe Print, Comic Sans MS, cursive" font-size="18" font-weight="700" fill="#1e1e1e">Parent / child & includes</text>
+  <text x="400.0" y="28.0" text-anchor="middle" font-family="Virgil, Segoe Print, Comic Sans MS, cursive" font-size="18" font-weight="700" fill="#1e1e1e">Parent / child &amp; includes</text>
 
   <path d="M 293.5,52.6 L 472.3,52.1 Q 482.3,52.1 482.3,62.1 L 483.7,102.6 Q 483.7,112.6 473.7,112.6 L 292.5,114.0 Q 282.5,114.0 282.5,104.0 L 283.5,62.6 Q 283.5,52.6 293.5,52.6 Z" fill="#00000022" stroke="none"/>
   <path d="M 289.7,49.5 L 469.0,50.9 Q 479.0,50.9 479.0,60.9 L 479.6,99.0 Q 479.6,109.0 469.6,109.0 L 289.4,110.0 Q 279.4,110.0 279.4,100.0 L 279.7,59.5 Q 279.7,49.5 289.7,49.5 Z" fill="#ffd8a8" stroke="#e8590c" stroke-width="2"/>

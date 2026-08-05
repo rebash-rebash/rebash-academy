@@ -2,7 +2,7 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="780" height="230"
      viewBox="0 0 780 230" role="img" aria-label="shell-io-redirection">
   <rect width="100%" height="100%" fill="#fffef8"/>
-  <text x="390.0" y="28.0" text-anchor="middle" font-family="Virgil, Segoe Print, Comic Sans MS, cursive" font-size="18" font-weight="700" fill="#1e1e1e">I/O redirection & pipes</text>
+  <text x="390.0" y="28.0" text-anchor="middle" font-family="Virgil, Segoe Print, Comic Sans MS, cursive" font-size="18" font-weight="700" fill="#1e1e1e">I/O redirection &amp; pipes</text>
 
   <path d="M 53.7,83.5 L 173.2,82.7 Q 183.2,82.7 183.2,92.7 L 183.3,142.4 Q 183.3,152.4 173.3,152.4 L 53.0,153.2 Q 43.0,153.2 43.0,143.2 L 43.7,93.5 Q 43.7,83.5 53.7,83.5 Z" fill="#00000022" stroke="none"/>
   <path d="M 50.0,79.9 L 170.9,80.7 Q 180.9,80.7 180.9,90.7 L 179.1,140.7 Q 179.1,150.7 169.1,150.7 L 50.6,149.7 Q 40.6,149.7 40.6,139.7 L 40.0,89.9 Q 40.0,79.9 50.0,79.9 Z" fill="#a5d8ff" stroke="#1971c2" stroke-width="2"/>
