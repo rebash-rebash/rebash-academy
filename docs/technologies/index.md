@@ -63,6 +63,7 @@ a cheat sheet, and interview themes. Pick a track below or follow a
 
 - [Platform Engineering](../platform-engineering/index.md)
 - [Site Reliability Engineering](../sre/index.md)
+- [System Design](../system-design/index.md)
 - [Cloud Architecture](../architecture/index.md)
 
 ## AI

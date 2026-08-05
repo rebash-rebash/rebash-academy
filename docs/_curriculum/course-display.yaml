@@ -384,12 +384,27 @@ sre:
   interview: 0
   certifications: []
 
-architecture:
+system-design:
   icon: sitemap
+  theme: architect
+  eyebrow: System Design course
+  tagline: Requirements, trade-offs, architecture diagrams, and Python labs for real systems.
+  related: [networking, python, kubernetes, architecture]
+  learning_paths: [devops-engineer, platform-engineer, beginner]
+  labs: 4
+  quizzes: 0
+  projects: 0
+  capstones: 0
+  cheatsheets: 0
+  interview: 0
+  certifications: []
+
+architecture:
+  icon: cloud-braces
   theme: architect
   eyebrow: Architecture course
   tagline: Cloud landing zones, multi-account design, and scalable system patterns.
-  related: [aws, terraform, kubernetes]
+  related: [aws, terraform, kubernetes, system-design]
   learning_paths: [cloud-engineer, platform-engineer]
   labs: 0
   quizzes: 0

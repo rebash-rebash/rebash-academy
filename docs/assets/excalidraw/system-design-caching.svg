@@ -1,0 +1,133 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="880" height="340"
+     viewBox="0 0 880 340" role="img" aria-label="system-design-caching">
+  <rect width="100%" height="100%" fill="#fffef8"/>
+  <text x="440.0" y="28.0" text-anchor="middle" font-family="Virgil, Segoe Print, Comic Sans MS, cursive" font-size="18" font-weight="700" fill="#1e1e1e">Caching layers and cache-aside</text>
+
+  <path d="M 43.3,58.3 L 143.8,57.8 Q 153.8,57.8 153.8,67.8 L 153.4,108.1 Q 153.4,118.1 143.4,118.1 L 42.9,118.3 Q 32.9,118.3 32.9,108.3 L 33.3,68.3 Q 33.3,58.3 43.3,58.3 Z" fill="#00000022" stroke="none"/>
+  <path d="M 40.9,55.1 L 140.0,55.0 Q 150.0,55.0 150.0,65.0 L 149.6,105.9 Q 149.6,115.9 139.6,115.9 L 39.1,115.8 Q 29.1,115.8 29.1,105.8 L 30.9,65.1 Q 30.9,55.1 40.9,55.1 Z" fill="#a5d8ff" stroke="#1971c2" stroke-width="2"/>
+  
+  <text x="90.0" y="85.0" text-anchor="middle"
+        font-family="Virgil, Segoe Print, Comic Sans MS, cursive"
+        font-size="14" font-weight="700" fill="#1e1e1e">Client</text>
+  
+
+
+  <path d="M 193.0,58.1 L 302.3,57.5 Q 312.3,57.5 312.3,67.5 L 312.2,107.6 Q 312.2,117.6 302.2,117.6 L 192.3,118.8 Q 182.3,118.8 182.3,108.8 L 183.0,68.1 Q 183.0,58.1 193.0,58.1 Z" fill="#00000022" stroke="none"/>
+  <path d="M 189.2,55.0 L 299.0,54.7 Q 309.0,54.7 309.0,64.7 L 309.8,105.7 Q 309.8,115.7 299.8,115.7 L 190.2,114.6 Q 180.2,114.6 180.2,104.6 L 179.2,65.0 Q 179.2,55.0 189.2,55.0 Z" fill="#ffd8a8" stroke="#e8590c" stroke-width="2"/>
+  
+  <text x="245.0" y="79.0" text-anchor="middle"
+        font-family="Virgil, Segoe Print, Comic Sans MS, cursive"
+        font-size="14" font-weight="700" fill="#1e1e1e">CDN / Edge</text>
+  <text x="245.0" y="99.0" text-anchor="middle" font-family="Virgil, Segoe Print, Comic Sans MS, cursive" font-size="12" fill="#1e1e1e">shared GETs</text>
+
+
+  <path d="M 352.1,58.3 L 472.5,57.6 Q 482.5,57.6 482.5,67.6 L 482.4,108.0 Q 482.4,118.0 472.4,118.0 L 352.6,117.2 Q 342.6,117.2 342.6,107.2 L 342.1,68.3 Q 342.1,58.3 352.1,58.3 Z" fill="#00000022" stroke="none"/>
+  <path d="M 349.6,54.6 L 470.8,56.0 Q 480.8,56.0 480.8,66.0 L 480.9,104.4 Q 480.9,114.4 470.9,114.4 L 350.2,114.1 Q 340.2,114.1 340.2,104.1 L 339.6,64.6 Q 339.6,54.6 349.6,54.6 Z" fill="#b2f2bb" stroke="#2f9e44" stroke-width="2"/>
+  
+  <text x="410.0" y="79.0" text-anchor="middle"
+        font-family="Virgil, Segoe Print, Comic Sans MS, cursive"
+        font-size="14" font-weight="700" fill="#1e1e1e">App cache</text>
+  <text x="410.0" y="99.0" text-anchor="middle" font-family="Virgil, Segoe Print, Comic Sans MS, cursive" font-size="12" fill="#1e1e1e">Redis / mem</text>
+
+
+  <path d="M 533.1,57.6 L 652.8,58.3 Q 662.8,58.3 662.8,68.3 L 662.9,108.7 Q 662.9,118.7 652.9,118.7 L 532.8,118.2 Q 522.8,118.2 522.8,108.2 L 523.1,67.6 Q 523.1,57.6 533.1,57.6 Z" fill="#00000022" stroke="none"/>
+  <path d="M 529.5,54.9 L 649.3,55.2 Q 659.3,55.2 659.3,65.2 L 659.9,105.1 Q 659.9,115.1 649.9,115.1 L 529.9,115.5 Q 519.9,115.5 519.9,105.5 L 519.5,64.9 Q 519.5,54.9 529.5,54.9 Z" fill="#d0bfff" stroke="#7048e8" stroke-width="2"/>
+  
+  <text x="590.0" y="79.0" text-anchor="middle"
+        font-family="Virgil, Segoe Print, Comic Sans MS, cursive"
+        font-size="14" font-weight="700" fill="#1e1e1e">Service</text>
+  <text x="590.0" y="99.0" text-anchor="middle" font-family="Virgil, Segoe Print, Comic Sans MS, cursive" font-size="12" fill="#1e1e1e">cache-aside</text>
+
+
+  <path d="M 712.9,58.6 L 832.3,57.7 Q 842.3,57.7 842.3,67.7 L 843.4,108.8 Q 843.4,118.8 833.4,118.8 L 713.9,118.3 Q 703.9,118.3 703.9,108.3 L 702.9,68.6 Q 702.9,58.6 712.9,58.6 Z" fill="#00000022" stroke="none"/>
+  <path d="M 710.3,55.9 L 829.7,55.0 Q 839.7,55.0 839.7,65.0 L 841.0,104.7 Q 841.0,114.7 831.0,114.7 L 710.2,115.5 Q 700.2,115.5 700.2,105.5 L 700.3,65.9 Q 700.3,55.9 710.3,55.9 Z" fill="#99e9f2" stroke="#0c8599" stroke-width="2"/>
+  
+  <text x="770.0" y="79.0" text-anchor="middle"
+        font-family="Virgil, Segoe Print, Comic Sans MS, cursive"
+        font-size="14" font-weight="700" fill="#1e1e1e">Database</text>
+  <text x="770.0" y="99.0" text-anchor="middle" font-family="Virgil, Segoe Print, Comic Sans MS, cursive" font-size="12" fill="#1e1e1e">source of truth</text>
+
+
+  <path d="M 150.0,85.0 L 161.0,85.4 L 170.0,84.2 L 180.0,85.0" stroke="#1e1e1e" stroke-width="2" fill="none"/>
+  <path d="M 180.0,85.0 L 173.1,89.0 M 180.0,85.0 L 173.1,81.0"
+        stroke="#1e1e1e" stroke-width="2" fill="none"/>
+
+
+  <path d="M 310.0,85.0 L 320.7,85.6 L 330.8,85.6 L 340.0,85.0" stroke="#1e1e1e" stroke-width="2" fill="none"/>
+  <path d="M 340.0,85.0 L 333.1,89.0 M 340.0,85.0 L 333.1,81.0"
+        stroke="#1e1e1e" stroke-width="2" fill="none"/>
+
+
+  <path d="M 480.0,85.0 L 494.1,84.2 L 506.8,84.1 L 520.0,85.0" stroke="#1e1e1e" stroke-width="2" fill="none"/>
+  <path d="M 520.0,85.0 L 513.1,89.0 M 520.0,85.0 L 513.1,81.0"
+        stroke="#1e1e1e" stroke-width="2" fill="none"/>
+
+
+  <path d="M 660.0,85.0 L 672.7,86.1 L 687.4,84.5 L 700.0,85.0" stroke="#1e1e1e" stroke-width="2" fill="none"/>
+  <path d="M 700.0,85.0 L 693.1,89.0 M 700.0,85.0 L 693.1,81.0"
+        stroke="#1e1e1e" stroke-width="2" fill="none"/>
+
+
+  <path d="M 133.5,162.5 L 713.8,163.3 Q 723.8,163.3 723.8,173.3 L 722.5,273.4 Q 722.5,283.4 712.5,283.4 L 132.8,282.4 Q 122.8,282.4 122.8,272.4 L 123.5,172.5 Q 123.5,162.5 133.5,162.5 Z" fill="#00000022" stroke="none"/>
+  <path d="M 130.9,159.7 L 709.2,159.5 Q 719.2,159.5 719.2,169.5 L 720.4,269.3 Q 720.4,279.3 710.4,279.3 L 130.0,279.2 Q 120.0,279.2 120.0,269.2 L 120.9,169.7 Q 120.9,159.7 130.9,159.7 Z" fill="#e9ecef" stroke="#495057" stroke-width="2"/>
+  
+  <text x="420.0" y="220.0" text-anchor="middle"
+        font-family="Virgil, Segoe Print, Comic Sans MS, cursive"
+        font-size="14" font-weight="700" fill="#1e1e1e"></text>
+  
+
+<text x="420.0" y="185.0" text-anchor="middle" font-family="Virgil, Segoe Print, Comic Sans MS, cursive" font-size="14" font-weight="700" fill="#1e1e1e">Cache-aside (lazy loading)</text>
+
+  <path d="M 162.2,208.5 L 263.3,208.7 Q 273.3,208.7 273.3,218.7 L 273.7,252.3 Q 273.7,262.3 263.7,262.3 L 162.6,262.5 Q 152.6,262.5 152.6,252.5 L 152.2,218.5 Q 152.2,208.5 162.2,208.5 Z" fill="#00000022" stroke="none"/>
+  <path d="M 160.7,205.4 L 259.7,204.9 Q 269.7,204.9 269.7,214.9 L 269.5,249.6 Q 269.5,259.6 259.5,259.6 L 160.4,259.5 Q 150.4,259.5 150.4,249.5 L 150.7,215.4 Q 150.7,205.4 160.7,205.4 Z" fill="#b2f2bb" stroke="#2f9e44" stroke-width="2"/>
+  
+  <text x="210.0" y="226.5" text-anchor="middle"
+        font-family="Virgil, Segoe Print, Comic Sans MS, cursive"
+        font-size="14" font-weight="700" fill="#1e1e1e">1. Read cache</text>
+  <text x="210.0" y="246.5" text-anchor="middle" font-family="Virgil, Segoe Print, Comic Sans MS, cursive" font-size="12" fill="#1e1e1e">hit → return</text>
+
+
+  <path d="M 312.7,208.2 L 433.0,207.0 Q 443.0,207.0 443.0,217.0 L 443.7,253.8 Q 443.7,263.8 433.7,263.8 L 312.7,262.9 Q 302.7,262.9 302.7,252.9 L 302.7,218.2 Q 302.7,208.2 312.7,208.2 Z" fill="#00000022" stroke="none"/>
+  <path d="M 310.4,205.0 L 429.3,204.3 Q 439.3,204.3 439.3,214.3 L 440.6,249.6 Q 440.6,259.6 430.6,259.6 L 310.4,259.8 Q 300.4,259.8 300.4,249.8 L 300.4,215.0 Q 300.4,205.0 310.4,205.0 Z" fill="#99e9f2" stroke="#0c8599" stroke-width="2"/>
+  
+  <text x="370.0" y="226.5" text-anchor="middle"
+        font-family="Virgil, Segoe Print, Comic Sans MS, cursive"
+        font-size="14" font-weight="700" fill="#1e1e1e">2. Miss → DB</text>
+  <text x="370.0" y="246.5" text-anchor="middle" font-family="Virgil, Segoe Print, Comic Sans MS, cursive" font-size="12" fill="#1e1e1e">load truth</text>
+
+
+  <path d="M 482.2,207.4 L 603.8,208.6 Q 613.8,208.6 613.8,218.6 L 614.0,253.8 Q 614.0,263.8 604.0,263.8 L 482.2,263.4 Q 472.2,263.4 472.2,253.4 L 472.2,217.4 Q 472.2,207.4 482.2,207.4 Z" fill="#00000022" stroke="none"/>
+  <path d="M 479.4,204.7 L 599.5,205.2 Q 609.5,205.2 609.5,215.2 L 609.2,250.3 Q 609.2,260.3 599.2,260.3 L 479.8,259.9 Q 469.8,259.9 469.8,249.9 L 469.4,214.7 Q 469.4,204.7 479.4,204.7 Z" fill="#ffd8a8" stroke="#e8590c" stroke-width="2"/>
+  
+  <text x="540.0" y="226.5" text-anchor="middle"
+        font-family="Virgil, Segoe Print, Comic Sans MS, cursive"
+        font-size="14" font-weight="700" fill="#1e1e1e">3. Fill cache</text>
+  <text x="540.0" y="246.5" text-anchor="middle" font-family="Virgil, Segoe Print, Comic Sans MS, cursive" font-size="12" fill="#1e1e1e">TTL · key</text>
+
+
+  <path d="M 653.7,207.8 L 752.5,207.8 Q 762.5,207.8 762.5,217.8 L 762.4,252.0 Q 762.4,262.0 752.4,262.0 L 653.3,263.2 Q 643.3,263.2 643.3,253.2 L 643.7,217.8 Q 643.7,207.8 653.7,207.8 Z" fill="#00000022" stroke="none"/>
+  <path d="M 649.1,204.7 L 750.2,205.8 Q 760.2,205.8 760.2,215.8 L 760.8,250.0 Q 760.8,260.0 750.8,260.0 L 650.9,259.3 Q 640.9,259.3 640.9,249.3 L 639.1,214.7 Q 639.1,204.7 649.1,204.7 Z" fill="#a5d8ff" stroke="#1971c2" stroke-width="2"/>
+  
+  <text x="700.0" y="226.5" text-anchor="middle"
+        font-family="Virgil, Segoe Print, Comic Sans MS, cursive"
+        font-size="14" font-weight="700" fill="#1e1e1e">4. Return</text>
+  <text x="700.0" y="246.5" text-anchor="middle" font-family="Virgil, Segoe Print, Comic Sans MS, cursive" font-size="12" fill="#1e1e1e">to caller</text>
+
+
+  <path d="M 270.0,232.0 L 279.0,232.1 L 289.5,230.8 L 300.0,232.0" stroke="#1e1e1e" stroke-width="2" fill="none"/>
+  <path d="M 300.0,232.0 L 293.1,236.0 M 300.0,232.0 L 293.1,228.0"
+        stroke="#1e1e1e" stroke-width="2" fill="none"/>
+
+
+  <path d="M 440.0,232.0 L 450.8,231.7 L 460.3,232.1 L 470.0,232.0" stroke="#1e1e1e" stroke-width="2" fill="none"/>
+  <path d="M 470.0,232.0 L 463.1,236.0 M 470.0,232.0 L 463.1,228.0"
+        stroke="#1e1e1e" stroke-width="2" fill="none"/>
+
+
+  <path d="M 610.0,232.0 L 620.0,233.2 L 629.1,231.1 L 640.0,232.0" stroke="#1e1e1e" stroke-width="2" fill="none"/>
+  <path d="M 640.0,232.0 L 633.1,236.0 M 640.0,232.0 L 633.1,228.0"
+        stroke="#1e1e1e" stroke-width="2" fill="none"/>
+
+<text x="420.0" y="315.0" text-anchor="middle" font-family="Virgil, Segoe Print, Comic Sans MS, cursive" font-size="13" font-weight="400" fill="#1e1e1e">Invalidation and stampede control matter as much as the hit rate</text>
+</svg>

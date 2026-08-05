@@ -21,6 +21,7 @@ Generated from [`curriculum.yaml`](../../curriculum.yaml). Tutorial URLs remain 
 | Ansible | Infrastructure as Code | 0 | 0 | — | — | — | — | intermediate | P1 | planned |
 | Argo CD | CI/CD | 0 | 0 | — | — | — | — | intermediate | P1 | planned |
 | Azure | Cloud Platforms | 0 | 0 | — | — | — | — | intermediate | P2 | stub |
+| System Design | Architecture | 4 | 4 | — | — | — | — | intermediate | P0 | ready |
 | Cloud Architecture | Architecture | 0 | 0 | — | — | — | — | intermediate | P2 | stub |
 | DevSecOps | Security | 0 | 0 | — | — | — | — | intermediate | P2 | stub |
 | Docker | Containers | 6 | 20 | — | — | — | — | intermediate | P0 | ready |

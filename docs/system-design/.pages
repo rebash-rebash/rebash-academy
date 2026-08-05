@@ -1,0 +1,41 @@
+title: System Design
+icon: material/sitemap
+nav:
+  - index.md
+  - Module 1 · Design foundations:
+    - how-to-design-a-system.md
+  - Module 2 · Quality & trade-offs:
+    - quality-attributes-and-trade-offs.md
+  - Module 3 · Architecture styles:
+    - application-architecture-styles.md
+  - Module 4 · Request path:
+    - client-edge-and-service-path.md
+  - Module 5 · Data storage:
+    - data-storage.md
+  - Module 6 · Caching:
+    - caching.md
+  - Module 7 · Messaging:
+    - messaging-and-async.md
+  - Module 8 · APIs:
+    - apis-and-communication.md
+  - Module 9 · Observability & resilience:
+    - observability-and-resilience.md
+  - Module 10 · URL shortener:
+    - url-shortener.md
+  - Module 11 · News feed:
+    - news-feed.md
+  - Module 12 · Media upload:
+    - media-upload.md
+  - Module 13 · Search:
+    - search-and-autocomplete.md
+  - Module 14 · Realtime chat:
+    - realtime-chat.md
+  - Module 15 · Notifications & presence:
+    - notifications-and-presence.md
+  - Module 16 · Collaboration patterns:
+    - collaborative-streaming.md
+  - Module 17 · Capstone:
+    - capstone-collaboration-board.md
+  - roadmap.md
+  - faq.md
+  - glossary.md

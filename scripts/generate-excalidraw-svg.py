@@ -3022,6 +3022,380 @@ def diagram_aws_troubleshoot():
     write_pair("aws-troubleshooting", 820, 200, "\n".join(parts), [])
 
 
+def diagram_system_design_process():
+    """Repeatable design process: clarify → size → trade-offs → architecture → validate."""
+    rng = random.Random(1401)
+    parts = [label(450, 28, "System design process", 18)]
+    # Row 1 — problem framing
+    parts.append(soft_box(rng, 20, 55, 860, 120, "", "", "gray"))
+    parts.append(label(450, 78, "1. Frame the problem", 14, "700"))
+    chain1 = [
+        (40, 95, "Business goal", "who · why", "blue"),
+        (205, 95, "Functional", "must work", "green"),
+        (370, 95, "NFRs", "how well", "orange"),
+        (535, 95, "Constraints", "budget · tech", "purple"),
+        (700, 95, "Assumptions", "write down", "yellow"),
+    ]
+    for i, (x, y, t, s, c) in enumerate(chain1):
+        parts.append(soft_box(rng, x, y, 145, 65, t, s, c))
+        if i < len(chain1) - 1:
+            parts.append(arrow(rng, x + 145, y + 32, chain1[i + 1][0], y + 32))
+    # Row 2 — design loop
+    parts.append(soft_box(rng, 20, 200, 860, 130, "", "", "gray"))
+    parts.append(label(450, 223, "2. Design and prove it", 14, "700"))
+    chain2 = [
+        (80, 245, "Capacity", "QPS · storage", "teal"),
+        (280, 245, "Trade-offs", "pick & name", "pink"),
+        (480, 245, "Architecture", "components", "blue"),
+        (680, 245, "Validate", "risks · iterate", "green"),
+    ]
+    for i, (x, y, t, s, c) in enumerate(chain2):
+        parts.append(soft_box(rng, x, y, 160, 65, t, s, c))
+        if i < len(chain2) - 1:
+            parts.append(arrow(rng, x + 160, y + 32, chain2[i + 1][0], y + 32))
+    # Feedback arrow validate → capacity
+    parts.append(arrow(rng, 760, 320, 160, 320, color="#e8590c"))
+    parts.append(label(450, 345, "feedback: new constraints → re-estimate", 12, "400"))
+    write_pair("system-design-process", 900, 370, "\n".join(parts), [])
+
+
+def diagram_system_design_quality_attributes():
+    """Quality attributes pull against each other around deliberate trade-offs."""
+    rng = random.Random(1402)
+    parts = [label(420, 28, "Quality attributes and trade-offs", 18)]
+    parts.append(soft_box(rng, 300, 140, 200, 90, "Trade-offs", "choose deliberately", "orange"))
+    attrs = [
+        (40, 60, "Latency", "p50 / p99", "blue"),
+        (250, 55, "Throughput", "ops/s", "green"),
+        (460, 55, "Availability", "uptime / SLO", "teal"),
+        (650, 60, "Consistency", "read freshness", "purple"),
+        (80, 260, "Durability", "no lost writes", "pink"),
+        (300, 270, "Cost", "£ / request", "yellow"),
+        (540, 260, "Complexity", "ops burden", "gray"),
+    ]
+    for x, y, t, s, c in attrs:
+        parts.append(soft_box(rng, x, y, 150, 65, t, s, c))
+    # spokes into centre
+    for x1, y1 in [
+        (115, 125),
+        (325, 120),
+        (535, 120),
+        (725, 125),
+        (155, 260),
+        (375, 270),
+        (615, 260),
+    ]:
+        parts.append(arrow(rng, x1, y1, 400, 185))
+    parts.append(label(420, 355, "SLI measures · SLO targets · error budget", 13, "400"))
+    write_pair("system-design-quality-attributes", 840, 380, "\n".join(parts), [])
+
+
+def diagram_system_design_architecture_styles():
+    """Four application architecture styles side by side."""
+    rng = random.Random(1403)
+    parts = [label(460, 28, "Application architecture styles", 18)]
+    styles = [
+        (30, "Monolith", "one deployable", "shared process", "early MVP", "blue"),
+        (250, "Modular monolith", "modules · one binary", "clear boundaries", "growing product", "green"),
+        (470, "Microservices", "independently deploy", "network calls", "org / scale", "orange"),
+        (690, "Event-driven", "async messages", "loose coupling", "fan-out · async", "purple"),
+    ]
+    for x, title, sub, note, default, color in styles:
+        parts.append(soft_box(rng, x, 55, 200, 250, "", "", "gray"))
+        parts.append(soft_box(rng, x + 20, 75, 160, 70, title, sub, color))
+        parts.append(soft_box(rng, x + 20, 165, 160, 55, "Runtime", note, "teal"))
+        parts.append(soft_box(rng, x + 20, 235, 160, 50, "Default for", default, "yellow"))
+    parts.append(label(460, 330, "Prefer modular monolith until scale / org force services", 13, "400"))
+    write_pair("system-design-architecture-styles", 920, 360, "\n".join(parts), [])
+
+
+def diagram_system_design_data_storage():
+    """Polyglot storage layout: OLTP primary/replicas, analytics, object store."""
+    rng = random.Random(1405)
+    parts = [label(460, 28, "Data storage building blocks", 18)]
+    parts.append(soft_box(rng, 40, 55, 140, 70, "Service", "access patterns", "blue"))
+    parts.append(soft_box(rng, 240, 55, 400, 200, "", "", "gray"))
+    parts.append(label(440, 78, "Transactional data path", 13, "700"))
+    parts.append(soft_box(rng, 270, 100, 160, 70, "Primary DB", "writes · strong", "green"))
+    parts.append(soft_box(rng, 470, 90, 140, 55, "Replica A", "reads", "teal"))
+    parts.append(soft_box(rng, 470, 160, 140, 55, "Replica B", "lag possible", "teal"))
+    parts.append(arrow(rng, 180, 90, 270, 130))
+    parts.append(arrow(rng, 430, 130, 470, 115))
+    parts.append(arrow(rng, 430, 145, 470, 185))
+    parts.append(soft_box(rng, 680, 55, 180, 70, "Object store", "blobs · media", "orange"))
+    parts.append(soft_box(rng, 680, 150, 180, 70, "Analytics / OLAP", "batch · warehouse", "purple"))
+    parts.append(arrow(rng, 180, 80, 680, 90))
+    parts.append(arrow(rng, 430, 255, 680, 185, color="#7048e8"))
+    parts.append(label(460, 290, "Choose store by query shape, consistency, and growth — not fashion", 13, "400"))
+    write_pair("system-design-data-storage", 900, 320, "\n".join(parts), [])
+
+
+def diagram_system_design_messaging():
+    """Queue vs pub/sub and async worker path."""
+    rng = random.Random(1407)
+    parts = [label(450, 28, "Messaging and async paths", 18)]
+    parts.append(soft_box(rng, 30, 55, 140, 70, "API", "fast ACK", "blue"))
+    parts.append(soft_box(rng, 220, 55, 180, 70, "Queue", "competing consumers", "orange"))
+    parts.append(soft_box(rng, 450, 40, 130, 50, "Worker A", "job", "green"))
+    parts.append(soft_box(rng, 450, 105, 130, 50, "Worker B", "job", "green"))
+    parts.append(arrow(rng, 170, 90, 220, 90))
+    parts.append(arrow(rng, 400, 80, 450, 65))
+    parts.append(arrow(rng, 400, 100, 450, 130))
+    parts.append(soft_box(rng, 620, 55, 220, 100, "", "", "gray"))
+    parts.append(label(730, 78, "Pub/sub fan-out", 13, "700"))
+    parts.append(soft_box(rng, 640, 95, 80, 45, "Email", "", "purple"))
+    parts.append(soft_box(rng, 740, 95, 80, 45, "Search", "", "teal"))
+    parts.append(soft_box(rng, 220, 180, 180, 55, "DLQ", "poison · replay", "red"))
+    parts.append(arrow(rng, 310, 125, 310, 180, color="#e03131"))
+    parts.append(label(450, 270, "At-least-once delivery → idempotent consumers", 13, "400"))
+    write_pair("system-design-messaging", 880, 300, "\n".join(parts), [])
+
+
+def diagram_system_design_apis():
+    """API contract path: client → gateway → service with timeout budget."""
+    rng = random.Random(1408)
+    parts = [label(430, 28, "APIs and communication", 18)]
+    parts.append(soft_box(rng, 30, 70, 120, 70, "Client", "timeout budget", "blue"))
+    parts.append(soft_box(rng, 200, 70, 160, 70, "API gateway", "auth · 429", "orange"))
+    parts.append(soft_box(rng, 410, 70, 160, 70, "Service", "REST / RPC", "green"))
+    parts.append(soft_box(rng, 620, 70, 160, 70, "Dependency", "deadline", "purple"))
+    for x1, x2 in [(150, 200), (360, 410), (570, 620)]:
+        parts.append(arrow(rng, x1, 105, x2, 105))
+    parts.append(soft_box(rng, 120, 180, 560, 90, "", "", "gray"))
+    parts.append(label(400, 205, "Contract essentials", 14, "700"))
+    parts.append(soft_box(rng, 140, 220, 120, 35, "Version /v1", "", "teal"))
+    parts.append(soft_box(rng, 280, 220, 140, 35, "Idempotency-Key", "", "yellow"))
+    parts.append(soft_box(rng, 440, 220, 100, 35, "Errors JSON", "", "pink"))
+    parts.append(soft_box(rng, 560, 220, 100, 35, "Cursor page", "", "blue"))
+    parts.append(label(400, 300, "Retry only safe/idempotent calls — bound waits every hop", 13, "400"))
+    write_pair("system-design-apis", 820, 330, "\n".join(parts), [])
+
+
+def diagram_system_design_url_shortener():
+    """URL shortener: create vs redirect paths with async analytics."""
+    rng = random.Random(1410)
+    parts = [label(420, 28, "URL shortener architecture", 18)]
+    parts.append(soft_box(rng, 30, 60, 130, 60, "Client", "", "blue"))
+    parts.append(soft_box(rng, 200, 40, 150, 50, "Create API", "auth · code", "green"))
+    parts.append(soft_box(rng, 200, 110, 150, 50, "Redirect", "hot path", "orange"))
+    parts.append(soft_box(rng, 400, 40, 140, 50, "Primary DB", "code→URL", "teal"))
+    parts.append(soft_box(rng, 400, 110, 140, 50, "Cache", "hot codes", "purple"))
+    parts.append(soft_box(rng, 590, 75, 160, 60, "Click queue", "async counts", "yellow"))
+    parts.append(arrow(rng, 160, 80, 200, 65))
+    parts.append(arrow(rng, 160, 100, 200, 135))
+    parts.append(arrow(rng, 350, 65, 400, 65))
+    parts.append(arrow(rng, 350, 135, 400, 135))
+    parts.append(arrow(rng, 350, 135, 590, 105, color="#e67700"))
+    parts.append(label(420, 200, "Redirect stays thin — analytics never blocks 302", 13, "400"))
+    write_pair("system-design-url-shortener", 800, 230, "\n".join(parts), [])
+
+
+def diagram_system_design_news_feed():
+    """Fan-out on write vs pull for timelines."""
+    rng = random.Random(1411)
+    parts = [label(430, 28, "News feed fan-out", 18)]
+    parts.append(soft_box(rng, 40, 60, 140, 60, "Publisher", "post", "blue"))
+    parts.append(soft_box(rng, 230, 60, 160, 60, "Fan-out jobs", "async workers", "orange"))
+    parts.append(soft_box(rng, 440, 40, 150, 50, "Timeline store", "push", "green"))
+    parts.append(soft_box(rng, 440, 110, 150, 50, "Posts by author", "pull", "teal"))
+    parts.append(soft_box(rng, 650, 60, 140, 60, "Home API", "hybrid", "purple"))
+    parts.append(arrow(rng, 180, 90, 230, 90))
+    parts.append(arrow(rng, 390, 80, 440, 65))
+    parts.append(arrow(rng, 390, 100, 440, 135))
+    parts.append(arrow(rng, 590, 65, 650, 80))
+    parts.append(arrow(rng, 590, 135, 650, 100))
+    parts.append(label(430, 200, "Push normal users · pull celebrities · cache home pages", 13, "400"))
+    write_pair("system-design-news-feed", 840, 230, "\n".join(parts), [])
+
+
+def diagram_system_design_media_upload():
+    """Direct-to-object-store upload and processing pipeline."""
+    rng = random.Random(1412)
+    parts = [label(430, 28, "Media upload pipeline", 18)]
+    parts.append(soft_box(rng, 30, 70, 110, 55, "Client", "", "blue"))
+    parts.append(soft_box(rng, 180, 50, 140, 45, "API presign", "metadata", "green"))
+    parts.append(soft_box(rng, 180, 110, 140, 45, "Object store", "bytes", "orange"))
+    parts.append(soft_box(rng, 370, 70, 140, 55, "Queue", "scan/transcode", "yellow"))
+    parts.append(soft_box(rng, 550, 70, 130, 55, "Workers", "status→ready", "purple"))
+    parts.append(soft_box(rng, 720, 70, 120, 55, "CDN", "deliver", "teal"))
+    parts.append(arrow(rng, 140, 90, 180, 70))
+    parts.append(arrow(rng, 140, 105, 180, 130))
+    parts.append(arrow(rng, 320, 130, 370, 100))
+    parts.append(arrow(rng, 510, 95, 550, 95))
+    parts.append(arrow(rng, 680, 95, 720, 95))
+    parts.append(label(430, 180, "Control plane in API/DB · data plane in object store + CDN", 13, "400"))
+    write_pair("system-design-media-upload", 880, 210, "\n".join(parts), [])
+
+
+def diagram_system_design_realtime_chat():
+    """Chat: WS gateway, chat service, pub/sub, message store."""
+    rng = random.Random(1414)
+    parts = [label(420, 28, "Realtime chat", 18)]
+    parts.append(soft_box(rng, 30, 70, 120, 60, "Clients", "WebSocket", "blue"))
+    parts.append(soft_box(rng, 190, 70, 150, 60, "WS gateway", "connections", "orange"))
+    parts.append(soft_box(rng, 380, 70, 150, 60, "Chat service", "authz · persist", "green"))
+    parts.append(soft_box(rng, 570, 40, 140, 50, "Message DB", "history", "teal"))
+    parts.append(soft_box(rng, 570, 110, 140, 50, "Pub/sub", "room fan-out", "purple"))
+    parts.append(arrow(rng, 150, 100, 190, 100))
+    parts.append(arrow(rng, 340, 100, 380, 100))
+    parts.append(arrow(rng, 530, 90, 570, 65))
+    parts.append(arrow(rng, 530, 110, 570, 135))
+    parts.append(arrow(rng, 570, 135, 265, 140, color="#7048e8"))
+    parts.append(label(420, 200, "Persist first · fan-out via pub/sub · sync history on reconnect", 13, "400"))
+    write_pair("system-design-realtime-chat", 760, 230, "\n".join(parts), [])
+
+
+def diagram_system_design_notifications_presence():
+    """Presence heartbeats and notification channel routing."""
+    rng = random.Random(1415)
+    parts = [label(430, 28, "Notifications and presence", 18)]
+    parts.append(soft_box(rng, 30, 60, 140, 60, "Heartbeat", "TTL presence", "blue"))
+    parts.append(soft_box(rng, 210, 60, 160, 60, "Presence store", "online until", "green"))
+    parts.append(soft_box(rng, 410, 60, 160, 60, "Notify service", "prefs · dedupe", "orange"))
+    parts.append(soft_box(rng, 610, 40, 130, 45, "WS / in-app", "if online", "purple"))
+    parts.append(soft_box(rng, 610, 100, 130, 45, "Push / email", "if offline", "teal"))
+    parts.append(arrow(rng, 170, 90, 210, 90))
+    parts.append(arrow(rng, 370, 90, 410, 90))
+    parts.append(arrow(rng, 570, 80, 610, 60))
+    parts.append(arrow(rng, 570, 100, 610, 120))
+    parts.append(label(430, 185, "Scope presence · aggregate pushes · honour quiet hours", 13, "400"))
+    write_pair("system-design-notifications-presence", 780, 220, "\n".join(parts), [])
+
+
+def diagram_system_design_collaborative_streaming():
+    """Op log, snapshots, ephemeral cursors."""
+    rng = random.Random(1416)
+    parts = [label(430, 28, "Collaborative and streaming patterns", 18)]
+    parts.append(soft_box(rng, 30, 70, 120, 55, "Editors", "", "blue"))
+    parts.append(soft_box(rng, 190, 70, 150, 55, "Collab gateway", "WS / SSE", "orange"))
+    parts.append(soft_box(rng, 380, 40, 160, 50, "Op log", "durable", "green"))
+    parts.append(soft_box(rng, 380, 105, 160, 50, "Snapshots", "compact", "teal"))
+    parts.append(soft_box(rng, 580, 70, 160, 55, "Cursors", "ephemeral · lossy", "yellow"))
+    parts.append(arrow(rng, 150, 95, 190, 95))
+    parts.append(arrow(rng, 340, 90, 380, 65))
+    parts.append(arrow(rng, 340, 105, 380, 130))
+    parts.append(arrow(rng, 340, 95, 580, 95, color="#e67700"))
+    parts.append(label(430, 195, "OT/CRDT for merges · never persist every cursor move", 13, "400"))
+    write_pair("system-design-collaborative-streaming", 780, 230, "\n".join(parts), [])
+
+
+def diagram_system_design_capstone_board():
+    """Capstone board: gateway, ops, presence, notify."""
+    rng = random.Random(1417)
+    parts = [label(450, 28, "Capstone — collaboration board", 18)]
+    parts.append(soft_box(rng, 30, 70, 120, 60, "Clients", "canvas", "blue"))
+    parts.append(soft_box(rng, 190, 70, 150, 60, "WS gateway", "board rooms", "orange"))
+    parts.append(soft_box(rng, 380, 40, 160, 50, "Board service", "authz", "green"))
+    parts.append(soft_box(rng, 380, 110, 160, 50, "Op log + snap", "truth", "teal"))
+    parts.append(soft_box(rng, 580, 40, 140, 50, "Presence", "cursors", "yellow"))
+    parts.append(soft_box(rng, 580, 110, 140, 50, "Notify", "mentions", "purple"))
+    parts.append(arrow(rng, 150, 100, 190, 100))
+    parts.append(arrow(rng, 340, 100, 380, 65))
+    parts.append(arrow(rng, 340, 110, 380, 135))
+    parts.append(arrow(rng, 540, 65, 580, 65))
+    parts.append(arrow(rng, 540, 135, 580, 135))
+    parts.append(label(450, 200, "Durable objects + sync_since · ephemeral cursors · async mentions", 13, "400"))
+    write_pair("system-design-capstone-board", 760, 230, "\n".join(parts), [])
+
+
+def diagram_system_design_search():
+    """Search index pipeline and autocomplete path."""
+    rng = random.Random(1413)
+    parts = [label(430, 28, "Search and autocomplete", 18)]
+    parts.append(soft_box(rng, 30, 60, 130, 55, "Source DB", "system of record", "blue"))
+    parts.append(soft_box(rng, 200, 60, 140, 55, "Indexer", "events / outbox", "orange"))
+    parts.append(soft_box(rng, 380, 60, 160, 55, "Inverted index", "terms → docs", "green"))
+    parts.append(soft_box(rng, 580, 40, 140, 45, "Search API", "queries", "purple"))
+    parts.append(soft_box(rng, 580, 100, 140, 45, "Suggest API", "prefixes", "teal"))
+    parts.append(soft_box(rng, 760, 70, 110, 55, "Client", "", "yellow"))
+    parts.append(arrow(rng, 160, 85, 200, 85))
+    parts.append(arrow(rng, 340, 85, 380, 85))
+    parts.append(arrow(rng, 540, 75, 580, 60))
+    parts.append(arrow(rng, 540, 95, 580, 120))
+    parts.append(arrow(rng, 720, 60, 760, 85))
+    parts.append(arrow(rng, 720, 120, 760, 100))
+    parts.append(label(430, 190, "OLTP writes → async index · suggest optimised for p95 latency", 13, "400"))
+    write_pair("system-design-search", 910, 220, "\n".join(parts), [])
+
+
+def diagram_system_design_observability_resilience():
+    """Golden signals plus resilience patterns around a service call."""
+    rng = random.Random(1409)
+    parts = [label(450, 28, "Observability and resilience", 18)]
+    parts.append(soft_box(rng, 40, 55, 140, 70, "Service", "SLI / SLO", "blue"))
+    parts.append(soft_box(rng, 240, 55, 160, 70, "Dependency", "may fail", "orange"))
+    parts.append(arrow(rng, 180, 90, 240, 90))
+    parts.append(soft_box(rng, 450, 50, 120, 40, "Timeout", "", "yellow"))
+    parts.append(soft_box(rng, 590, 50, 120, 40, "Retry+jitter", "", "green"))
+    parts.append(soft_box(rng, 450, 105, 120, 40, "Breaker", "", "red"))
+    parts.append(soft_box(rng, 590, 105, 120, 40, "Shed load", "", "purple"))
+    parts.append(soft_box(rng, 80, 180, 700, 100, "", "", "gray"))
+    parts.append(label(430, 205, "Telemetry", 14, "700"))
+    parts.append(soft_box(rng, 110, 225, 140, 40, "Metrics", "golden signals", "teal"))
+    parts.append(soft_box(rng, 280, 225, 140, 40, "Logs", "request ID", "pink"))
+    parts.append(soft_box(rng, 450, 225, 140, 40, "Traces", "hop latency", "blue"))
+    parts.append(soft_box(rng, 620, 225, 130, 40, "Alerts", "budget burn", "orange"))
+    parts.append(label(430, 315, "Fail fast, isolate blast radius, alert on user symptoms", 13, "400"))
+    write_pair("system-design-observability-resilience", 860, 340, "\n".join(parts), [])
+
+
+def diagram_system_design_caching():
+    """Cache layers and cache-aside flow."""
+    rng = random.Random(1406)
+    parts = [label(440, 28, "Caching layers and cache-aside", 18)]
+    parts.append(soft_box(rng, 30, 55, 120, 60, "Client", "", "blue"))
+    parts.append(soft_box(rng, 180, 55, 130, 60, "CDN / Edge", "shared GETs", "orange"))
+    parts.append(soft_box(rng, 340, 55, 140, 60, "App cache", "Redis / mem", "green"))
+    parts.append(soft_box(rng, 520, 55, 140, 60, "Service", "cache-aside", "purple"))
+    parts.append(soft_box(rng, 700, 55, 140, 60, "Database", "source of truth", "teal"))
+    for x1, x2 in [(150, 180), (310, 340), (480, 520), (660, 700)]:
+        parts.append(arrow(rng, x1, 85, x2, 85))
+    parts.append(soft_box(rng, 120, 160, 600, 120, "", "", "gray"))
+    parts.append(label(420, 185, "Cache-aside (lazy loading)", 14, "700"))
+    parts.append(soft_box(rng, 150, 205, 120, 55, "1. Read cache", "hit → return", "green"))
+    parts.append(soft_box(rng, 300, 205, 140, 55, "2. Miss → DB", "load truth", "teal"))
+    parts.append(soft_box(rng, 470, 205, 140, 55, "3. Fill cache", "TTL · key", "orange"))
+    parts.append(soft_box(rng, 640, 205, 120, 55, "4. Return", "to caller", "blue"))
+    parts.append(arrow(rng, 270, 232, 300, 232))
+    parts.append(arrow(rng, 440, 232, 470, 232))
+    parts.append(arrow(rng, 610, 232, 640, 232))
+    parts.append(label(420, 315, "Invalidation and stampede control matter as much as the hit rate", 13, "400"))
+    write_pair("system-design-caching", 880, 340, "\n".join(parts), [])
+
+
+def diagram_system_design_request_path():
+    """Production request path: client → edge → platform → data."""
+    rng = random.Random(1404)
+    parts = [label(480, 28, "Client → edge → service path", 18)]
+    # Zones
+    parts.append(soft_box(rng, 20, 50, 140, 220, "", "", "gray"))
+    parts.append(label(90, 72, "Client", 13, "700"))
+    parts.append(soft_box(rng, 40, 95, 100, 60, "App / browser", "HTTPS", "blue"))
+    parts.append(soft_box(rng, 40, 175, 100, 55, "Timeouts", "retries", "yellow"))
+
+    parts.append(soft_box(rng, 180, 50, 320, 220, "", "", "gray"))
+    parts.append(label(340, 72, "Public edge", 13, "700"))
+    parts.append(soft_box(rng, 200, 95, 100, 60, "DNS", "resolve", "green"))
+    parts.append(soft_box(rng, 320, 95, 150, 60, "CDN / Edge", "cache · TLS", "orange"))
+    parts.append(soft_box(rng, 250, 180, 180, 55, "Cache hit?", "serve at edge", "pink"))
+
+    parts.append(soft_box(rng, 520, 50, 420, 220, "", "", "gray"))
+    parts.append(label(730, 72, "Origin platform", 13, "700"))
+    parts.append(soft_box(rng, 540, 95, 110, 60, "Load balancer", "health · L4/L7", "teal"))
+    parts.append(soft_box(rng, 670, 95, 120, 60, "API gateway", "auth · limits", "purple"))
+    parts.append(soft_box(rng, 810, 95, 110, 60, "Service", "business logic", "blue"))
+    parts.append(soft_box(rng, 620, 180, 200, 55, "Data store", "DB · cache · queue", "green"))
+
+    parts.append(arrow(rng, 140, 125, 200, 125))
+    parts.append(arrow(rng, 300, 125, 320, 125))
+    parts.append(arrow(rng, 470, 125, 540, 125))
+    parts.append(arrow(rng, 650, 125, 670, 125))
+    parts.append(arrow(rng, 790, 125, 810, 125))
+    parts.append(arrow(rng, 865, 155, 720, 180))
+    parts.append(label(480, 295, "Miss at edge → origin · emit request ID across hops", 13, "400"))
+    write_pair("system-design-request-path", 960, 320, "\n".join(parts), [])
+
+
 def main():
     diagram_client_path()
     diagram_network_types()
@@ -3228,6 +3602,23 @@ def main():
     diagram_aws_landing()
     diagram_aws_production()
     diagram_aws_troubleshoot()
+    diagram_system_design_process()
+    diagram_system_design_quality_attributes()
+    diagram_system_design_architecture_styles()
+    diagram_system_design_request_path()
+    diagram_system_design_data_storage()
+    diagram_system_design_caching()
+    diagram_system_design_messaging()
+    diagram_system_design_apis()
+    diagram_system_design_observability_resilience()
+    diagram_system_design_url_shortener()
+    diagram_system_design_news_feed()
+    diagram_system_design_media_upload()
+    diagram_system_design_search()
+    diagram_system_design_realtime_chat()
+    diagram_system_design_notifications_presence()
+    diagram_system_design_collaborative_streaming()
+    diagram_system_design_capstone_board()
     print(f"output: {OUT}")
 
 

@@ -1062,6 +1062,29 @@ technologies:
   difficulty: intermediate
   modules: []
   tutorial_count: 0
+- id: system-design
+  title: System Design
+  status: ready
+  path_prefix: system-design/
+  difficulty: intermediate
+  modules:
+  - id: sd-m1
+    title: Module 1 · Design foundations
+    tutorials:
+    - system-design/how-to-design-a-system
+  - id: sd-m2
+    title: Module 2 · Quality & trade-offs
+    tutorials:
+    - system-design/quality-attributes-and-trade-offs
+  - id: sd-m3
+    title: Module 3 · Architecture styles
+    tutorials:
+    - system-design/application-architecture-styles
+  - id: sd-m4
+    title: Module 4 · Request path
+    tutorials:
+    - system-design/client-edge-and-service-path
+  tutorial_count: 4
 - id: architecture
   title: Cloud Architecture
   status: stub
