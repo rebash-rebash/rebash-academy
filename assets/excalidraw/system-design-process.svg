@@ -109,7 +109,7 @@
   <text x="360.0" y="271.5" text-anchor="middle"
         font-family="Virgil, Segoe Print, Comic Sans MS, cursive"
         font-size="14" font-weight="700" fill="#1e1e1e">Trade-offs</text>
-  <text x="360.0" y="291.5" text-anchor="middle" font-family="Virgil, Segoe Print, Comic Sans MS, cursive" font-size="12" fill="#1e1e1e">pick & name</text>
+  <text x="360.0" y="291.5" text-anchor="middle" font-family="Virgil, Segoe Print, Comic Sans MS, cursive" font-size="12" fill="#1e1e1e">pick &amp; name</text>
 
 
   <path d="M 440.0,277.0 L 453.3,277.9 L 465.8,277.7 L 480.0,277.0" stroke="#1e1e1e" stroke-width="2" fill="none"/>

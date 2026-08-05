@@ -2,7 +2,7 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="840" height="200"
      viewBox="0 0 840 200" role="img" aria-label="shell-variables-quoting">
   <rect width="100%" height="100%" fill="#fffef8"/>
-  <text x="420.0" y="28.0" text-anchor="middle" font-family="Virgil, Segoe Print, Comic Sans MS, cursive" font-size="18" font-weight="700" fill="#1e1e1e">Variables & quoting</text>
+  <text x="420.0" y="28.0" text-anchor="middle" font-family="Virgil, Segoe Print, Comic Sans MS, cursive" font-size="18" font-weight="700" fill="#1e1e1e">Variables &amp; quoting</text>
 
   <path d="M 52.0,72.1 L 192.3,72.3 Q 202.3,72.3 202.3,82.3 L 202.1,138.7 Q 202.1,148.7 192.1,148.7 L 53.5,147.4 Q 43.5,147.4 43.5,137.4 L 42.0,82.1 Q 42.0,72.1 52.0,72.1 Z" fill="#00000022" stroke="none"/>
   <path d="M 49.2,70.0 L 189.8,69.5 Q 199.8,69.5 199.8,79.5 L 201.0,134.5 Q 201.0,144.5 191.0,144.5 L 50.2,144.3 Q 40.2,144.3 40.2,134.3 L 39.2,80.0 Q 39.2,70.0 49.2,70.0 Z" fill="#a5d8ff" stroke="#1971c2" stroke-width="2"/>

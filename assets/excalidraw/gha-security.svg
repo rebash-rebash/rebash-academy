@@ -2,7 +2,7 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="840" height="200"
      viewBox="0 0 840 200" role="img" aria-label="gha-security">
   <rect width="100%" height="100%" fill="#fffef8"/>
-  <text x="420.0" y="28.0" text-anchor="middle" font-family="Virgil, Segoe Print, Comic Sans MS, cursive" font-size="18" font-weight="700" fill="#1e1e1e">Security & supply chain</text>
+  <text x="420.0" y="28.0" text-anchor="middle" font-family="Virgil, Segoe Print, Comic Sans MS, cursive" font-size="18" font-weight="700" fill="#1e1e1e">Security &amp; supply chain</text>
 
   <path d="M 52.3,83.0 L 163.6,83.9 Q 173.6,83.9 173.6,93.9 L 172.1,142.1 Q 172.1,152.1 162.1,152.1 L 53.4,153.9 Q 43.4,153.9 43.4,143.9 L 42.3,93.0 Q 42.3,83.0 52.3,83.0 Z" fill="#00000022" stroke="none"/>
   <path d="M 49.6,79.5 L 160.5,79.1 Q 170.5,79.1 170.5,89.1 L 170.7,140.5 Q 170.7,150.5 160.7,150.5 L 50.1,150.8 Q 40.1,150.8 40.1,140.8 L 39.6,89.5 Q 39.6,79.5 49.6,79.5 Z" fill="#a5d8ff" stroke="#1971c2" stroke-width="2"/>

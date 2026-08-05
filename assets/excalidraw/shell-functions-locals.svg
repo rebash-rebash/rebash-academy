@@ -2,7 +2,7 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="740" height="200"
      viewBox="0 0 740 200" role="img" aria-label="shell-functions-locals">
   <rect width="100%" height="100%" fill="#fffef8"/>
-  <text x="370.0" y="28.0" text-anchor="middle" font-family="Virgil, Segoe Print, Comic Sans MS, cursive" font-size="18" font-weight="700" fill="#1e1e1e">Functions & scope</text>
+  <text x="370.0" y="28.0" text-anchor="middle" font-family="Virgil, Segoe Print, Comic Sans MS, cursive" font-size="18" font-weight="700" fill="#1e1e1e">Functions &amp; scope</text>
 
   <path d="M 52.8,83.2 L 212.3,83.6 Q 222.3,83.6 222.3,93.6 L 223.6,143.1 Q 223.6,153.1 213.6,153.1 L 53.9,153.8 Q 43.9,153.8 43.9,143.8 L 42.8,93.2 Q 42.8,83.2 52.8,83.2 Z" fill="#00000022" stroke="none"/>
   <path d="M 49.7,79.2 L 209.3,80.6 Q 219.3,80.6 219.3,90.6 L 219.4,139.3 Q 219.4,149.3 209.4,149.3 L 50.8,149.3 Q 40.8,149.3 40.8,139.3 L 39.7,89.2 Q 39.7,79.2 49.7,79.2 Z" fill="#a5d8ff" stroke="#1971c2" stroke-width="2"/>

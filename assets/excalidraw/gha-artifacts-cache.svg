@@ -2,7 +2,7 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="660" height="270"
      viewBox="0 0 660 270" role="img" aria-label="gha-artifacts-cache">
   <rect width="100%" height="100%" fill="#fffef8"/>
-  <text x="380.0" y="28.0" text-anchor="middle" font-family="Virgil, Segoe Print, Comic Sans MS, cursive" font-size="18" font-weight="700" fill="#1e1e1e">Artifacts & caching</text>
+  <text x="380.0" y="28.0" text-anchor="middle" font-family="Virgil, Segoe Print, Comic Sans MS, cursive" font-size="18" font-weight="700" fill="#1e1e1e">Artifacts &amp; caching</text>
 
   <path d="M 53.9,82.7 L 193.1,82.8 Q 203.1,82.8 203.1,92.8 L 202.3,142.6 Q 202.3,152.6 192.3,152.6 L 53.8,153.4 Q 43.8,153.4 43.8,143.4 L 43.9,92.7 Q 43.9,82.7 53.9,82.7 Z" fill="#00000022" stroke="none"/>
   <path d="M 50.3,80.6 L 189.8,80.4 Q 199.8,80.4 199.8,90.4 L 200.3,140.8 Q 200.3,150.8 190.3,150.8 L 49.1,150.7 Q 39.1,150.7 39.1,140.7 L 40.3,90.6 Q 40.3,80.6 50.3,80.6 Z" fill="#a5d8ff" stroke="#1971c2" stroke-width="2"/>
