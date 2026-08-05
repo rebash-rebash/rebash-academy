@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="760" height="230"
+     viewBox="0 0 760 230" role="img" aria-label="system-design-realtime-chat">
+  <rect width="100%" height="100%" fill="#fffef8"/>
+  <text x="420.0" y="28.0" text-anchor="middle" font-family="Virgil, Segoe Print, Comic Sans MS, cursive" font-size="18" font-weight="700" fill="#1e1e1e">Realtime chat</text>
+
+  <path d="M 42.7,72.1 L 142.7,73.6 Q 152.7,73.6 152.7,83.6 L 153.3,122.5 Q 153.3,132.5 143.3,132.5 L 42.0,133.2 Q 32.0,133.2 32.0,123.2 L 32.7,82.1 Q 32.7,72.1 42.7,72.1 Z" fill="#00000022" stroke="none"/>
+  <path d="M 40.7,70.3 L 139.2,69.2 Q 149.2,69.2 149.2,79.2 L 150.5,119.5 Q 150.5,129.5 140.5,129.5 L 40.5,130.8 Q 30.5,130.8 30.5,120.8 L 30.7,80.3 Q 30.7,70.3 40.7,70.3 Z" fill="#a5d8ff" stroke="#1971c2" stroke-width="2"/>
+  
+  <text x="90.0" y="94.0" text-anchor="middle"
+        font-family="Virgil, Segoe Print, Comic Sans MS, cursive"
+        font-size="14" font-weight="700" fill="#1e1e1e">Clients</text>
+  <text x="90.0" y="114.0" text-anchor="middle" font-family="Virgil, Segoe Print, Comic Sans MS, cursive" font-size="12" fill="#1e1e1e">WebSocket</text>
+
+
+  <path d="M 202.4,72.5 L 332.2,73.1 Q 342.2,73.1 342.2,83.1 L 342.8,123.4 Q 342.8,133.4 332.8,133.4 L 203.6,132.1 Q 193.6,132.1 193.6,122.1 L 192.4,82.5 Q 192.4,72.5 202.4,72.5 Z" fill="#00000022" stroke="none"/>
+  <path d="M 199.6,69.7 L 330.0,69.0 Q 340.0,69.0 340.0,79.0 L 339.4,119.3 Q 339.4,129.3 329.4,129.3 L 200.9,130.7 Q 190.9,130.7 190.9,120.7 L 189.6,79.7 Q 189.6,69.7 199.6,69.7 Z" fill="#ffd8a8" stroke="#e8590c" stroke-width="2"/>
+  
+  <text x="265.0" y="94.0" text-anchor="middle"
+        font-family="Virgil, Segoe Print, Comic Sans MS, cursive"
+        font-size="14" font-weight="700" fill="#1e1e1e">WS gateway</text>
+  <text x="265.0" y="114.0" text-anchor="middle" font-family="Virgil, Segoe Print, Comic Sans MS, cursive" font-size="12" fill="#1e1e1e">connections</text>
+
+
+  <path d="M 392.7,72.0 L 522.0,72.1 Q 532.0,72.1 532.0,82.1 L 533.8,123.8 Q 533.8,133.8 523.8,133.8 L 392.4,133.5 Q 382.4,133.5 382.4,123.5 L 382.7,82.0 Q 382.7,72.0 392.7,72.0 Z" fill="#00000022" stroke="none"/>
+  <path d="M 389.0,70.5 L 519.4,69.7 Q 529.4,69.7 529.4,79.7 L 530.3,119.1 Q 530.3,129.1 520.3,129.1 L 390.7,129.1 Q 380.7,129.1 380.7,119.1 L 379.0,80.5 Q 379.0,70.5 389.0,70.5 Z" fill="#b2f2bb" stroke="#2f9e44" stroke-width="2"/>
+  
+  <text x="455.0" y="94.0" text-anchor="middle"
+        font-family="Virgil, Segoe Print, Comic Sans MS, cursive"
+        font-size="14" font-weight="700" fill="#1e1e1e">Chat service</text>
+  <text x="455.0" y="114.0" text-anchor="middle" font-family="Virgil, Segoe Print, Comic Sans MS, cursive" font-size="12" fill="#1e1e1e">authz · persist</text>
+
+
+  <path d="M 582.1,42.3 L 702.6,42.6 Q 712.6,42.6 712.6,52.6 L 712.7,82.6 Q 712.7,92.6 702.7,92.6 L 582.3,92.0 Q 572.3,92.0 572.3,82.0 L 572.1,52.3 Q 572.1,42.3 582.1,42.3 Z" fill="#00000022" stroke="none"/>
+  <path d="M 580.2,39.2 L 699.1,39.5 Q 709.1,39.5 709.1,49.5 L 709.6,79.2 Q 709.6,89.2 699.6,89.2 L 580.7,90.0 Q 570.7,90.0 570.7,80.0 L 570.2,49.2 Q 570.2,39.2 580.2,39.2 Z" fill="#99e9f2" stroke="#0c8599" stroke-width="2"/>
+  
+  <text x="640.0" y="59.0" text-anchor="middle"
+        font-family="Virgil, Segoe Print, Comic Sans MS, cursive"
+        font-size="14" font-weight="700" fill="#1e1e1e">Message DB</text>
+  <text x="640.0" y="79.0" text-anchor="middle" font-family="Virgil, Segoe Print, Comic Sans MS, cursive" font-size="12" fill="#1e1e1e">history</text>
+
+
+  <path d="M 583.8,112.4 L 703.2,112.6 Q 713.2,112.6 713.2,122.6 L 712.4,153.8 Q 712.4,163.8 702.4,163.8 L 583.0,162.9 Q 573.0,162.9 573.0,152.9 L 573.8,122.4 Q 573.8,112.4 583.8,112.4 Z" fill="#00000022" stroke="none"/>
+  <path d="M 580.0,109.5 L 700.6,109.0 Q 710.6,109.0 710.6,119.0 L 709.4,150.2 Q 709.4,160.2 699.4,160.2 L 579.6,159.5 Q 569.6,159.5 569.6,149.5 L 570.0,119.5 Q 570.0,109.5 580.0,109.5 Z" fill="#d0bfff" stroke="#7048e8" stroke-width="2"/>
+  
+  <text x="640.0" y="129.0" text-anchor="middle"
+        font-family="Virgil, Segoe Print, Comic Sans MS, cursive"
+        font-size="14" font-weight="700" fill="#1e1e1e">Pub/sub</text>
+  <text x="640.0" y="149.0" text-anchor="middle" font-family="Virgil, Segoe Print, Comic Sans MS, cursive" font-size="12" fill="#1e1e1e">room fan-out</text>
+
+
+  <path d="M 150.0,100.0 L 162.9,99.1 L 177.0,99.5 L 190.0,100.0" stroke="#1e1e1e" stroke-width="2" fill="none"/>
+  <path d="M 190.0,100.0 L 183.1,104.0 M 190.0,100.0 L 183.1,96.0"
+        stroke="#1e1e1e" stroke-width="2" fill="none"/>
+
+
+  <path d="M 340.0,100.0 L 352.9,99.9 L 367.5,100.5 L 380.0,100.0" stroke="#1e1e1e" stroke-width="2" fill="none"/>
+  <path d="M 380.0,100.0 L 373.1,104.0 M 380.0,100.0 L 373.1,96.0"
+        stroke="#1e1e1e" stroke-width="2" fill="none"/>
+
+
+  <path d="M 530.0,90.0 L 543.1,82.2 L 556.9,74.2 L 570.0,65.0" stroke="#1e1e1e" stroke-width="2" fill="none"/>
+  <path d="M 570.0,65.0 L 566.2,72.1 M 570.0,65.0 L 562.0,65.3"
+        stroke="#1e1e1e" stroke-width="2" fill="none"/>
+
+
+  <path d="M 530.0,110.0 L 543.9,117.7 L 556.4,126.3 L 570.0,135.0" stroke="#1e1e1e" stroke-width="2" fill="none"/>
+  <path d="M 570.0,135.0 L 562.0,134.7 M 570.0,135.0 L 566.2,127.9"
+        stroke="#1e1e1e" stroke-width="2" fill="none"/>
+
+
+  <path d="M 570.0,135.0 L 468.0,136.1 L 367.3,137.2 L 265.0,140.0" stroke="#7048e8" stroke-width="2" fill="none"/>
+  <path d="M 265.0,140.0 L 271.9,135.9 M 265.0,140.0 L 272.0,143.9"
+        stroke="#7048e8" stroke-width="2" fill="none"/>
+
+<text x="420.0" y="200.0" text-anchor="middle" font-family="Virgil, Segoe Print, Comic Sans MS, cursive" font-size="13" font-weight="400" fill="#1e1e1e">Persist first · fan-out via pub/sub · sync history on reconnect</text>
+</svg>

@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="760" height="230"
+     viewBox="0 0 760 230" role="img" aria-label="system-design-capstone-board">
+  <rect width="100%" height="100%" fill="#fffef8"/>
+  <text x="450.0" y="28.0" text-anchor="middle" font-family="Virgil, Segoe Print, Comic Sans MS, cursive" font-size="18" font-weight="700" fill="#1e1e1e">Capstone — collaboration board</text>
+
+  <path d="M 43.4,72.6 L 142.9,74.0 Q 152.9,74.0 152.9,84.0 L 153.8,123.5 Q 153.8,133.5 143.8,133.5 L 43.3,133.6 Q 33.3,133.6 33.3,123.6 L 33.4,82.6 Q 33.4,72.6 43.4,72.6 Z" fill="#00000022" stroke="none"/>
+  <path d="M 39.6,70.4 L 140.4,69.2 Q 150.4,69.2 150.4,79.2 L 150.4,120.3 Q 150.4,130.3 140.4,130.3 L 40.8,130.8 Q 30.8,130.8 30.8,120.8 L 29.6,80.4 Q 29.6,70.4 39.6,70.4 Z" fill="#a5d8ff" stroke="#1971c2" stroke-width="2"/>
+  
+  <text x="90.0" y="94.0" text-anchor="middle"
+        font-family="Virgil, Segoe Print, Comic Sans MS, cursive"
+        font-size="14" font-weight="700" fill="#1e1e1e">Clients</text>
+  <text x="90.0" y="114.0" text-anchor="middle" font-family="Virgil, Segoe Print, Comic Sans MS, cursive" font-size="12" fill="#1e1e1e">canvas</text>
+
+
+  <path d="M 203.1,72.9 L 333.4,72.9 Q 343.4,72.9 343.4,82.9 L 342.4,122.5 Q 342.4,132.5 332.4,132.5 L 202.3,133.1 Q 192.3,133.1 192.3,123.1 L 193.1,82.9 Q 193.1,72.9 203.1,72.9 Z" fill="#00000022" stroke="none"/>
+  <path d="M 199.9,70.1 L 330.8,70.5 Q 340.8,70.5 340.8,80.5 L 340.4,120.7 Q 340.4,130.7 330.4,130.7 L 200.3,129.1 Q 190.3,129.1 190.3,119.1 L 189.9,80.1 Q 189.9,70.1 199.9,70.1 Z" fill="#ffd8a8" stroke="#e8590c" stroke-width="2"/>
+  
+  <text x="265.0" y="94.0" text-anchor="middle"
+        font-family="Virgil, Segoe Print, Comic Sans MS, cursive"
+        font-size="14" font-weight="700" fill="#1e1e1e">WS gateway</text>
+  <text x="265.0" y="114.0" text-anchor="middle" font-family="Virgil, Segoe Print, Comic Sans MS, cursive" font-size="12" fill="#1e1e1e">board rooms</text>
+
+
+  <path d="M 392.2,42.7 L 533.3,42.0 Q 543.3,42.0 543.3,52.0 L 542.0,82.8 Q 542.0,92.8 532.0,92.8 L 393.6,92.1 Q 383.6,92.1 383.6,82.1 L 382.2,52.7 Q 382.2,42.7 392.2,42.7 Z" fill="#00000022" stroke="none"/>
+  <path d="M 389.5,39.5 L 529.5,40.8 Q 539.5,40.8 539.5,50.8 L 540.1,79.2 Q 540.1,89.2 530.1,89.2 L 389.7,90.7 Q 379.7,90.7 379.7,80.7 L 379.5,49.5 Q 379.5,39.5 389.5,39.5 Z" fill="#b2f2bb" stroke="#2f9e44" stroke-width="2"/>
+  
+  <text x="460.0" y="59.0" text-anchor="middle"
+        font-family="Virgil, Segoe Print, Comic Sans MS, cursive"
+        font-size="14" font-weight="700" fill="#1e1e1e">Board service</text>
+  <text x="460.0" y="79.0" text-anchor="middle" font-family="Virgil, Segoe Print, Comic Sans MS, cursive" font-size="12" fill="#1e1e1e">authz</text>
+
+
+  <path d="M 392.6,112.8 L 532.8,112.2 Q 542.8,112.2 542.8,122.2 L 543.9,153.6 Q 543.9,163.6 533.9,163.6 L 392.1,163.5 Q 382.1,163.5 382.1,153.5 L 382.6,122.8 Q 382.6,112.8 392.6,112.8 Z" fill="#00000022" stroke="none"/>
+  <path d="M 390.5,109.6 L 529.6,110.8 Q 539.6,110.8 539.6,120.8 L 539.3,150.7 Q 539.3,160.7 529.3,160.7 L 390.8,160.1 Q 380.8,160.1 380.8,150.1 L 380.5,119.6 Q 380.5,109.6 390.5,109.6 Z" fill="#99e9f2" stroke="#0c8599" stroke-width="2"/>
+  
+  <text x="460.0" y="129.0" text-anchor="middle"
+        font-family="Virgil, Segoe Print, Comic Sans MS, cursive"
+        font-size="14" font-weight="700" fill="#1e1e1e">Op log + snap</text>
+  <text x="460.0" y="149.0" text-anchor="middle" font-family="Virgil, Segoe Print, Comic Sans MS, cursive" font-size="12" fill="#1e1e1e">truth</text>
+
+
+  <path d="M 593.2,43.1 L 712.5,42.4 Q 722.5,42.4 722.5,52.4 L 723.0,83.8 Q 723.0,93.8 713.0,93.8 L 593.4,92.2 Q 583.4,92.2 583.4,82.2 L 583.2,53.1 Q 583.2,43.1 593.2,43.1 Z" fill="#00000022" stroke="none"/>
+  <path d="M 590.9,39.9 L 710.0,40.7 Q 720.0,40.7 720.0,50.7 L 719.8,79.9 Q 719.8,89.9 709.8,89.9 L 590.6,90.9 Q 580.6,90.9 580.6,80.9 L 580.9,49.9 Q 580.9,39.9 590.9,39.9 Z" fill="#ffec99" stroke="#e67700" stroke-width="2"/>
+  
+  <text x="650.0" y="59.0" text-anchor="middle"
+        font-family="Virgil, Segoe Print, Comic Sans MS, cursive"
+        font-size="14" font-weight="700" fill="#1e1e1e">Presence</text>
+  <text x="650.0" y="79.0" text-anchor="middle" font-family="Virgil, Segoe Print, Comic Sans MS, cursive" font-size="12" fill="#1e1e1e">cursors</text>
+
+
+  <path d="M 593.7,113.1 L 712.5,112.2 Q 722.5,112.2 722.5,122.2 L 723.4,153.3 Q 723.4,163.3 713.4,163.3 L 592.4,163.3 Q 582.4,163.3 582.4,153.3 L 583.7,123.1 Q 583.7,113.1 593.7,113.1 Z" fill="#00000022" stroke="none"/>
+  <path d="M 590.1,110.4 L 710.9,111.0 Q 720.9,111.0 720.9,121.0 L 719.6,151.0 Q 719.6,161.0 709.6,161.0 L 590.2,159.7 Q 580.2,159.7 580.2,149.7 L 580.1,120.4 Q 580.1,110.4 590.1,110.4 Z" fill="#d0bfff" stroke="#7048e8" stroke-width="2"/>
+  
+  <text x="650.0" y="129.0" text-anchor="middle"
+        font-family="Virgil, Segoe Print, Comic Sans MS, cursive"
+        font-size="14" font-weight="700" fill="#1e1e1e">Notify</text>
+  <text x="650.0" y="149.0" text-anchor="middle" font-family="Virgil, Segoe Print, Comic Sans MS, cursive" font-size="12" fill="#1e1e1e">mentions</text>
+
+
+  <path d="M 150.0,100.0 L 163.7,99.7 L 176.2,100.9 L 190.0,100.0" stroke="#1e1e1e" stroke-width="2" fill="none"/>
+  <path d="M 190.0,100.0 L 183.1,104.0 M 190.0,100.0 L 183.1,96.0"
+        stroke="#1e1e1e" stroke-width="2" fill="none"/>
+
+
+  <path d="M 340.0,100.0 L 353.6,88.1 L 365.7,76.4 L 380.0,65.0" stroke="#1e1e1e" stroke-width="2" fill="none"/>
+  <path d="M 380.0,65.0 L 377.4,72.6 M 380.0,65.0 L 372.2,66.6"
+        stroke="#1e1e1e" stroke-width="2" fill="none"/>
+
+
+  <path d="M 340.0,110.0 L 354.4,119.0 L 367.7,126.3 L 380.0,135.0" stroke="#1e1e1e" stroke-width="2" fill="none"/>
+  <path d="M 380.0,135.0 L 372.0,134.7 M 380.0,135.0 L 376.2,127.9"
+        stroke="#1e1e1e" stroke-width="2" fill="none"/>
+
+
+  <path d="M 540.0,65.0 L 552.9,65.9 L 567.0,64.1 L 580.0,65.0" stroke="#1e1e1e" stroke-width="2" fill="none"/>
+  <path d="M 580.0,65.0 L 573.1,69.0 M 580.0,65.0 L 573.1,61.0"
+        stroke="#1e1e1e" stroke-width="2" fill="none"/>
+
+
+  <path d="M 540.0,135.0 L 552.9,134.7 L 566.5,135.3 L 580.0,135.0" stroke="#1e1e1e" stroke-width="2" fill="none"/>
+  <path d="M 580.0,135.0 L 573.1,139.0 M 580.0,135.0 L 573.1,131.0"
+        stroke="#1e1e1e" stroke-width="2" fill="none"/>
+
+<text x="450.0" y="200.0" text-anchor="middle" font-family="Virgil, Segoe Print, Comic Sans MS, cursive" font-size="13" font-weight="400" fill="#1e1e1e">Durable objects + sync_since · ephemeral cursors · async mentions</text>
+</svg>

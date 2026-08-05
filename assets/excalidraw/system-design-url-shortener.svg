@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="800" height="230"
+     viewBox="0 0 800 230" role="img" aria-label="system-design-url-shortener">
+  <rect width="100%" height="100%" fill="#fffef8"/>
+  <text x="420.0" y="28.0" text-anchor="middle" font-family="Virgil, Segoe Print, Comic Sans MS, cursive" font-size="18" font-weight="700" fill="#1e1e1e">URL shortener architecture</text>
+
+  <path d="M 42.9,62.2 L 152.6,63.5 Q 162.6,63.5 162.6,73.5 L 162.8,113.0 Q 162.8,123.0 152.8,123.0 L 42.2,123.7 Q 32.2,123.7 32.2,113.7 L 32.9,72.2 Q 32.9,62.2 42.9,62.2 Z" fill="#00000022" stroke="none"/>
+  <path d="M 39.6,59.7 L 150.6,60.1 Q 160.6,60.1 160.6,70.1 L 160.5,109.4 Q 160.5,119.4 150.5,119.4 L 40.5,120.6 Q 30.5,120.6 30.5,110.6 L 29.6,69.7 Q 29.6,59.7 39.6,59.7 Z" fill="#a5d8ff" stroke="#1971c2" stroke-width="2"/>
+  
+  <text x="95.0" y="90.0" text-anchor="middle"
+        font-family="Virgil, Segoe Print, Comic Sans MS, cursive"
+        font-size="14" font-weight="700" fill="#1e1e1e">Client</text>
+  
+
+
+  <path d="M 213.5,42.3 L 342.6,42.0 Q 352.6,42.0 352.6,52.0 L 352.1,83.2 Q 352.1,93.2 342.1,93.2 L 212.6,93.8 Q 202.6,93.8 202.6,83.8 L 203.5,52.3 Q 203.5,42.3 213.5,42.3 Z" fill="#00000022" stroke="none"/>
+  <path d="M 209.7,40.7 L 339.2,41.0 Q 349.2,41.0 349.2,51.0 L 350.5,80.7 Q 350.5,90.7 340.5,90.7 L 210.3,90.4 Q 200.3,90.4 200.3,80.4 L 199.7,50.7 Q 199.7,40.7 209.7,40.7 Z" fill="#b2f2bb" stroke="#2f9e44" stroke-width="2"/>
+  
+  <text x="275.0" y="59.0" text-anchor="middle"
+        font-family="Virgil, Segoe Print, Comic Sans MS, cursive"
+        font-size="14" font-weight="700" fill="#1e1e1e">Create API</text>
+  <text x="275.0" y="79.0" text-anchor="middle" font-family="Virgil, Segoe Print, Comic Sans MS, cursive" font-size="12" fill="#1e1e1e">auth · code</text>
+
+
+  <path d="M 212.7,113.6 L 343.8,113.5 Q 353.8,113.5 353.8,123.5 L 353.5,153.6 Q 353.5,163.6 343.5,163.6 L 213.8,163.6 Q 203.8,163.6 203.8,153.6 L 202.7,123.6 Q 202.7,113.6 212.7,113.6 Z" fill="#00000022" stroke="none"/>
+  <path d="M 209.1,110.1 L 340.9,109.2 Q 350.9,109.2 350.9,119.2 L 350.2,149.9 Q 350.2,159.9 340.2,159.9 L 209.0,160.2 Q 199.0,160.2 199.0,150.2 L 199.1,120.1 Q 199.1,110.1 209.1,110.1 Z" fill="#ffd8a8" stroke="#e8590c" stroke-width="2"/>
+  
+  <text x="275.0" y="129.0" text-anchor="middle"
+        font-family="Virgil, Segoe Print, Comic Sans MS, cursive"
+        font-size="14" font-weight="700" fill="#1e1e1e">Redirect</text>
+  <text x="275.0" y="149.0" text-anchor="middle" font-family="Virgil, Segoe Print, Comic Sans MS, cursive" font-size="12" fill="#1e1e1e">hot path</text>
+
+
+  <path d="M 412.3,42.0 L 532.2,42.8 Q 542.2,42.8 542.2,52.8 L 542.9,83.1 Q 542.9,93.1 532.9,93.1 L 412.3,92.2 Q 402.3,92.2 402.3,82.2 L 402.3,52.0 Q 402.3,42.0 412.3,42.0 Z" fill="#00000022" stroke="none"/>
+  <path d="M 409.2,39.6 L 529.5,40.5 Q 539.5,40.5 539.5,50.5 L 540.3,79.6 Q 540.3,89.6 530.3,89.6 L 409.9,89.3 Q 399.9,89.3 399.9,79.3 L 399.2,49.6 Q 399.2,39.6 409.2,39.6 Z" fill="#99e9f2" stroke="#0c8599" stroke-width="2"/>
+  
+  <text x="470.0" y="59.0" text-anchor="middle"
+        font-family="Virgil, Segoe Print, Comic Sans MS, cursive"
+        font-size="14" font-weight="700" fill="#1e1e1e">Primary DB</text>
+  <text x="470.0" y="79.0" text-anchor="middle" font-family="Virgil, Segoe Print, Comic Sans MS, cursive" font-size="12" fill="#1e1e1e">code→URL</text>
+
+
+  <path d="M 413.0,113.9 L 532.7,113.7 Q 542.7,113.7 542.7,123.7 L 543.9,153.0 Q 543.9,163.0 533.9,163.0 L 412.1,162.2 Q 402.1,162.2 402.1,152.2 L 403.0,123.9 Q 403.0,113.9 413.0,113.9 Z" fill="#00000022" stroke="none"/>
+  <path d="M 410.5,109.8 L 529.2,109.1 Q 539.2,109.1 539.2,119.1 L 540.4,149.4 Q 540.4,159.4 530.4,159.4 L 410.7,159.7 Q 400.7,159.7 400.7,149.7 L 400.5,119.8 Q 400.5,109.8 410.5,109.8 Z" fill="#d0bfff" stroke="#7048e8" stroke-width="2"/>
+  
+  <text x="470.0" y="129.0" text-anchor="middle"
+        font-family="Virgil, Segoe Print, Comic Sans MS, cursive"
+        font-size="14" font-weight="700" fill="#1e1e1e">Cache</text>
+  <text x="470.0" y="149.0" text-anchor="middle" font-family="Virgil, Segoe Print, Comic Sans MS, cursive" font-size="12" fill="#1e1e1e">hot codes</text>
+
+
+  <path d="M 603.7,77.4 L 742.4,78.1 Q 752.4,78.1 752.4,88.1 L 753.0,127.2 Q 753.0,137.2 743.0,137.2 L 603.3,137.1 Q 593.3,137.1 593.3,127.1 L 593.7,87.4 Q 593.7,77.4 603.7,77.4 Z" fill="#00000022" stroke="none"/>
+  <path d="M 599.9,75.8 L 739.6,75.4 Q 749.6,75.4 749.6,85.4 L 750.2,125.8 Q 750.2,135.8 740.2,135.8 L 600.2,134.4 Q 590.2,134.4 590.2,124.4 L 589.9,85.8 Q 589.9,75.8 599.9,75.8 Z" fill="#ffec99" stroke="#e67700" stroke-width="2"/>
+  
+  <text x="670.0" y="99.0" text-anchor="middle"
+        font-family="Virgil, Segoe Print, Comic Sans MS, cursive"
+        font-size="14" font-weight="700" fill="#1e1e1e">Click queue</text>
+  <text x="670.0" y="119.0" text-anchor="middle" font-family="Virgil, Segoe Print, Comic Sans MS, cursive" font-size="12" fill="#1e1e1e">async counts</text>
+
+
+  <path d="M 160.0,80.0 L 174.3,73.8 L 186.7,70.4 L 200.0,65.0" stroke="#1e1e1e" stroke-width="2" fill="none"/>
+  <path d="M 200.0,65.0 L 194.9,71.2 M 200.0,65.0 L 192.1,63.7"
+        stroke="#1e1e1e" stroke-width="2" fill="none"/>
+
+
+  <path d="M 160.0,100.0 L 173.9,111.1 L 186.1,123.2 L 200.0,135.0" stroke="#1e1e1e" stroke-width="2" fill="none"/>
+  <path d="M 200.0,135.0 L 192.2,133.4 M 200.0,135.0 L 197.4,127.4"
+        stroke="#1e1e1e" stroke-width="2" fill="none"/>
+
+
+  <path d="M 350.0,65.0 L 367.1,63.9 L 383.4,65.9 L 400.0,65.0" stroke="#1e1e1e" stroke-width="2" fill="none"/>
+  <path d="M 400.0,65.0 L 393.1,69.0 M 400.0,65.0 L 393.1,61.0"
+        stroke="#1e1e1e" stroke-width="2" fill="none"/>
+
+
+  <path d="M 350.0,135.0 L 367.4,135.6 L 384.2,134.7 L 400.0,135.0" stroke="#1e1e1e" stroke-width="2" fill="none"/>
+  <path d="M 400.0,135.0 L 393.1,139.0 M 400.0,135.0 L 393.1,131.0"
+        stroke="#1e1e1e" stroke-width="2" fill="none"/>
+
+
+  <path d="M 350.0,135.0 L 428.9,125.2 L 509.5,115.1 L 590.0,105.0" stroke="#e67700" stroke-width="2" fill="none"/>
+  <path d="M 590.0,105.0 L 583.6,109.8 M 590.0,105.0 L 582.6,101.9"
+        stroke="#e67700" stroke-width="2" fill="none"/>
+
+<text x="420.0" y="200.0" text-anchor="middle" font-family="Virgil, Segoe Print, Comic Sans MS, cursive" font-size="13" font-weight="400" fill="#1e1e1e">Redirect stays thin — analytics never blocks 302</text>
+</svg>

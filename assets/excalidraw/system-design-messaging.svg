@@ -1,0 +1,100 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="880" height="300"
+     viewBox="0 0 880 300" role="img" aria-label="system-design-messaging">
+  <rect width="100%" height="100%" fill="#fffef8"/>
+  <text x="450.0" y="28.0" text-anchor="middle" font-family="Virgil, Segoe Print, Comic Sans MS, cursive" font-size="18" font-weight="700" fill="#1e1e1e">Messaging and async paths</text>
+
+  <path d="M 42.4,57.3 L 163.4,57.6 Q 173.4,57.6 173.4,67.6 L 173.4,118.1 Q 173.4,128.1 163.4,128.1 L 42.4,128.3 Q 32.4,128.3 32.4,118.3 L 32.4,67.3 Q 32.4,57.3 42.4,57.3 Z" fill="#00000022" stroke="none"/>
+  <path d="M 39.2,54.9 L 160.6,55.1 Q 170.6,55.1 170.6,65.1 L 169.8,115.1 Q 169.8,125.1 159.8,125.1 L 39.2,124.6 Q 29.2,124.6 29.2,114.6 L 29.2,64.9 Q 29.2,54.9 39.2,54.9 Z" fill="#a5d8ff" stroke="#1971c2" stroke-width="2"/>
+  
+  <text x="100.0" y="84.0" text-anchor="middle"
+        font-family="Virgil, Segoe Print, Comic Sans MS, cursive"
+        font-size="14" font-weight="700" fill="#1e1e1e">API</text>
+  <text x="100.0" y="104.0" text-anchor="middle" font-family="Virgil, Segoe Print, Comic Sans MS, cursive" font-size="12" fill="#1e1e1e">fast ACK</text>
+
+
+  <path d="M 232.1,57.7 L 392.7,58.1 Q 402.7,58.1 402.7,68.1 L 403.2,118.9 Q 403.2,128.9 393.2,128.9 L 233.8,127.5 Q 223.8,127.5 223.8,117.5 L 222.1,67.7 Q 222.1,57.7 232.1,57.7 Z" fill="#00000022" stroke="none"/>
+  <path d="M 230.8,55.4 L 389.6,54.4 Q 399.6,54.4 399.6,64.4 L 399.7,114.1 Q 399.7,124.1 389.7,124.1 L 230.3,125.8 Q 220.3,125.8 220.3,115.8 L 220.8,65.4 Q 220.8,55.4 230.8,55.4 Z" fill="#ffd8a8" stroke="#e8590c" stroke-width="2"/>
+  
+  <text x="310.0" y="84.0" text-anchor="middle"
+        font-family="Virgil, Segoe Print, Comic Sans MS, cursive"
+        font-size="14" font-weight="700" fill="#1e1e1e">Queue</text>
+  <text x="310.0" y="104.0" text-anchor="middle" font-family="Virgil, Segoe Print, Comic Sans MS, cursive" font-size="12" fill="#1e1e1e">competing consumers</text>
+
+
+  <path d="M 462.2,42.2 L 573.3,43.5 Q 583.3,43.5 583.3,53.5 L 582.6,83.8 Q 582.6,93.8 572.6,93.8 L 463.5,92.6 Q 453.5,92.6 453.5,82.6 L 452.2,52.2 Q 452.2,42.2 462.2,42.2 Z" fill="#00000022" stroke="none"/>
+  <path d="M 460.8,39.7 L 570.8,39.2 Q 580.8,39.2 580.8,49.2 L 579.5,81.0 Q 579.5,91.0 569.5,91.0 L 459.1,89.6 Q 449.1,89.6 449.1,79.6 L 450.8,49.7 Q 450.8,39.7 460.8,39.7 Z" fill="#b2f2bb" stroke="#2f9e44" stroke-width="2"/>
+  
+  <text x="515.0" y="59.0" text-anchor="middle"
+        font-family="Virgil, Segoe Print, Comic Sans MS, cursive"
+        font-size="14" font-weight="700" fill="#1e1e1e">Worker A</text>
+  <text x="515.0" y="79.0" text-anchor="middle" font-family="Virgil, Segoe Print, Comic Sans MS, cursive" font-size="12" fill="#1e1e1e">job</text>
+
+
+  <path d="M 463.9,108.6 L 572.4,108.3 Q 582.4,108.3 582.4,118.3 L 583.8,148.2 Q 583.8,158.2 573.8,158.2 L 463.4,158.1 Q 453.4,158.1 453.4,148.1 L 453.9,118.6 Q 453.9,108.6 463.9,108.6 Z" fill="#00000022" stroke="none"/>
+  <path d="M 459.4,104.8 L 569.3,104.9 Q 579.3,104.9 579.3,114.9 L 579.9,145.2 Q 579.9,155.2 569.9,155.2 L 460.3,154.7 Q 450.3,154.7 450.3,144.7 L 449.4,114.8 Q 449.4,104.8 459.4,104.8 Z" fill="#b2f2bb" stroke="#2f9e44" stroke-width="2"/>
+  
+  <text x="515.0" y="124.0" text-anchor="middle"
+        font-family="Virgil, Segoe Print, Comic Sans MS, cursive"
+        font-size="14" font-weight="700" fill="#1e1e1e">Worker B</text>
+  <text x="515.0" y="144.0" text-anchor="middle" font-family="Virgil, Segoe Print, Comic Sans MS, cursive" font-size="12" fill="#1e1e1e">job</text>
+
+
+  <path d="M 170.0,90.0 L 185.8,90.0 L 203.1,90.8 L 220.0,90.0" stroke="#1e1e1e" stroke-width="2" fill="none"/>
+  <path d="M 220.0,90.0 L 213.1,94.0 M 220.0,90.0 L 213.1,86.0"
+        stroke="#1e1e1e" stroke-width="2" fill="none"/>
+
+
+  <path d="M 400.0,80.0 L 417.5,74.5 L 432.7,70.0 L 450.0,65.0" stroke="#1e1e1e" stroke-width="2" fill="none"/>
+  <path d="M 450.0,65.0 L 444.5,70.8 M 450.0,65.0 L 442.2,63.2"
+        stroke="#1e1e1e" stroke-width="2" fill="none"/>
+
+
+  <path d="M 400.0,100.0 L 417.0,109.5 L 433.4,119.2 L 450.0,130.0" stroke="#1e1e1e" stroke-width="2" fill="none"/>
+  <path d="M 450.0,130.0 L 442.0,129.9 M 450.0,130.0 L 446.1,123.0"
+        stroke="#1e1e1e" stroke-width="2" fill="none"/>
+
+
+  <path d="M 632.2,57.1 L 833.7,57.7 Q 843.7,57.7 843.7,67.7 L 844.0,147.4 Q 844.0,157.4 834.0,157.4 L 632.9,158.8 Q 622.9,158.8 622.9,148.8 L 622.2,67.1 Q 622.2,57.1 632.2,57.1 Z" fill="#00000022" stroke="none"/>
+  <path d="M 630.1,54.0 L 830.5,54.5 Q 840.5,54.5 840.5,64.5 L 839.4,144.6 Q 839.4,154.6 829.4,154.6 L 630.9,154.3 Q 620.9,154.3 620.9,144.3 L 620.1,64.0 Q 620.1,54.0 630.1,54.0 Z" fill="#e9ecef" stroke="#495057" stroke-width="2"/>
+  
+  <text x="730.0" y="105.0" text-anchor="middle"
+        font-family="Virgil, Segoe Print, Comic Sans MS, cursive"
+        font-size="14" font-weight="700" fill="#1e1e1e"></text>
+  
+
+<text x="730.0" y="78.0" text-anchor="middle" font-family="Virgil, Segoe Print, Comic Sans MS, cursive" font-size="13" font-weight="700" fill="#1e1e1e">Pub/sub fan-out</text>
+
+  <path d="M 653.2,97.5 L 712.7,98.4 Q 722.7,98.4 722.7,108.4 L 722.8,132.9 Q 722.8,142.9 712.8,142.9 L 653.1,143.8 Q 643.1,143.8 643.1,133.8 L 643.2,107.5 Q 643.2,97.5 653.2,97.5 Z" fill="#00000022" stroke="none"/>
+  <path d="M 650.0,94.3 L 709.8,94.6 Q 719.8,94.6 719.8,104.6 L 719.4,129.5 Q 719.4,139.5 709.4,139.5 L 649.0,140.1 Q 639.0,140.1 639.0,130.1 L 640.0,104.3 Q 640.0,94.3 650.0,94.3 Z" fill="#d0bfff" stroke="#7048e8" stroke-width="2"/>
+  
+  <text x="680.0" y="117.5" text-anchor="middle"
+        font-family="Virgil, Segoe Print, Comic Sans MS, cursive"
+        font-size="14" font-weight="700" fill="#1e1e1e">Email</text>
+  
+
+
+  <path d="M 753.2,98.8 L 812.0,97.1 Q 822.0,97.1 822.0,107.1 L 823.9,133.6 Q 823.9,143.6 813.9,143.6 L 752.8,142.7 Q 742.8,142.7 742.8,132.7 L 743.2,108.8 Q 743.2,98.8 753.2,98.8 Z" fill="#00000022" stroke="none"/>
+  <path d="M 749.7,94.1 L 810.8,95.7 Q 820.8,95.7 820.8,105.7 L 820.7,129.9 Q 820.7,139.9 810.7,139.9 L 749.9,139.3 Q 739.9,139.3 739.9,129.3 L 739.7,104.1 Q 739.7,94.1 749.7,94.1 Z" fill="#99e9f2" stroke="#0c8599" stroke-width="2"/>
+  
+  <text x="780.0" y="117.5" text-anchor="middle"
+        font-family="Virgil, Segoe Print, Comic Sans MS, cursive"
+        font-size="14" font-weight="700" fill="#1e1e1e">Search</text>
+  
+
+
+  <path d="M 232.3,183.3 L 393.2,183.5 Q 403.2,183.5 403.2,193.5 L 402.6,228.8 Q 402.6,238.8 392.6,238.8 L 233.8,237.0 Q 223.8,237.0 223.8,227.0 L 222.3,193.3 Q 222.3,183.3 232.3,183.3 Z" fill="#00000022" stroke="none"/>
+  <path d="M 229.3,179.2 L 391.0,179.4 Q 401.0,179.4 401.0,189.4 L 400.5,225.4 Q 400.5,235.4 390.5,235.4 L 229.2,235.7 Q 219.2,235.7 219.2,225.7 L 219.3,189.2 Q 219.3,179.2 229.3,179.2 Z" fill="#ffc9c9" stroke="#e03131" stroke-width="2"/>
+  
+  <text x="310.0" y="201.5" text-anchor="middle"
+        font-family="Virgil, Segoe Print, Comic Sans MS, cursive"
+        font-size="14" font-weight="700" fill="#1e1e1e">DLQ</text>
+  <text x="310.0" y="221.5" text-anchor="middle" font-family="Virgil, Segoe Print, Comic Sans MS, cursive" font-size="12" fill="#1e1e1e">poison · replay</text>
+
+
+  <path d="M 310.0,125.0 L 310.0,144.3 L 310.2,162.2 L 310.0,180.0" stroke="#e03131" stroke-width="2" fill="none"/>
+  <path d="M 310.0,180.0 L 306.0,173.1 M 310.0,180.0 L 314.0,173.1"
+        stroke="#e03131" stroke-width="2" fill="none"/>
+
+<text x="450.0" y="270.0" text-anchor="middle" font-family="Virgil, Segoe Print, Comic Sans MS, cursive" font-size="13" font-weight="400" fill="#1e1e1e">At-least-once delivery → idempotent consumers</text>
+</svg>

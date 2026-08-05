@@ -1,0 +1,148 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="960" height="320"
+     viewBox="0 0 960 320" role="img" aria-label="system-design-request-path">
+  <rect width="100%" height="100%" fill="#fffef8"/>
+  <text x="480.0" y="28.0" text-anchor="middle" font-family="Virgil, Segoe Print, Comic Sans MS, cursive" font-size="18" font-weight="700" fill="#1e1e1e">Client → edge → service path</text>
+
+  <path d="M 33.5,53.8 L 152.2,52.6 Q 162.2,52.6 162.2,62.6 L 162.9,263.0 Q 162.9,273.0 152.9,273.0 L 32.1,272.8 Q 22.1,272.8 22.1,262.8 L 23.5,63.8 Q 23.5,53.8 33.5,53.8 Z" fill="#00000022" stroke="none"/>
+  <path d="M 30.6,49.3 L 149.5,50.2 Q 159.5,50.2 159.5,60.2 L 160.7,260.6 Q 160.7,270.6 150.7,270.6 L 29.4,269.1 Q 19.4,269.1 19.4,259.1 L 20.6,59.3 Q 20.6,49.3 30.6,49.3 Z" fill="#e9ecef" stroke="#495057" stroke-width="2"/>
+  
+  <text x="90.0" y="160.0" text-anchor="middle"
+        font-family="Virgil, Segoe Print, Comic Sans MS, cursive"
+        font-size="14" font-weight="700" fill="#1e1e1e"></text>
+  
+
+<text x="90.0" y="72.0" text-anchor="middle" font-family="Virgil, Segoe Print, Comic Sans MS, cursive" font-size="13" font-weight="700" fill="#1e1e1e">Client</text>
+
+  <path d="M 52.6,98.6 L 132.3,97.1 Q 142.3,97.1 142.3,107.1 L 143.5,148.7 Q 143.5,158.7 133.5,158.7 L 53.7,157.6 Q 43.7,157.6 43.7,147.6 L 42.6,108.6 Q 42.6,98.6 52.6,98.6 Z" fill="#00000022" stroke="none"/>
+  <path d="M 50.2,95.8 L 130.0,95.5 Q 140.0,95.5 140.0,105.5 L 140.7,144.4 Q 140.7,154.4 130.7,154.4 L 49.9,155.4 Q 39.9,155.4 39.9,145.4 L 40.2,105.8 Q 40.2,95.8 50.2,95.8 Z" fill="#a5d8ff" stroke="#1971c2" stroke-width="2"/>
+  
+  <text x="90.0" y="119.0" text-anchor="middle"
+        font-family="Virgil, Segoe Print, Comic Sans MS, cursive"
+        font-size="14" font-weight="700" fill="#1e1e1e">App / browser</text>
+  <text x="90.0" y="139.0" text-anchor="middle" font-family="Virgil, Segoe Print, Comic Sans MS, cursive" font-size="12" fill="#1e1e1e">HTTPS</text>
+
+
+  <path d="M 52.0,177.7 L 133.1,177.9 Q 143.1,177.9 143.1,187.9 L 143.5,223.1 Q 143.5,233.1 133.5,233.1 L 53.4,233.2 Q 43.4,233.2 43.4,223.2 L 42.0,187.7 Q 42.0,177.7 52.0,177.7 Z" fill="#00000022" stroke="none"/>
+  <path d="M 50.0,174.2 L 129.4,175.3 Q 139.4,175.3 139.4,185.3 L 139.0,220.2 Q 139.0,230.2 129.0,230.2 L 49.5,229.1 Q 39.5,229.1 39.5,219.1 L 40.0,184.2 Q 40.0,174.2 50.0,174.2 Z" fill="#ffec99" stroke="#e67700" stroke-width="2"/>
+  
+  <text x="90.0" y="196.5" text-anchor="middle"
+        font-family="Virgil, Segoe Print, Comic Sans MS, cursive"
+        font-size="14" font-weight="700" fill="#1e1e1e">Timeouts</text>
+  <text x="90.0" y="216.5" text-anchor="middle" font-family="Virgil, Segoe Print, Comic Sans MS, cursive" font-size="12" fill="#1e1e1e">retries</text>
+
+
+  <path d="M 193.1,52.6 L 493.6,52.4 Q 503.6,52.4 503.6,62.4 L 502.8,263.1 Q 502.8,273.1 492.8,273.1 L 193.0,272.2 Q 183.0,272.2 183.0,262.2 L 183.1,62.6 Q 183.1,52.6 193.1,52.6 Z" fill="#00000022" stroke="none"/>
+  <path d="M 189.3,50.2 L 490.1,50.2 Q 500.1,50.2 500.1,60.2 L 500.0,259.9 Q 500.0,269.9 490.0,269.9 L 189.7,269.1 Q 179.7,269.1 179.7,259.1 L 179.3,60.2 Q 179.3,50.2 189.3,50.2 Z" fill="#e9ecef" stroke="#495057" stroke-width="2"/>
+  
+  <text x="340.0" y="160.0" text-anchor="middle"
+        font-family="Virgil, Segoe Print, Comic Sans MS, cursive"
+        font-size="14" font-weight="700" fill="#1e1e1e"></text>
+  
+
+<text x="340.0" y="72.0" text-anchor="middle" font-family="Virgil, Segoe Print, Comic Sans MS, cursive" font-size="13" font-weight="700" fill="#1e1e1e">Public edge</text>
+
+  <path d="M 212.8,97.4 L 293.3,97.9 Q 303.3,97.9 303.3,107.9 L 303.4,148.7 Q 303.4,158.7 293.4,158.7 L 212.6,157.2 Q 202.6,157.2 202.6,147.2 L 202.8,107.4 Q 202.8,97.4 212.8,97.4 Z" fill="#00000022" stroke="none"/>
+  <path d="M 209.0,95.9 L 289.5,95.8 Q 299.5,95.8 299.5,105.8 L 299.8,145.0 Q 299.8,155.0 289.8,155.0 L 210.7,154.2 Q 200.7,154.2 200.7,144.2 L 199.0,105.9 Q 199.0,95.9 209.0,95.9 Z" fill="#b2f2bb" stroke="#2f9e44" stroke-width="2"/>
+  
+  <text x="250.0" y="119.0" text-anchor="middle"
+        font-family="Virgil, Segoe Print, Comic Sans MS, cursive"
+        font-size="14" font-weight="700" fill="#1e1e1e">DNS</text>
+  <text x="250.0" y="139.0" text-anchor="middle" font-family="Virgil, Segoe Print, Comic Sans MS, cursive" font-size="12" fill="#1e1e1e">resolve</text>
+
+
+  <path d="M 333.4,97.4 L 463.8,97.5 Q 473.8,97.5 473.8,107.5 L 472.1,148.7 Q 472.1,158.7 462.1,158.7 L 332.3,158.8 Q 322.3,158.8 322.3,148.8 L 323.4,107.4 Q 323.4,97.4 333.4,97.4 Z" fill="#00000022" stroke="none"/>
+  <path d="M 329.3,94.2 L 459.9,95.3 Q 469.9,95.3 469.9,105.3 L 470.7,145.7 Q 470.7,155.7 460.7,155.7 L 329.2,155.2 Q 319.2,155.2 319.2,145.2 L 319.3,104.2 Q 319.3,94.2 329.3,94.2 Z" fill="#ffd8a8" stroke="#e8590c" stroke-width="2"/>
+  
+  <text x="395.0" y="119.0" text-anchor="middle"
+        font-family="Virgil, Segoe Print, Comic Sans MS, cursive"
+        font-size="14" font-weight="700" fill="#1e1e1e">CDN / Edge</text>
+  <text x="395.0" y="139.0" text-anchor="middle" font-family="Virgil, Segoe Print, Comic Sans MS, cursive" font-size="12" fill="#1e1e1e">cache · TLS</text>
+
+
+  <path d="M 263.1,183.3 L 422.5,183.5 Q 432.5,183.5 432.5,193.5 L 433.7,227.8 Q 433.7,237.8 423.7,237.8 L 263.3,237.9 Q 253.3,237.9 253.3,227.9 L 253.1,193.3 Q 253.1,183.3 263.1,183.3 Z" fill="#00000022" stroke="none"/>
+  <path d="M 259.6,179.4 L 420.5,180.4 Q 430.5,180.4 430.5,190.4 L 430.4,225.5 Q 430.4,235.5 420.4,235.5 L 260.1,235.2 Q 250.1,235.2 250.1,225.2 L 249.6,189.4 Q 249.6,179.4 259.6,179.4 Z" fill="#eebefa" stroke="#9c36b5" stroke-width="2"/>
+  
+  <text x="340.0" y="201.5" text-anchor="middle"
+        font-family="Virgil, Segoe Print, Comic Sans MS, cursive"
+        font-size="14" font-weight="700" fill="#1e1e1e">Cache hit?</text>
+  <text x="340.0" y="221.5" text-anchor="middle" font-family="Virgil, Segoe Print, Comic Sans MS, cursive" font-size="12" fill="#1e1e1e">serve at edge</text>
+
+
+  <path d="M 532.8,52.3 L 932.6,53.7 Q 942.6,53.7 942.6,63.7 L 942.7,262.6 Q 942.7,272.6 932.7,272.6 L 532.6,272.3 Q 522.6,272.3 522.6,262.3 L 522.8,62.3 Q 522.8,52.3 532.8,52.3 Z" fill="#00000022" stroke="none"/>
+  <path d="M 529.2,49.1 L 930.1,50.8 Q 940.1,50.8 940.1,60.8 L 939.6,259.5 Q 939.6,269.5 929.6,269.5 L 530.0,270.9 Q 520.0,270.9 520.0,260.9 L 519.2,59.1 Q 519.2,49.1 529.2,49.1 Z" fill="#e9ecef" stroke="#495057" stroke-width="2"/>
+  
+  <text x="730.0" y="160.0" text-anchor="middle"
+        font-family="Virgil, Segoe Print, Comic Sans MS, cursive"
+        font-size="14" font-weight="700" fill="#1e1e1e"></text>
+  
+
+<text x="730.0" y="72.0" text-anchor="middle" font-family="Virgil, Segoe Print, Comic Sans MS, cursive" font-size="13" font-weight="700" fill="#1e1e1e">Origin platform</text>
+
+  <path d="M 552.9,97.5 L 643.5,97.7 Q 653.5,97.7 653.5,107.7 L 652.3,148.4 Q 652.3,158.4 642.3,158.4 L 552.6,158.0 Q 542.6,158.0 542.6,148.0 L 542.9,107.5 Q 542.9,97.5 552.9,97.5 Z" fill="#00000022" stroke="none"/>
+  <path d="M 549.8,95.3 L 640.0,95.3 Q 650.0,95.3 650.0,105.3 L 650.0,145.0 Q 650.0,155.0 640.0,155.0 L 550.1,154.4 Q 540.1,154.4 540.1,144.4 L 539.8,105.3 Q 539.8,95.3 549.8,95.3 Z" fill="#99e9f2" stroke="#0c8599" stroke-width="2"/>
+  
+  <text x="595.0" y="119.0" text-anchor="middle"
+        font-family="Virgil, Segoe Print, Comic Sans MS, cursive"
+        font-size="14" font-weight="700" fill="#1e1e1e">Load balancer</text>
+  <text x="595.0" y="139.0" text-anchor="middle" font-family="Virgil, Segoe Print, Comic Sans MS, cursive" font-size="12" fill="#1e1e1e">health · L4/L7</text>
+
+
+  <path d="M 683.8,98.6 L 782.7,97.6 Q 792.7,97.6 792.7,107.6 L 792.6,147.8 Q 792.6,157.8 782.6,157.8 L 683.1,158.2 Q 673.1,158.2 673.1,148.2 L 673.8,108.6 Q 673.8,98.6 683.8,98.6 Z" fill="#00000022" stroke="none"/>
+  <path d="M 679.9,95.6 L 779.1,94.5 Q 789.1,94.5 789.1,104.5 L 789.6,145.7 Q 789.6,155.7 779.6,155.7 L 680.4,154.2 Q 670.4,154.2 670.4,144.2 L 669.9,105.6 Q 669.9,95.6 679.9,95.6 Z" fill="#d0bfff" stroke="#7048e8" stroke-width="2"/>
+  
+  <text x="730.0" y="119.0" text-anchor="middle"
+        font-family="Virgil, Segoe Print, Comic Sans MS, cursive"
+        font-size="14" font-weight="700" fill="#1e1e1e">API gateway</text>
+  <text x="730.0" y="139.0" text-anchor="middle" font-family="Virgil, Segoe Print, Comic Sans MS, cursive" font-size="12" fill="#1e1e1e">auth · limits</text>
+
+
+  <path d="M 823.1,98.8 L 913.0,98.8 Q 923.0,98.8 923.0,108.8 L 923.5,147.7 Q 923.5,157.7 913.5,157.7 L 823.2,157.4 Q 813.2,157.4 813.2,147.4 L 813.1,108.8 Q 813.1,98.8 823.1,98.8 Z" fill="#00000022" stroke="none"/>
+  <path d="M 820.9,95.6 L 909.3,94.9 Q 919.3,94.9 919.3,104.9 L 919.7,145.4 Q 919.7,155.4 909.7,155.4 L 820.6,154.4 Q 810.6,154.4 810.6,144.4 L 810.9,105.6 Q 810.9,95.6 820.9,95.6 Z" fill="#a5d8ff" stroke="#1971c2" stroke-width="2"/>
+  
+  <text x="865.0" y="119.0" text-anchor="middle"
+        font-family="Virgil, Segoe Print, Comic Sans MS, cursive"
+        font-size="14" font-weight="700" fill="#1e1e1e">Service</text>
+  <text x="865.0" y="139.0" text-anchor="middle" font-family="Virgil, Segoe Print, Comic Sans MS, cursive" font-size="12" fill="#1e1e1e">business logic</text>
+
+
+  <path d="M 633.5,183.2 L 812.4,184.0 Q 822.4,184.0 822.4,194.0 L 823.0,228.4 Q 823.0,238.4 813.0,238.4 L 633.3,237.7 Q 623.3,237.7 623.3,227.7 L 623.5,193.2 Q 623.5,183.2 633.5,183.2 Z" fill="#00000022" stroke="none"/>
+  <path d="M 629.7,180.0 L 810.7,179.9 Q 820.7,179.9 820.7,189.9 L 820.6,225.4 Q 820.6,235.4 810.6,235.4 L 630.1,234.8 Q 620.1,234.8 620.1,224.8 L 619.7,190.0 Q 619.7,180.0 629.7,180.0 Z" fill="#b2f2bb" stroke="#2f9e44" stroke-width="2"/>
+  
+  <text x="720.0" y="201.5" text-anchor="middle"
+        font-family="Virgil, Segoe Print, Comic Sans MS, cursive"
+        font-size="14" font-weight="700" fill="#1e1e1e">Data store</text>
+  <text x="720.0" y="221.5" text-anchor="middle" font-family="Virgil, Segoe Print, Comic Sans MS, cursive" font-size="12" fill="#1e1e1e">DB · cache · queue</text>
+
+
+  <path d="M 140.0,125.0 L 160.3,124.7 L 180.6,125.2 L 200.0,125.0" stroke="#1e1e1e" stroke-width="2" fill="none"/>
+  <path d="M 200.0,125.0 L 193.1,129.0 M 200.0,125.0 L 193.1,121.0"
+        stroke="#1e1e1e" stroke-width="2" fill="none"/>
+
+
+  <path d="M 300.0,125.0 L 305.6,124.2 L 313.7,124.9 L 320.0,125.0" stroke="#1e1e1e" stroke-width="2" fill="none"/>
+  <path d="M 320.0,125.0 L 313.1,129.0 M 320.0,125.0 L 313.1,121.0"
+        stroke="#1e1e1e" stroke-width="2" fill="none"/>
+
+
+  <path d="M 470.0,125.0 L 494.0,124.8 L 515.5,124.9 L 540.0,125.0" stroke="#1e1e1e" stroke-width="2" fill="none"/>
+  <path d="M 540.0,125.0 L 533.1,129.0 M 540.0,125.0 L 533.1,121.0"
+        stroke="#1e1e1e" stroke-width="2" fill="none"/>
+
+
+  <path d="M 650.0,125.0 L 656.3,124.5 L 663.5,126.2 L 670.0,125.0" stroke="#1e1e1e" stroke-width="2" fill="none"/>
+  <path d="M 670.0,125.0 L 663.1,129.0 M 670.0,125.0 L 663.1,121.0"
+        stroke="#1e1e1e" stroke-width="2" fill="none"/>
+
+
+  <path d="M 790.0,125.0 L 797.2,124.6 L 802.3,124.8 L 810.0,125.0" stroke="#1e1e1e" stroke-width="2" fill="none"/>
+  <path d="M 810.0,125.0 L 803.1,129.0 M 810.0,125.0 L 803.1,121.0"
+        stroke="#1e1e1e" stroke-width="2" fill="none"/>
+
+
+  <path d="M 865.0,155.0 L 816.6,164.2 L 767.8,171.3 L 720.0,180.0" stroke="#1e1e1e" stroke-width="2" fill="none"/>
+  <path d="M 720.0,180.0 L 726.1,174.9 M 720.0,180.0 L 727.5,182.8"
+        stroke="#1e1e1e" stroke-width="2" fill="none"/>
+
+<text x="480.0" y="295.0" text-anchor="middle" font-family="Virgil, Segoe Print, Comic Sans MS, cursive" font-size="13" font-weight="400" fill="#1e1e1e">Miss at edge → origin · emit request ID across hops</text>
+</svg>
