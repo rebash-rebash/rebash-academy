@@ -9,7 +9,7 @@ exclude_docs: |
   includes/*
   _curriculum/**
 
-copyright: Copyright &copy; 2026 Shaik Basha
+copyright: Copyright &copy; 2026 REBASH Academy
 
 extra:
   hero:
@@ -56,6 +56,10 @@ extra:
   books:
     formspree_form_id: ""
     web3forms_access_key: "5ff050ad-3b50-4390-82fa-c4718f60b5d4"
+  # Google Forms contact embed — paste the "Send → <> Embed" src URL
+  # e.g. https://docs.google.com/forms/d/e/FORM_ID/viewform?embedded=true
+  contact:
+    google_form_embed: "https://docs.google.com/forms/d/e/1FAIpQLScAWV7_ISqxFCwUJoZ1KF0J0wB5JOQv6azR_oRAg3i-mxTT7w/viewform?embedded=true"
 
 extra_css:
   - assets/stylesheets/custom.css

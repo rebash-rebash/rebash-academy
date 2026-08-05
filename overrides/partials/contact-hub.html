@@ -1,0 +1,46 @@
+{#-
+  Contact page — Google Form embed.
+-#}
+{% set form_src = "" %}
+{% if config.extra.contact and config.extra.contact.google_form_embed %}
+  {% set form_src = config.extra.contact.google_form_embed %}
+{% endif %}
+
+<article class="ra-contact">
+  <header class="ra-contact__intro">
+    <h1 class="ra-contact__title">Contact</h1>
+    <p class="ra-contact__lead">
+      Send feedback, corrections, or collaboration notes. We read every message.
+    </p>
+  </header>
+
+  {% if form_src %}
+    <div class="ra-contact__frame-wrap">
+      <iframe
+        class="ra-contact__frame"
+        src="{{ form_src }}"
+        title="REBASH Academy contact form"
+        loading="lazy">
+        Loading…
+      </iframe>
+    </div>
+  {% else %}
+    <div class="ra-path-hub__guide ra-contact__setup">
+      <p class="ra-path-hub__footnote ra-community-hub__share">
+        Add your Google Form embed URL under
+        <code>extra.contact.google_form_embed</code> in
+        <code>mkdocs.yml</code>
+        (Google Forms → Send → embed icon → copy the
+        <code>src</code> link ending in
+        <code>viewform?embedded=true</code>).
+      </p>
+    </div>
+  {% endif %}
+
+  <p class="ra-contact__also">
+    Prefer social?
+    <a href="https://www.linkedin.com/in/shaikkhadarbasha/" target="_blank" rel="noopener">LinkedIn</a>
+    ·
+    <a href="{{ 'community/' | url }}">Community</a>
+  </p>
+</article>

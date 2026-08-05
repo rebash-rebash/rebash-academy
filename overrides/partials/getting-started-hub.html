@@ -1,0 +1,136 @@
+{#-
+  Getting Started — compact onboarding hub.
+-#}
+<article class="ra-start">
+  <header class="ra-start__intro">
+    <h1 class="ra-start__title">Getting Started</h1>
+    <p class="ra-start__lead">
+      Learn Cloud and DevOps the way production teams work: pick a path,
+      complete tutorials and labs, then build something you can explain.
+    </p>
+  </header>
+
+  <section class="ra-home-why ra-start__band" aria-labelledby="ra-start-choose">
+    <div class="ra-home-why__intro">
+      <h2 id="ra-start-choose" class="ra-home-why__title">Choose how to begin</h2>
+      <p class="ra-home-why__lead">Two ways to navigate — tutorials are shared, not duplicated.</p>
+    </div>
+    <div class="ra-home-why__grid ra-home-why__grid--2" role="list">
+      <a class="ra-home-why__item ra-start__choice" role="listitem" href="{{ 'learning-paths/' | url }}">
+        <span class="ra-home-why__icon" aria-hidden="true">{% include ".icons/material/map-marker-path.svg" %}</span>
+        <strong class="ra-home-why__label">By learning path</strong>
+        <span class="ra-home-why__text">Job-shaped roadmap when you know the role you want.</span>
+      </a>
+      <a class="ra-home-why__item ra-start__choice" role="listitem" href="{{ 'technologies/' | url }}">
+        <span class="ra-home-why__icon" aria-hidden="true">{% include ".icons/material/bookshelf.svg" %}</span>
+        <strong class="ra-home-why__label">By technology</strong>
+        <span class="ra-home-why__text">Deep-dive one skill when you already know the gap.</span>
+      </a>
+    </div>
+  </section>
+
+  <section class="ra-home-why ra-start__band" aria-labelledby="ra-start-flow">
+    <div class="ra-home-why__intro">
+      <h2 id="ra-start-flow" class="ra-home-why__title">Learning flow</h2>
+      <p class="ra-home-why__lead">Follow this loop on every path and course.</p>
+    </div>
+    <div class="ra-home-why__grid" role="list">
+      <div class="ra-home-why__item" role="listitem">
+        <span class="ra-home-why__icon" aria-hidden="true">{% include ".icons/material/numeric-1-circle-outline.svg" %}</span>
+        <strong class="ra-home-why__label">Path</strong>
+        <span class="ra-home-why__text">Pick a role roadmap.</span>
+      </div>
+      <div class="ra-home-why__item" role="listitem">
+        <span class="ra-home-why__icon" aria-hidden="true">{% include ".icons/material/numeric-2-circle-outline.svg" %}</span>
+        <strong class="ra-home-why__label">Tutorials</strong>
+        <span class="ra-home-why__text">Learn concepts in order.</span>
+      </div>
+      <div class="ra-home-why__item" role="listitem">
+        <span class="ra-home-why__icon" aria-hidden="true">{% include ".icons/material/numeric-3-circle-outline.svg" %}</span>
+        <strong class="ra-home-why__label">Labs</strong>
+        <span class="ra-home-why__text">Run and fix hands-on work.</span>
+      </div>
+      <div class="ra-home-why__item" role="listitem">
+        <span class="ra-home-why__icon" aria-hidden="true">{% include ".icons/material/numeric-4-circle-outline.svg" %}</span>
+        <strong class="ra-home-why__label">Projects</strong>
+        <span class="ra-home-why__text">Build portfolio pieces.</span>
+      </div>
+      <div class="ra-home-why__item" role="listitem">
+        <span class="ra-home-why__icon" aria-hidden="true">{% include ".icons/material/numeric-5-circle-outline.svg" %}</span>
+        <strong class="ra-home-why__label">Capstone</strong>
+        <span class="ra-home-why__text">Prove an end-to-end skill.</span>
+      </div>
+      <div class="ra-home-why__item" role="listitem">
+        <span class="ra-home-why__icon" aria-hidden="true">{% include ".icons/material/numeric-6-circle-outline.svg" %}</span>
+        <strong class="ra-home-why__label">Interview</strong>
+        <span class="ra-home-why__text">Prep after the labs.</span>
+      </div>
+    </div>
+  </section>
+
+  <section class="ra-home-why ra-start__band" aria-labelledby="ra-start-need">
+    <div class="ra-home-why__intro">
+      <h2 id="ra-start-need" class="ra-home-why__title">What you need today</h2>
+      <p class="ra-home-why__lead">Add Docker, cloud accounts, and other tools as each track requires them.</p>
+    </div>
+    <div class="ra-home-why__grid ra-home-why__grid--3" role="list">
+      <div class="ra-home-why__item" role="listitem">
+        <span class="ra-home-why__icon" aria-hidden="true">{% include ".icons/material/laptop.svg" %}</span>
+        <strong class="ra-home-why__label">Laptop or VM</strong>
+        <span class="ra-home-why__text">Linux preferred; WSL2 is fine.</span>
+      </div>
+      <div class="ra-home-why__item" role="listitem">
+        <span class="ra-home-why__icon" aria-hidden="true">{% include ".icons/material/console.svg" %}</span>
+        <strong class="ra-home-why__label">Terminal</strong>
+        <span class="ra-home-why__text">Basic shell use is enough to start.</span>
+      </div>
+      <div class="ra-home-why__item" role="listitem">
+        <span class="ra-home-why__icon" aria-hidden="true">{% include ".icons/material/lightbulb-on-outline.svg" %}</span>
+        <strong class="ra-home-why__label">Curiosity</strong>
+        <span class="ra-home-why__text">Labs are meant to break and be fixed.</span>
+      </div>
+    </div>
+  </section>
+
+  <section class="ra-start__cta" aria-labelledby="ra-start-next">
+    <h2 id="ra-start-next" class="ra-start__cta-title">Start here</h2>
+    <div class="ra-tech-hub__grid">
+      <a class="ra-tech-tile" href="{{ 'learning-paths/beginner/' | url }}">
+        <span class="ra-tech-tile__icon" aria-hidden="true">
+          <span class="ra-tech-tile__mdi ra-tech-tile__mdi--green">{% include ".icons/material/school-outline.svg" %}</span>
+        </span>
+        <span class="ra-tech-tile__body">
+          <span class="ra-tech-tile__title-row">
+            <span class="ra-tech-tile__title">Beginner path</span>
+          </span>
+          <span class="ra-tech-tile__desc">New to IT or Linux — start with foundations.</span>
+        </span>
+        <span class="ra-tech-tile__go" aria-hidden="true">→</span>
+      </a>
+      <a class="ra-tech-tile" href="{{ 'linux/' | url }}">
+        <span class="ra-tech-tile__icon" aria-hidden="true">
+          <img class="ra-tech-tile__brand" src="{{ 'assets/images/brands/linux.svg' | url }}" alt="" width="22" height="22" decoding="async">
+        </span>
+        <span class="ra-tech-tile__body">
+          <span class="ra-tech-tile__title-row">
+            <span class="ra-tech-tile__title">Linux course</span>
+          </span>
+          <span class="ra-tech-tile__desc">First technology track if you prefer browsing by skill.</span>
+        </span>
+        <span class="ra-tech-tile__go" aria-hidden="true">→</span>
+      </a>
+      <a class="ra-tech-tile" href="{{ 'learning-paths/devops-engineer/' | url }}">
+        <span class="ra-tech-tile__icon" aria-hidden="true">
+          <img class="ra-tech-tile__brand" src="{{ 'assets/images/brands/docker.svg' | url }}" alt="" width="22" height="22" decoding="async">
+        </span>
+        <span class="ra-tech-tile__body">
+          <span class="ra-tech-tile__title-row">
+            <span class="ra-tech-tile__title">DevOps path</span>
+          </span>
+          <span class="ra-tech-tile__desc">Comfortable with Linux — full delivery stack.</span>
+        </span>
+        <span class="ra-tech-tile__go" aria-hidden="true">→</span>
+      </a>
+    </div>
+  </section>
+</article>

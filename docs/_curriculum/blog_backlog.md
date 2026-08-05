@@ -13,7 +13,7 @@ Master backlog for engineering journal articles. Align with [`blog-frontmatter-s
 
 **Status values:** `published` · `draft` · `planned`
 
-No articles are published yet. The landing page and nav ship with the framework; articles appear in the sidebar as they are authored.
+Published articles appear under `docs/blog/` and in the Blog nav.
 
 ## Planned — Release notes & product
 
@@ -31,6 +31,12 @@ No articles are published yet. The landing page and nav ship with the framework;
 | `git-recovery-stories` | engineering | Git recovery patterns every team needs | lessons-learned | intermediate | 10 min | git | devops-engineer | P2 | planned |
 | `shell-strict-mode-production` | engineering | Strict mode in production Bash scripts | best-practices | intermediate | 8 min | shell, linux | devops-engineer | P2 | planned |
 | `python-automation-tradeoffs` | engineering | When to reach for Python vs Shell | architecture-discussion | intermediate | 10 min | python, shell | devops-engineer | P2 | planned |
+
+## Published
+
+| Article ID | Category | Title | Type | Difficulty | Reading time | Technologies | Learning paths | Priority | Status |
+|------------|----------|-------|------|------------|--------------|--------------|--------------|----------|--------|
+| `gcp-landing-zone-setup` | architecture | How to set up a GCP landing zone | architecture-discussion | advanced | 18 min | gcp, terraform | cloud-architect, cloud-engineer | P1 | published |
 
 ## Planned — Cloud & infrastructure
 

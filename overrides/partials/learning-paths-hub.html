@@ -1,0 +1,166 @@
+{#-
+  Learning Paths catalog — tile grid by level.
+-#}
+{% macro path_tile(href, title, level, duration, roles, skills, brand=none, mdi=none, tint="blue") %}
+  <a class="ra-path-tile" href="{{ href | url }}">
+    <span class="ra-path-tile__icon" aria-hidden="true">
+      {% if brand %}
+        <img class="ra-path-tile__brand" src="{{ ('assets/images/brands/' ~ brand) | url }}" alt="" width="22" height="22" decoding="async">
+      {% elif mdi %}
+        {% set icon_path = ".icons/material/" ~ mdi ~ ".svg" %}
+        <span class="ra-path-tile__mdi ra-path-tile__mdi--{{ tint }}">{% include icon_path %}</span>
+      {% endif %}
+    </span>
+    <span class="ra-path-tile__body">
+      <span class="ra-path-tile__title-row">
+        <span class="ra-path-tile__title">{{ title }}</span>
+        <span class="ra-path-tile__badge ra-path-tile__badge--{{ level | lower }}">{{ level }}</span>
+      </span>
+      <span class="ra-path-tile__meta">{{ duration }} · {{ roles }}</span>
+      <span class="ra-path-tile__skills">{{ skills }}</span>
+    </span>
+    <span class="ra-path-tile__go" aria-hidden="true">→</span>
+  </a>
+{% endmacro %}
+
+{% macro path_section(title, id) %}
+  <section class="ra-path-hub__section" aria-labelledby="{{ id }}">
+    <h2 id="{{ id }}" class="ra-path-hub__heading">{{ title }}</h2>
+    <div class="ra-path-hub__grid">
+      {{ caller() }}
+    </div>
+  </section>
+{% endmacro %}
+
+<article class="ra-path-hub">
+  <header class="ra-path-hub__intro">
+    <h1 class="ra-path-hub__title">Learning Paths</h1>
+    <p class="ra-path-hub__lead">
+      Ordered roadmaps for a job role. Paths share the same tutorials and labs —
+      you follow them in the sequence that matches your goal.
+      Prefer a single technology? Browse
+      <a href="{{ 'technologies/' | url }}">tutorials</a>.
+    </p>
+  </header>
+
+  {% call path_section("Beginner", "ra-path-beginner") %}
+    {{ path_tile(
+      "learning-paths/beginner/",
+      "Beginner",
+      "Beginner",
+      "4–6 weeks",
+      "Junior Linux Admin, IT Support",
+      "Linux · Shell · Networking · Git",
+      brand="linux.svg"
+    ) }}
+    {{ path_tile(
+      "learning-paths/linux-administrator/",
+      "Linux Administrator",
+      "Beginner",
+      "8–12 weeks",
+      "Linux / Systems Administrator",
+      "Linux · Shell · Networking · Python",
+      mdi="server",
+      tint="green"
+    ) }}
+  {% endcall %}
+
+  {% call path_section("Intermediate", "ra-path-intermediate") %}
+    {{ path_tile(
+      "learning-paths/cloud-engineer/",
+      "Cloud Engineer",
+      "Intermediate",
+      "12–16 weeks",
+      "Cloud Engineer, Cloud Ops",
+      "Linux · Networking · AWS · Terraform",
+      brand="aws.svg"
+    ) }}
+    {{ path_tile(
+      "learning-paths/devops-engineer/",
+      "DevOps Engineer",
+      "Intermediate",
+      "20–28 weeks",
+      "DevOps, Release Engineer",
+      "Docker · Kubernetes · GitLab CI · Terraform",
+      brand="docker.svg"
+    ) }}
+    {{ path_tile(
+      "learning-paths/kubernetes-engineer/",
+      "Kubernetes Engineer",
+      "Intermediate",
+      "12–16 weeks",
+      "Kubernetes / Container Engineer",
+      "Docker · Kubernetes · Helm · Git",
+      brand="kubernetes.svg"
+    ) }}
+    {{ path_tile(
+      "learning-paths/ai-for-devops/",
+      "AI for DevOps",
+      "Intermediate",
+      "10–14 weeks",
+      "Automation / AI-ops Engineer",
+      "Python · Linux · Docker",
+      mdi="brain",
+      tint="magenta"
+    ) }}
+  {% endcall %}
+
+  {% call path_section("Advanced", "ra-path-advanced") %}
+    {{ path_tile(
+      "learning-paths/platform-engineer/",
+      "Platform Engineer",
+      "Advanced",
+      "16–24 weeks",
+      "Platform / DX Engineer",
+      "Kubernetes · Terraform · Observability",
+      mdi="layers",
+      tint="indigo"
+    ) }}
+    {{ path_tile(
+      "learning-paths/site-reliability-engineer/",
+      "Site Reliability Engineer",
+      "Advanced",
+      "16–24 weeks",
+      "SRE, Production Engineer",
+      "Linux · Kubernetes · Prometheus · Grafana",
+      mdi="speedometer",
+      tint="cyan"
+    ) }}
+    {{ path_tile(
+      "learning-paths/devsecops-engineer/",
+      "DevSecOps Engineer",
+      "Advanced",
+      "14–20 weeks",
+      "DevSecOps, Cloud Security",
+      "Kubernetes · GitLab CI · Security",
+      mdi="shield-lock",
+      tint="red"
+    ) }}
+  {% endcall %}
+
+  {% call path_section("Expert", "ra-path-expert") %}
+    {{ path_tile(
+      "learning-paths/cloud-architect/",
+      "Cloud Architect",
+      "Expert",
+      "20–28 weeks",
+      "Solutions / Cloud Architect",
+      "AWS · Azure · GCP · Terraform",
+      mdi="cloud-braces",
+      tint="indigo"
+    ) }}
+  {% endcall %}
+
+  <aside class="ra-path-hub__guide" aria-labelledby="ra-path-guide-title">
+    <h2 id="ra-path-guide-title" class="ra-path-hub__heading">How to choose</h2>
+    <ul class="ra-path-hub__tips">
+      <li><strong>New to IT or Linux?</strong> Start with <a href="{{ 'learning-paths/beginner/' | url }}">Beginner</a>.</li>
+      <li><strong>Comfortable with Linux?</strong> Go to <a href="{{ 'learning-paths/cloud-engineer/' | url }}">Cloud Engineer</a> or <a href="{{ 'learning-paths/devops-engineer/' | url }}">DevOps Engineer</a>.</li>
+      <li><strong>Already in ops?</strong> Deepen with Platform, SRE, or DevSecOps.</li>
+      <li><strong>Designing systems?</strong> Take <a href="{{ 'learning-paths/cloud-architect/' | url }}">Cloud Architect</a>.</li>
+    </ul>
+    <p class="ra-path-hub__footnote">
+      New here? Read <a href="{{ 'getting-started/' | url }}">Getting Started</a> first.
+    </p>
+  </aside>
+</article>

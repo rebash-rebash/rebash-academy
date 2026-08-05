@@ -33,6 +33,22 @@
     {% include "partials/home-paths.html" %}
     {% include "partials/home-courses.html" %}
     {% include "partials/home-why.html" %}
+  {% elif page.url == "technologies/" or page.url == "technologies" %}
+    {% include "partials/technologies-hub.html" %}
+  {% elif page.url == "learning-paths/" or page.url == "learning-paths" %}
+    {% include "partials/learning-paths-hub.html" %}
+  {% elif page.url == "cheatsheets/" or page.url == "cheatsheets" %}
+    {% include "partials/cheatsheets-hub.html" %}
+  {% elif page.url == "interview/" or page.url == "interview" %}
+    {% include "partials/interview-hub.html" %}
+  {% elif page.url == "community/" or page.url == "community" %}
+    {% include "partials/community-hub.html" %}
+  {% elif page.url == "about/" or page.url == "about" %}
+    {% include "partials/about-hub.html" %}
+  {% elif page.url == "contact/" or page.url == "contact" or page.url == "contact.html" %}
+    {% include "partials/contact-hub.html" %}
+  {% elif page.url == "getting-started/" or page.url == "getting-started" %}
+    {% include "partials/getting-started-hub.html" %}
   {% else %}
     {{ super() }}
   {% endif %}

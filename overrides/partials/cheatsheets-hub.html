@@ -1,0 +1,65 @@
+{#-
+  Cheat Sheets catalog — tile grid by category.
+-#}
+{% macro sheet_tile(href, title, desc, brand=none, mdi=none, tint="blue") %}
+  <a class="ra-tech-tile" href="{{ href | url }}">
+    <span class="ra-tech-tile__icon" aria-hidden="true">
+      {% if brand %}
+        <img class="ra-tech-tile__brand" src="{{ ('assets/images/brands/' ~ brand) | url }}" alt="" width="22" height="22" decoding="async">
+      {% elif mdi %}
+        {% set icon_path = ".icons/material/" ~ mdi ~ ".svg" %}
+        <span class="ra-tech-tile__mdi ra-tech-tile__mdi--{{ tint }}">{% include icon_path %}</span>
+      {% endif %}
+    </span>
+    <span class="ra-tech-tile__body">
+      <span class="ra-tech-tile__title-row">
+        <span class="ra-tech-tile__title">{{ title }}</span>
+      </span>
+      <span class="ra-tech-tile__desc">{{ desc }}</span>
+    </span>
+    <span class="ra-tech-tile__go" aria-hidden="true">→</span>
+  </a>
+{% endmacro %}
+
+{% macro sheet_section(title, id) %}
+  <section class="ra-tech-hub__section" aria-labelledby="{{ id }}">
+    <h2 id="{{ id }}" class="ra-tech-hub__heading">{{ title }}</h2>
+    <div class="ra-tech-hub__grid">
+      {{ caller() }}
+    </div>
+  </section>
+{% endmacro %}
+
+<article class="ra-tech-hub">
+  <header class="ra-tech-hub__intro">
+    <h1 class="ra-tech-hub__title">Cheat Sheets</h1>
+    <p class="ra-tech-hub__lead">
+      Fast command and pattern references for daily work.
+      Pair a sheet with its
+      <a href="{{ 'technologies/' | url }}">technology course</a>
+      when you want the full walkthrough.
+    </p>
+  </header>
+
+  {% call sheet_section("Foundations", "ra-sheet-foundations") %}
+    {{ sheet_tile("cheatsheets/linux/", "Linux", "Permissions, processes, storage, SSH, systemd", brand="linux.svg") }}
+    {{ sheet_tile("cheatsheets/shell/", "Shell", "Bash syntax, loops, jq, yq, cron, debugging", mdi="bash", tint="green") }}
+    {{ sheet_tile("cheatsheets/networking/", "Networking", "TCP/IP, DNS, HTTP, and ops commands", mdi="lan", tint="teal") }}
+    {{ sheet_tile("cheatsheets/python/", "Python for DevOps", "Files, APIs, Docker SDK, boto3, pytest", mdi="language-python", tint="blue") }}
+    {{ sheet_tile("cheatsheets/git/", "Git", "Branching, remotes, and daily Git workflows", mdi="git", tint="deep-orange") }}
+  {% endcall %}
+
+  {% call sheet_section("Containers", "ra-sheet-containers") %}
+    {{ sheet_tile("cheatsheets/docker/", "Docker", "Images, containers, Compose, and networking", brand="docker.svg") }}
+    {{ sheet_tile("cheatsheets/kubernetes/", "Kubernetes", "Workloads, services, kubectl, and cluster ops", brand="kubernetes.svg") }}
+  {% endcall %}
+
+  {% call sheet_section("Cloud and IaC", "ra-sheet-cloud") %}
+    {{ sheet_tile("cheatsheets/aws/", "AWS", "IAM, VPC, EC2, S3, and CLI patterns", brand="aws.svg") }}
+    {{ sheet_tile("cheatsheets/terraform/", "Terraform", "Providers, state, plan/apply, and modules", brand="terraform.svg") }}
+  {% endcall %}
+
+  {% call sheet_section("CI/CD", "ra-sheet-cicd") %}
+    {{ sheet_tile("cheatsheets/cicd/", "GitLab CI/CD", "Stages, jobs, rules, runners, and artefacts", brand="gitlab.svg") }}
+  {% endcall %}
+</article>

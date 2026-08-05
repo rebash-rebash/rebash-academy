@@ -1,0 +1,126 @@
+{#-
+  About page — mission & vision use the homepage "Why REBASH" band design.
+-#}
+<article class="ra-about">
+  <header class="ra-about__intro">
+    <h1 class="ra-about__title">About REBASH Academy</h1>
+    <p class="ra-about__lead">
+      An open learning platform for engineers who want practical Cloud and DevOps skills —
+      structured paths, hands-on labs, and production habits you can take into real systems.
+    </p>
+  </header>
+
+  <section class="ra-home-why ra-about__band" aria-labelledby="ra-about-mission">
+    <div class="ra-home-why__intro">
+      <p class="ra-about__eyebrow">Our mission</p>
+      <h2 id="ra-about-mission" class="ra-home-why__title">Teach engineering you can run</h2>
+      <p class="ra-home-why__lead">
+        Accessible, practical education that builds production-ready habits.
+      </p>
+    </div>
+    <div class="ra-home-why__grid ra-home-why__grid--4" role="list">
+      <div class="ra-home-why__item" role="listitem">
+        <span class="ra-home-why__icon" aria-hidden="true">{% include ".icons/material/school-outline.svg" %}</span>
+        <strong class="ra-home-why__label">Accessible</strong>
+        <span class="ra-home-why__text">High-quality Cloud and DevOps education for everyone.</span>
+      </div>
+      <div class="ra-home-why__item" role="listitem">
+        <span class="ra-home-why__icon" aria-hidden="true">{% include ".icons/material/flask-outline.svg" %}</span>
+        <strong class="ra-home-why__label">Hands-on</strong>
+        <span class="ra-home-why__text">Labs and projects you can run on a laptop.</span>
+      </div>
+      <div class="ra-home-why__item" role="listitem">
+        <span class="ra-home-why__icon" aria-hidden="true">{% include ".icons/material/shield-check-outline.svg" %}</span>
+        <strong class="ra-home-why__label">Production habits</strong>
+        <span class="ra-home-why__text">Security, observability, and recovery by default.</span>
+      </div>
+      <div class="ra-home-why__item" role="listitem">
+        <span class="ra-home-why__icon" aria-hidden="true">{% include ".icons/material/trending-up.svg" %}</span>
+        <strong class="ra-home-why__label">Clear growth</strong>
+        <span class="ra-home-why__text">From first shell session to platform roles.</span>
+      </div>
+    </div>
+  </section>
+
+  <section class="ra-home-why ra-about__band" aria-labelledby="ra-about-vision">
+    <div class="ra-home-why__intro">
+      <p class="ra-about__eyebrow">Our vision</p>
+      <h2 id="ra-about-vision" class="ra-home-why__title">A trusted place to learn in public</h2>
+      <p class="ra-home-why__lead">
+        Production-focused learning engineers return to — practice first, theory that supports it.
+      </p>
+    </div>
+    <div class="ra-home-why__grid ra-home-why__grid--4" role="list">
+      <div class="ra-home-why__item" role="listitem">
+        <span class="ra-home-why__icon" aria-hidden="true">{% include ".icons/material/link-variant.svg" %}</span>
+        <strong class="ra-home-why__label">One tutorial, many paths</strong>
+        <span class="ra-home-why__text">Shared lessons without duplicated content.</span>
+      </div>
+      <div class="ra-home-why__item" role="listitem">
+        <span class="ra-home-why__icon" aria-hidden="true">{% include ".icons/material/book-open-variant.svg" %}</span>
+        <strong class="ra-home-why__label">Open knowledge</strong>
+        <span class="ra-home-why__text">Free to read, open to contribution.</span>
+      </div>
+      <div class="ra-home-why__item" role="listitem">
+        <span class="ra-home-why__icon" aria-hidden="true">{% include ".icons/material/hammer-wrench.svg" %}</span>
+        <strong class="ra-home-why__label">Practice-led</strong>
+        <span class="ra-home-why__text">Build first; theory supports the hands-on work.</span>
+      </div>
+      <div class="ra-home-why__item" role="listitem">
+        <span class="ra-home-why__icon" aria-hidden="true">{% include ".icons/material/map-marker-path.svg" %}</span>
+        <strong class="ra-home-why__label">Full career arc</strong>
+        <span class="ra-home-why__text">Linux foundations through SRE and architecture.</span>
+      </div>
+    </div>
+  </section>
+
+  <section class="ra-home-why ra-about__band ra-about__author" aria-labelledby="ra-about-author">
+    <div class="ra-home-why__intro">
+      <p class="ra-about__eyebrow">About the author</p>
+      <h2 id="ra-about-author" class="ra-home-why__title">Shaik Khadar Basha</h2>
+      <p class="ra-home-why__lead">Cloud &amp; Platform Architect · Founder, REBASH Academy</p>
+    </div>
+    <div class="ra-about__author-row">
+      <img
+        class="ra-about__photo"
+        src="{{ 'assets/images/authors/shaik-khadar-basha.jpg' | url }}"
+        alt="Shaik Khadar Basha"
+        width="120"
+        height="120"
+        decoding="async">
+      <div class="ra-about__author-body">
+        <p class="ra-about__text">
+          Cloud &amp; Platform Architect with more than a decade of experience designing,
+          automating, and operating cloud-native platforms across Amazon Web Services (AWS),
+          Google Cloud Platform (GCP), Microsoft Azure, Kubernetes, Terraform, DevSecOps,
+          platform engineering, and AI infrastructure.
+        </p>
+        <p class="ra-about__text">
+          He currently works as Cloud Architect at BreachLock Inc in Hyderabad, leading delivery
+          across engineering teams that build secure, cloud-native applications. Earlier roles
+          at Wipro, Unisys, Orcapod, Nyletech Solutions, and Netskope covered observability,
+          continuous integration and continuous delivery (CI/CD), Infrastructure as Code (IaC),
+          and SaaS security.
+        </p>
+        <p class="ra-about__text">
+          Credentials include Red Hat Certified Engineer (RHCE), Red Hat Certified System
+          Administrator (RHCSA), Oracle Cloud Infrastructure Architect Associate,
+          ISO&nbsp;27001 Cyber Security Expert, and Certified Ethical Hacker (CEH).
+          Education: Master's in Computer Science (JNTUK) and Bachelor's in Mathematics
+          (Acharya Nagarjuna University).
+        </p>
+        <ul class="ra-about__links">
+          <li>
+            <a href="https://www.linkedin.com/in/shaikkhadarbasha/" target="_blank" rel="noopener">LinkedIn</a>
+          </li>
+          <li>
+            <a href="{{ 'contact/' | url }}">Contact</a>
+          </li>
+          <li>
+            <a href="https://rebash.in/" target="_blank" rel="noopener">rebash.in</a>
+          </li>
+        </ul>
+      </div>
+    </div>
+  </section>
+</article>

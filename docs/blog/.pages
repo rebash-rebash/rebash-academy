@@ -3,3 +3,4 @@ icon: material/post
 
 nav:
   - Overview: index.md
+  - Architecture: architecture

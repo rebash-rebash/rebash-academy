@@ -1,0 +1,68 @@
+{#-
+  Community hub — LinkedIn, YouTube, and contact.
+-#}
+{% set linkedin = "https://www.linkedin.com/in/shaikkhadarbasha/" %}
+{% set youtube = "https://www.youtube.com/@re-bash" %}
+
+{% macro community_tile(href, title, desc, mdi=none, brand_fa=none, tint="blue", external=false) %}
+  <a class="ra-tech-tile"
+     href="{% if external %}{{ href }}{% else %}{{ href | url }}{% endif %}"
+     {% if external %}target="_blank" rel="noopener"{% endif %}>
+    <span class="ra-tech-tile__icon" aria-hidden="true">
+      {% if brand_fa %}
+        {% set fa_path = ".icons/fontawesome/brands/" ~ brand_fa ~ ".svg" %}
+        <span class="ra-tech-tile__mdi ra-community-hub__brand ra-community-hub__brand--{{ brand_fa }}">{% include fa_path %}</span>
+      {% elif mdi %}
+        {% set icon_path = ".icons/material/" ~ mdi ~ ".svg" %}
+        <span class="ra-tech-tile__mdi ra-tech-tile__mdi--{{ tint }}">{% include icon_path %}</span>
+      {% endif %}
+    </span>
+    <span class="ra-tech-tile__body">
+      <span class="ra-tech-tile__title-row">
+        <span class="ra-tech-tile__title">{{ title }}</span>
+        {% if external %}
+          <span class="ra-tech-tile__badge ra-tech-tile__badge--planned">External</span>
+        {% endif %}
+      </span>
+      <span class="ra-tech-tile__desc">{{ desc }}</span>
+    </span>
+    <span class="ra-tech-tile__go" aria-hidden="true">{% if external %}↗{% else %}→{% endif %}</span>
+  </a>
+{% endmacro %}
+
+<article class="ra-tech-hub ra-community-hub">
+  <header class="ra-tech-hub__intro">
+    <h1 class="ra-tech-hub__title">Community</h1>
+    <p class="ra-tech-hub__lead">
+      Follow REBASH Academy updates, watch walkthroughs, or send a message —
+      no accounts required.
+    </p>
+  </header>
+
+  <section class="ra-tech-hub__section" aria-labelledby="ra-community-connect">
+    <h2 id="ra-community-connect" class="ra-tech-hub__heading">Connect</h2>
+    <div class="ra-tech-hub__grid">
+      {{ community_tile(
+        linkedin,
+        "LinkedIn",
+        "Engineering posts and release updates",
+        brand_fa="linkedin",
+        external=true
+      ) }}
+      {{ community_tile(
+        youtube,
+        "YouTube",
+        "Video walkthroughs and demos",
+        brand_fa="youtube",
+        external=true
+      ) }}
+      {{ community_tile(
+        "contact/",
+        "Contact form",
+        "Feedback, corrections, and collaboration notes",
+        mdi="email-outline",
+        tint="teal"
+      ) }}
+    </div>
+  </section>
+</article>

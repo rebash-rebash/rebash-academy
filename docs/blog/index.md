@@ -12,7 +12,10 @@ tags:
 The REBASH Academy engineering journal: industry insights, architecture discussions,
 lessons learned, and release notes.
 
-!!! note
+## Latest
 
-    No articles are published yet. Posts will appear here — in the meantime, the
-    [Architecture Guides](../architecture-guides/index.md) cover design deep dives.
+| Article | Category | Level | Reading time |
+|---------|----------|-------|--------------|
+| [How to set up a GCP landing zone](architecture/how-to-setup-gcp-landing-zone.md) | Architecture | Advanced | 18 min |
+
+Also see [Architecture Guides](../architecture-guides/index.md) for design deep dives.
