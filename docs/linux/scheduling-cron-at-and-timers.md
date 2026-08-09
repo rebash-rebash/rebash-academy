@@ -327,83 +327,21 @@ atrm $(atq | awk '{print $1}') 2>/dev/null || true
 - Limit who can use `at` (`/etc/at.deny`, `/etc/at.allow`).
 - systemd unit `ExecStart` must not invoke untrusted writable scripts.
 
-## Common Mistakes
+# Common Mistakes
 
-!!! warning "No logging from cron jobs"
-    Always redirect stdout and stderr. Silent failure is the default failure mode.
+❌ No logging from cron jobs.
 
-!!! warning "Editing system cron as root casually"
-    A typo in `/etc/cron.d/` affects the whole host. Test as user crontab first.
+✅ Always redirect stdout and stderr. Silent failure is the default failure mode.
 
-!!! warning "Every-minute jobs in production"
-    Wastes CPU and fills logs. Choose intervals that match business need.
+---
 
-## Best Practices
+❌ Editing system cron as root casually.
 
-- Wrap cron scripts with `set -euo pipefail` and timestamps
-- Monitor log file age (“no entry in 25 hours” alert)
-- Prefer systemd timers when the task is already a service
-- Document timezone (cron uses system timezone)
-- Use `flock` or lock files for non-reentrant jobs
+✅ A typo in `/etc/cron.d/` affects the whole host. Test as user crontab first.
 
-## Troubleshooting
+---
 
-| Symptom | Likely cause | Fix |
-|---------|--------------|-----|
-| Log not updating | Wrong path, cron stopped | `crontab -l`; `systemctl status cron` |
-| `%` errors in cron | Unescaped `%` | Escape as `\%` or remove |
-| at job never runs | `atd` inactive | `sudo systemctl start atd` |
-| Timer shows n/a | Unit not enabled | `systemctl enable --now timer` |
+❌ Every-minute jobs in production.
 
-## Summary
+✅ Wastes CPU and fills logs. Choose intervals that match business need.
 
-**cron** handles recurring calendar jobs; **at** handles one-shot delays; **systemd timers** integrate schedules with services and **journald**. Always log output, use absolute paths, and verify jobs ran — scheduling without evidence is hope, not automation.
-
-## Interview Questions
-
-**1. What is cron and what is a crontab?**
-
-??? success "Reveal answer"
-    **cron** is the daemon that runs scheduled commands. A **crontab** is the file listing when and what to run for a user (or system paths under `/etc/cron.*`). Edit with `crontab -e`, list with `crontab -l`.
-
-**2. Why do scripts work in SSH but fail in cron?**
-
-??? success "Reveal answer"
-    Cron jobs get a minimal environment — often a shorter **PATH**, no shell profile, no custom variables. Fix with absolute paths, explicit `PATH=` in crontab, or a wrapper script that sources env safely.
-
-**3. When would you choose a systemd timer over cron?**
-
-??? success "Reveal answer"
-    When the job is already a systemd service, you want `journalctl` integration, calendar expressions with `Persistent=true`, or dependency ordering with other units. Timers are easier to observe on modern Ubuntu/RHEL systemd hosts.
-
-**4. What does `at` do and how is it different from cron?**
-
-??? success "Reveal answer"
-    **at** schedules a one-time job at a specific time. **cron** repeats on a calendar pattern. Use `at` for delayed maintenance; use cron for recurring backups and reports.
-
-**5. How do you prove a cron job ran last night?**
-
-??? success "Reveal answer"
-    Check the log file the job writes (timestamp), mail spool if configured, or application evidence. For systemd timers: `journalctl -u service --since yesterday`. Absence of expected log line is the alert.
-
-**6. What is wrong with `* * * * *` for a heavy backup on production?**
-
-??? success "Reveal answer"
-    It runs every minute — excessive load, log noise, possible overlapping runs. Choose an interval that matches Recovery Point Objective (RPO) and use locking so jobs do not stack.
-
-**7. How do timezones affect cron?**
-
-??? success "Reveal answer"
-    Cron uses the **system timezone** (`timedatectl`). UTC vs local time mismatches cause “wrong hour” incidents. Document timezone in runbooks; consider UTC on servers for global teams.
-
-## Related Tutorials
-
-- Previous: [Package Management](package-management.md)
-- Next: [Logging — syslog, journald, and logrotate](logging-syslog-journald-logrotate.md)
-- Related: [systemd Targets, Timers, and Boot](systemd-targets-timers-and-boot.md)
-
-## References
-
-- [cron man page](https://manpages.ubuntu.com/manpages/noble/man5/crontab.5.html)
-- [systemd.timer man page](https://www.freedesktop.org/software/systemd/man/latest/systemd.timer.html)
-- [at command man page](https://manpages.ubuntu.com/manpages/noble/man1/at.1.html)

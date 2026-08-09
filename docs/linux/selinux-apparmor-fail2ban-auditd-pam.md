@@ -290,83 +290,21 @@ sudo systemctl restart fail2ban
 - auditd logs may contain sensitive data — protect `/var/log/audit/`.
 - Document break-glass accounts and MFA outside PAM experiments.
 
-## Common Mistakes
+# Common Mistakes
 
-!!! warning "chmod 777 instead of reading MAC denial"
-    Fix policy or file location; world-writable dirs are worse than the original problem.
+❌ chmod 777 instead of reading MAC denial.
 
-!!! warning "Permanently disabling SELinux"
-    Enterprises expect Enforcing. Learn `audit2allow` / vendor guides instead.
+✅ Fix policy or file location; world-writable dirs are worse than the original problem.
 
-!!! warning "Fail2Ban on wrong log path"
-    Journal-only systems may need `backend=systemd` in jail — read distro docs.
+---
 
-## Best Practices
+❌ Permanently disabling SELinux.
 
-- Run new services in AppArmor complain mode first
-- Ship denial logs to SIEM
-- Pair Fail2Ban with key-only SSH (prior tutorial)
-- Version-control `/etc/pam.d` changes in Git for servers
-- Use CIS/STIG baselines as reference, not blind copy-paste
+✅ Enterprises expect Enforcing. Learn `audit2allow` / vendor guides instead.
 
-## Troubleshooting
+---
 
-| Symptom | Likely cause | Fix |
-|---------|--------------|-----|
-| Permission denied, mode OK | MAC | `journalctl -k`; `aa-status`; SELinux `ausearch` |
-| SSH works then stops | Fail2Ban ban | `fail2ban-client status sshd`; unban |
-| sudo auth failures | PAM stack | Check `/etc/pam.d/sudo`; test on console |
-| No audit events | auditd off / rules | `systemctl start auditd`; review rules |
+❌ Fail2Ban on wrong log path.
 
-## Summary
+✅ Journal-only systems may need `backend=systemd` in jail — read distro docs.
 
-**DAC** (`chmod`) is not the whole story. **AppArmor** and **SELinux** enforce **MAC** policy. **Fail2Ban** reacts to brute-force patterns. **auditd** and **PAM** cover audit trail and authentication stacks. Practical skill: **detect, read logs, fix forward** — do not disable security on day one.
-
-## Interview Questions
-
-**1. What is the difference between DAC and MAC?**
-
-??? success "Reveal answer"
-    **DAC** (Discretionary Access Control): the file owner sets permissions (user/group/other). **MAC** (Mandatory Access Control): system policy (AppArmor/SELinux) can deny access even when DAC would allow — common for confined services like nginx.
-
-**2. AppArmor vs SELinux — when do you see each?**
-
-??? success "Reveal answer"
-    **AppArmor** is default on Ubuntu/Debian — path-based profiles. **SELinux** is default on RHEL/Rocky/Amazon Linux — label-based contexts. Cloud interviews expect you to name both and check status (`aa-status`, `getenforce`).
-
-**3. What does Fail2Ban do?**
-
-??? success "Reveal answer"
-    Monitors auth logs for patterns (failed SSH), then updates firewall to **ban** offending IP addresses temporarily. Reduces brute-force noise; complement to key-only SSH.
-
-**4. Service fails after moving binary path — MAC suspicion?**
-
-??? success "Reveal answer"
-    Yes. Confined profile may allow old path only. Check AppArmor/SELinux denials in journal or audit, adjust profile or restore labeled context — not `chmod 777`.
-
-**5. What is PAM used for?**
-
-??? success "Reveal answer"
-    **Pluggable Authentication Modules** — configurable stacks for login, SSH, sudo, password changes (local, LDAP, MFA modules). Files in `/etc/pam.d/`. Misconfiguration can block all login.
-
-**6. SELinux Enforcing vs Permissive?**
-
-??? success "Reveal answer"
-    **Enforcing** blocks violations. **Permissive** logs violations but still allows — useful for debugging new policy. **Disabled** removes SELinux — avoid in production without strong justification.
-
-**7. How do you investigate an AppArmor denial on Ubuntu?**
-
-??? success "Reveal answer"
-    `sudo journalctl -k | grep DENIED`, `sudo aa-status`, identify profile, use complain mode or adjust profile in `/etc/apparmor.d/` after understanding required access — document change; do not globally disable AppArmor.
-
-## Related Tutorials
-
-- Previous: [SSH Hardening and Firewalls](ssh-hardening-and-firewalls.md)
-- Next: [Containers — Namespaces, cgroups, and OCI](containers-namespaces-cgroups-and-oci.md)
-
-## References
-
-- [AppArmor documentation](https://gitlab.com/apparmor/apparmor/-/wikis/Documentation)
-- [SELinux project wiki](https://github.com/SELinuxProject/selinux/wiki)
-- [Fail2Ban manual](https://www.fail2ban.org/wiki/index.php/Main_Page)
-- [Linux PAM documentation](http://www.linux-pam.org/Linux-PAM_html/)

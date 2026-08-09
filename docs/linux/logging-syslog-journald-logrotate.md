@@ -271,83 +271,21 @@ rm -rf /tmp/rebash-app
 - Set retention to meet compliance, not “keep forever”.
 - Scrub secrets before sharing log excerpts in tickets.
 
-## Common Mistakes
+# Common Mistakes
 
-!!! warning "No rotation for custom app logs"
-    Anything writing to `/var/log` or `/tmp` on a long-lived server needs a logrotate rule or central collection with retention.
+❌ No rotation for custom app logs.
 
-!!! warning "Only tailing text files on systemd hosts"
-    Start with `journalctl -u` for services; use files when the app writes them directly.
+✅ Anything writing to `/var/log` or `/tmp` on a long-lived server needs a logrotate rule or central collection with retention.
 
-!!! warning "Disk full before alerting"
-    Monitor free space on `/var` and `/`; log growth is a leading cause of outages.
+---
 
-## Best Practices
+❌ Only tailing text files on systemd hosts.
 
-- Standardise log paths per team (`/var/log/myapp/app.log`)
-- Test logrotate after deploy with `logrotate -d`
-- Use structured logging (JSON) where possible for search
-- Correlate `journalctl --since` with deploy times
-- Ship logs off-host before single-disk loss
+✅ Start with `journalctl -u` for services; use files when the app writes them directly.
 
-## Troubleshooting
+---
 
-| Symptom | Likely cause | Fix |
-|---------|--------------|-----|
-| Disk full | Huge logs | `du -sh /var/log/*`; fix rotate; compress |
-| Empty journalctl | Wrong boot/unit | `-b`, correct `-u` name |
-| Rotation skipped | `notifempty` on empty file | Generate traffic; check path |
-| Missing old logs | Low `rotate` count | Increase retention per policy |
+❌ Disk full before alerting.
 
-## Summary
+✅ Monitor free space on `/var` and `/`; log growth is a leading cause of outages.
 
-**journald** + **`journalctl`** are your first stop on modern Ubuntu for service and boot logs. Classic **syslog** text files still matter for many apps. **logrotate** prevents disks filling — configure it for every persistent log file, test with `logrotate -f`, and fix path typos before production.
-
-## Interview Questions
-
-**1. What is journald and how do you read it?**
-
-??? success "Reveal answer"
-    **journald** is systemd’s logging daemon storing structured, timestamped entries. Read with **`journalctl`**: e.g. `journalctl -b` (this boot), `journalctl -u nginx`, `journalctl --since "1 hour ago"`, `journalctl -f` to follow.
-
-**2. What is the difference between journald and syslog files?**
-
-??? success "Reveal answer"
-    **journald** keeps a binary journal queried with `journalctl`. **syslog** daemons (rsyslog) write classic text files under `/var/log`. Many hosts use both; apps may write files even when systemd also captures stdout.
-
-**3. What does logrotate do?**
-
-??? success "Reveal answer"
-    It rotates, compresses, and deletes old log files on a schedule so disks do not fill. Config lives in `/etc/logrotate.conf` and `/etc/logrotate.d/`. Test with `logrotate -d` (debug) or `logrotate -f` (force).
-
-**4. A disk is full and `/var/log` is huge. First steps?**
-
-??? success "Reveal answer"
-    Confirm with `df -h` and `du -sh /var/log/*`. Identify largest logs, compress or archive safely, fix missing logrotate, restart logging if needed, add monitoring. Do not delete active logs without understanding app behaviour.
-
-**5. Why do cron jobs “have no logs” in journalctl?**
-
-??? success "Reveal answer"
-    User cron runs outside a named systemd unit unless wrapped. Cron output goes to mail, a file you redirect to, or nowhere. Fix: redirect to a log file or wrap in a systemd service+timer.
-
-**6. What is `copytruncate` in logrotate?**
-
-??? success "Reveal answer"
-    Copy the log then truncate the original in place — apps that keep the file open keep writing. Simpler but riskier for some apps than sending a reopen signal in `postrotate`.
-
-**7. How do you investigate “service failed at 02:15”?**
-
-??? success "Reveal answer"
-    `journalctl -u <service> --since "02:10" --until "02:20"`, check exit codes, prior config changes, disk/memory at that time (`journalctl -k`), and related units. Narrow time window before reading entire logs.
-
-## Related Tutorials
-
-- Previous: [Scheduling with cron, at, and Timers](scheduling-cron-at-and-timers.md)
-- Next: [Host Monitoring — vmstat, iostat, and sar](host-monitoring-vmstat-iostat-sar.md)
-- Related: [systemd Services and journalctl](systemd-services-and-journalctl.md)
-
-## References
-
-- [journalctl man page](https://www.freedesktop.org/software/systemd/man/latest/journalctl.html)
-- [logrotate man page](https://manpages.ubuntu.com/manpages/noble/man8/logrotate.8.html)
-- [rsyslog documentation](https://www.rsyslog.com/doc/index.html)

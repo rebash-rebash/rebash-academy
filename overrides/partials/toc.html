@@ -1,6 +1,10 @@
 {#-
   REBASH Academy: "On this page" right rail (styled in custom.css).
   Homepage uses a curated TOC + site-only Quick Links.
+
+  Linux Mastery (and similar) pages use the page title as h1, then a meta
+  "## Learning Path", then many more top-level "# Section" headings. Material's
+  default "take first h1 children" would hide those sibling h1s — merge them.
 -#}
 {% if page.is_homepage %}
   {% include "partials/home-toc.html" %}
@@ -12,8 +16,35 @@
   <nav class="md-nav md-nav--secondary ra-onthispage" aria-label="{{ title | e }}">
     {% set toc = page.toc %}
     {% set first = toc | first %}
+    {% set meta_titles = ["Learning Path", "Course Progress"] %}
     {% if first and first.level == 1 %}
-      {% set toc = first.children %}
+      {% if (toc | length) == 1 %}
+        {% set toc = first.children %}
+      {% else %}
+        {#- Title h1 + nested meta, then sibling content h1s -#}
+        {% set merged = namespace(items=[]) %}
+        {% for item in first.children %}
+          {% if item.title not in meta_titles %}
+            {% set merged.items = merged.items + [item] %}
+          {% endif %}
+        {% endfor %}
+        {% for item in toc %}
+          {% if not loop.first and item.title not in meta_titles %}
+            {% set merged.items = merged.items + [item] %}
+          {% endif %}
+        {% endfor %}
+        {% set toc = merged.items %}
+      {% endif %}
+    {% endif %}
+    {#- Single-h1 pages: still hide meta-only entries when present -#}
+    {% if toc %}
+      {% set filtered = namespace(items=[]) %}
+      {% for item in toc %}
+        {% if item.title not in meta_titles %}
+          {% set filtered.items = filtered.items + [item] %}
+        {% endif %}
+      {% endfor %}
+      {% set toc = filtered.items %}
     {% endif %}
     {% if toc %}
       <label class="md-nav__title ra-onthispage__title" for="__toc">

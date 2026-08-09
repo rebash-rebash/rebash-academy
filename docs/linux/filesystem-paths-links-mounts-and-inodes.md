@@ -367,88 +367,27 @@ cd ~/rebash-linux/lab04
 - Document bind mounts — they confuse audits and backups
 - Restrict who can edit `fstab` or mount filesystems
 
-## Common Mistakes
+# Common Mistakes
 
-!!! warning "Relative paths in cron or systemd"
-    Working directory is not your SSH home. **Fix:** absolute paths or explicit `WorkingDirectory=`.
+❌ Relative paths in cron or systemd.
 
-!!! warning "Dangling `current` symlink after cleanup"
-    Site down though files exist elsewhere. **Fix:** flip symlink before deleting old release; verify with `readlink -f`.
+✅ Working directory is not your SSH home. **Fix:** absolute paths or explicit `WorkingDirectory=`.
 
-!!! warning "Only checking `df -h`"
-    Inodes can be exhausted first. **Fix:** always run `df -i` in capacity tickets.
+---
 
-!!! warning "Hard links across filesystems"
-    Kernel rejects them. **Fix:** use symlinks for cross-mount references.
+❌ Dangling `current` symlink after cleanup.
 
-## Best Practices
+✅ Site down though files exist elsewhere. **Fix:** flip symlink before deleting old release; verify with `readlink -f`.
 
-- Prefer absolute paths in automation
-- Use versioned directories + `current` symlink for releases
-- Flip symlinks atomically with `ln -sfn`
-- Monitor disk space **and** inodes
-- Clean old releases with a retention policy
+---
 
-## Troubleshooting
+❌ Only checking `df -h`.
 
-| Symptom | Likely cause | Fix |
-|---------|--------------|-----|
-| `No such file` but symlink visible | Dangling symlink | `readlink -f`; restore target |
-| `Invalid cross-device link` | Hard link across mounts | `ln -s` |
-| Files vanished under directory | Mount covered path | `findmnt`; unmount or use correct mount |
-| Create fails; `df -h` OK | Inode exhaustion | `df -i`; delete tiny-file trees |
-| Cron script fails | Relative paths | Switch to absolute paths |
+✅ Inodes can be exhausted first. **Fix:** always run `df -i` in capacity tickets.
 
-## Summary
+---
 
-**Paths** name locations; **inodes** hold the real file; **hard links** share inodes; **symlinks** store paths; **mounts** attach filesystems into the tree. Practise deploy-style symlinks and always check mounts and inodes during capacity issues. Next: [Disk Usage and File Attributes](disk-usage-and-file-attributes.md).
+❌ Hard links across filesystems.
 
-## Interview Questions
+✅ Kernel rejects them. **Fix:** use symlinks for cross-mount references.
 
-**1. What is an inode, and what does a filename have to do with it?**
-
-??? success "Reveal answer"
-    An **inode** stores file metadata and pointers to data on a filesystem. A **filename** is a directory entry pointing at an inode number. Several hard-linked names share one inode. Data remains until the last link is gone and no process keeps the file open.
-
-**2. Compare hard links and symbolic links.**
-
-??? success "Reveal answer"
-    **Hard links** share the same inode, stay on one filesystem, and the file survives until all hard names are removed. **Symlinks** store a path string, can cross filesystems, and can **dangle** if the target is missing. Deploys often use symlinks for a stable `current` name.
-
-**3. Why do cron jobs break with relative paths that worked over SSH?**
-
-??? success "Reveal answer"
-    SSH starts in your home; cron’s working directory is usually different (often `/`). Relative paths resolve against that cwd and fail. Use **absolute paths** in cron and systemd units.
-
-**4. How can a directory look empty after you mount a disk on it?**
-
-??? success "Reveal answer"
-    Mounting attaches a filesystem **over** the mount-point directory. Previous files under that path are **hidden** until unmount. They still exist on the underlying filesystem. Check with `findmnt` before and after attaching disks.
-
-**5. `df -h` shows free space but creating a file fails. What else do you check?**
-
-??? success "Reveal answer"
-    Run **`df -i`** for inode exhaustion. Confirm you are on the correct mount (`findmnt -T .`). Millions of tiny files can exhaust inodes while byte space remains.
-
-**6. How would you flip a release symlink safely?**
-
-??? success "Reveal answer"
-    Prepare `releases/new`, then repoint atomically with **`ln -sfn releases/new current`**. Verify with `readlink -f`. Keep the previous release until health checks pass so you can roll back by flipping again.
-
-**7. When would you choose a hard link over a symlink?**
-
-??? success "Reveal answer"
-    Choose a **hard link** when you want two names for the same file data on one filesystem without depending on a path string. Choose a **symlink** for cross-filesystem pointers and versioned release directories. Hard links to directories are not a normal operator tool.
-
-## Related Tutorials
-
-- Previous: [Essential Linux Commands](essential-linux-commands.md)
-- Next: [Disk Usage and File Attributes](disk-usage-and-file-attributes.md)
-- Lab: [Ops Toolkit](../labs/linux-ops-toolkit-lab.md)
-
-## References
-
-- [`ln(1)`](https://manpages.ubuntu.com/manpages/jammy/en/man1/ln.1.html)
-- [`findmnt(8)`](https://manpages.ubuntu.com/manpages/jammy/en/man8/findmnt.8.html)
-- [Filesystem Hierarchy Standard](https://refspecs.linuxfoundation.org/FHS_3.0/fhs-3.0.html)
-- Track index: [Linux for Cloud & DevOps Engineers](index.md)

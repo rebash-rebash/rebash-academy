@@ -276,83 +276,21 @@ sudo sshd -t && sudo systemctl reload ssh
 - Fail2Ban (next tutorial) complements SSH hardening.
 - Cloud Security Groups are another firewall layer — align with UFW rules.
 
-## Common Mistakes
+# Common Mistakes
 
-!!! warning "Disabling passwords before keys work"
-    Always verify key login in a second session first.
+❌ Disabling passwords before keys work.
 
-!!! warning "Reloading sshd without sshd -t"
-    One typo can lock every admin out until console recovery.
+✅ Always verify key login in a second session first.
 
-!!! warning "UFW enable without allow rule"
-    Default deny blocks SSH — use console or provider firewall to recover.
+---
 
-## Best Practices
+❌ Reloading sshd without sshd -t.
 
-- Use Ed25519 or RSA 4096 keys; rotate on laptop rebuild
-- Manage `authorized_keys` with configuration management
-- Centralise bastion/jump hosts for production SSH
-- Log auth failures (`journalctl -u ssh`)
-- Document port, allowed networks, and break-glass (emergency) access
+✅ One typo can lock every admin out until console recovery.
 
-## Troubleshooting
+---
 
-| Symptom | Likely cause | Fix |
-|---------|--------------|-----|
-| Permission denied (publickey) | Key not in authorized_keys | Copy pubkey; fix perms |
-| Connection refused | sshd down / wrong port | `systemctl status ssh`; `ss -tlnp` |
-| Timeout | Firewall / Security Group | UFW status; cloud SG rules |
-| Config ignored | Wrong Include path | Check `sshd_config` Include |
+❌ UFW enable without allow rule.
 
-## Summary
+✅ Default deny blocks SSH — use console or provider firewall to recover.
 
-Harden **SSH** with **keys first**, **`sshd` drop-ins**, and **`sshd -t` before reload**. Put **UFW** (or firewalld) in front with **allow SSH before default deny**. Always keep a recovery path — console or second session — and prove access after every change.
-
-## Interview Questions
-
-**1. Why prefer SSH keys over passwords on servers?**
-
-??? success "Reveal answer"
-    Keys are strong cryptographic credentials resistant to brute force. Passwords on internet-exposed SSH get guessed. Best practice: key-based auth, disable password authentication after keys verified.
-
-**2. What does sshd -t do and when do you run it?**
-
-??? success "Reveal answer"
-    Tests **`sshd`** configuration syntax without applying. Run before every `systemctl reload ssh` to catch typos that would lock admins out or prevent the daemon starting.
-
-**3. Safe order to harden SSH on a live server?**
-
-??? success "Reveal answer"
-    Install/copy public key → verify key login in **new session** → add drop-in hardening → `sshd -t` → reload → disable password auth → keep console access documented.
-
-**4. What is UFW and why allow OpenSSH before enable?**
-
-??? success "Reveal answer"
-    **UFW** is Ubuntu’s frontend to netfilter firewall rules. `ufw enable` applies default deny. Without `allow OpenSSH` first, SSH packets drop and you lose remote access.
-
-**5. PermitRootLogin — what should production use?**
-
-??? success "Reveal answer"
-    Usually **`no`** or **`prohibit-password`** (keys only if root SSH allowed at all). Better: disable root SSH; admins use sudo from named users — smaller blast radius.
-
-**6. You changed sshd and lost SSH. Recovery steps?**
-
-??? success "Reveal answer"
-    Use cloud serial/VNC console or provider “EC2 serial console”. Log in locally, remove bad drop-in under `/etc/ssh/sshd_config.d/`, run `sshd -t`, restart ssh. Fix Security Group/UFW if network block.
-
-**7. UFW vs cloud Security Group — difference?**
-
-??? success "Reveal answer"
-    **Security Group** (or Network Security Group) filters at the hypervisor/cloud edge. **UFW** filters on the host OS. Both must allow SSH for remote access — defence in depth uses both.
-
-## Related Tutorials
-
-- Previous: [Host Monitoring — vmstat, iostat, and sar](host-monitoring-vmstat-iostat-sar.md)
-- Next: [SELinux, AppArmor, Fail2Ban, Auditd, and PAM](selinux-apparmor-fail2ban-auditd-pam.md)
-- Prerequisite: [SSH and Remote Access](ssh-and-remote-access.md)
-
-## References
-
-- [OpenSSH sshd_config man page](https://manpages.ubuntu.com/manpages/noble/man5/sshd_config.5.html)
-- [UFW documentation](https://help.ubuntu.com/community/UFW)
-- [CIS SSH benchmark guidance](https://www.cisecurity.org/cis-benchmarks)

@@ -291,84 +291,21 @@ sudo systemctl daemon-reload
 - Limit who can edit systemd unit drop-ins.
 - Scrub env snapshots before sharing in tickets.
 
-## Common Mistakes
+# Common Mistakes
 
-!!! warning "Secrets in export lines"
-    Environment leaks via `ps`, logs, and core dumps — use proper secret storage.
+❌ Secrets in export lines.
 
-!!! warning "Assuming cron loads .bashrc"
-    It does not — configure env explicitly.
+✅ Environment leaks via `ps`, logs, and core dumps — use proper secret storage.
 
-!!! warning "Tilde in systemd paths"
-    Use full paths like `/home/user/bin/app`.
+---
 
-## Best Practices
+❌ Assuming cron loads .bashrc.
 
-- Document required env vars in README/runbook
-- Use `EnvironmentFile` for services; keep out of Git
-- Prefer systemd timers over cron when you need journald + env in one place
-- Test jobs with `sudo -u appuser env` to simulate service user
-- Version-control non-secret defaults only
+✅ It does not — configure env explicitly.
 
-## Troubleshooting
+---
 
-| Symptom | Likely cause | Fix |
-|---------|--------------|-----|
-| Variable unset in cron | Minimal env | Absolute paths; PATH= line |
-| Works sudo, not cron | Different user | Crontab user; file perms |
-| Empty in systemd service | Missing Environment | Unit drop-in |
-| Lost after reboot | Never persisted | profile.d or unit file |
+❌ Tilde in systemd paths.
 
-## Summary
+✅ Use full paths like `/home/user/bin/app`.
 
-**Environment variables** configure processes via inheritance. **`PATH`** is the classic trap — SSH vs **cron** vs **systemd** load different context. Use **`export`**, **`/etc/profile.d/`**, and **`Environment=`** deliberately, and prefer **absolute paths** in scheduled jobs.
-
-## Interview Questions
-
-**1. What is an environment variable?**
-
-??? success "Reveal answer"
-    A named string in a process environment inherited by child processes — e.g. **PATH** (command search path), **HOME**, **LANG**. Set with `export VAR=value`; view with `printenv` or `echo $VAR`.
-
-**2. Why do cron jobs fail to find commands that work in SSH?**
-
-??? success "Reveal answer"
-    Cron provides a **minimal environment** — often a short PATH, no `.bashrc`. Fix with **absolute paths** to scripts/binaries, explicit `PATH=` in crontab, or use systemd timer/service with Environment set.
-
-**3. Difference between shell variable and exported variable?**
-
-??? success "Reveal answer"
-    Shell variable exists in current shell only. **`export`** puts it in the environment so **child processes** inherit it. Scripts and cron child shells need export (or set in their context).
-
-**4. Where would you set env for a systemd service?**
-
-??? success "Reveal answer"
-    In the unit file: **`Environment=`** lines or **`EnvironmentFile=`** pointing to a file. Then `daemon-reload` and restart. Services do not read interactive `.bashrc`.
-
-**5. What is PATH?**
-
-??? success "Reveal answer"
-    Colon-separated list of directories the shell searches for executable **by name**. If directory is not on PATH, you need `./script` or full path.
-
-**6. /etc/profile.d vs ~/.bashrc — when each?**
-
-??? success "Reveal answer"
-    **`/etc/profile.d/`** — system-wide login snippets (admins, all users). **`~/.bashrc`** — per-user interactive bash. Know login vs non-login shell rules to predict which runs.
-
-**7. How do you debug missing env in a job?**
-
-??? success "Reveal answer"
-    Log environment at job start (`env >> /tmp/job-env.log`), compare SSH vs cron vs systemd (`systemctl show unit -p Environment`), fix with absolute paths or explicit Environment/EnvironmentFile.
-
-## Related Tutorials
-
-- Previous: [Essential Linux Commands](essential-linux-commands.md)
-- Next: [Filesystem Paths, Links, Mounts, and Inodes](filesystem-paths-links-mounts-and-inodes.md)
-- Related: [Shell Scripting Fundamentals](shell-scripting-fundamentals.md)
-- Deeper track: [Shell Scripting](../shell/index.md)
-
-## References
-
-- [bash invocation man page](https://manpages.ubuntu.com/manpages/noble/man1/bash.1.html)
-- [systemd.exec Environment](https://www.freedesktop.org/software/systemd/man/latest/systemd.exec.html#Environment=)
-- [Ubuntu environment variables guide](https://help.ubuntu.com/community/EnvironmentVariables)

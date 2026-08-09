@@ -352,87 +352,27 @@ cd ~/rebash-linux/lab10
 - Do not put secrets in unit files — use environment files with strict permissions.
 - `mask` is stronger than `disable` — use deliberately on compromised units.
 
-## Common Mistakes
+# Common Mistakes
 
-!!! warning "Skipping daemon-reload"
-    systemd keeps old unit definitions in memory. Fix: always reload after file changes.
+❌ Skipping daemon-reload.
 
-!!! warning "Editing /lib/systemd/system"
-    Package updates overwrite vendor files. Fix: drop-ins under `/etc/systemd/system/*.d/`.
+✅ systemd keeps old unit definitions in memory. Fix: always reload after file changes.
 
-!!! warning "Relative ExecStart paths"
-    Service fails with status 203/EXEC. Fix: absolute path to script or binary.
+---
 
-!!! warning "No Restart= policy"
-    One crash leaves service down until manual start. Fix: `Restart=on-failure` or `always` with sane `RestartSec`.
+❌ Editing /lib/systemd/system.
 
-## Best Practices
+✅ Package updates overwrite vendor files. Fix: drop-ins under `/etc/systemd/system/*.d/`.
 
-- Version-control unit files in Git; deploy with Ansible/Terraform/cloud-init
-- Use `systemctl edit` for quick overrides on one host
-- Check `systemd-analyze verify unitfile` before rollout
-- Pair `status` with `journalctl -u` in runbooks
-- Document `WantedBy=` and ordering (`After=`, `Requires=`) for dependencies
+---
 
-## Troubleshooting
+❌ Relative ExecStart paths.
 
-| Symptom | Likely cause | Fix |
-|---------|--------------|-----|
-| `activating (auto-restart)` loop | Script exits immediately | Run `ExecStart` manually; read journal |
-| Service not at boot | Not enabled or wrong target | `systemctl is-enabled`; check `[Install]` |
-| Empty journal for unit | Stdout not connected | Use `StandardOutput=journal` or log inside app |
-| Permission denied in script | Running as wrong user | Drop-in `User=`; fix file ownership |
+✅ Service fails with status 203/EXEC. Fix: absolute path to script or binary.
 
-## Summary
+---
 
-**systemd** manages boot and services as **units**. Use **systemctl** to start/enable and **journalctl** to read logs. Override vendor settings with **drop-ins** under `/etc`. Next you will learn **targets**, **timers**, and **boot analysis**.
+❌ No Restart= policy.
 
-## Interview Questions
+✅ One crash leaves service down until manual start. Fix: `Restart=on-failure` or `always` with sane `RestartSec`.
 
-**1. What is systemd?**
-
-??? success "Reveal answer"
-    systemd is the init system and service manager on modern Linux — usually PID 1. It starts units at boot, supervises processes, applies resource limits via cgroups, and logs to the journal through journald.
-
-**2. What is the difference between systemctl start and enable?**
-
-??? success "Reveal answer"
-    **start** runs the service now. **enable** creates symlinks so the service starts at boot (when dependencies are met). **`enable --now`** does both. Disabling removes boot persistence but does not necessarily stop a running instance.
-
-**3. Why must you run daemon-reload?**
-
-??? success "Reveal answer"
-    systemd reads unit files at reload time. After you create or edit a `.service` file or drop-in, **`systemctl daemon-reload`** tells systemd to re-parse definitions. Without it, start/restart uses stale configuration.
-
-**4. Where should you put custom unit files?**
-
-??? success "Reveal answer"
-    Custom or override units belong under **`/etc/systemd/system/`**. Vendor packages install to `/lib/systemd/system/` (or `/usr/lib/systemd/system/`). Never edit vendor files directly — use drop-ins in `/etc/systemd/system/name.service.d/`.
-
-**5. How do you view logs for one service?**
-
-??? success "Reveal answer"
-    **`journalctl -u servicename.service`** — add `-f` to follow, `--since today` for time window, `-n 50` for last lines, `-p err` for priority filter. Often faster than hunting flat files.
-
-**6. What is a drop-in override?**
-
-??? success "Reveal answer"
-    A small fragment in `/etc/systemd/system/unit.service.d/*.conf` that merges with the main unit. Lets you change `Environment=`, `RestartSec`, etc. without copying the whole vendor unit — survives package updates.
-
-**7. When is mask appropriate?**
-
-??? success "Reveal answer"
-    **`systemctl mask`** symlinks the unit to `/dev/null`, making start impossible — stronger than disable. Use when a package installs an unwanted service (e.g. conflicting resolver) and you must prevent accidental start. Unmask to restore.
-
-## Related Tutorials
-
-- Prior: [Process Management](process-management.md)
-- Next: [systemd Targets, Timers, and Boot](systemd-targets-timers-and-boot.md)
-- Related: [Logging — syslog, journald, logrotate](logging-syslog-journald-logrotate.md)
-
-## References
-
-- [systemd.service(5)](https://www.freedesktop.org/software/systemd/man/systemd.service.html)
-- [systemctl(1)](https://www.freedesktop.org/software/systemd/man/systemctl.html)
-- [journalctl(1)](https://www.freedesktop.org/software/systemd/man/journalctl.html)
-- [REBASH Linux course index](index.md)

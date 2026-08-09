@@ -1,6 +1,21 @@
+---
+title: Linux Glossary
+description: "Linux glossary for REBASH Linux Mastery — ACL, systemd, LVM, PAM, cgroups, and other production Cloud/DevOps terms explained briefly."
+technology: linux
+author: Shaik Basha
+last_updated: "2026-08-09"
+category: linux
+tags:
+  - linux
+  - glossary
+  - devops
+  - rebash-linux-mastery
+comments: false
+---
+
 # Linux glossary
 
-Curated terms for the REBASH Linux course book. Keep entries short and practical.
+Curated terms for **REBASH Linux Mastery**. Keep entries short and practical.
 
 - **ACL** — Access Control List; extra file permissions beyond owner/group/other.
 - **AppArmor** — Linux Security Module that confines programmes with path-based profiles (common on Ubuntu).

@@ -1,394 +1,803 @@
 ---
-title: "SSH and Remote Access"
-description: "Linux SSH keys, client config, localhost login, and scp/rsync — plain language first, then a key-based auth lab."
-difficulty: beginner
-estimated_time: "45–55 min"
+title: "SSH (Secure Shell) — Secure Remote Access to Linux Systems"
+description: "Use SSH for secure Linux remote access — key authentication, sshd configuration, port forwarding, logging, and production hardening practices."
+difficulty: intermediate
+estimated_time: "80 min"
 author: Shaik Basha
-last_updated: "2026-08-04"
+last_updated: "2026-08-09"
 category: linux
 technology: linux
-module: "Module 9 · Linux Networking"
+module: "Module 8 · Networking"
+learning_paths:
+  - linux-administrator
+  - devops-engineer
+  - cloud-engineer
+  - platform-engineer
+  - site-reliability-engineer
 tags:
   - linux
+  - networking
   - ssh
-  - remote
-  - keys
-  - scp
-  - rsync
-  - beginners
-prerequisites:
-  - linux/linux-networking-tools
-next:
-  - linux/package-management
-related:
-  - labs/linux-ssh-secure-access
-labs:
-  - labs/linux-ssh-secure-access
-interview: interview/linux
+  - security
+  - remote-access
+  - rebash-linux-mastery
 comments: false
+status: ready
 ---
 
-# SSH and Remote Access
+# SSH (Secure Shell) — Secure Remote Access to Linux Systems
 
-## Overview
+> **SSH (Secure Shell)** is the standard protocol for securely accessing and managing remote Linux systems over a network. It encrypts all communication between the client and the server, making it the preferred method for remote administration, file transfers, automation, and infrastructure management. Every Linux administrator, DevOps engineer, Cloud Architect, Platform Engineer, Security Engineer, and Site Reliability Engineer (SRE) uses SSH daily.
 
-**Secure Shell (SSH)** is how you reach almost every Linux server. Keys, config, and safe habits matter more than memorising flags.
+---
 
-**Secure Shell (SSH)** is how you log in to almost every Linux cloud virtual machine (VM), jump server, and build agent. Commands you type on your laptop run on the remote host over an encrypted channel. File copy uses the same security: **`scp`** and **`rsync`**.
+## Learning Path
 
-**Plain problem:** A team shares one password in chat. Someone leaves the company. Keys are safer: your **private key** stays on your machine; the server stores only the **public key** in `authorized_keys`.
+<div class="ra-lesson-meta" markdown>
 
-This tutorial teaches **key-based login** on **localhost** (safe lab). It does **not** disable password login or change `sshd_config` in ways that could lock you out — never break your only SSH path without **console access**.
+<p class="ra-lesson-meta__crumb" markdown>**Linux Mastery** → Module 8: Networking → Lesson 11</p>
 
-This is **Tutorial 15** in **Module 9: Linux Networking** of the REBASH Academy **Linux for Cloud & DevOps Engineers** series — practical Linux for Cloud and DevOps work.
+<div class="ra-meta-grid" markdown>
 
-## Prerequisites
+<div markdown>**Difficulty:** Beginner → Intermediate</div>
 
-- [Linux Networking Tools](linux-networking-tools.md)
-- A practice Ubuntu 22.04/24.04 VM where OpenSSH server runs (`sudo systemctl status ssh` or `sshd`)
-- A normal user account with working local login
-- **Keep a second session open** while experimenting — if SSH breaks, you still have one window to fix it
+<div markdown>**Reading Time:** 80 Minutes</div>
 
-## Learning Objectives
+</div>
 
-By the end of this tutorial, you will be able to:
+</div>
 
-- [ ] Explain public/private keys and `authorized_keys` in plain words
-- [ ] Generate an Ed25519 key pair in an isolated lab directory
-- [ ] Log in with `ssh -i` to localhost using key auth
-- [ ] Write a `~/.ssh/config` Host stanza for shorter commands
-- [ ] Copy files with `scp` and `rsync` over SSH
-- [ ] Complete the lab under `~/rebash-linux/lab15` with evidence files
-- [ ] Answer common fresher interview questions on SSH
+<div class="ra-course-progress" markdown>
 
-## Architecture
+**Course Progress**
 
-The SSH client proves identity with a key (or password). sshd on the server checks `~/.ssh/authorized_keys` and starts your shell session.
+<div class="ra-meta-grid" markdown>
 
-![SSH access — client key, encrypted channel, sshd, authorized_keys](../assets/excalidraw/linux-ssh-access.svg)
+<div markdown>**Course:** Linux Mastery</div>
 
-## Theory
+<div markdown>**Module:** Networking</div>
 
-### The problem (before any jargon)
+<div markdown>**Lesson:** 11 of 13</div>
 
-Passwords leak in chat, reuse across sites, and appear in brute-force logs. Cloud providers inject your **public key** at first boot — you should understand that model before hardening production (Module 13).
+</div>
 
-### Keys (simple words)
+</div>
 
-**Analogy:** A **private key** is your house key — never post it online. A **public key** is the lock pattern you install on the server door (`authorized_keys`). Anyone can see the lock pattern; only you hold the key.
+---
 
-| File | Permission | Purpose |
-|------|------------|---------|
-| `~/.ssh/id_ed25519` | `600` | Private key — secret |
-| `~/.ssh/id_ed25519.pub` | `644` | Public key — copy to servers |
-| `~/.ssh/authorized_keys` | `600` | Public keys allowed to log in |
-| `~/.ssh` directory | `700` | SSH refuses loose permissions |
+# What You'll Learn
 
-**What you can say in an interview:** “I use Ed25519 keys, install pub keys in authorized_keys, chmod 700/600, and never share private keys.”
+After completing this lesson, you'll be able to:
 
-**Tiny example — generate key:**
+- Understand SSH
+- Connect securely to remote Linux servers
+- Configure SSH authentication
+- Generate SSH key pairs
+- Transfer files using SSH
+- Configure SSH client and server
+- Use SSH port forwarding
+- Secure SSH in production
 
-``` {.bash .ra-terminal title="Terminal"}
-ssh-keygen -t ed25519 -f ~/.ssh/lab_key -C "lab-only" -N ""
-ssh-keygen -lf ~/.ssh/lab_key.pub
+---
+
+# Prerequisites
+
+Complete:
+
+- Module 1 – Linux Fundamentals
+- Module 2 – Linux Command Line Essentials
+- Module 3 – Text Processing
+- Module 4 – File Management
+- Module 5 – Users and Groups
+- Module 6 – Process Management
+- Module 7 – Package Management
+- Module 8 Lessons 1–10
+
+---
+
+# Why Learn SSH?
+
+Imagine:
+
+- Managing a cloud server on AWS, Azure, or GCP.
+- Deploying applications remotely.
+- Connecting to Kubernetes nodes.
+- Troubleshooting production servers.
+- Automating infrastructure tasks.
+
+SSH is the secure method used for all these tasks.
+
+---
+
+# What is SSH?
+
+SSH stands for:
+
+```text
+Secure Shell
 ```
 
-**Interview line:** “Ed25519 is modern default — smaller and faster than RSA for most cases.”
+It is a cryptographic network protocol that provides secure remote access to systems over untrusted networks.
 
-### ssh client basics
+SSH encrypts:
 
-``` {.bash .ra-terminal title="Terminal"}
-ssh -i ~/.ssh/lab_key user@localhost
-ssh -v user@host              # verbose debug
-ssh user@host 'uptime'        # remote one-liner
+- Usernames
+- Passwords
+- Commands
+- File transfers
+- Session data
+
+---
+
+# How SSH Works
+
+```text
+SSH Client
+      │
+Encrypted Connection
+      │
+      ▼
+SSH Server (sshd)
+      │
+      ▼
+Remote Linux System
 ```
 
-### ~/.ssh/config — aliases
+All communication is encrypted before it travels across the network.
 
-```sshconfig title="config-snippet"
-Host labvm
-    HostName localhost
-    User myuser
-    IdentityFile ~/.ssh/lab_key
-    StrictHostKeyChecking accept-new
+---
+
+# SSH Architecture
+
+```text
+User
+ │
+ ▼
+SSH Client
+ │
+Encrypted Channel
+ │
+ ▼
+SSH Server
+ │
+ ▼
+Linux Operating System
 ```
 
-Then: `ssh labvm`
+---
 
-**Interview line:** “Config Host stanzas reduce typos in automation and on-call stress.”
+# SSH Default Port
 
-### scp and rsync
+SSH uses:
 
-``` {.bash .ra-terminal title="Terminal"}
-scp -i ~/.ssh/lab_key local.txt user@localhost:~/remote.txt
-rsync -avz -e "ssh -i ~/.ssh/lab_key" ./dir/ user@localhost:~/dir/
+```text
+TCP Port 22
 ```
 
-### Production warnings (read before any hardening)
+Verify that SSH is listening.
 
-- **Never** disable password auth or restart sshd on your **only** SSH session without console/serial access.
-- **Never** set `PermitRootLogin yes` for convenience.
-- **Never** commit private keys to Git.
-- **`StrictHostKeyChecking=no`** in CI is a trade-off — document and scope it.
-- Test sshd config: **`sudo sshd -t`** before **`systemctl restart ssh`**.
-
-### Common pitfalls
-
-- Wrong permissions on `~/.ssh` — sshd silently rejects keys
-- Editing `authorized_keys` for wrong user
-- Overwriting your only personal key without backup
-- Confusing `ssh-copy-id` target user@host
-
-## Hands-on Lab
-
-### Objective
-
-Generate lab keys under `~/rebash-linux/lab15`, install public key for localhost login, connect with key auth, copy a file with scp, and save evidence — without changing global sshd hardening.
-
-### Prerequisites
-
-| Item | Notes |
-|------|--------|
-| Ubuntu VM | `sshd` running on port 22 |
-| Local login | Console or existing SSH session |
-| OpenSSH client | `ssh`, `scp`, `ssh-keygen` |
-
-### Lab environment
-
-``` {.bash .ra-terminal title="Terminal"}
-mkdir -p ~/rebash-linux/lab15 && cd ~/rebash-linux/lab15
+```bash
+sudo ss -tulpn | grep :22
 ```
 
-### Real-world scenario
+---
 
-You join a team that provisions VMs with your public key. Before touching production, you prove you can generate a key, install it, log in, and copy a deploy artefact with scp — all documented for the access request ticket.
+# Basic SSH Connection
 
-### Step-by-step tasks
+Connect to a remote server.
 
-#### Task 1 – Generate lab key pair (isolated path)
-
-``` {.bash .ra-terminal title="Terminal"}
-cd ~/rebash-linux/lab15
-ssh-keygen -t ed25519 -f ./lab15_ed25519 -C "rebash-lab15" -N ""
-ls -la lab15_ed25519 lab15_ed25519.pub | tee key-perms.txt
-ssh-keygen -lf ./lab15_ed25519.pub | tee key-fingerprint.txt
-test -f lab15_ed25519 && test -f lab15_ed25519.pub
+```bash
+ssh username@192.168.1.100
 ```
 
-!!! example "Expected output"
-    Two key files exist. `key-fingerprint.txt` shows Ed25519 fingerprint and comment `rebash-lab15`.
+Example:
 
-
-#### Task 2 – Install public key for localhost (your user)
-
-``` {.bash .ra-terminal title="Terminal"}
-cd ~/rebash-linux/lab15
-mkdir -p ~/.ssh
-chmod 700 ~/.ssh
-grep -qF "$(cat lab15_ed25519.pub)" ~/.ssh/authorized_keys 2>/dev/null || cat lab15_ed25519.pub >> ~/.ssh/authorized_keys
-chmod 600 ~/.ssh/authorized_keys
-grep 'rebash-lab15' ~/.ssh/authorized_keys | tee auth-key-line.txt
-test -s auth-key-line.txt
+```bash
+ssh admin@192.168.1.100
 ```
 
-!!! example "Expected output"
-    `auth-key-line.txt` contains your lab public key line ending with `rebash-lab15`.
+---
 
+# Connect Using a Hostname
 
-#### Task 3 – Key-based SSH to localhost
-
-``` {.bash .ra-terminal title="Terminal"}
-cd ~/rebash-linux/lab15
-ssh -i ./lab15_ed25519 -o StrictHostKeyChecking=accept-new -o BatchMode=yes "$USER@localhost" 'hostname; whoami; pwd' | tee ssh-localhost.txt
-grep -q "$USER" ssh-localhost.txt
-grep -q "$(hostname)" ssh-localhost.txt
+```bash
+ssh admin@example.com
 ```
 
-!!! example "Expected output"
-    `ssh-localhost.txt` shows hostname, your username, and home directory — without password prompt (`BatchMode=yes` proves key auth).
+---
 
+# Connect Using a Different Port
 
-#### Task 4 – scp and config stanza
+If the SSH server listens on port **2222**:
 
-Create `deploy.txt`:
-
-```text title="deploy.txt"
-lab15 artefact created at PLACEHOLDER
+```bash
+ssh -p 2222 admin@192.168.1.100
 ```
 
-Create `ssh-config-snippet`:
+---
 
-```sshconfig title="ssh-config-snippet"
-Host rebash-lab15
-    HostName localhost
-    User PLACEHOLDER_USER
-    IdentityFile PLACEHOLDER_KEY
-    StrictHostKeyChecking accept-new
+# First-Time Connection
+
+On the first connection, SSH displays the server's fingerprint.
+
+Example:
+
+```text
+Are you sure you want to continue connecting?
 ```
 
-Prepare and test:
+Type:
 
-``` {.bash .ra-terminal title="Terminal"}
-cd ~/rebash-linux/lab15
-sed "s/PLACEHOLDER/$(date -Is)/" deploy.txt > deploy.local.txt
-sed -e "s/PLACEHOLDER_USER/$USER/" -e "s|PLACEHOLDER_KEY|$HOME/rebash-linux/lab15/lab15_ed25519|" ssh-config-snippet > ssh-config.local
-scp -i ./lab15_ed25519 -o StrictHostKeyChecking=accept-new deploy.local.txt "$USER@localhost:~/rebash-linux/lab15/deploy-received.txt"
-ssh -i ./lab15_ed25519 "$USER@localhost" 'test -s ~/rebash-linux/lab15/deploy-received.txt && wc -c ~/rebash-linux/lab15/deploy-received.txt' | tee scp-proof.txt
-test -s ssh-config.local
-echo "lab15 ssh OK" | tee evidence.txt
+```text
+yes
 ```
 
-!!! example "Expected output"
-    `deploy-received.txt` exists on the same host via scp. `scp-proof.txt` shows non-zero byte count.
+The server's public key is then stored in:
 
-
-### Validation steps
-
-- [ ] Key login works with `BatchMode=yes` (no password)
-- [ ] `~/.ssh` is `700` and `authorized_keys` is `600`
-- [ ] scp copied file successfully
-- [ ] You did **not** disable PasswordAuthentication or restart sshd into a lockout
-
-### Common errors and fixes
-
-| Error | Cause | Fix |
-|-------|-------|-----|
-| `Permission denied (publickey)` | Key not in authorized_keys or wrong perms | Fix modes 700/600; verify pub key line |
-| `WARNING: UNPROTECTED PRIVATE KEY` | Key file world-readable | `chmod 600 lab15_ed25519` |
-| `Host key verification failed` | Known hosts mismatch | Lab uses `accept-new`; do not blindly delete production known_hosts |
-| scp: Connection refused | sshd not running | `sudo systemctl start ssh` |
-
-### Challenge exercise
-
-Use `rsync -avz` with the lab key to sync a directory to localhost and prove with a manifest file.
-
-``` {.bash .ra-terminal title="Terminal"}
-cd ~/rebash-linux/lab15
-mkdir -p sync-src && echo "sync $(date -Is)" > sync-src/mark.txt
-rsync -avz -e "ssh -i $PWD/lab15_ed25519 -o StrictHostKeyChecking=accept-new" sync-src/ "$USER@localhost:~/rebash-linux/lab15/sync-dest/"
-ssh -i ./lab15_ed25519 "$USER@localhost" 'cat ~/rebash-linux/lab15/sync-dest/mark.txt' | tee rsync-proof.txt
-grep -q sync rsync-proof.txt
+```text
+~/.ssh/known_hosts
 ```
 
-### Learning outcomes
+---
 
-- You generated and used Ed25519 keys without touching production keys
-- You proved key-based localhost login and scp/rsync
-- You understand permission requirements on `~/.ssh`
+# SSH Authentication Methods
 
-### Cleanup
+SSH supports:
 
-``` {.bash .ra-terminal title="Terminal"}
-cd ~/rebash-linux/lab15
-# Remove lab public key line from authorized_keys (optional — keeps file tidy):
-grep -v 'rebash-lab15' ~/.ssh/authorized_keys > ~/.ssh/authorized_keys.tmp && mv ~/.ssh/authorized_keys.tmp ~/.ssh/authorized_keys
-chmod 600 ~/.ssh/authorized_keys
-# Keep lab15_ed25519* in lab dir for revision — do NOT commit private key to Git
+- Password authentication
+- Public key authentication
+
+Public key authentication is recommended for production systems.
+
+---
+
+# Generate an SSH Key Pair
+
+Generate an Ed25519 key pair (recommended):
+
+```bash
+ssh-keygen -t ed25519
 ```
 
-## Validation
+Or generate an RSA key pair:
 
-- [ ] Lab completed under `~/rebash-linux/lab15`
-- [ ] Can explain public vs private key to a classmate
-- [ ] Ready for package management next
+```bash
+ssh-keygen -t rsa -b 4096
+```
 
-## Code Walkthrough
+Default location:
 
-1. **Separate lab keys** — never overwrite `~/.ssh/id_ed25519` without backup.
-2. **`BatchMode=yes`** — proves non-interactive key auth (CI pattern).
-3. **`ssh -i`** — explicit identity file for multiple keys.
-4. **Permissions** — sshd rejects keys if `~/.ssh` or `authorized_keys` is too open.
-5. **`sshd -t` before restart** — production habit when you eventually harden sshd.
+```text
+~/.ssh/
+```
 
-## Security Considerations
+Generated files:
 
-- Private keys are secrets — store in agent or hardware token; never in Slack/Git.
-- Use separate keys per environment (lab/staging/prod).
-- `authorized_keys` options can restrict commands (`command="..."`) for automation.
-- Disable root login and password auth only with confirmed console access.
-- Audit `~/.ssh/authorized_keys` during offboarding — remove departed users’ keys.
+```text
+id_ed25519
 
-## Common Mistakes
+id_ed25519.pub
+```
 
-!!! warning "chmod 644 on private key"
-    SSH refuses the key. Fix: **`chmod 600`** on private key; **`700`** on `.ssh`.
+or
 
-!!! warning "Disabling passwords on only SSH session"
-    Typo in sshd_config locks everyone out. Fix: **`sshd -t`**, second session, serial console ready.
+```text
+id_rsa
 
-!!! warning "Sharing one team private key"
-    Cannot revoke one person. Fix: one key pair per engineer; remove one line from authorized_keys.
+id_rsa.pub
+```
 
-!!! warning "StrictHostKeyChecking=no everywhere"
-    Opens MITM risk. Fix: use known_hosts, `accept-new` once, or CI-only scoped disable with documentation.
+---
 
-## Best Practices
+# Copy Public Key to Server
 
-- Prefer **Ed25519** keys for new deployments
-- Use **`ssh-copy-id`** carefully with the correct `user@host`
-- Maintain **`~/.ssh/config`** for fleet aliases and IdentityFile
-- Pass keys to agents with timeout: `ssh-add -t 8h`
-- Log access — sshd logs go to journal/auth.log; forward to SIEM in production
+```bash
+ssh-copy-id admin@192.168.1.100
+```
 
-## Troubleshooting
+After copying the key, future logins can use key-based authentication.
 
-| Symptom | Likely cause | Fix |
-|---------|--------------|-----|
-| Publickey denied | Wrong key, perms, or user | `-vvv`; fix 700/600; check authorized_keys user |
-| Connection timed out | Security group / firewall | Cloud SG port 22; `ss -tlnp \| grep 22` on host |
-| Host key changed warning | Rebuilt VM same IP | Verify with provider; update known_hosts entry |
-| Agent offers wrong key | Many keys loaded | `ssh -i` explicit path or `IdentitiesOnly yes` in config |
+---
 
-## Summary
+# Login Using a Private Key
 
-**SSH** encrypts remote shell and file copy. Use **key-based auth**: private key on client, public key in **`authorized_keys`**, strict **permissions**. You practised on **localhost** safely. Hardening sshd comes later — always keep **console access** before changing the only SSH path.
+```bash
+ssh -i ~/.ssh/id_ed25519 \
+admin@192.168.1.100
+```
 
-## Interview Questions
+---
 
-**1. How does SSH key authentication work?**
+# SSH Configuration File
 
-??? success "Reveal answer"
-    The client proves ownership of a **private key**; the server checks the matching **public key** listed in **`~/.ssh/authorized_keys`**. No password is required if the key is trusted. Permissions on `.ssh` and key files must be tight (700/600) or sshd rejects login.
+Client configuration:
 
-**2. Why Ed25519 over RSA?**
+```text
+~/.ssh/config
+```
 
-??? success "Reveal answer"
-    **Ed25519** keys are shorter, faster, and modern curves with good security at default sizes. RSA remains common in legacy systems; new keys on current OpenSSH defaults favour Ed25519 unless policy requires RSA.
+Example:
 
-**3. What permissions must ~/.ssh and authorized_keys have?**
+```text
+Host webserver
 
-??? success "Reveal answer"
-    Directory **`~/.ssh` → 700**, **`authorized_keys` → 600**, private key **600**. Group/world read on private key or authorized_keys causes sshd to ignore keys for security.
+    HostName 192.168.1.100
 
-**4. What is the difference between scp and rsync?**
+    User admin
 
-??? success "Reveal answer"
-    Both use SSH. **`scp`** is simple copy. **`rsync`** syncs directories incrementally (only changed blocks), preserves more attributes with `-a`, and scales better for large trees — preferred for deploy artefacts and backups.
+    Port 22
 
-**5. What does BatchMode=yes test?**
+    IdentityFile ~/.ssh/id_ed25519
+```
 
-??? success "Reveal answer"
-    SSH runs **non-interactively** — no password or keyboard-interactive prompts. Fails if key auth is not set up. Used in scripts and CI to prove key-based access works.
+Connect using:
 
-**6. Why should you run sshd -t before restarting sshd?**
+```bash
+ssh webserver
+```
 
-??? success "Reveal answer"
-    It **validates config syntax** without applying a broken file. A bad `sshd_config` can stop sshd from starting — locking you out if that was your only access path. Always keep console/serial access when changing sshd.
+---
 
-**7. When is StrictHostKeyChecking=no acceptable?**
+# SSH Server Configuration
 
-??? success "Reveal answer"
-    Rarely — mainly **ephemeral CI builders** that are destroyed after one job, with other network controls. It disables MITM host key verification. Prefer **`accept-new`** (trust first sight, then enforce) or proper known_hosts management for production hosts.
+Server configuration file:
 
-## Related Tutorials
+```text
+/etc/ssh/sshd_config
+```
 
-- Prior: [Linux Networking Tools](linux-networking-tools.md)
-- Next: [Package Management](package-management.md)
-- Lab: [Linux SSH secure access](../labs/linux-ssh-secure-access.md)
+Common settings:
 
-## References
+```text
+Port 22
 
-- [OpenSSH manual — ssh(1)](https://man.openbsd.org/ssh.1)
-- [OpenSSH manual — sshd_config(5)](https://man.openbsd.org/sshd_config.5)
-- [ssh-keygen(1)](https://man.openbsd.org/ssh-keygen.1)
-- [REBASH Linux course index](index.md)
+PermitRootLogin no
+
+PasswordAuthentication no
+
+PubkeyAuthentication yes
+```
+
+After modifying the configuration:
+
+```bash
+sudo systemctl restart sshd
+```
+
+---
+
+# Check SSH Service
+
+```bash
+systemctl status sshd
+```
+
+Ubuntu may use:
+
+```bash
+systemctl status ssh
+```
+
+---
+
+# View SSH Logs
+
+Systems using `systemd`:
+
+```bash
+journalctl -u sshd
+```
+
+Ubuntu systems may use:
+
+```bash
+journalctl -u ssh
+```
+
+Traditional authentication log (distribution-dependent):
+
+```bash
+tail -f /var/log/auth.log
+```
+
+---
+
+# SSH Port Forwarding
+
+Local port forwarding:
+
+```bash
+ssh -L 8080:localhost:80 \
+admin@server
+```
+
+This forwards:
+
+```text
+localhost:8080
+
+↓
+
+server:80
+```
+
+Useful for securely accessing internal services.
+
+---
+
+# Remote Port Forwarding
+
+```bash
+ssh -R 9000:localhost:22 \
+admin@server
+```
+
+Allows the remote server to access a local service.
+
+---
+
+# Dynamic Port Forwarding
+
+Create a SOCKS proxy.
+
+```bash
+ssh -D 1080 admin@server
+```
+
+Useful for secure tunneling of network traffic.
+
+---
+
+# Common Commands
+
+Connect to a server.
+
+```bash
+ssh admin@server
+```
+
+Use a custom port.
+
+```bash
+ssh -p 2222 admin@server
+```
+
+Generate SSH keys.
+
+```bash
+ssh-keygen -t ed25519
+```
+
+Copy public key.
+
+```bash
+ssh-copy-id admin@server
+```
+
+Check SSH service.
+
+```bash
+systemctl status sshd
+```
+
+---
+
+# Real Production Examples
+
+Access a cloud VM.
+
+```bash
+ssh ubuntu@34.100.x.x
+```
+
+Connect to a Kubernetes node.
+
+```bash
+ssh admin@worker-node
+```
+
+Access a database server.
+
+```bash
+ssh dbadmin@db01
+```
+
+Forward a local port.
+
+```bash
+ssh -L 5432:localhost:5432 dbadmin@db01
+```
+
+---
+
+# Production Perspective
+
+SSH is used for:
+
+- Cloud administration
+- Kubernetes management
+- CI/CD deployments
+- Infrastructure automation
+- Remote troubleshooting
+- Secure file transfers
+- Database administration
+- Server maintenance
+
+It is the standard protocol for secure remote Linux administration.
+
+---
+
+# Hands-on Lab
+
+## Task 1
+
+Verify the SSH service.
+
+```bash
+systemctl status sshd
+```
+
+---
+
+## Task 2
+
+Generate an SSH key pair.
+
+```bash
+ssh-keygen -t ed25519
+```
+
+---
+
+## Task 3
+
+Display the public key.
+
+```bash
+cat ~/.ssh/id_ed25519.pub
+```
+
+---
+
+## Task 4
+
+Connect to a remote server.
+
+```bash
+ssh username@server-ip
+```
+
+---
+
+## Task 5
+
+Create an SSH client configuration.
+
+```text
+Host lab-server
+    HostName 192.168.1.100
+    User admin
+    IdentityFile ~/.ssh/id_ed25519
+```
+
+---
+
+## Task 6
+
+Test the configuration.
+
+```bash
+ssh lab-server
+```
+
+---
+
+## Task 7
+
+Verify that SSH is listening.
+
+```bash
+sudo ss -tulpn | grep :22
+```
+
+---
+
+## Task 8
+
+Review SSH logs.
+
+```bash
+journalctl -u sshd
+```
+
+---
+
+# Command Deep Dive
+
+| Command | Purpose | Production Example |
+|----------|----------|--------------------|
+| `ssh user@host` | Connect to a server | Remote administration |
+| `ssh -p` | Use custom port | Hardened servers |
+| `ssh-keygen` | Generate key pair | Secure authentication |
+| `ssh-copy-id` | Install public key | Passwordless login |
+| `ssh -L` | Local port forwarding | Database access |
+| `ssh -R` | Remote port forwarding | Remote tunneling |
+| `ssh -D` | Dynamic port forwarding | SOCKS proxy |
+| `systemctl status sshd` | Verify SSH service | Troubleshooting |
+
+---
+
+# Common SSH Errors
+
+| Error | Possible Cause |
+|--------|----------------|
+| `Connection refused` | SSH service not running or port blocked |
+| `Permission denied (publickey)` | Public key missing or incorrect permissions |
+| `Permission denied (password)` | Incorrect credentials or password authentication disabled |
+| `Connection timed out` | Firewall, routing, or network issue |
+| `Host key verification failed` | Server host key has changed |
+
+---
+
+# Production Troubleshooting Scenario
+
+!!! danger "Scenario"
+
+    A DevOps engineer cannot SSH into a production server.
+
+Investigation:
+
+Verify network connectivity.
+
+```bash
+ping server-ip
+```
+
+Check whether SSH is listening.
+
+```bash
+sudo ss -tulpn | grep :22
+```
+
+Verify the SSH service.
+
+```bash
+systemctl status sshd
+```
+
+Review logs.
+
+```bash
+journalctl -u sshd
+```
+
+The logs indicate that the user's public key is not authorized.
+
+Copy the public key to the server.
+
+```bash
+ssh-copy-id admin@server
+```
+
+Reconnect.
+
+```bash
+ssh admin@server
+```
+
+Access is restored successfully.
+
+---
+
+# Best Practices
+
+- Use SSH key-based authentication instead of passwords.
+- Disable direct root login.
+- Disable password authentication when key-based authentication is fully deployed.
+- Protect private keys with strong passphrases.
+- Restrict SSH access using firewalls and security groups.
+- Keep OpenSSH updated with security patches.
+- Monitor SSH logs for unauthorized access attempts.
+
+---
+
+# Common Mistakes
+
+❌ Using weak passwords for SSH.
+
+✅ Avoid using weak passwords for SSH when a safer approach exists.
+
+---
+
+❌ Enabling direct root login in production.
+
+✅ Avoid this mistake: enabling direct root login in production.
+
+---
+
+❌ Sharing private SSH keys.
+
+✅ Avoid this mistake: sharing private SSH keys.
+
+---
+
+❌ Leaving password authentication enabled unnecessarily.
+
+✅ Do not leave password authentication enabled unnecessarily.
+
+---
+
+❌ Ignoring SSH log files after failed login attempts.
+
+✅ Always review SSH log files after failed login attempts.
+
+---
+
+# Interview Questions
+## Beginner
+
+1. What is SSH?
+2. Which port does SSH use by default?
+3. How do you connect to a remote server?
+4. What is the difference between a public key and a private key?
+
+---
+
+## Intermediate
+
+1. Why is SSH key authentication preferred over passwords?
+2. What is the purpose of `ssh-copy-id`?
+3. What is local port forwarding?
+4. Where is the SSH server configuration stored?
+
+---
+
+## Architect Level
+
+1. How would you secure SSH access for hundreds of production servers?
+2. How would you implement centralized SSH key management?
+3. How would you troubleshoot intermittent SSH connection failures in a cloud environment?
+
+---
+
+# Summary
+
+In this lesson, you learned:
+
+- SSH fundamentals
+- Secure remote access
+- SSH authentication
+- SSH key pairs
+- SSH configuration
+- Port forwarding
+- SSH troubleshooting
+- Production security best practices
+
+SSH is the standard protocol for secure remote Linux administration. Mastering SSH enables administrators to manage servers, automate deployments, transfer files, and securely access infrastructure across on-premises and cloud environments.
+
+---
+
+## Key Takeaways
+
+- SSH provides encrypted remote access to Linux systems.
+- SSH uses TCP port 22 by default.
+- SSH key-based authentication is more secure than passwords.
+- SSH configuration files simplify repeated connections.
+- Port forwarding enables secure access to remote services.
+- Securing SSH is critical for protecting production infrastructure.
+
+---
+
+## What's Next?
+
+**[SCP (Secure Copy Protocol) — Secure File Transfer Between Linux Systems](scp.md)**
+
+You'll explore:
+
+- Secure file transfers using SCP
+- Copying files between local and remote systems
+- Recursive transfers
+- Preserving permissions
+- Production file transfer practices
+
+Then you'll continue with **rsync** for efficient file synchronization and backups.

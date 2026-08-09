@@ -1,403 +1,786 @@
 ---
-title: "Disks, Partitions, and Filesystems"
-description: "Linux discover disks, partition safely on a loop device, mkfs, mount by UUID — plain language first, then a hands-on lab."
-difficulty: beginner
-estimated_time: "55–65 min"
+title: "Partitions — Organizing Storage Devices in Linux"
+description: "Learn Linux disk partitions — MBR vs GPT, primary and logical partitions, lsblk, fdisk, parted, partprobe, and production partitioning practices."
+difficulty: intermediate
+estimated_time: "75 min"
 author: Shaik Basha
-last_updated: "2026-08-04"
+last_updated: "2026-08-09"
 category: linux
 technology: linux
-module: "Module 8 · Storage"
+module: "Module 9 · Storage Management"
+learning_paths:
+  - linux-administrator
+  - devops-engineer
+  - cloud-engineer
+  - platform-engineer
+  - site-reliability-engineer
 tags:
   - linux
-  - lsblk
+  - storage
+  - partitions
+  - gpt
   - fdisk
-  - mkfs
-  - mount
-  - beginners
-prerequisites:
-  - linux/systemd-targets-timers-and-boot
-next:
-  - linux/lvm-swap-and-disk-monitoring
-related:
-  - linux/disk-usage-and-file-attributes
-interview: interview/linux
+  - rebash-linux-mastery
 comments: false
+status: ready
 ---
 
-# Disks, Partitions, and Filesystems
+# Partitions — Organizing Storage Devices in Linux
 
-## Overview
+> A **partition** is a logical division of a physical storage device that allows a single disk to be divided into multiple independent sections. Each partition can contain its own filesystem, operating system, application data, or swap space. Proper partitioning improves organization, security, performance, and storage management. Understanding partitions is an essential skill for Linux administrators, DevOps engineers, Cloud Architects, Platform Engineers, and Site Reliability Engineers (SREs).
 
-Disks, partitions, and filesystems decide whether your data is mountable, resumable after reboot, and safe to grow.
+---
 
-Attaching a cloud disk does nothing until you **discover** it, **partition** it, create a **filesystem**, **mount** it on a folder, and make that mount survive reboot. One wrong `mkfs` on the wrong device wipes data — learn safe patterns first.
+## Learning Path
 
-**Plain problem:** You add a 50 GiB volume in AWS. It appears as `/dev/nvme1n1` but `df` does not show it. You need `lsblk`, a partition, `mkfs.ext4`, `mount`, and `/etc/fstab` with **UUID**.
+<div class="ra-lesson-meta" markdown>
 
-This tutorial practises the full flow on a **file-backed loop device** — never touching your real OS disk.
+<p class="ra-lesson-meta__crumb" markdown>**Linux Mastery** → Module 9: Storage Management → Lesson 1</p>
 
-This is **Tutorial 12** in **Module 8: Storage** of the REBASH Academy **Linux for Cloud & DevOps Engineers** series — practical Linux for Cloud and DevOps work.
+<div class="ra-meta-grid" markdown>
 
-## Prerequisites
+<div markdown>**Difficulty:** Beginner → Intermediate</div>
 
-- [systemd Targets, Timers, and Boot](systemd-targets-timers-and-boot.md)
-- A practice Ubuntu 22.04/24.04 VM with `sudo`
-- Packages: `util-linux`, `e2fsprogs` (usually preinstalled)
-- **Warning:** Do **not** run `mkfs` or `fdisk` on real cloud disks until you can identify them with certainty
+<div markdown>**Reading Time:** 75 Minutes</div>
 
-## Learning Objectives
+</div>
 
-By the end of this tutorial, you will be able to:
+</div>
 
-- [ ] Explain block device, partition, filesystem, and mount point in plain words
-- [ ] Discover devices with `lsblk` and read UUIDs with `blkid`
-- [ ] Create a GPT partition on a loop device and format ext4 safely
-- [ ] Mount by UUID and draft a correct `/etc/fstab` line (lab uses a test mount)
-- [ ] Complete the lab under `~/rebash-linux/lab12` and clean up completely
-- [ ] Answer common fresher interview questions on Linux storage
+<div class="ra-course-progress" markdown>
 
-## Architecture
+**Course Progress**
 
-Applications see files in directories. The kernel maps those paths to a **filesystem** on a **partition** on a **block device** (disk or loop file).
+<div class="ra-meta-grid" markdown>
 
-![Linux storage layout — disk, partition, filesystem, mount](../assets/excalidraw/linux-storage-layout.svg)
+<div markdown>**Course:** Linux Mastery</div>
 
-## Theory
+<div markdown>**Module:** Storage Management</div>
 
-### The problem (before any jargon)
+<div markdown>**Lesson:** 1 of 10</div>
 
-You SSH to a new VM. Someone says “put logs on `/data`.” There is no `/data` mount — only root `/`. You attach a volume in the cloud console. It shows up as `/dev/xvdf` but you still cannot write until you partition and format it.
+</div>
 
-Worse: `/dev/sdb` today might be `/dev/sdc` after reboot. **UUIDs** stay stable.
+</div>
 
-### Key terms (simple words)
+---
 
-**Analogy:** A **disk** is a plot of land. A **partition** is a fenced section. A **filesystem** is the filing system inside (ext4, XFS). A **mount point** is the door path (e.g. `/data`) where that filing system appears.
+# What You'll Learn
 
-| Term | Plain meaning |
-|------|----------------|
-| **Block device** | `/dev/sda`, `/dev/nvme0n1`, `/dev/loop0` |
-| **Partition** | Slice of a disk — `/dev/sda1`, `/dev/nvme0n1p1` |
-| **Filesystem** | How files are stored — ext4, XFS |
-| **Mount** | Attach filesystem tree to a directory |
-| **UUID** | Unique ID for partition — use in fstab |
+After completing this lesson, you'll be able to:
 
-**What you can say in an interview:** “I lsblk to identify devices, partition with GPT, mkfs, mount by UUID, and fstab with nofail for cloud volumes.”
+- Understand disk partitions
+- Learn partition table types
+- View existing partitions
+- Create and delete partitions
+- Understand primary, extended, and logical partitions
+- Work with GPT and MBR
+- Prepare disks for filesystems
+- Apply partitioning best practices in production
 
-### Discover before you destroy
+---
 
-``` {.bash .ra-terminal title="Terminal"}
-lsblk -f
-sudo fdisk -l /dev/sda    # read only — do NOT experiment on root disk in prod
+# Prerequisites
+
+Complete:
+
+- Module 1 – Linux Fundamentals
+- Module 2 – Linux Command Line Essentials
+- Module 3 – Text Processing
+- Module 4 – File Management
+- Module 5 – Users and Groups
+- Module 6 – Process Management
+- Module 7 – Package Management
+- Module 8 – Networking
+
+---
+
+# Why Learn Partitions?
+
+Imagine:
+
+- Installing Linux on a new server.
+- Adding a new SSD to a cloud virtual machine.
+- Creating separate storage for databases.
+- Isolating application logs from the operating system.
+- Preparing disks before configuring LVM or RAID.
+
+The first step in all these scenarios is partitioning the storage device.
+
+---
+
+# What is a Partition?
+
+A partition is a logical section of a physical storage device.
+
+Example:
+
+```text
+Physical Disk
+
+/dev/sda
+│
+├── /dev/sda1
+├── /dev/sda2
+└── /dev/sda3
+```
+
+Each partition behaves like an independent storage device.
+
+It can contain:
+
+- A filesystem
+- Swap space
+- LVM Physical Volume
+- Database storage
+- Application data
+
+---
+
+# Why Use Partitions?
+
+Partitions help:
+
+- Separate operating system files from user data
+- Improve storage organization
+- Simplify backups
+- Improve security
+- Reduce the impact of filesystem corruption
+- Prepare storage for enterprise workloads
+
+Example:
+
+```text
+Disk
+
+├── /
+├── /boot
+├── /home
+├── /var
+└── swap
+```
+
+Each partition serves a different purpose.
+
+---
+
+# Partition Tables
+
+A partition table describes how partitions are organized on a disk.
+
+Linux primarily supports:
+
+- MBR (Master Boot Record)
+- GPT (GUID Partition Table)
+
+---
+
+# MBR (Master Boot Record)
+
+Characteristics:
+
+- Supports disks up to **2 TB**
+- Maximum **4 primary partitions**
+- Used by legacy BIOS systems
+
+Example:
+
+```text
+Disk
+
+├── Primary
+├── Primary
+├── Primary
+└── Primary
+```
+
+Limitations:
+
+- Maximum disk size of 2 TB
+- Limited number of partitions
+
+---
+
+# Extended and Logical Partitions
+
+Because MBR supports only four primary partitions, one primary partition can be converted into an **Extended Partition**.
+
+Example:
+
+```text
+Primary
+
+Primary
+
+Primary
+
+Extended
+        │
+        ├── Logical
+        ├── Logical
+        ├── Logical
+        └── Logical
+```
+
+Logical partitions exist only inside the extended partition.
+
+---
+
+# GPT (GUID Partition Table)
+
+GPT is the modern partitioning standard.
+
+Advantages:
+
+- Supports disks larger than **2 TB**
+- Typically supports **128 partitions**
+- Better reliability
+- Redundant partition table
+- Required for UEFI boot systems
+
+GPT is recommended for almost all modern Linux installations.
+
+---
+
+# Device Naming
+
+Linux names storage devices as follows:
+
+SATA/SCSI disks:
+
+```text
+/dev/sda
+
+/dev/sdb
+```
+
+NVMe disks:
+
+```text
+/dev/nvme0n1
+```
+
+Partitions:
+
+```text
+/dev/sda1
+
+/dev/sda2
+
+/dev/nvme0n1p1
+```
+
+---
+
+# View Available Disks
+
+Display storage devices.
+
+```bash
+lsblk
+```
+
+Example:
+
+```text
+NAME
+
+sda
+
+├── sda1
+
+├── sda2
+
+└── sda3
+```
+
+---
+
+# View Partition Details
+
+```bash
+sudo fdisk -l
+```
+
+Displays:
+
+- Disk size
+- Partition table type
+- Partition sizes
+- Bootable partitions
+
+---
+
+# View Filesystem Information
+
+```bash
 blkid
-df -hT
 ```
 
-**Interview line:** “I run `lsblk -f` twice and confirm serial/size before any mkfs — wrong device ends careers.”
+Example:
 
-### Partitioning and formatting (loop lab only here)
+```text
+UUID
 
-On a **loop file** (safe lab):
+TYPE
 
-``` {.bash .ra-terminal title="Terminal"}
-fallocate -l 256M disk.img
-sudo losetup -fP --show disk.img    # creates /dev/loopN
-sudo parted /dev/loopN mklabel gpt
-sudo parted /dev/loopN mkpart primary ext4 1MiB 100%
-sudo mkfs.ext4 -L labdata /dev/loopNp1
+LABEL
 ```
 
-**Production warning:** On real servers, triple-check device names. Cloud APIs also expose serial numbers — match them to `lsblk`.
+---
 
-### Mount and fstab
+# View Partition Table
 
-``` {.bash .ra-terminal title="Terminal"}
-sudo mkdir -p /mnt/data
-sudo mount /dev/disk/by-uuid/YOUR-UUID /mnt/data
-grep UUID /etc/fstab   # example line shown in lab — test with mount -a
+Using `parted`:
+
+```bash
+sudo parted /dev/sda print
 ```
 
-fstab fields: `UUID=…  /mount  ext4  defaults,nofail  0  2`
+Shows:
 
-**Interview line:** “nofail lets the host boot if a secondary cloud volume is detached; without it boot can hang in maintenance mode.”
+- Partition table type
+- Partition layout
+- Start/end sectors
+- Partition sizes
 
-### Common pitfalls
+---
 
-- `mkfs` on `/dev/sda` instead of `/dev/sdb` — wipes OS
-- Using device names in fstab — order changes; use UUID
-- Forgetting `partprobe` / `losetup -P` — partition nodes missing
-- Skipping `umount` before cleanup — “device is busy”
+# Create a Partition Using fdisk
 
-## Hands-on Lab
+Open the disk.
 
-### Objective
-
-Build a complete loop-backed disk: partition, ext4, mount by UUID, prove with files, unmount and detach — zero impact on the OS disk.
-
-### Prerequisites
-
-| Item | Notes |
-|------|--------|
-| Ubuntu VM | ~300 MiB free in `$HOME` |
-| `sudo` | Required for loop, mkfs, mount |
-| Safety | **Only** `disk.img` in lab dir is formatted |
-
-### Lab environment
-
-``` {.bash .ra-terminal title="Terminal"}
-mkdir -p ~/rebash-linux/lab12 && cd ~/rebash-linux/lab12
+```bash
+sudo fdisk /dev/sdb
 ```
 
-### Real-world scenario
+Common interactive commands:
 
-Platform team provisions a new data volume for `/var/log/app`. You must document: device name, partition, UUID, mount point, and fstab line. This lab rehearses those steps on a loop file so you cannot destroy the root disk.
-
-### Step-by-step tasks
-
-#### Task 1 – Create loop-backed disk image
-
-``` {.bash .ra-terminal title="Terminal"}
-cd ~/rebash-linux/lab12
-fallocate -l 256M disk.img
-LOOP="$(sudo losetup -fP --show disk.img)"
-echo "$LOOP" | tee loop-device.txt
-lsblk "$LOOP" | tee lsblk-before.txt
-test -s loop-device.txt
+```text
+n
 ```
 
-!!! example "Expected output"
-    `loop-device.txt` contains `/dev/loopN`. `lsblk` shows the loop device with no partitions yet.
+Create a new partition.
 
-
-#### Task 2 – GPT partition and ext4
-
-``` {.bash .ra-terminal title="Terminal"}
-cd ~/rebash-linux/lab12
-LOOP="$(cat loop-device.txt)"
-sudo parted -s "$LOOP" mklabel gpt
-sudo parted -s "$LOOP" mkpart primary ext4 1MiB 100%
-sudo partprobe "$LOOP"
-PART="${LOOP}p1"
-lsblk -f "$LOOP" | tee lsblk-after-part.txt
-sudo mkfs.ext4 -L lab12data "$PART"
-sudo blkid "$PART" | tee blkid.txt
-grep -q 'UUID=' blkid.txt
+```text
+p
 ```
 
-!!! example "Expected output"
-    `lsblk-after-part.txt` shows partition `p1`. `blkid.txt` includes `UUID="..."` and `LABEL="lab12data"`.
+Primary partition (MBR only).
 
-
-#### Task 3 – Mount by UUID and write proof file
-
-``` {.bash .ra-terminal title="Terminal"}
-cd ~/rebash-linux/lab12
-UUID="$(grep -oP 'UUID="\K[^"]+' blkid.txt)"
-echo "$UUID" | tee uuid.txt
-sudo mkdir -p /mnt/rebash-lab12
-sudo mount "UUID=$UUID" /mnt/rebash-lab12
-mount | grep rebash-lab12 | tee mount-proof.txt
-echo "lab12 stored $(date -Is)" | sudo tee /mnt/rebash-lab12/proof.txt
-sudo cat /mnt/rebash-lab12/proof.txt | tee proof-readback.txt
-df -h /mnt/rebash-lab12 | tee df-lab12.txt
-test -s proof-readback.txt
+```text
+w
 ```
 
-!!! example "Expected output"
-    `mount-proof.txt` shows ext4 on `/mnt/rebash-lab12`. `proof.txt` content appears in readback.
+Write changes to disk.
 
+---
 
-#### Task 4 – Draft fstab line (not installed) and diagnose busy umount
+# Create a GPT Partition Using parted
 
-Create `fstab-snippet.txt`:
+Start `parted`.
 
-```text title="fstab-snippet.txt"
-UUID=REPLACE-UUID  /mnt/rebash-lab12  ext4  defaults,nofail  0  2
+```bash
+sudo parted /dev/sdb
 ```
 
-``` {.bash .ra-terminal title="Terminal"}
-cd ~/rebash-linux/lab12
-sed "s/REPLACE-UUID/$(cat uuid.txt)/" fstab-snippet.txt > fstab-snippet.local.txt
-grep "$(cat uuid.txt)" fstab-snippet.local.txt | tee fstab-line.txt
-sudo umount /mnt/rebash-lab12
-mount | grep rebash-lab12 && echo "still mounted" || echo "unmounted OK" | tee umount-proof.txt
-grep -q 'unmounted OK' umount-proof.txt
-echo "lab12 storage OK" | tee evidence.txt
+Create GPT.
+
+```bash
+mklabel gpt
 ```
 
-!!! example "Expected output"
-    `fstab-line.txt` is a valid-looking fstab entry. `umount-proof.txt` shows `unmounted OK`.
+Create partition.
 
-
-### Validation steps
-
-- [ ] Only `disk.img` / loop device was formatted — root disk untouched
-- [ ] UUID recorded in `uuid.txt` and used for mount
-- [ ] Proof file written on mounted filesystem
-- [ ] Successfully unmounted before cleanup continues
-
-### Common errors and fixes
-
-| Error | Cause | Fix |
-|-------|-------|-----|
-| `parted: invalid device` | Loop not attached | Re-run losetup; check `loop-device.txt` |
-| `mkfs.ext4: Device size` | Partition not created | `partprobe`; check `${LOOP}p1` exists |
-| `mount: unknown UUID` | Typo in UUID | Copy from `blkid.txt` exactly |
-| `target is busy` on umount | Shell cwd on mount | `cd ~`; `sudo lsof +f -- /mnt/rebash-lab12` |
-
-### Challenge exercise
-
-Create `lab12-mount-check.sh` that reads `uuid.txt`, mounts if unmounted, runs `touch` proof, and unmounts.
-
-Create `lab12-mount-check.sh`:
-
-```bash title="lab12-mount-check.sh"
-#!/usr/bin/env bash
-set -euo pipefail
-lab="$HOME/rebash-linux/lab12"
-uuid="$(cat "$lab/uuid.txt")"
-mp="/mnt/rebash-lab12"
-sudo mkdir -p "$mp"
-if mountpoint -q "$mp"; then
-  echo "already mounted"
-else
-  sudo mount "UUID=$uuid" "$mp"
-fi
-echo "challenge $(date -Is)" | sudo tee -a "$mp/challenge.txt"
-sudo umount "$mp"
-echo "mount cycle OK"
+```bash
+mkpart primary ext4 1MiB 20GiB
 ```
 
-``` {.bash .ra-terminal title="Terminal"}
-cd ~/rebash-linux/lab12
-chmod +x lab12-mount-check.sh
-./lab12-mount-check.sh | tee challenge-out.txt
-grep -q 'mount cycle OK' challenge-out.txt
-sudo cat /mnt/rebash-lab12/challenge.txt 2>/dev/null || sudo mount UUID="$(cat uuid.txt)" /mnt/rebash-lab12 && sudo cat /mnt/rebash-lab12/challenge.txt | tail -1
-sudo umount /mnt/rebash-lab12 2>/dev/null || true
+Exit.
+
+```bash
+quit
 ```
 
-### Learning outcomes
+---
 
-- You practised full disk workflow on a safe loop device
-- You mounted by UUID and drafted fstab with nofail
-- You can explain why device names are risky in fstab
+# Reload Partition Table
 
-### Cleanup
+Inform the kernel about partition changes.
 
-``` {.bash .ra-terminal title="Terminal"}
-cd ~/rebash-linux/lab12
-sudo umount /mnt/rebash-lab12 2>/dev/null || true
-LOOP="$(cat loop-device.txt 2>/dev/null || true)"
-if [ -n "${LOOP:-}" ]; then sudo losetup -d "$LOOP"; fi
-sudo rmdir /mnt/rebash-lab12 2>/dev/null || true
-# Keep disk.img and evidence for revision; losetup -d releases loop
+```bash
+sudo partprobe
 ```
 
-## Validation
+If necessary, reboot the system.
 
-- [ ] Lab completed under `~/rebash-linux/lab12`
-- [ ] Can explain block device → partition → filesystem → mount
-- [ ] Ready for LVM and swap next
+---
 
-## Code Walkthrough
+# Delete a Partition
 
-1. **`lsblk -f`** — one view of name, size, FSTYPE, UUID.
-2. **Loop lab** — same commands as cloud disk without risking `/dev/sda`.
-3. **`mount UUID=…`** — survives device rename across reboots.
-4. **`nofail` in fstab** — cloud volumes may detach; host should still boot.
-5. **`umount` before `losetup -d`** — clean teardown order.
+Using `fdisk`:
 
-## Security Considerations
+```text
+d
+```
 
-- Destructive commands (`mkfs`, `parted mklabel`) require change tickets on production.
-- Encrypt sensitive data volumes (LUKS or cloud-managed keys) at rest.
-- Restrict `sudo` for disk operations on shared hosts.
-- Label volumes in cloud console to match `lsblk` serial — reduces wrong-disk risk.
-- Back up before resize or repartition operations.
+Delete selected partition.
 
-## Common Mistakes
+Save changes.
 
-!!! warning "mkfs on the OS disk"
-    One typo in `/dev/sda` vs `/dev/sdb` destroys the server. Fix: use loop labs first; match cloud serial; read `lsblk` twice.
+```text
+w
+```
 
-!!! warning "Device names in /etc/fstab"
-    `/dev/xvdf` can reorder. Fix: **`UUID=`** or **`LABEL=`** from `blkid`.
+> **Warning:** Deleting a partition removes it from the partition table. The filesystem becomes inaccessible and data recovery may not be possible without specialized tools.
 
-!!! warning "Missing nofail on cloud data volumes"
-    Boot hangs in emergency mode if volume absent. Fix: add `nofail` (and often `x-systemd.device-timeout=`).
+---
 
-!!! warning "Formatting without umount"
-    mkfs on mounted filesystem corrupts data. Fix: `umount` first; confirm with `findmnt`.
+# Common Commands
 
-## Best Practices
+Display disks.
 
-- Document UUID, mount point, and purpose in inventory
-- Use GPT for new disks (>2 TiB needs GPT anyway)
-- Test fstab with `sudo mount -a` after edits (on maintenance window)
-- Separate `/var`, `/data`, and databases onto dedicated volumes in production
-- Snapshot cloud volumes before destructive changes
+```bash
+lsblk
+```
 
-## Troubleshooting
+Display partitions.
 
-| Symptom | Likely cause | Fix |
-|---------|--------------|-----|
-| New disk not visible | Not attached in hypervisor | Attach volume; `lsblk` refresh |
-| Partition node missing | Kernel not re-read table | `partprobe` or reboot |
-| fstab boot failure | Wrong UUID or missing nofail | Use rescue/console; fix fstab |
-| `disk full` but df OK | Inodes exhausted | `df -i`; small-file explosion |
+```bash
+sudo fdisk -l
+```
 
-## Summary
+Show UUIDs.
 
-**Block devices** hold **partitions**; **filesystems** store files; **mount** connects them to paths. Always identify with **`lsblk`**, format the **correct** device, mount by **UUID**, and use **`nofail`** for optional cloud volumes. Next: **LVM**, **swap**, and **disk monitoring**.
+```bash
+blkid
+```
 
-## Interview Questions
+Partition management.
 
-**1. What is the difference between a partition and a filesystem?**
+```bash
+sudo fdisk /dev/sdb
+```
 
-??? success "Reveal answer"
-    A **partition** is a slice of a disk (layout on the block device). A **filesystem** is the structure (ext4, XFS) that stores files inside that partition. You partition first, then `mkfs` to create the filesystem, then mount.
+Modern partition management.
 
-**2. Why use UUID in /etc/fstab instead of /dev/sdb?**
+```bash
+sudo parted /dev/sdb
+```
 
-??? success "Reveal answer"
-    Device names like `/dev/sdb` can change order across reboots or after attaching volumes. **UUID** (or LABEL) stays tied to the formatted partition — safer for persistent mounts, especially on cloud VMs.
+Reload partition table.
 
-**3. What does lsblk show?**
+```bash
+sudo partprobe
+```
 
-??? success "Reveal answer"
-    A tree of block devices, partitions, sizes, mount points, and filesystem types (`-f` adds FSTYPE and UUID). First diagnostic command before partitioning or mkfs.
+---
 
-**4. What is a loop device?**
+# Real Production Examples
 
-??? success "Reveal answer"
-    A kernel block device backed by a regular file (`losetup` on `disk.img`). Lets you practise partitioning/mkfs without extra hardware — same tools as real disks, safer for learning.
+Inspect a new cloud volume.
 
-**5. What does nofail do in fstab?**
+```bash
+lsblk
+```
 
-??? success "Reveal answer"
-    If the volume cannot be mounted at boot, the system **continues booting** instead of dropping to emergency mode. Important for optional or attachable cloud data volumes that may be absent.
+View partition details.
 
-**6. How do you safely add a new cloud volume?**
+```bash
+sudo fdisk -l
+```
 
-??? success "Reveal answer"
-    Attach in console → `lsblk` / match serial → partition (GPT) → `mkfs` on the **data** partition only → mount by UUID → add fstab with `nofail` → `mount -a` test → document.
+Create a GPT partition.
 
-**7. mkfs says device is mounted — what now?**
+```bash
+sudo parted /dev/nvme0n1
+```
 
-??? success "Reveal answer"
-    **Never mkfs a mounted filesystem** — you will corrupt live data. `umount` the mount point (fix busy with `lsof`/`fuser`), confirm with `findmnt`, then mkfs only if you intend to erase that partition.
+Reload partition table.
 
-## Related Tutorials
+```bash
+sudo partprobe
+```
 
-- Prior: [systemd Targets, Timers, and Boot](systemd-targets-timers-and-boot.md)
-- Next: [LVM, Swap, and Disk Monitoring](lvm-swap-and-disk-monitoring.md)
-- Related: [Disk Usage and File Attributes](disk-usage-and-file-attributes.md)
+---
 
-## References
+# Production Perspective
 
-- [lsblk(8)](https://man7.org/linux/man-pages/man8/lsblk.8.html)
-- [fstab(5)](https://man7.org/linux/man-pages/man5/fstab.5.html)
-- [ext4 wiki](https://ext4.wiki.kernel.org/)
-- [REBASH Linux course index](index.md)
+Partitions are commonly used for:
+
+- Linux installations
+- Database storage
+- Application data
+- Log storage
+- Backup volumes
+- Cloud virtual machines
+- LVM Physical Volumes
+- RAID configurations
+
+Proper partition planning makes storage easier to manage and expand.
+
+---
+
+# Hands-on Lab
+
+## Task 1
+
+Display storage devices.
+
+```bash
+lsblk
+```
+
+---
+
+## Task 2
+
+View partition information.
+
+```bash
+sudo fdisk -l
+```
+
+---
+
+## Task 3
+
+Display UUIDs.
+
+```bash
+blkid
+```
+
+---
+
+## Task 4
+
+Display the partition table.
+
+```bash
+sudo parted /dev/sda print
+```
+
+---
+
+## Task 5
+
+Create a partition on a **test disk**.
+
+```bash
+sudo fdisk /dev/sdb
+```
+
+> Never perform this exercise on a production disk.
+
+---
+
+## Task 6
+
+Reload the partition table.
+
+```bash
+sudo partprobe
+```
+
+---
+
+## Task 7
+
+Verify the new partition.
+
+```bash
+lsblk
+```
+
+---
+
+## Task 8
+
+Review the updated partition layout.
+
+```bash
+sudo fdisk -l
+```
+
+---
+
+# Command Deep Dive
+
+| Command | Purpose | Production Example |
+|----------|----------|--------------------|
+| `lsblk` | View disks and partitions | Storage inventory |
+| `fdisk -l` | Display partition information | Capacity planning |
+| `blkid` | View filesystem UUIDs | Mount configuration |
+| `fdisk` | Create or modify partitions | Disk preparation |
+| `parted` | GPT partition management | Enterprise storage |
+| `partprobe` | Reload partition table | Apply changes |
+
+---
+
+# MBR vs GPT
+
+| Feature | MBR | GPT |
+|----------|-----|-----|
+| Maximum Disk Size | 2 TB | Greater than 2 TB |
+| Maximum Partitions | 4 Primary | Typically 128 |
+| UEFI Support | No | Yes |
+| Redundant Metadata | No | Yes |
+| Recommended Today | Legacy Systems | Modern Systems |
+
+---
+
+# Production Troubleshooting Scenario
+
+!!! danger "Scenario"
+
+    A new 8 TB storage volume is attached to a Linux server.
+
+Running:
+
+```bash
+sudo fdisk -l
+```
+
+shows the disk, but only 2 TB is usable.
+
+Investigation reveals that the disk uses an MBR partition table.
+
+Solution:
+
+Create a GPT partition table.
+
+```bash
+sudo parted /dev/sdb
+
+mklabel gpt
+```
+
+Create a partition.
+
+```bash
+mkpart primary ext4 1MiB 100%
+```
+
+Reload the partition table.
+
+```bash
+sudo partprobe
+```
+
+The full disk capacity is now available.
+
+---
+
+# Best Practices
+
+- Use GPT for modern Linux systems.
+- Separate operating system and application data when appropriate.
+- Verify the target disk before modifying partitions.
+- Back up important data before changing partition layouts.
+- Use UUIDs when mounting filesystems.
+- Leave room for future storage expansion.
+
+---
+
+# Common Mistakes
+
+❌ Partitioning the wrong disk.
+
+✅ Avoid this mistake: partitioning the wrong disk.
+
+---
+
+❌ Using MBR on disks larger than 2 TB.
+
+✅ Avoid using MBR on disks larger than 2 TB when a safer approach exists.
+
+---
+
+❌ Forgetting to reload the partition table.
+
+✅ Remember to to reload the partition table.
+
+---
+
+❌ Modifying production disks without backups.
+
+✅ Avoid this mistake: modifying production disks without backups.
+
+---
+
+❌ Poor partition planning leading to storage shortages.
+
+✅ Avoid this mistake: poor partition planning leading to storage shortages.
+
+---
+
+# Interview Questions
+## Beginner
+
+1. What is a partition?
+2. What is the purpose of a partition table?
+3. What is the difference between MBR and GPT?
+4. Which command lists disk partitions?
+
+---
+
+## Intermediate
+
+1. Why is GPT preferred over MBR?
+2. What is the purpose of `partprobe`?
+3. How do you create a partition using `fdisk`?
+4. What are logical partitions?
+
+---
+
+## Architect Level
+
+1. How would you partition storage for a production database server?
+2. How would you migrate from MBR to GPT?
+3. How would you design partition layouts for enterprise Linux servers?
+
+---
+
+# Summary
+
+In this lesson, you learned:
+
+- Disk partitions
+- Partition tables
+- MBR and GPT
+- Primary, extended, and logical partitions
+- Partition management tools
+- Creating and deleting partitions
+- Production storage best practices
+
+Partitions divide physical storage into logical sections, allowing Linux systems to organize data efficiently, improve reliability, and simplify storage management. Understanding partitioning is the foundation for working with filesystems, LVM, RAID, and enterprise storage solutions.
+
+---
+
+## Key Takeaways
+
+- Partitions divide physical disks into logical storage areas.
+- GPT is the recommended partition table for modern Linux systems.
+- `lsblk`, `fdisk`, and `parted` are essential partition management tools.
+- Always verify the correct disk before making changes.
+- Reload the partition table after modifications using `partprobe`.
+- Proper partition planning simplifies future storage management.
+
+---
+
+## What's Next?
+
+**[Filesystems — Organizing and Managing Data on Linux Storage](filesystems.md)**
+
+You'll explore:
+
+- What a filesystem is
+- Common Linux filesystem types
+- Creating filesystems
+- Formatting partitions
+- Filesystem labels and UUIDs
+- Choosing the right filesystem
+- Production best practices
+
+Understanding filesystems is the next step toward managing Linux storage efficiently.

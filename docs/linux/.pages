@@ -3,46 +3,191 @@ icon: material/linux
 
 nav:
   - Overview: index.md
-  - "Module 1 · Fundamentals":
+  - Glossary: glossary.md
+  - "Module 1 · Linux Fundamentals":
+    - Introduction to Linux: introduction-to-linux.md
+    - Linux History and Open Source: linux-history-and-open-source.md
     - Linux Fundamentals — Distributions and Architecture: linux-fundamentals-distributions-and-architecture.md
-    - Boot Process and Filesystem Hierarchy: boot-process-and-filesystem-hierarchy.md
-  - "Module 2 · Command Line":
-    - Essential Linux Commands: essential-linux-commands.md
-    - Environment Variables and Shell Config: environment-variables-shell-config.md
-    - Shell Scripting Fundamentals: shell-scripting-fundamentals.md
-  - "Module 3 · Filesystem":
-    - Paths, Links, Mounts, and Inodes: filesystem-paths-links-mounts-and-inodes.md
-    - Disk Usage and File Attributes: disk-usage-and-file-attributes.md
-  - "Module 4 · Users & Permissions":
-    - Users, Groups, and sudo: users-groups-and-sudo.md
-    - Permissions, ACLs, and Special Bits: permissions-acls-and-special-bits.md
-  - "Module 5 · Text Processing":
-    - Text Processing with grep, sed, and awk: text-processing-grep-sed-awk.md
-  - "Module 6 · Processes":
-    - Process Management: process-management.md
-  - "Module 7 · Services & Boot":
-    - systemd Services and journalctl: systemd-services-and-journalctl.md
-    - systemd Targets, Timers, and Boot: systemd-targets-timers-and-boot.md
-  - "Module 8 · Storage":
-    - Disks, Partitions, and Filesystems: storage-disks-partitions-and-filesystems.md
-    - LVM, Swap, and Disk Monitoring: lvm-swap-and-disk-monitoring.md
-  - "Module 9 · Networking":
-    - Linux Networking Tools: linux-networking-tools.md
-    - SSH and Remote Access: ssh-and-remote-access.md
-  - "Module 10 · Packages":
-    - Package Management: package-management.md
-  - "Module 11 · Scheduling":
-    - Scheduling — cron, at, and Timers: scheduling-cron-at-and-timers.md
-  - "Module 12 · Logging & Monitoring":
-    - Logging — syslog, journald, logrotate: logging-syslog-journald-logrotate.md
-    - Host Monitoring — vmstat, iostat, sar: host-monitoring-vmstat-iostat-sar.md
-  - "Module 13 · Security":
-    - SSH Hardening and Firewalls: ssh-hardening-and-firewalls.md
-    - SELinux, AppArmor, Fail2Ban, Auditd, PAM: selinux-apparmor-fail2ban-auditd-pam.md
-  - "Module 14 · Containers & Cloud":
-    - Containers — Namespaces, cgroups, and OCI: containers-namespaces-cgroups-and-oci.md
-  - "Module 15 · Troubleshooting":
-    - Troubleshooting Linux Systems: troubleshooting-linux-systems.md
-  - "Module 16 · Production Linux":
-    - Production Hardening and Performance: production-linux-hardening-and-performance.md
-    - Backup, Disaster Recovery, and Capacity: backup-disaster-recovery-and-capacity.md
+    - Linux Kernel Explained: linux-kernel-explained.md
+    - Linux Desktop vs Server Editions: linux-desktop-vs-server.md
+    - Linux Installation (VirtualBox, VMware, WSL): linux-installation-virtualbox-vmware-wsl.md
+    - Linux Boot Process: boot-process-and-filesystem-hierarchy.md
+    - First Login and Terminal: first-login-and-terminal.md
+    - Linux Directory Structure (FHS): linux-directory-structure-fhs.md
+    - Getting Help (man, info, --help): getting-help-man-info.md
+    - Module 1 Summary — Linux Fundamentals: module-1-linux-fundamentals-summary.md
+  - "Module 2 · Linux Command Line Essentials":
+    - Understanding the Shell: understanding-the-shell.md
+    - Bash Basics: bash-basics.md
+    - Navigating the Filesystem: navigating-the-filesystem.md
+    - File and Directory Commands: essential-linux-commands.md
+    - Viewing File Contents: viewing-file-contents.md
+    - Searching Files: searching-files.md
+    - Wildcards and Globbing: wildcards-and-globbing.md
+    - Command History: command-history.md
+    - Input, Output, Pipes, and Redirection: redirection.md
+    - Pipes: pipes.md
+    - Module 2 Summary — Linux Command Line Essentials: module-2-linux-command-line-essentials-summary.md
+  - "Module 3 · Text Processing":
+    - cat: text-processing-cat.md
+    - grep: text-processing-grep.md
+    - cut: text-processing-cut.md
+    - sort: text-processing-sort.md
+    - uniq: text-processing-uniq.md
+    - tr: text-processing-tr.md
+    - wc: text-processing-wc.md
+    - paste: text-processing-paste.md
+    - join: text-processing-join.md
+    - split: text-processing-split.md
+    - fmt: text-processing-fmt.md
+    - column: text-processing-column.md
+    - strings: text-processing-strings.md
+    - tee: text-processing-tee.md
+    - xargs: text-processing-xargs.md
+    - sed: text-processing-sed.md
+    - awk: text-processing-awk.md
+    - Regular Expressions: text-processing-regular-expressions.md
+  - "Module 4 · File Management and Permissions":
+    - File Types: file-types.md
+    - Hard Links: hard-links.md
+    - Soft Links (Symbolic Links): soft-links.md
+    - Linux File Permissions: linux-file-permissions.md
+    - Linux File Ownership: ownership.md
+    - umask: umask.md
+    - Access Control Lists (ACL): acl.md
+    - File Attributes: file-attributes.md
+    - Mount Points: mount-points.md
+    - Disk Usage: disk-usage.md
+    - Module 4 Summary — File Management and Permissions: module-4-file-management-and-permissions-summary.md
+  - "Module 5 · Users and Groups":
+    - Linux Users: linux-users.md
+    - Linux Groups: groups.md
+    - sudo Command: sudo.md
+    - Password Policies: password-policies.md
+    - Environment Variables: environment-variables.md
+    - Linux Profiles: shell-profiles.md
+    - Shell Configuration: shell-configuration.md
+    - SSH Keys: ssh-keys.md
+    - PAM (Pluggable Authentication Modules): pam-overview.md
+    - Multi-user Environment: multi-user-environment.md
+    - Module 5 Summary — Users and Groups: module-5-users-and-groups-summary.md
+  - "Module 6 · Process Management":
+    - Linux Processes: linux-processes.md
+    - Foreground and Background Jobs: foreground-background-jobs.md
+    - ps: ps.md
+    - top: top.md
+    - htop: htop.md
+    - nice and renice: nice.md
+    - kill: kill.md
+    - Linux Signals: linux-signals.md
+    - systemd: systemd.md
+    - Linux Services: linux-services.md
+    - Module 6 Summary — Process Management: module-6-process-management-summary.md
+  - "Module 7 · Package Management":
+    - APT: apt.md
+    - DNF: dnf.md
+    - YUM: yum.md
+    - RPM: rpm.md
+    - Snap: snap.md
+    - Flatpak: flatpak.md
+    - Repository Management: repository-management.md
+    - System Updates: package-updates.md
+    - Security Patches: security-patches.md
+    - Package Troubleshooting: package-troubleshooting.md
+    - Module 7 Summary — Package Management: module-7-package-management-summary.md
+  - "Module 8 · Networking":
+    - TCP/IP Basics: tcp-ip-basics-for-linux.md
+    - IP Configuration: linux-networking-tools.md
+    - DNS: dns-on-linux.md
+    - Routing: routing-on-linux.md
+    - ping: ping.md
+    - traceroute: traceroute.md
+    - ss: ss.md
+    - netstat: netstat.md
+    - curl: curl.md
+    - wget: wget.md
+    - SSH: ssh-and-remote-access.md
+    - SCP: scp.md
+    - rsync: rsync.md
+    - Module 8 Summary — Networking: module-8-networking-summary.md
+  - "Module 9 · Storage Management":
+    - Partitions: storage-disks-partitions-and-filesystems.md
+    - Filesystems: filesystems.md
+    - mkfs: mkfs.md
+    - Mounting: mounting.md
+    - LVM: lvm-swap-and-disk-monitoring.md
+    - RAID Concepts: raid-concepts.md
+    - Swap: swap.md
+    - Quotas: quotas.md
+    - Backup Basics: backup-basics.md
+    - Restore: restore.md
+    - Module 9 Summary — Storage Management: module-9-storage-management-summary.md
+  - "Module 10 · Bash Scripting":
+    - Variables: bash-variables.md
+    - Conditions: bash-conditions.md
+    - Loops: bash-loops.md
+    - Functions: bash-functions.md
+    - Arrays: bash-arrays.md
+    - Input: bash-input.md
+    - Exit Codes: bash-exit-codes.md
+    - Error Handling: bash-error-handling.md
+    - Logging: bash-logging.md
+    - Script Best Practices: bash-script-best-practices.md
+    - Module 10 Summary — Bash Scripting: module-10-bash-scripting-summary.md
+  - "Module 11 · Linux Security":
+    - SSH Hardening: ssh-hardening.md
+    - File Permissions Review: file-permissions-security-review.md
+    - Firewall (UFW): firewall-ufw.md
+    - SELinux Overview: selinux-overview.md
+    - AppArmor: apparmor.md
+    - Fail2Ban: fail2ban.md
+    - Audit Logs: audit-logs.md
+    - Security Updates: security-updates.md
+    - Secrets Management: secrets-management-on-linux.md
+    - CIS Benchmark Basics: cis-benchmark-basics.md
+    - Module 11 Summary — Linux Security: module-11-linux-security-summary.md
+  - "Module 12 · Monitoring and Logs":
+    - journalctl: journalctl.md
+    - syslog: syslog.md
+    - dmesg: dmesg.md
+    - logrotate: logrotate.md
+    - Disk Monitoring: disk-monitoring.md
+    - Memory Monitoring: memory-monitoring.md
+    - CPU Monitoring: cpu-monitoring.md
+    - Performance Troubleshooting: performance-troubleshooting.md
+    - Crash Investigation: crash-investigation.md
+    - Monitoring Best Practices: monitoring-best-practices.md
+    - Module 12 Summary — Monitoring & Logs: module-12-monitoring-and-logs-summary.md
+  - "Module 13 · Linux for DevOps":
+    - Linux for Docker: linux-for-docker.md
+    - Linux for Kubernetes: linux-for-kubernetes.md
+    - Linux for CI/CD: linux-for-cicd.md
+    - Linux for Git: linux-for-git.md
+    - Linux for Terraform: linux-for-terraform.md
+    - Linux for Ansible: linux-for-ansible.md
+    - Linux for Jenkins: linux-for-jenkins.md
+    - Linux for GitHub Actions: linux-for-github-actions.md
+    - Linux for GitLab CI: linux-for-gitlab-ci.md
+    - Linux in Cloud Platforms: linux-in-cloud-platforms.md
+    - Module 13 Summary — Linux for DevOps: module-13-linux-for-devops-summary.md
+  - "Module 14 · Production Linux Administration":
+    - Production Checklist: production-checklist.md
+    - Hardening Checklist: hardening-checklist.md
+    - Performance Tuning: performance-tuning.md
+    - Capacity Planning: capacity-planning.md
+    - Backup Strategy: backup-strategy.md
+    - Disaster Recovery: disaster-recovery.md
+    - High Availability Concepts: high-availability-concepts.md
+    - Incident Response: incident-response.md
+    - Troubleshooting Methodology: troubleshooting-methodology.md
+    - Best Practices: production-best-practices.md
+    - Module 14 Summary — Production Linux Administration: module-14-production-linux-administration-summary.md
+  - "Module 15 · Capstone Projects":
+    - Build a Secure Linux Web Server: projects/secure-linux-web-server.md
+    - Configure a Bastion Host: projects/bastion-host.md
+    - Deploy a Git Server: projects/deploy-git-server.md
+    - Create a Monitoring Server: projects/monitoring-server.md
+    - Automate User Provisioning with Bash: projects/automate-user-provisioning-bash.md
+    - Build a Linux Server Baseline: projects/linux-server-baseline.md
+    - Harden an Ubuntu Server: projects/harden-ubuntu-server.md
+    - Production Linux Troubleshooting Challenge: projects/production-linux-troubleshooting-challenge.md

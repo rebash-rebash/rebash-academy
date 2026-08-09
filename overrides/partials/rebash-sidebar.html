@@ -81,8 +81,12 @@
           {% endif %}
         {% elif child.children %}
           <li class="ra-sidebar__subitem ra-sidebar__subitem--group">
-            <div class="ra-sidebar__subhead">{{ child.title }}</div>
-            {{ course_tree(child, focused) }}
+            <details class="ra-sidebar__module"{% if child.active %} open{% endif %}>
+              <summary class="ra-sidebar__subhead">
+                <span class="ra-sidebar__module-label">{{ child.title }}</span>
+              </summary>
+              {{ course_tree(child, focused) }}
+            </details>
           </li>
         {% elif child.url %}
           <li class="ra-sidebar__subitem">

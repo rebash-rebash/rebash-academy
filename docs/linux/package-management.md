@@ -294,83 +294,21 @@ sudo apt-mark unhold tree 2>/dev/null || true
 - Review what a package installs (`dpkg -L`) before adding to golden images.
 - Use `sudo` for package changes; do not run daily work as root.
 
-## Common Mistakes
+# Common Mistakes
 
-!!! warning "Skipping apt update"
-    Always refresh lists before install or upgrade on Ubuntu. Stale metadata causes false “package not found” errors.
+❌ Skipping apt update.
 
-!!! warning "Mixing distro tutorials"
-    Rocky Linux needs `dnf`. Alpine containers need `apk`. Ubuntu needs `apt`. Check `/etc/os-release` first.
+✅ Always refresh lists before install or upgrade on Ubuntu. Stale metadata causes false “package not found” errors.
 
-!!! warning "Removing without checking dependents"
-    Removing a library package can break other apps. Use `apt remove` and read proposed changes; test on non-production first.
+---
 
-## Best Practices
+❌ Mixing distro tutorials.
 
-- Document package versions in change tickets
-- Test upgrades in staging before production
-- Use holds sparingly and with expiry notes
-- Align CI runner images with production distro families
-- Keep a personal cheatsheet for apt/dnf/apk equivalents
+✅ Rocky Linux needs `dnf`. Alpine containers need `apk`. Ubuntu needs `apt`. Check `/etc/os-release` first.
 
-## Troubleshooting
+---
 
-| Symptom | Likely cause | Fix |
-|---------|--------------|-----|
-| Package not found after update | Wrong repo or typo | `apt search tree`; check `/etc/apt/sources.list` |
-| Half-installed package | Interrupted apt | `sudo dpkg --configure -a`; `sudo apt -f install` |
-| Disk full during install | Log or `/var` full | `df -h`; clean `/var/cache/apt/archives` with `sudo apt clean` |
-| Version mismatch in app | Held or pinned package | `apt-mark showhold`; `apt policy <pkg>` |
+❌ Removing without checking dependents.
 
-## Summary
+✅ Removing a library package can break other apps. Use `apt remove` and read proposed changes; test on non-production first.
 
-**Package managers** are how Linux distros install software safely and repeatably. On Ubuntu, **`apt`** is your daily tool: **update** lists, **install** or **upgrade**, **query** with `dpkg`/`apt list`, and **hold** when you must pin a version. Always match the tool to the distro family you identified first.
-
-## Interview Questions
-
-**1. What does a Linux package manager do?**
-
-??? success "Reveal answer"
-    It downloads software from trusted repositories, resolves dependencies, installs files to standard paths, records what is installed, and removes packages cleanly. Examples: `apt` (Debian/Ubuntu), `dnf` (RHEL family), `apk` (Alpine).
-
-**2. What is the difference between `apt update` and `apt upgrade`?**
-
-??? success "Reveal answer"
-    `update` refreshes the package catalogue from repositories — it does not upgrade installed software. `upgrade` installs newer versions of packages already on the system. Always update before upgrade or install on Ubuntu.
-
-**3. How do you check which version of a package is installed on Ubuntu?**
-
-??? success "Reveal answer"
-    `apt list --installed <name>` or `dpkg -l <name>`. For file locations: `dpkg -L <name>`. On RHEL family: `rpm -q <name>`.
-
-**4. You SSH to an unknown host and `apt` is not found. What next?**
-
-??? success "Reveal answer"
-    Read `/etc/os-release` for distro family. Use `dnf`/`yum` on RHEL/Rocky/Amazon Linux, `apk` on Alpine, `zypper` on SUSE. Never assume Ubuntu.
-
-**5. What is an apt hold and when would you use it?**
-
-??? success "Reveal answer"
-    `apt-mark hold <pkg>` prevents that package from being upgraded. Use when a new version breaks your app and you need time to test — document the hold and remove it after fix. Not a substitute for proper staging.
-
-**6. Why do Alpine container images use `apk` instead of `apt`?**
-
-??? success "Reveal answer"
-    Alpine is a different distro family with `musl` libc and small images. It uses `apk`. Binaries built for glibc Ubuntu may not run on Alpine — choose base images deliberately.
-
-**7. How do unpatched packages create security risk?**
-
-??? success "Reveal answer"
-    Public CVE databases list known bugs in specific package versions. Attackers scan for old OpenSSH, web servers, or libraries. Regular patched upgrades (or rebuilt golden images) close those holes. Package managers are the primary patch path on Linux servers.
-
-## Related Tutorials
-
-- Previous: [SSH and Remote Access](ssh-and-remote-access.md)
-- Next: [Scheduling with cron, at, and Timers](scheduling-cron-at-and-timers.md)
-- Standalone lab: [Linux ops toolkit](../labs/linux-ops-toolkit-lab.md)
-
-## References
-
-- [Ubuntu apt man page](https://manpages.ubuntu.com/manpages/noble/man8/apt.8.html)
-- [Debian dpkg documentation](https://wiki.debian.org/dpkg)
-- [Red Hat dnf documentation](https://docs.redhat.com/en/documentation/red_hat_enterprise_linux/9/html/managing_software_with_the_dnf_tool/index)

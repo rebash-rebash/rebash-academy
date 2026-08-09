@@ -360,87 +360,27 @@ cd ~/rebash-linux/lab08
 - Scripts that process untrusted input should quote variables (`"$log"`) to avoid injection.
 - Prefer read-only triage before editing configs on shared servers.
 
-## Common Mistakes
+# Common Mistakes
 
-!!! warning "Scrolling a huge log in vim"
-    Use `grep ERROR huge.log | less` or save filtered output to a file. Fix: filter first, read second.
+❌ Scrolling a huge log in vim.
 
-!!! warning "sed -i without backup"
-    One wrong substitution breaks a service. Fix: `cp file file.bak` or use version control; diff after edit.
+✅ Use `grep ERROR huge.log | less` or save filtered output to a file. Fix: filter first, read second.
 
-!!! warning "uniq without sort"
-    `uniq` only removes **consecutive** duplicates. Fix: always pipe through `sort` first.
+---
 
-!!! warning "Grepping binary trees"
-    Searching `/` or `/var` without `-I` prints “Binary file matches”. Fix: narrow the path; add `grep -I`.
+❌ sed -i without backup.
 
-## Best Practices
+✅ One wrong substitution breaks a service. Fix: `cp file file.bak` or use version control; diff after edit.
 
-- Name evidence files clearly (`errors-raw.txt`, `top-errors.txt`) for tickets
-- Use `grep -E` for OR patterns; use `-F` for fixed strings (faster, no regex surprises)
-- Keep one-liner pipelines in runbooks — future you at 03:00 will thank you
-- Test awk/sed on a copy before applying to production configs
-- Learn `rg` (ripgrep) later for faster recursive search — grep remains the interview baseline
+---
 
-## Troubleshooting
+❌ uniq without sort.
 
-| Symptom | Likely cause | Fix |
-|---------|--------------|-----|
-| No matches but errors visible in editor | Wrong pattern (case, spacing) | `grep -i`; print one line with `sed -n '1p'` and match exactly |
-| awk prints blank | Wrong field number or separator | `echo line \| awk '{print NF; print $0}'`; try `-F:` |
-| sed changed too much | Missing anchors | Use `s/^LOG_LEVEL=DEBUG/LOG_LEVEL=INFO/` not bare `DEBUG` |
-| Pipeline hangs | Waiting for input | Check for open quote; ensure input file exists |
+✅ `uniq` only removes **consecutive** duplicates. Fix: always pipe through `sort` first.
 
-## Summary
+---
 
-**grep** finds lines, **sed** edits streams, **awk** reports on fields — chained with pipes they turn noisy logs into answers. You practised incident-style triage on a safe sample log. Next you will learn how those commands become **processes** the kernel manages.
+❌ Grepping binary trees.
 
-## Interview Questions
+✅ Searching `/` or `/var` without `-I` prints “Binary file matches”. Fix: narrow the path; add `grep -I`.
 
-**1. When do you use grep vs sed vs awk?**
-
-??? success "Reveal answer"
-    **grep** when you only need to find or exclude matching lines. **sed** when you need to transform or delete lines in a stream (substitutions, stripping comments). **awk** when you need column/field logic, counts, or small reports. In practice you combine them: `grep ERROR log | awk '{print $3}' | sort | uniq -c`.
-
-**2. What does `grep -v` do?**
-
-??? success "Reveal answer"
-    It inverts the match — prints lines that do **not** match the pattern. Useful to remove DEBUG noise: `grep -v DEBUG app.log` before further processing.
-
-**3. Why is `sort` required before `uniq -c`?**
-
-??? success "Reveal answer"
-    `uniq` only collapses **adjacent** duplicate lines. Without sorting, identical lines separated by other lines are not counted together. The idiom `sort | uniq -c | sort -nr` gives accurate frequency counts and ranks them.
-
-**4. How do you safely edit a file with sed in production?**
-
-??? success "Reveal answer"
-    Take a backup (`cp file file.bak`) or rely on Git, run sed on a copy first, `diff` the result, then apply. Avoid blind `sed -i` on live configs; prefer configuration management or templating for fleet-wide changes.
-
-**5. What is `$1` and `$0` in awk?**
-
-??? success "Reveal answer"
-    **`$0`** is the entire input line. **`$1`**, **`$2`**, … are the first, second, … fields after splitting by the field separator (whitespace by default, or `-F` for custom). Field numbers start at 1, not 0.
-
-**6. How would you find the top 5 IP addresses in an access log?**
-
-??? success "Reveal answer"
-    Extract the IP field (often `$1` in Apache/Nginx logs), then rank: `awk '{print $1}' access.log | sort | uniq -c | sort -nr | head -5`. Adjust the field number after inspecting one sample line.
-
-**7. What is wrong with running `grep -r PASSWORD /` as root?**
-
-??? success "Reveal answer"
-    It scans the entire filesystem including binary files, secrets in `/etc`, and application data — slow, noisy, and a data-leak risk if output is shared. Narrow the path, use `grep -I`, run as a user with least privilege, and redact secrets in ticket attachments.
-
-## Related Tutorials
-
-- Prior: [Permissions, ACLs, and Special Bits](permissions-acls-and-special-bits.md)
-- Next: [Process Management](process-management.md)
-- Related: [Shell Scripting Fundamentals](shell-scripting-fundamentals.md)
-
-## References
-
-- [GNU grep manual](https://www.gnu.org/software/grep/manual/grep.html)
-- [GNU sed manual](https://www.gnu.org/software/sed/manual/sed.html)
-- [GNU awk manual](https://www.gnu.org/software/gawk/manual/gawk.html)
-- [REBASH Linux course index](index.md)

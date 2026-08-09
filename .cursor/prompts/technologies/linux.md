@@ -4,15 +4,15 @@
 
 ## Course
 
-Linux for Cloud & DevOps Engineers
+REBASH Linux Mastery — practical Linux for Cloud, DevOps, Kubernetes, and Platform Engineers
 
 ---
 
 ## Description
 
-A production-focused Linux course that prepares learners to confidently administer, troubleshoot, automate and operate Linux systems used in Cloud, DevOps, Platform Engineering and Site Reliability Engineering.
+A production-focused Linux course (~145 lessons, 40+ labs, 8 capstones) that prepares learners to administer, troubleshoot, automate, and operate Linux systems used in Cloud, DevOps, Kubernetes, Platform Engineering, and Site Reliability Engineering.
 
-This course focuses on practical engineering rather than certification-only knowledge.
+This is not a basic-commands course. It trains production engineers. Scaffolded lesson stubs live under `docs/linux/`; fill each tutorial when the author supplies content (follow `tutorial-format-linux.md`).
 
 ---
 
@@ -63,286 +63,115 @@ Optional
 
 ---
 
-# Modules
+# Modules (REBASH Linux Mastery — 15 modules)
+
+Canonical nav: `docs/linux/.pages`. Scaffold script: `scripts/scaffold_linux_mastery.py`.
 
 ## Module 1 — Linux Fundamentals
 
-- What is Linux?
-- Linux Distributions
-- Linux Architecture
-- Kernel
-- User Space
-- Shell vs Terminal
-- Boot Process
-- Filesystem Hierarchy Standard (FHS)
+1. Introduction to Linux
+2. Linux History and Open Source
+3. Linux Fundamentals — Distributions and Architecture
+4. Linux Kernel Explained
+5. Linux Desktop vs Server Editions
+6. Linux Installation (VirtualBox, VMware, WSL)
+7. Linux Boot Process
+8. First Login and Terminal
+9. Linux Directory Structure (FHS)
+10. Getting Help (`man`, `info`, `--help`)
 
----
+**Lab:** Install Ubuntu Server and explore the filesystem.
 
-## Module 2 — Command Line Essentials
+## Module 2 — Linux Command Line Essentials
 
-- pwd
-- ls
-- cd
-- mkdir
-- rm
-- cp
-- mv
-- touch
-- cat
-- less
-- head
-- tail
-- stat
-- file
-- history
+1. Understanding the Shell · 2. Bash Basics · 3. Navigating the Filesystem
+4. File and Directory Commands · 5. Viewing File Contents · 6. Searching Files
+7. Wildcards and Globbing · 8. Command History · 9. Redirection · 10. Pipes
 
----
+**Lab:** Build a mini file management toolkit.
 
-## Module 3 — Linux Filesystem
+## Module 3 — Text Processing
 
-- Directory Structure
-- Absolute vs Relative Paths
-- Hard Links
-- Symbolic Links
-- Mount Points
-- File Attributes
-- Disk Usage
-- inode
+cat · less · head · tail · grep · cut · sort · uniq · tr · sed · awk · xargs
 
----
+**Mini project:** Analyze web server logs.
 
-## Module 4 — Users & Permissions
+## Module 4 — File System
 
-- Users
-- Groups
-- sudo
-- chmod
-- chown
-- chgrp
-- umask
-- ACLs
-- Sticky Bit
-- SUID
-- SGID
+File Types · Hard Links · Soft Links · Permissions · Ownership · umask · ACL · File Attributes · Mount Points · Disk Usage
 
----
+**Lab:** Create and secure a shared directory.
 
-## Module 5 — Text Processing
+## Module 5 — Users and Groups
 
-- grep
-- sed
-- awk
-- cut
-- paste
-- tr
-- sort
-- uniq
-- wc
-- xargs
+Users · Groups · sudo · Password Policies · Environment Variables · Profiles · Shell Configuration · SSH Keys · PAM Overview · Multi-user Environment
 
----
+**Project:** Configure a secure multi-user Linux server.
 
 ## Module 6 — Process Management
 
-- ps
-- top
-- htop
-- kill
-- pkill
-- jobs
-- fg
-- bg
-- nice
-- renice
-- nohup
+Processes · Foreground/Background Jobs · ps · top · htop · nice · kill · Signals · systemd · Services
 
----
+**Lab:** Troubleshoot a failing service.
 
-## Module 7 — Services & Boot
+## Module 7 — Package Management
 
-- systemd
-- systemctl
-- journalctl
-- Targets
-- Services
-- Timers
-- Boot Process
+APT · DNF · YUM · RPM · Snap · Flatpak · Repository Management · Updates · Security Patches · Package Troubleshooting
 
----
+## Module 8 — Networking
 
-## Module 8 — Storage Management
+TCP/IP · IP Configuration · DNS · Routing · ping · traceroute · ss · netstat · curl · wget · SSH · SCP · rsync
 
-- lsblk
-- fdisk
-- parted
-- mkfs
-- mount
-- umount
-- LVM
-- Swap
-- Disk Monitoring
+**Project:** Configure SSH access between servers.
 
----
+## Module 9 — Storage Management
 
-## Module 9 — Linux Networking
+Partitions · Filesystems · mkfs · Mounting · LVM · RAID Concepts · Swap · Quotas · Backup Basics · Restore
 
-- ip
-- ss
-- ping
-- traceroute
-- dig
-- nslookup
-- host
-- curl
-- wget
-- tcpdump
-- netcat
-- SSH
+## Module 10 — Bash Scripting
 
----
+Variables · Conditions · Loops · Functions · Arrays · Input · Exit Codes · Error Handling · Logging · Script Best Practices
 
-## Module 10 — Package Management
+**Project:** System Health Monitoring Script.
 
-- apt
-- dnf
-- yum
-- zypper
-- snap
-- flatpak
+## Module 11 — Linux Security
 
----
+SSH Hardening · File Permissions Review · Firewall (UFW) · SELinux Overview · AppArmor · Fail2Ban · Audit Logs · Security Updates · Secrets Management · CIS Benchmark Basics
 
-## Module 11 — Scheduling & Automation
+## Module 12 — Monitoring & Logs
 
-- cron
-- crontab
-- at
-- systemd timers
+journalctl · syslog · dmesg · logrotate · Disk / Memory / CPU Monitoring · Performance Troubleshooting · Crash Investigation · Monitoring Best Practices
 
----
+## Module 13 — Linux for DevOps
 
-## Module 12 — Logging & Monitoring
+Linux for Docker · Kubernetes · CI/CD · Git · Terraform · Ansible · Jenkins · GitHub Actions · GitLab CI · Cloud Platforms
 
-- syslog
-- journald
-- logrotate
-- vmstat
-- iostat
-- free
-- uptime
-- df
-- du
-- sar
+## Module 14 — Production Linux Administration
 
----
+Production Checklist · Hardening Checklist · Performance Tuning · Capacity Planning · Backup Strategy · Disaster Recovery · High Availability · Incident Response · Troubleshooting Methodology · Best Practices
 
-## Module 13 — Linux Security
+## Module 15 — Capstone Projects
 
-- SSH Hardening
-- SSH Keys
-- firewalld
-- ufw
-- SELinux
-- AppArmor
-- Fail2Ban
-- Auditd
-- PAM
-
----
-
-## Module 14 — Containers & Cloud
-
-- Linux Namespaces
-- cgroups
-- OverlayFS
-- OCI Concepts
-- Container Runtime Basics
-
----
-
-## Module 15 — Troubleshooting
-
-- Boot Failures
-- High CPU
-- High Memory
-- Disk Full
-- Permission Issues
-- Network Problems
-- Service Failures
-- Log Analysis
-- Performance Bottlenecks
-
----
-
-## Module 16 — Production Linux
-
-- Linux Hardening
-- Performance Tuning
-- Capacity Planning
-- Backup Strategies
-- Disaster Recovery
-- Monitoring
-- Logging
-- Operational Excellence
+1. Build a Secure Linux Web Server
+2. Configure a Bastion Host
+3. Deploy a Git Server
+4. Create a Monitoring Server
+5. Automate User Provisioning with Bash
+6. Build a Linux Server Baseline
+7. Harden an Ubuntu Server
+8. Production Linux Troubleshooting Challenge
 
 ---
 
 # Hands-on Labs
 
-- Install Linux
-- Configure SSH
-- Create Users & Groups
-- Manage Permissions
-- Configure Storage
-- Manage Services
-- Analyse Logs
-- Configure Firewall
-- Build Monitoring Scripts
-- Secure a Linux Server
-- Troubleshoot Performance
-- Recover a Failed Service
-- Configure Cron Jobs
-- Monitor System Resources
-- Build a Linux Troubleshooting Toolkit
+40+ labs mapped to modules (install Ubuntu, shared directory, failing service, SSH between servers, health script, hardening, log analysis, DR drills, and more). Prefer topic-specific labs via `create_lab.md`.
 
 ---
 
-# Projects
+# Projects / Capstones
 
-## Beginner
-
-Linux System Information Utility
-
----
-
-## Intermediate
-
-Linux Server Health Dashboard
-
----
-
-## Advanced
-
-Linux Operations Toolkit
-
----
-
-## Capstone
-
-Production Linux Operations Platform
-
-Features:
-
-- User Management
-- Monitoring
-- Logging
-- Security Hardening
-- Backup Automation
-- System Health Dashboard
-- Performance Monitoring
-- Alerting
-- Reporting
-- Scheduling
+See Module 15 under `docs/linux/projects/`. Each page needs SEO `description` + tags; site-wide AdSense / Analytics come from `mkdocs.yml` + `overrides/main.html`.
 
 ---
 

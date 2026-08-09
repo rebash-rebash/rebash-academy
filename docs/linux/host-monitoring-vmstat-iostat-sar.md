@@ -255,83 +255,21 @@ pkill -f 'yes >/dev/null' 2>/dev/null || true
 - High load tests in cloud may trigger alerts — use sandbox accounts.
 - Read-only monitoring commands are safe; load generation is not.
 
-## Common Mistakes
+# Common Mistakes
 
-!!! warning "CPU tunnel vision"
-    Check disk (`iostat`) and memory/swap (`vmstat`) before scaling CPU.
+❌ CPU tunnel vision.
 
-!!! warning "Single snapshot"
-    Take several intervals; spikes and sustained saturation tell different stories.
+✅ Check disk (`iostat`) and memory/swap (`vmstat`) before scaling CPU.
 
-!!! warning "Ignoring swap"
-    Rising `si/so` means RAM pressure — fix memory or swap config before buying CPUs.
+---
 
-## Best Practices
+❌ Single snapshot.
 
-- Establish baselines during normal business hours
-- Correlate metrics with deploy times and log spikes
-- Automate node_exporter or cloud metrics; keep CLI skills for gaps
-- Document “normal” idle and util ranges per host class
-- Use the same timezone when comparing sar archives to tickets
+✅ Take several intervals; spikes and sustained saturation tell different stories.
 
-## Troubleshooting
+---
 
-| Symptom | Likely cause | Fix |
-|---------|--------------|-----|
-| High load, high idle | I/O wait tasks | `vmstat wa`; `iostat %util` |
-| Swap active | RAM full | `free -h`; reduce cache or add RAM |
-| sar empty | sysstat disabled | Enable collector; wait for samples |
-| iostat no devices | VM without block stats | Try `lsblk`; check hypervisor |
+❌ Ignoring swap.
 
-## Summary
+✅ Rising `si/so` means RAM pressure — fix memory or swap config before buying CPUs.
 
-When a host feels slow, use **vmstat** for CPU/memory/swap, **iostat** for disk saturation, and **sar** for trends. Install **sysstat**, sample for several seconds, and match column changes to the resource under stress — interviews and on-call both reward this method.
-
-## Interview Questions
-
-**1. What does vmstat show?**
-
-??? success "Reveal answer"
-    Process queue, memory, swap activity, and CPU usage (user, system, idle, I/O wait) from kernel counters. Useful quick snapshot: `vmstat 1 5`.
-
-**2. How do you tell if a host is disk-bound?**
-
-??? success "Reveal answer"
-    **iostat** high **%util** and await on the busy device; **vmstat** elevated **wa** (I/O wait). CPU may look busy waiting on disk, not computing.
-
-**3. What is sar used for?**
-
-??? success "Reveal answer"
-    **System Activity Reporter** — historical CPU, memory, I/O samples when sysstat collection is enabled. Helps compare “now vs yesterday” without live reproduction.
-
-**4. A server has high load average but low CPU usage. Explain?**
-
-??? success "Reveal answer"
-    Load average counts runnable and uninterruptible (often I/O-wait) tasks. Many tasks waiting on disk can raise load while CPU idle is high. Check `vmstat wa` and `iostat`.
-
-**5. What do si and so mean in vmstat?**
-
-??? success "Reveal answer"
-    **Swap in** and **swap out** — pages moved between RAM and swap. Sustained non-zero values indicate memory pressure; investigate RAM usage and OOM risk.
-
-**6. Why not rely only on cloud dashboards?**
-
-??? success "Reveal answer"
-    Agents fail during outages; jump boxes may lack agents; dashboards aggregate and delay. CLI tools validate ground truth and work in minimal environments — common interview expectation.
-
-**7. First three commands for “server slow” SSH session?**
-
-??? success "Reveal answer"
-    `uptime` (load context), `vmstat 1 5` (CPU/mem/swap/wa), `iostat -xz 1 3` (disk). Add `free -h`, `df -h`, and `journalctl -p err -b` as needed — narrow the saturated resource before restarting random services.
-
-## Related Tutorials
-
-- Previous: [Logging — syslog, journald, and logrotate](logging-syslog-journald-logrotate.md)
-- Next: [SSH Hardening and Firewalls](ssh-hardening-and-firewalls.md)
-- Related: [Process Management](process-management.md)
-
-## References
-
-- [sysstat documentation](https://github.com/sysstat/sysstat)
-- [vmstat man page](https://manpages.ubuntu.com/manpages/noble/man8/vmstat.8.html)
-- [iostat man page](https://manpages.ubuntu.com/manpages/noble/man1/iostat.1.html)

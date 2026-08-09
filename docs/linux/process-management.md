@@ -326,87 +326,27 @@ rm -f challenge.pid
 - Limit who can `renice` negative values — usually root-only.
 - Document process stops in change tickets on production hosts.
 
-## Common Mistakes
+# Common Mistakes
 
-!!! warning "kill -9 as first move"
-    Forces immediate death; databases and queues may corrupt. Fix: `kill -TERM`, wait, then `-KILL` if needed.
+❌ kill -9 as first move.
 
-!!! warning "Killing the wrong PID"
-    Numbers are reused. Fix: always `ps -p PID -o cmd=` immediately before kill.
+✅ Forces immediate death; databases and queues may corrupt. Fix: `kill -TERM`, wait, then `-KILL` if needed.
 
-!!! warning "Zombie hoard"
-    Zombies (`Z`) are dead children waiting for parent to reap. Fix: restart or fix the **parent** process, not the zombie.
+---
 
-!!! warning "nohup for production services"
-    No restart policy, no structured logging. Fix: systemd unit with `Restart=` and `journalctl`.
+❌ Killing the wrong PID.
 
-## Best Practices
+✅ Numbers are reused. Fix: always `ps -p PID -o cmd=` immediately before kill.
 
-- Sort `ps` by CPU or memory before action
-- Save PID and command line in incident notes
-- Use `systemctl stop` for managed services, not raw `kill`
-- Set resource limits (cgroups, systemd) for untrusted workloads
-- Teach juniors TERM-before-KILL as a team norm
+---
 
-## Troubleshooting
+❌ Zombie hoard.
 
-| Symptom | Likely cause | Fix |
-|---------|--------------|-----|
-| Process will not die after TERM | Ignoring signal / stuck in kernel | Wait; try KILL; check `strace` / logs |
-| High load, low CPU in top | I/O wait (`wa`) | Check disk with `iostat`; not always CPU killers |
-| Many `[something] <defunct>` | Parent not reaping | Identify parent PPID; restart parent service |
-| `renice: Permission denied` | Lowering nice below 0 | Needs root; or accept default priority |
+✅ Zombies (`Z`) are dead children waiting for parent to reap. Fix: restart or fix the **parent** process, not the zombie.
 
-## Summary
+---
 
-A **process** is a running programme with a **PID**. Inspect with **`ps`**, stop with **signals** (`TERM` then `KILL`), and use **job control** for your shell session. Production services belong under **systemd** — the next tutorial.
+❌ nohup for production services.
 
-## Interview Questions
+✅ No restart policy, no structured logging. Fix: systemd unit with `Restart=` and `journalctl`.
 
-**1. What is a process?**
-
-??? success "Reveal answer"
-    A process is an instance of a running programme. It has a unique Process ID (PID), a parent (PPID), memory, open files, and state. The kernel schedules it on the CPU.
-
-**2. What is the difference between SIGTERM and SIGKILL?**
-
-??? success "Reveal answer"
-    **SIGTERM (15)** asks the process to terminate gracefully — it can flush data and release locks. **SIGKILL (9)** forces immediate termination; the process cannot catch or ignore it. Use TERM first; KILL only if TERM fails.
-
-**3. How do you find the top CPU process?**
-
-??? success "Reveal answer"
-    `ps -eo pid,pcpu,cmd --sort=-pcpu | head` or interactive `top`/`htop`. On multi-core systems, `%CPU` can exceed 100% for multi-threaded processes — read the command name and owner before killing.
-
-**4. What is a zombie process?**
-
-??? success "Reveal answer"
-    A zombie (state `Z`) is a process that has exited but whose exit status has not been collected by its parent. It uses almost no resources except a PID table slot. Fix the parent to call `wait()` — often by restarting the parent service.
-
-**5. What is niceness?**
-
-??? success "Reveal answer"
-    Niceness (−20 to +19) hints CPU scheduling priority. Higher nice values mean lower priority (more polite to other processes). Lower nice (even negative) means higher priority — adjusting below 0 usually requires root.
-
-**6. When would you use nohup vs systemd?**
-
-??? success "Reveal answer"
-    **nohup** for quick ad-hoc commands that must survive logout on a dev box. **systemd** for production: automatic restart, boot enablement, logging via journald, dependency ordering, and security hardening options.
-
-**7. What does `Ctrl-Z` do?**
-
-??? success "Reveal answer"
-    It sends SIGTSTP to the foreground job, **suspending** it (stopped state). `bg` resumes it in the background; `fg` brings it back to the foreground. It does not terminate the process.
-
-## Related Tutorials
-
-- Prior: [Text Processing with grep, sed, and awk](text-processing-grep-sed-awk.md)
-- Next: [systemd Services and journalctl](systemd-services-and-journalctl.md)
-- Related: [Host Monitoring — vmstat, iostat, sar](host-monitoring-vmstat-iostat-sar.md)
-
-## References
-
-- [signal(7) man page](https://man7.org/linux/man-pages/man7/signal.7.html)
-- [ps(1) man page](https://man7.org/linux/man-pages/man1/ps.1.html)
-- [systemd.service(5)](https://www.freedesktop.org/software/systemd/man/systemd.service.html)
-- [REBASH Linux course index](index.md)

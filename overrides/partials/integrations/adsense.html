@@ -1,0 +1,43 @@
+{#-
+  Google AdSense — loaded only after cookie consent for `adsense`.
+  Auto ads are configured in the AdSense dashboard for this publisher ID.
+-#}
+{% if config.extra.adsense and config.extra.adsense.client %}
+<script>
+  window.REBASH_ADSENSE_CLIENT = {{ config.extra.adsense.client | tojson }};
+  (function () {
+    function hasAdConsent() {
+      try {
+        var consent = __md_get("__consent");
+        if (!consent) return false;
+        return !!consent.adsense;
+      } catch (e) {
+        return false;
+      }
+    }
+
+    function loadAdSense() {
+      if (!window.REBASH_ADSENSE_CLIENT || window.__rebashAdSenseLoaded) return;
+      window.__rebashAdSenseLoaded = true;
+      var s = document.createElement("script");
+      s.async = true;
+      s.src =
+        "https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=" +
+        encodeURIComponent(window.REBASH_ADSENSE_CLIENT);
+      s.crossOrigin = "anonymous";
+      document.head.appendChild(s);
+    }
+
+    function syncAds() {
+      if (hasAdConsent()) loadAdSense();
+    }
+
+    if (typeof document$ !== "undefined") {
+      document$.subscribe(syncAds);
+    } else {
+      document.addEventListener("DOMContentLoaded", syncAds);
+    }
+    window.addEventListener("storage", syncAds);
+  })();
+</script>
+{% endif %}

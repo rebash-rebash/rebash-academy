@@ -15,6 +15,7 @@ extra:
   hero:
     tagline: Learn by Building.
     description: Hands-on tutorials for Linux, Cloud, Kubernetes, Terraform, DevSecOps, and more.
+  social_image: assets/images/og-default.png
   social:
     - icon: fontawesome/brands/github
       link: https://github.com/rebash-rebash
@@ -32,10 +33,13 @@ extra:
   consent:
     title: Cookie consent
     description: >-
-      We use cookies to recognize your repeated visits and measure the effectiveness
-      of our documentation. With your consent, analytics help us improve REBASH Academy.
+      We use cookies for Google Analytics and Google AdSense to measure traffic,
+      improve tutorials, and fund free learning content. See our
+      <a href="/legal/privacy-policy/">Privacy Policy</a>. You can accept, reject,
+      or manage cookies below.
     cookies:
       analytics: Google Analytics
+      adsense: Google AdSense
     actions:
       - accept
       - reject

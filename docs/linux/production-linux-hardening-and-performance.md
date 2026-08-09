@@ -268,83 +268,21 @@ sudo sysctl --system
 - Automate baseline checks in CI for golden images.
 - Combine with SSH and MAC layers from prior security tutorials.
 
-## Common Mistakes
+# Common Mistakes
 
-!!! warning "Random sysctl paste"
-    Understand each knob; wrong TCP settings hurt latency and debuggability.
+❌ Random sysctl paste.
 
-!!! warning "Ignoring time sync"
-    Certificate validation and log correlation break with clock skew.
+✅ Understand each knob; wrong TCP settings hurt latency and debuggability.
 
-!!! warning "No baseline before tuning"
-    Measure first; tune second; measure again.
+---
 
-## Best Practices
+❌ Ignoring time sync.
 
-- Version-control sysctl and limits drop-ins
-- Run baseline vmstat/iostat weekly on prod samples
-- Enable automatic security updates per org policy
-- Review `systemctl --failed` in daily checks
-- Document every production sysctl change in change tickets
+✅ Certificate validation and log correlation break with clock skew.
 
-## Troubleshooting
+---
 
-| Symptom | Likely cause | Fix |
-|---------|--------------|-----|
-| sysctl revert after reboot | Wrong file location | Use `/etc/sysctl.d/` |
-| Too many open files | Default ulimit low | limits.d or systemd LimitNOFILE |
-| TLS errors | Clock skew | `timedatectl`; fix NTP |
-| Unexpected listener | Service enabled | `systemctl disable`; firewall |
+❌ No baseline before tuning.
 
-## Summary
+✅ Measure first; tune second; measure again.
 
-**Production Linux** needs **hardening** (sysctl, limits, reduced exposure) and **performance baselines** (know normal CPU/disk/time). Apply changes via **drop-ins**, verify with **`sysctl`**, **`timedatectl`**, and **`ss`**, and fix syntax errors before they reach fleet-wide automation.
-
-## Interview Questions
-
-**1. What is the difference between hardening and performance tuning?**
-
-??? success "Reveal answer"
-    **Hardening** reduces attack surface and abuse risk (firewall, SSH, sysctl security knobs, limits). **Performance tuning** optimises throughput/latency for workload. Both need measurement; hardening without observability creates brittle systems.
-
-**2. What is sysctl used for?**
-
-??? success "Reveal answer"
-    Sets **kernel parameters** at runtime via `/proc/sys/`. Persistent config in `/etc/sysctl.d/*.conf`, applied with `sysctl --system`. Examples: network tuning, IP forwarding, syncookies.
-
-**3. Why does accurate time matter on servers?**
-
-??? success "Reveal answer"
-    **TLS/HTTPS** certificate validation, log correlation across hosts, auth token expiry, and distributed databases depend on synchronized clocks. Use **chrony** or **systemd-timesyncd**.
-
-**4. What are ulimits / limits.conf for?**
-
-??? success "Reveal answer"
-    Cap resources per user/session — commonly **nofile** (open files) and **nproc** (processes). Prevents one runaway process from exhausting host resources.
-
-**5. How do you audit what a Linux server exposes?**
-
-??? success "Reveal answer"
-    `ss -tlnp` / `ss -ulnp` for listening ports, cloud Security Groups, host firewall (UFW/firewalld), and `systemctl list-units` for unexpected services. Compare to expected baseline.
-
-**6. Safe workflow to apply a new sysctl on production?**
-
-??? success "Reveal answer"
-    Test on staging → add drop-in file → `sysctl --system` → verify with `sysctl name` → monitor → document rollback (remove file + reapply). Never edit without verification path.
-
-**7. What is a performance baseline?**
-
-??? success "Reveal answer"
-    Measured normal behaviour (CPU idle, disk util, latency, connection count) under typical load. Alerts and capacity plans compare current metrics to baseline — without it you cannot tell “slow” from “normal busy”.
-
-## Related Tutorials
-
-- Previous: [Troubleshooting Linux Systems](troubleshooting-linux-systems.md)
-- Next: [Backup, Disaster Recovery, and Capacity](backup-disaster-recovery-and-capacity.md)
-- Related: [SSH Hardening and Firewalls](ssh-hardening-and-firewalls.md)
-
-## References
-
-- [sysctl man page](https://manpages.ubuntu.com/manpages/noble/man8/sysctl.8.html)
-- [limits.conf man page](https://manpages.ubuntu.com/manpages/noble/man5/limits.conf.5.html)
-- [Ubuntu chrony guide](https://documentation.ubuntu.com/server/explanation/instal-and-configure-time-synchronisation/)

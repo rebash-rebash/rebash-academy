@@ -265,83 +265,21 @@ cd ~/rebash-linux/lab25
 - Secrets should not live in plain tarballs in shared drives.
 - Test restore in isolated environment to avoid overwriting production.
 
-## Common Mistakes
+# Common Mistakes
 
-!!! warning "Backup on same disk"
-    Disk failure loses source and backup together — replicate off-host.
+❌ Backup on same disk.
 
-!!! warning "Never tested restore"
-    Backups are only as good as last successful restore test.
+✅ Disk failure loses source and backup together — replicate off-host.
 
-!!! warning "Ignoring app consistency"
-    Databases need coordinated backup (dump, snapshot, native tool) — not only file copy mid-write.
+---
 
-## Best Practices
+❌ Never tested restore.
 
-- Automate backups; alert on failure
-- Schedule quarterly restore drills
-- Document RPO/RTO per service tier
-- Monitor backup destination capacity
-- Version backups and retention policy (daily/weekly/monthly)
+✅ Backups are only as good as last successful restore test.
 
-## Troubleshooting
+---
 
-| Symptom | Likely cause | Fix |
-|---------|--------------|-----|
-| Restore partial | Wrong extract path | Check `-C` destination |
-| rsync slow | Network or huge files | `--partial`, compression, exclude caches |
-| Backup job fails | Disk full | Expand volume; rotate old backups |
-| Checksum mismatch | Corrupt archive | Re-backup; verify storage integrity |
+❌ Ignoring app consistency.
 
-## Summary
+✅ Databases need coordinated backup (dump, snapshot, native tool) — not only file copy mid-write.
 
-**Backups** copy data; **restore drills** prove they work. **DR** adds process and infra for big failures — define **RPO** (data loss window) and **RTO** (downtime window). Use **`tar`** for archives, **`rsync`** for sync, **`df`/`du`** for capacity. Destroy-on-purpose labs build the confidence interviews expect.
-
-## Interview Questions
-
-**1. What is the difference between backup and disaster recovery?**
-
-??? success "Reveal answer"
-    **Backup** is copying data to recover files or DBs. **DR** is the broader plan to restore **business service** after major failure (lost region, datacentre, host) including runbooks, infra, RPO/RTO, and tested procedures.
-
-**2. Define RPO and RTO with an example.**
-
-??? success "Reveal answer"
-    **RPO (Recovery Point Objective):** max acceptable data loss — e.g. hourly backup → up to 1 hour lost. **RTO (Recovery Time Objective):** max acceptable downtime to restore service — e.g. 4 hours to rebuild app server from image + restore DB.
-
-**3. tar vs rsync — when use each?**
-
-??? success "Reveal answer"
-    **tar** creates portable compressed archives (good for snapshots, off-site upload). **rsync** efficiently synchronises directories (incremental, local or remote mirroring). Often both: rsync for daily sync, tar for periodic full archives.
-
-**4. How do you verify a restore succeeded?**
-
-??? success "Reveal answer"
-    Compare checksums (`sha256sum`) before backup and after restore, run application health checks, verify file counts and critical config values — not only “extract completed without error”.
-
-**5. Why is capacity planning part of backup/DR?**
-
-??? success "Reveal answer"
-    Backups need destination space; restores need room to extract; full disks cause cascading failures. Monitor `df`, `du`, growth trends, and alert before 100% — otherwise backups and apps fail together.
-
-**6. What is wrong with only cloud snapshots and no restore test?**
-
-??? success "Reveal answer"
-    Snapshots can be misconfigured, corrupted, or unrestorable across regions/accounts. Without periodic **restore tests**, RPO/RTO are guesses — same failure mode as untested tar backups.
-
-**7. Accidental rm -rf on config — first steps?**
-
-??? success "Reveal answer"
-    Stop further changes; identify last good backup/snapshot; restore to staging first if possible; verify checksums and service health; postmortem on why backup/restore worked or failed; improve automation and permissions.
-
-## Related Tutorials
-
-- Previous: [Production Hardening and Performance](production-linux-hardening-and-performance.md)
-- Related: [Disk Usage and File Attributes](disk-usage-and-file-attributes.md)
-- Related: [LVM, Swap, and Disk Monitoring](lvm-swap-and-disk-monitoring.md)
-
-## References
-
-- [GNU tar manual](https://www.gnu.org/software/tar/manual/)
-- [rsync man page](https://manpages.ubuntu.com/manpages/noble/man1/rsync.1.html)
-- [AWS Backup documentation](https://docs.aws.amazon.com/aws-backup/) *(cloud DR context)*

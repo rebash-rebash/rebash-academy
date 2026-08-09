@@ -292,84 +292,21 @@ sudo docker system prune -f
 - SELinux/AppArmor profiles apply to container processes on the host.
 - Scan images for CVEs; signed images from trusted registries.
 
-## Common Mistakes
+# Common Mistakes
 
-!!! warning "No resource limits"
-    Always set memory/CPU requests and limits (Docker flags or Kubernetes resources).
+❌ No resource limits.
 
-!!! warning "Debugging only inside container"
-    OOM and disk are host cgroup/filesystem stories — inspect from the node.
+✅ Always set memory/CPU requests and limits (Docker flags or Kubernetes resources).
 
-!!! warning "Root in Dockerfile"
-    Use non-root USER; reduces risk if container boundary fails.
+---
 
-## Best Practices
+❌ Debugging only inside container.
 
-- Set memory and CPU limits matching workload tests
-- Monitor node disk for unused images (`docker system df`)
-- Pin base image digests in production
-- Understand OCI runtime on your cluster (containerd/CRI-O)
-- Keep node kernel and runtime patched
+✅ OOM and disk are host cgroup/filesystem stories — inspect from the node.
 
-## Troubleshooting
+---
 
-| Symptom | Likely cause | Fix |
-|---------|--------------|-----|
-| OOMKilled | Memory limit too low | Raise limit; fix leak |
-| Disk full on node | Image layers | Prune images; adjust retention |
-| Container sees wrong network | net namespace | Check `--network`, CNI on K8s |
-| Permission denied on volume | MAC or permissions | Host path labels; AppArmor |
+❌ Root in Dockerfile.
 
-## Summary
+✅ Use non-root USER; reduces risk if container boundary fails.
 
-**Containers** are processes on Linux with **namespaces** (isolated view), **cgroups** (resource limits), and often **OverlayFS** (layered rootfs). **OCI** standardises images and runtimes. Inspect from the **host** with `lsns`, cgroups, and `findmnt` — Kubernetes sits on top of these primitives, not instead of them.
-
-## Interview Questions
-
-**1. What is a container, in kernel terms?**
-
-??? success "Reveal answer"
-    A process (or process tree) with isolated **namespaces** (pid, net, mnt, …), **cgroups** for resource limits, and typically a layered root filesystem (OverlayFS), started by an OCI runtime like **runc** on the shared host kernel.
-
-**2. Container vs VM — key difference?**
-
-??? success "Reveal answer"
-    VMs run a guest OS and kernel on a hypervisor. Containers share the **host kernel**; isolation is via namespaces/cgroups. VMs stronger isolation boundary; containers lighter and faster start.
-
-**3. What happens when a container exceeds its memory limit?**
-
-??? success "Reveal answer"
-    The cgroup OOM killer terminates process(es) in that cgroup — status **OOMKilled**. Fix: increase limit after confirming leak vs legitimate need, or optimise application memory.
-
-**4. Name three namespace types and what they isolate.**
-
-??? success "Reveal answer"
-    Examples: **pid** (process IDs), **net** (network stack), **mnt** (mount table), **uts** (hostname), **ipc**, **user**. `lsns` lists them for a process.
-
-**5. What is OverlayFS role in Docker?**
-
-??? success "Reveal answer"
-    Combines read-only image **layers** (lower) with a writable **upper** layer for container changes. Enables shared layers between containers and efficient image storage — also causes disk use if images accumulate.
-
-**6. What is OCI?**
-
-??? success "Reveal answer"
-    **Open Container Initiative** — standards for container **image format** and **runtime** (bundle + config.json). Enables interchangeable tools (build with Docker, run with containerd/runc).
-
-**7. How do you debug from the host without kubectl?**
-
-??? success "Reveal answer"
-    `docker ps` / crictl on node → `inspect` PID → `lsns -p PID`, `/proc/PID/cgroup`, `findmnt` for overlay, check memory.max in cgroup path, `journalctl` for OOM. Same primitives on Kubernetes nodes.
-
-## Related Tutorials
-
-- Previous: [SELinux, AppArmor, Fail2Ban, Auditd, and PAM](selinux-apparmor-fail2ban-auditd-pam.md)
-- Next: [Troubleshooting Linux Systems](troubleshooting-linux-systems.md)
-- Docker track: [Introduction to Containers and Docker](../docker/introduction-to-containers-and-docker.md)
-
-## References
-
-- [Linux namespaces man page](https://manpages.ubuntu.com/manpages/noble/man7/namespaces.7.html)
-- [cgroups v2 documentation](https://docs.kernel.org/admin-guide/cgroup-v2.html)
-- [OCI runtime specification](https://github.com/opencontainers/runtime-spec)
-- [Docker documentation](https://docs.docker.com/engine/)

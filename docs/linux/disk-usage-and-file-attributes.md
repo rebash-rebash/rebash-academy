@@ -351,88 +351,27 @@ rm -rf sample-tree
 - Immutable flags (`chattr +i`) protect configs — document them
 - Prefer measuring under the app user’s directories when possible
 
-## Common Mistakes
+# Common Mistakes
 
-!!! warning "Checking only the root filesystem"
-    `/var` or a data disk can be full while `/` looks fine. **Fix:** read the **Mounted on** column for the path that failed.
+❌ Checking only the root filesystem.
 
-!!! warning "Ignoring inodes"
-    Creates fail with “No space left” even when `df -h` shows free megabytes. **Fix:** always run `df -i`.
+✅ `/var` or a data disk can be full while `/` looks fine. **Fix:** read the **Mounted on** column for the path that failed.
 
-!!! warning "Deleting large files still held open"
-    Space does not return until the process closes the file. **Fix:** find the process (`lsof`), restart or reopen logs, confirm with `df`.
+---
 
-!!! warning "Using `du /` without depth limits"
-    Very slow on large hosts. **Fix:** `du` the specific mount path with `--max-depth=1` first.
+❌ Ignoring inodes.
 
-## Best Practices
+✅ Creates fail with “No space left” even when `df -h` shows free megabytes. **Fix:** always run `df -i`.
 
-- Alert on filesystem use **and** inode use for busy mounts
-- Separate OS and data volumes on cloud VMs
-- Keep log rotation and container prune jobs on a schedule
-- Record `df`/`du` before and after cleanup in incident tickets
-- Document any `chattr` usage in configuration management
+---
 
-## Troubleshooting
+❌ Deleting large files still held open.
 
-| Symptom | Likely cause | Fix |
-|---------|--------------|-----|
-| `No space left on device` | Blocks or inodes full | `df -hT`, `df -i`, then `du` |
-| `df` full, `du` smaller | Deleted-open or other mount | `lsof +L1`; check all mounts |
-| Permission denied on write | Mode/owner/ACL | `stat`, `namei -l` |
-| Deploy cannot overwrite config | Immutable attribute | `lsattr`; `chattr -i` if intended |
-| `du` very slow | Millions of files | Limit depth; exclude mounts |
+✅ Space does not return until the process closes the file. **Fix:** find the process (`lsof`), restart or reopen logs, confirm with `df`.
 
-## Summary
+---
 
-**`df`** tells you about **mounts**; **`du`** tells you about **directories**; **`stat`** tells you about **one file**. Use all three before you expand a disk or delete data. Next: [Users, Groups, and sudo](users-groups-and-sudo.md).
+❌ Using `du /` without depth limits.
 
-## Interview Questions
+✅ Very slow on large hosts. **Fix:** `du` the specific mount path with `--max-depth=1` first.
 
-**1. What is the difference between `df` and `du`, and when would you trust each?**
-
-??? success "Reveal answer"
-    **`df`** reports free space and inodes for a **mounted filesystem**. **`du`** reports how much space a **directory tree** uses. Trust `df` for “can I write on this mount?” and `du` for “which folder grew?”. When they disagree, check other mounts and deleted-but-open files.
-
-**2. A create fails with “No space left on device” but `df -h` shows free space. What do you check next?**
-
-??? success "Reveal answer"
-    Run **`df -i`**. The filesystem may be out of **inodes** (common with many tiny files). Also confirm you are on the correct mount (`findmnt -T path`).
-
-**3. Why can deleting a large log file not free space immediately?**
-
-??? success "Reveal answer"
-    If a process still has the file open, the kernel keeps the space until the last file descriptor closes. Use `lsof +L1` (with appropriate privilege), restart the logging process, then re-check `df`.
-
-**4. How do you find the largest directories under `/var`?**
-
-??? success "Reveal answer"
-    `sudo du -h --max-depth=1 /var | sort -h`, then drill into the largest child. First confirm `/var` is on the mount you think with `df`/`findmnt`.
-
-**5. Which file attributes from `stat` matter in a “permission denied” ticket?**
-
-??? success "Reveal answer"
-    **Mode** (permissions), **owner**, **group**, and whether directory path components allow traverse (execute on directories). Size and timestamps help for “who changed it when”, but mode/owner/group decide access.
-
-**6. How would you prove a cleanup worked in a change ticket?**
-
-??? success "Reveal answer"
-    Attach **before and after** `df -hT` (and `df -i` if relevant) for the affected mount, plus a `du` summary of the cleaned tree. Show commands and timestamps.
-
-**7. When might you use `chattr +i`, and what is the operational risk?**
-
-??? success "Reveal answer"
-    **Immutable** flag protects critical files from accidental change. Risk: forgotten flags block deploys or emergency fixes. Document the flag and know how to clear it (`chattr -i`) during an incident.
-
-## Related Tutorials
-
-- Previous: [Paths, Links, Mounts, and Inodes](filesystem-paths-links-mounts-and-inodes.md)
-- Next: [Users, Groups, and sudo](users-groups-and-sudo.md)
-- Related: [Disks, Partitions, and Filesystems](storage-disks-partitions-and-filesystems.md)
-
-## References
-
-- [`df(1)`](https://manpages.ubuntu.com/manpages/jammy/en/man1/df.1.html)
-- [`du(1)`](https://manpages.ubuntu.com/manpages/jammy/en/man1/du.1.html)
-- [`stat(1)`](https://manpages.ubuntu.com/manpages/jammy/en/man1/stat.1.html)
-- Track index: [Linux for Cloud & DevOps Engineers](index.md)

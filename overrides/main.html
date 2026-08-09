@@ -2,57 +2,133 @@
 
 {% block extrahead %}
   {{ super() }}
-  {% if page.meta and page.meta.description %}
-    <meta name="description" content="{{ page.meta.description }}">
+  {% set has_page = page is defined and page %}
+  {% set seo_description = (page.meta.description if has_page and page.meta and page.meta.description else config.site_description) %}
+  {% set seo_title = (page.title | striptags if has_page and page.title else config.site_name) %}
+  {% set base_url = config.site_url | default('https://rebash.in/', true) %}
+  {% set seo_image = base_url ~ 'assets/images/og-default.png' %}
+  {% if config.extra.social_image %}
+    {% set seo_image = base_url ~ (config.extra.social_image | string | replace('./', '')) %}
   {% endif %}
-  {% if page.meta and page.meta.tags %}
+  {% set canonical = page.canonical_url if has_page and page.canonical_url else base_url %}
+
+  <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1">
+  <meta name="author" content="{{ config.site_author | default('Shaik Basha', true) }}">
+  {% if has_page and page.meta and page.meta.tags %}
     <meta name="keywords" content="{{ page.meta.tags | join(', ') }}">
   {% endif %}
+
+  <meta property="og:locale" content="en_GB">
+  <meta property="og:type" content="{% if has_page and page.is_homepage %}website{% else %}article{% endif %}">
+  <meta property="og:site_name" content="{{ config.site_name }}">
+  <meta property="og:title" content="{{ seo_title }}">
+  <meta property="og:description" content="{{ seo_description }}">
+  <meta property="og:url" content="{{ canonical }}">
+  <meta property="og:image" content="{{ seo_image }}">
+  <meta property="og:image:alt" content="{{ config.site_name }}">
+  {% if has_page and page.meta and page.meta.author %}
+    <meta property="article:author" content="{{ page.meta.author }}">
+  {% endif %}
+  {% if has_page and page.meta and page.meta.last_updated %}
+    <meta property="article:modified_time" content="{{ page.meta.last_updated }}">
+  {% endif %}
+
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="{{ seo_title }}">
+  <meta name="twitter:description" content="{{ seo_description }}">
+  <meta name="twitter:image" content="{{ seo_image }}">
+
   <link rel="icon" href="{{ 'assets/images/favicon.svg' | url }}" type="image/svg+xml">
   <link rel="apple-touch-icon" href="{{ 'assets/images/apple-touch-icon.png' | url }}">
-  <link rel="canonical" href="{{ page.canonical_url }}">
-  <meta property="og:type" content="website">
-  <meta property="og:title" content="{{ page.title | striptags }}">
-  <meta property="og:description" content="{{ page.meta.description if page.meta and page.meta.description else config.site_description }}">
-  <meta property="og:url" content="{{ page.canonical_url }}">
-  <meta property="og:site_name" content="{{ config.site_name }}">
-  <meta name="twitter:card" content="summary_large_image">
-  <meta name="twitter:title" content="{{ page.title | striptags }}">
-  <meta name="twitter:description" content="{{ page.meta.description if page.meta and page.meta.description else config.site_description }}">
+  <link rel="canonical" href="{{ canonical }}">
+
   {% if config.extra.adsense and config.extra.adsense.client %}
   <meta name="google-adsense-account" content="{{ config.extra.adsense.client }}">
-  <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client={{ config.extra.adsense.client }}"
-     crossorigin="anonymous"></script>
   {% endif %}
+
+  {% if has_page and page.is_homepage %}
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "WebSite",
+    "name": {{ config.site_name | tojson }},
+    "url": {{ base_url | tojson }},
+    "description": {{ seo_description | tojson }},
+    "publisher": {
+      "@type": "Organization",
+      "name": {{ config.site_name | tojson }},
+      "url": {{ base_url | tojson }},
+      "logo": {
+        "@type": "ImageObject",
+        "url": {{ (base_url ~ 'assets/images/logo.svg') | tojson }}
+      }
+    },
+    "potentialAction": {
+      "@type": "SearchAction",
+      "target": {{ (base_url ~ '?q={search_term_string}') | tojson }},
+      "query-input": "required name=search_term_string"
+    }
+  }
+  </script>
+  {% elif has_page %}
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "LearningResource",
+    "name": {{ seo_title | tojson }},
+    "headline": {{ seo_title | tojson }},
+    "description": {{ seo_description | tojson }},
+    "url": {{ canonical | tojson }},
+    "image": {{ seo_image | tojson }},
+    "inLanguage": "en-GB",
+    "isAccessibleForFree": true,
+    "learningResourceType": "Tutorial",
+    "author": {
+      "@type": "Person",
+      "name": {{ (page.meta.author if page.meta and page.meta.author else config.site_author) | default('Shaik Basha', true) | tojson }}
+    },
+    "publisher": {
+      "@type": "Organization",
+      "name": {{ config.site_name | tojson }},
+      "url": {{ base_url | tojson }}
+    }{% if page.meta and page.meta.tags %},
+    "keywords": {{ (page.meta.tags | join(', ')) | tojson }}{% endif %}{% if page.meta and page.meta.difficulty %},
+    "educationalLevel": {{ page.meta.difficulty | tojson }}{% endif %}
+  }
+  </script>
+  {% endif %}
+
+  {% include "partials/integrations/adsense.html" %}
 {% endblock %}
 
 {% block content %}
-  {% if page.is_homepage %}
+  {% if page is defined and page and page.is_homepage %}
     {#- Custom home content: hero → paths → courses → why (no markdown below) -#}
     {% include "partials/home-hero.html" %}
     {% include "partials/home-paths.html" %}
     {% include "partials/home-courses.html" %}
     {% include "partials/home-why.html" %}
-  {% elif page.url == "technologies/" or page.url == "technologies" %}
+  {% elif page is defined and page and (page.url == "technologies/" or page.url == "technologies") %}
     {% include "partials/technologies-hub.html" %}
-  {% elif page.url == "learning-paths/" or page.url == "learning-paths" %}
+  {% elif page is defined and page and (page.url == "learning-paths/" or page.url == "learning-paths") %}
     {% include "partials/learning-paths-hub.html" %}
-  {% elif page.url == "cheatsheets/" or page.url == "cheatsheets" %}
+  {% elif page is defined and page and (page.url == "cheatsheets/" or page.url == "cheatsheets") %}
     {% include "partials/cheatsheets-hub.html" %}
-  {% elif page.url == "interview/" or page.url == "interview" %}
+  {% elif page is defined and page and (page.url == "interview/" or page.url == "interview") %}
     {% include "partials/interview-hub.html" %}
-  {% elif page.url == "community/" or page.url == "community" %}
+  {% elif page is defined and page and (page.url == "community/" or page.url == "community") %}
     {% include "partials/community-hub.html" %}
-  {% elif page.url == "about/" or page.url == "about" %}
+  {% elif page is defined and page and (page.url == "about/" or page.url == "about") %}
     {% include "partials/about-hub.html" %}
-  {% elif page.url == "contact/" or page.url == "contact" or page.url == "contact.html" %}
+  {% elif page is defined and page and (page.url == "contact/" or page.url == "contact" or page.url == "contact.html") %}
     {% include "partials/contact-hub.html" %}
-  {% elif page.url == "getting-started/" or page.url == "getting-started" %}
+  {% elif page is defined and page and (page.url == "getting-started/" or page.url == "getting-started") %}
     {% include "partials/getting-started-hub.html" %}
   {% else %}
     {{ super() }}
   {% endif %}
-  {% if config.extra.giscus and page.meta and page.meta.comments %}
+
+  {% if config.extra.giscus and page is defined and page and page.meta and page.meta.comments %}
   <section class="giscus-container">
     <script src="https://giscus.app/client.js"
       data-repo="{{ config.extra.giscus.repo }}"

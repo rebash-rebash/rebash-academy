@@ -271,83 +271,21 @@ Add a second check: fail if `loadavg` first field > 10 (use `uptime` or `/proc/l
 - Avoid secrets in scripts; use env files with tight permissions.
 - Validate arguments (`[[ "$THRESH" =~ ^[0-9]+$ ]]`) before use.
 
-## Common Mistakes
+# Common Mistakes
 
-!!! warning "No set -e on ops scripts"
-    Failures cascade silently — always use safe modes unless you handle each error.
+❌ No set -e on ops scripts.
 
-!!! warning "Unquoted $variables"
-    Filenames with spaces break scripts; quoting is mandatory.
+✅ Failures cascade silently — always use safe modes unless you handle each error.
 
-!!! warning "Ignoring exit codes in cron"
-    Cron only emails on failure if exit non-zero — return meaningful codes.
+---
 
-## Best Practices
+❌ Unquoted $variables.
 
-- Log timestamp + result on every run
-- Use meaningful exit codes (document in header comment)
-- Absolute paths for cron-invoked scripts
-- ShellCheck scripts in CI when possible
-- Keep scripts small; complex logic → proper language + tests
+✅ Filenames with spaces break scripts; quoting is mandatory.
 
-## Troubleshooting
+---
 
-| Symptom | Likely cause | Fix |
-|---------|--------------|-----|
-| Script empty output | Redirected stderr | Check `>&2` for errors |
-| Works manual, not cron | PATH/env | Full paths; see env tutorial |
-| Syntax error near `fi` | Missing then/if | `bash -n script.sh` |
-| Wrong disk reported | Wrong mount arg | Pass `$MOUNT` explicitly |
+❌ Ignoring exit codes in cron.
 
-## Summary
+✅ Cron only emails on failure if exit non-zero — return meaningful codes.
 
-A **shell script** is repeatable automation for Linux ops. Start with **shebang** and **`set -euo pipefail`**, use **arguments** and meaningful **exit codes**, log evidence, and never ship the broken “always exit 0” pattern from the lab break task.
-
-## Interview Questions
-
-**1. What is the shebang line for?**
-
-??? success "Reveal answer"
-    First line `#!/usr/bin/env bash` tells the OS which interpreter runs the file when executed directly. Ensures bash features and consistent behaviour in cron/systemd.
-
-**2. What does set -euo pipefail do?**
-
-??? success "Reveal answer"
-    **-e** exit on command failure; **-u** treat unset variables as error; **-o pipefail** pipeline fails if any stage fails. Together they stop silent partial failures in ops scripts.
-
-**3. Why do exit codes matter for cron and systemd?**
-
-??? success "Reveal answer"
-    Scheduler uses exit code to detect success/failure (alerts, unit state). Always returning 0 hides problems; use non-zero for real failures.
-
-**4. How do you pass arguments to a script?**
-
-??? success "Reveal answer"
-    Positional parameters: `$1`, `$2`, … `$#` is count, `$@` all args. Use `"$1"` quoted. Defaults: `${1:-default}`.
-
-**5. Script works interactively but not in cron — why?**
-
-??? success "Reveal answer"
-    Different **PATH**, working directory, and environment; cron may not load `.bashrc`. Use absolute paths, set env in crontab or unit, log to known file.
-
-**6. What is pipefail and give an example?**
-
-??? success "Reveal answer"
-    Without **pipefail**, `false | true` exits 0 (last command). With **pipefail**, pipeline exits non-zero if `false` fails — critical when grepping logs: `grep pattern file | mail` should fail if grep finds nothing (depending on intent).
-
-**7. How do you syntax-check a script without running it?**
-
-??? success "Reveal answer"
-    `bash -n script.sh` — parse only. Also **ShellCheck** static analyser. Run as non-root in staging before production cron.
-
-## Related Tutorials
-
-- Next: [Environment Variables and Shell Configuration](environment-variables-shell-config.md)
-- Previous: [Essential Linux Commands](essential-linux-commands.md)
-- Deeper: [Shell Scripting](../shell/index.md) course
-
-## References
-
-- [Bash manual](https://www.gnu.org/software/bash/manual/)
-- [ShellCheck](https://www.shellcheck.net/)
-- [Google shell style guide](https://google.github.io/styleguide/shellguide.html)

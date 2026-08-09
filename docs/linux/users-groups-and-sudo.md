@@ -366,89 +366,27 @@ sudo groupdel rebash-lab 2>/dev/null || true
 - Keep human accounts separate from service accounts
 - Log privileged use in `/var/log/auth.log` or `journalctl`
 
-## Common Mistakes
+# Common Mistakes
 
-!!! warning "Using `usermod -G` without `-a`"
-    Secondary groups are replaced, not added. **Fix:** always `usermod -aG group user`, then `id user`.
+❌ Using `usermod -G` without `-a`
 
-!!! warning "Editing sudoers with vim directly"
-    One typo can remove sudo for everyone. **Fix:** use `visudo` only; keep root console open while testing.
+✅ Secondary groups are replaced, not added. **Fix:** always `usermod -aG group user`, then `id user`.
 
-!!! warning "Giving `NOPASSWD:ALL` for convenience"
-    Any process running as that user becomes root. **Fix:** allow only exact command paths.
+---
 
-!!! warning "Deleting users without checking file ownership"
-    Old files keep the old UID. **Fix:** `find / -user name` before `userdel`.
+❌ Editing sudoers with vim directly.
 
-## Best Practices
+✅ One typo can remove sudo for everyone. **Fix:** use `visudo` only; keep root console open while testing.
 
-- One sudoers file per team or role, managed by configuration management
-- System users for services; login users for people
-- Name groups by purpose (`deploy`, `logs-read`), not by person name
-- Review `sudo -l` on every new cloud image
-- Document emergency admin accounts and test recovery quarterly
+---
 
-## Troubleshooting
+❌ Giving `NOPASSWD:ALL` for convenience.
 
-| Symptom | Likely cause | Fix |
-|---------|--------------|-----|
-| `user is not in the sudoers file` | No rule / wrong user | Check `/etc/sudoers.d/*` and groups |
-| `sudo: parse error` | Broken sudoers syntax | Root console; `visudo -c`; remove bad file |
-| Group missing in `id` after `usermod` | Session not refreshed | Log out/in, `newgrp`, or reconnect SSH |
-| Service cannot write files | Wrong UID/GID on folders | Set ownership to service account |
-| CI job suddenly has root | sudo rule too open | Narrow rule; audit and rotate secrets |
+✅ Any process running as that user becomes root. **Fix:** allow only exact command paths.
 
-## Summary
+---
 
-Users, groups, and sudo decide **who can do what** on Linux. Create accounts with a clear purpose, add groups safely, grant sudo as a short allow-list, and prove both success and failure. Next: [Permissions, ACLs, and Special Bits](permissions-acls-and-special-bits.md).
+❌ Deleting users without checking file ownership.
 
-## Interview Questions
+✅ Old files keep the old UID. **Fix:** `find / -user name` before `userdel`.
 
-**1. What is the difference between a primary group and secondary groups, and how do you add a secondary group safely?**
-
-??? success "Reveal answer"
-    The **primary group** is the default GID used when the user creates new files. **Secondary groups** give extra shared access. Use `usermod -aG groupname username`, then check with `id username`. Without `-a`, the secondary group list can be **replaced** and access breaks.
-
-**2. A junior edited `/etc/sudoers` with vim and now `sudo` fails for everyone. How do you recover?**
-
-??? success "Reveal answer"
-    Use a **root console**, single-user mode, or cloud **serial console**. Fix or remove the broken file, then run `visudo -c`. Prevent it by editing only with `visudo`, using small drop-in files, and testing on a practice VM first.
-
-**3. When should an application use a system account with `nologin`?**
-
-??? success "Reveal answer"
-    When a service needs a UID to own files and processes but **must not** allow interactive login. Login shells are for people. Service accounts reduce risk if credentials leak and clarify ownership in audits.
-
-**4. Why is `ALL=(ALL) NOPASSWD:ALL` dangerous on a jump server?**
-
-??? success "Reveal answer"
-    Any code running as that user becomes **full root** with no password prompt. Prefer a narrow rule like `user ALL=(root) NOPASSWD: /bin/systemctl restart myapp.service`. Prove with `sudo -l` and a deny test.
-
-**5. How would you prove a sudo change is least privilege?**
-
-??? success "Reveal answer"
-    Show the drop-in file, successful `visudo -c`, `sudo -l` listing **only** intended commands, and a **deny** test (`sudo /bin/true`) that fails. Attach output to the change ticket.
-
-**6. UIDs differ between two servers sharing NFS — what breaks?**
-
-??? success "Reveal answer"
-    NFS checks **numeric UID/GID**, not login names. Same username with different UIDs sees wrong ownership or `Permission denied`. Teams use central directories (LDAP/FreeIPA) or fixed UID ranges.
-
-**7. How does cloud “admin” group membership relate to sudo?**
-
-??? success "Reveal answer"
-    Cloud images often put the first user in `sudo` (Ubuntu) or `wheel` (RHEL-like). That group maps to broad sudo in `/etc/sudoers`. Useful for first setup; production hardening often narrows access with role-based drop-ins. Always check `id` and `sudo -l` on new images.
-
-## Related Tutorials
-
-- Previous: [Disk Usage and File Attributes](disk-usage-and-file-attributes.md)
-- Next: [Permissions, ACLs, and Special Bits](permissions-acls-and-special-bits.md)
-- Related: [IAM on AWS](../aws/iam-identity-access-and-organizations.md) *(same identity ideas in the cloud)*
-- Lab: [Users, Groups, and Permissions](../labs/linux-users-permissions-lab.md)
-
-## References
-
-- [`useradd(8)`](https://manpages.ubuntu.com/manpages/jammy/en/man8/useradd.8.html)
-- [`sudoers(5)`](https://www.sudo.ws/docs/man/sudoers.man/)
-- [`visudo(8)`](https://www.sudo.ws/docs/man/visudo.man/)
-- Track index: [Linux for Cloud & DevOps Engineers](index.md)

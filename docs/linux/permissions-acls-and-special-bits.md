@@ -361,88 +361,27 @@ sudo groupdel rebash-perm 2>/dev/null || true
 - ACLs can hide access — include `getfacl` in reviews
 - Sticky bit reduces cross-user deletion in shared directories
 
-## Common Mistakes
+# Common Mistakes
 
-!!! warning "Fixing access with `chmod 777`"
-    World-writable paths fail audits. **Fix:** group (`2770`) or named ACL.
+❌ Fixing access with `chmod 777`
 
-!!! warning "Forgetting directory execute"
-    Path lookup fails even when file mode looks open. **Fix:** `x` on every directory in the path.
+✅ World-writable paths fail audits. **Fix:** group (`2770`) or named ACL.
 
-!!! warning "Assuming ACL works on every mount"
-    Some network mounts ignore ACLs. **Fix:** verify with `getfacl` after mount.
+---
 
-!!! warning "Casual SUID binaries"
-    Bugs become privilege escalation. **Fix:** capabilities, sudo allow-lists, or narrow root helpers.
+❌ Forgetting directory execute.
 
-## Best Practices
+✅ Path lookup fails even when file mode looks open. **Fix:** `x` on every directory in the path.
 
-- Encode modes and ownership in configuration management
-- Use SGID directories for team trees; sticky for drop boxes
-- Review umask on CI runners that publish artefacts
-- Document ACL entries next to directory purpose
-- Remove ACLs and group membership when people leave
+---
 
-## Troubleshooting
+❌ Assuming ACL works on every mount.
 
-| Symptom | Likely cause | Fix |
-|---------|--------------|-----|
-| Permission denied | Mode/owner/path `x` | `namei -l`, `stat`, fix mode |
-| Works for one user only | Group/ACL missing | `id`, `getfacl`, `usermod -aG` |
-| New files wrong group | Directory not SGID | `chmod g+s` on directory |
-| Delete others’ files in shared dir | Sticky missing | `chmod +t` |
-| ACL ignored | Mount options | Check `mount`; remount with ACL |
+✅ Some network mounts ignore ACLs. **Fix:** verify with `getfacl` after mount.
 
-## Summary
+---
 
-Modes, ownership, umask, ACLs, and special bits decide **who can read, write, traverse, and delete**. Prefer least privilege with groups and ACLs, prove allow and deny, and keep SUID rare. Next: [Text Processing with grep, sed, and awk](text-processing-grep-sed-awk.md).
+❌ Casual SUID binaries.
 
-## Interview Questions
+✅ Bugs become privilege escalation. **Fix:** capabilities, sudo allow-lists, or narrow root helpers.
 
-**1. What do the three POSIX permission classes mean, and what does execute mean on a directory?**
-
-??? success "Reveal answer"
-    Classes are **owner**, **group**, and **other**. On files, execute means run as a program. On directories, execute means **traverse** (enter/search). Without directory `x`, you cannot reach files inside.
-
-**2. How do ACLs help when two users need access but should not share a primary group?**
-
-??? success "Reveal answer"
-    **ACLs** add named-user or named-group entries with `setfacl` without widening “other”. Prove with `getfacl` and tests as that user. Default ACLs on directories apply to new children.
-
-**3. What is the sticky bit for, and how do you recognise it in `ls -ld`?**
-
-??? success "Reveal answer"
-    On a directory, sticky (`+t`) means only the **file owner** (or root) can unlink/rename files there — classic for `/tmp`. In `ls -ld`, you see `t` or `T` in the other-execute position (for example `drwxrwxrwt`).
-
-**4. Why is `chmod 777` on a deploy directory a security problem?**
-
-??? success "Reveal answer"
-    Any local user or compromised low-privilege process can change or replace artefacts. Prefer `2770` with a deploy group, or ACLs for specific users. Auditors flag world-writable paths quickly.
-
-**5. What is the difference between SUID on a file and SGID on a directory?**
-
-??? success "Reveal answer"
-    **SUID on a file** runs the program with the file owner’s UID — powerful; audit carefully. **SGID on a directory** typically makes new files inherit the directory’s group — useful for team-shared trees.
-
-**6. How would you debug “Permission denied” on `/opt/app/bin/start`?**
-
-??? success "Reveal answer"
-    Check the full path with `namei -l`, then `stat`/`ls -l` on each component, `id` for the runtime user, `getfacl` if ACLs apply, and Mandatory Access Control logs if modes look correct.
-
-**7. How does umask affect files created by CI jobs?**
-
-??? success "Reveal answer"
-    umask masks default permissions. A loose umask can create world-readable artefacts; a tight umask can block the next job. Set umask deliberately in the job environment and verify with `stat` on a created file.
-
-## Related Tutorials
-
-- Previous: [Users, Groups, and sudo](users-groups-and-sudo.md)
-- Next: [Text Processing with grep, sed, and awk](text-processing-grep-sed-awk.md)
-- Lab: [Users, Groups, and Permissions](../labs/linux-users-permissions-lab.md)
-
-## References
-
-- [`chmod(1)`](https://manpages.ubuntu.com/manpages/jammy/en/man1/chmod.1.html)
-- [`acl(5)`](https://manpages.ubuntu.com/manpages/jammy/en/man5/acl.5.html)
-- [`setfacl(1)`](https://manpages.ubuntu.com/manpages/jammy/en/man1/setfacl.1.html)
-- Track index: [Linux for Cloud & DevOps Engineers](index.md)

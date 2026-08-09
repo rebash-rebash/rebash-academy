@@ -281,83 +281,21 @@ rm -f /tmp/rebash-report.log
 - Use sudo deliberately; document privileged changes.
 - Blameless postmortems focus on process, not individuals.
 
-## Common Mistakes
+# Common Mistakes
 
-!!! warning "Restart without logs"
-    Read `journalctl` first — restarting may clear transient clues (still check after too).
+❌ Restart without logs.
 
-!!! warning "Many changes at once"
-    One hypothesis, one change — otherwise you cannot explain what fixed it.
+✅ Read `journalctl` first — restarting may clear transient clues (still check after too).
 
-!!! warning "Skipping disk and memory"
-    `df -h` and `free -h` belong in the first two minutes.
+---
 
-## Best Practices
+❌ Many changes at once.
 
-- Keep a personal incident checklist (this lab)
-- Correlate deploy timestamps with `journalctl --since`
-- Use `systemd-analyze critical-chain` for boot delays
-- Communicate status to stakeholders during long incidents
-- Write timeline bullets as you go, not from memory later
+✅ One hypothesis, one change — otherwise you cannot explain what fixed it.
 
-## Troubleshooting
+---
 
-| Symptom | Likely cause | Fix |
-|---------|--------------|-----|
-| Service fails immediately | Bad ExecStart, perms | status + journal; fix path |
-| Intermittent failures | OOM, disk full | `free -h`; `df -h`; dmesg OOM |
-| Works manually, not in unit | Different env/user | `User=`, `Environment=`, absolute paths |
-| All services slow | Host resource | vmstat/iostat from prior tutorial |
+❌ Skipping disk and memory.
 
-## Summary
+✅ `df -h` and `free -h` belong in the first two minutes.
 
-**Troubleshooting** is a method: define symptom, gather facts (`systemctl --failed`, `journalctl`, disk, memory), change one thing, prove recovery. The lab broke a **systemd** unit on purpose — the same class of failure you will see after bad deploys. Document evidence; interviews and postmortems reward this discipline.
-
-## Interview Questions
-
-**1. Describe your Linux troubleshooting approach.**
-
-??? success "Reveal answer"
-    Clarify symptom and scope → check recent changes → gather facts (`uptime`, disk, memory, failed units, logs) → one hypothesis → one change → verify recovery → document timeline. Avoid random restarts without evidence.
-
-**2. First five commands on a slow/unreachable Linux server?**
-
-??? success "Reveal answer"
-    `uptime`, `df -h`, `free -h`, `systemctl --failed`, `journalctl -p err -b` (plus `ss -tlnp` if network/service). Then narrow to the failing unit or resource.
-
-**3. Service fails — how do you use journalctl?**
-
-??? success "Reveal answer"
-    `systemctl status unit.service` for exit code and hint, then `journalctl -u unit.service -b` (this boot), optionally `--since` around incident time. Read ExecStart failures, permissions, missing files.
-
-**4. Why change one thing at a time?**
-
-??? success "Reveal answer"
-    Multiple simultaneous changes hide root cause and complicate rollback. Scientific method: one hypothesis, one fix, observe result — required for postmortems and safe production work.
-
-**5. Disk full — how does it break unrelated services?**
-
-??? success "Reveal answer"
-    Many services need to write logs, temp files, or sockets under `/var` or `/tmp`. No free space → writes fail → database, web server, or systemd units fail with varied errors. Always check `df -h` early.
-
-**6. Difference between restart and reload for diagnosis?**
-
-??? success "Reveal answer"
-    **Restart** stops and starts process (may clear in-memory state). **Reload** often re-reads config with less disruption. For diagnosis, read logs **before** restart to preserve failure evidence; restart after you understand or to verify fix.
-
-**7. What goes in an incident evidence pack?**
-
-??? success "Reveal answer"
-    Symptom, timeline, commands run (outputs), root cause, fix applied, proof of recovery (status, log line, metric), follow-up actions. Redact secrets. Shows operational maturity in interviews.
-
-## Related Tutorials
-
-- Previous: [Containers — Namespaces, cgroups, and OCI](containers-namespaces-cgroups-and-oci.md)
-- Next: [Production Hardening and Performance](production-linux-hardening-and-performance.md)
-- Related: [systemd Services and journalctl](systemd-services-and-journalctl.md)
-
-## References
-
-- [systemd.service man page](https://www.freedesktop.org/software/systemd/man/latest/systemd.service.html)
-- [journalctl man page](https://www.freedesktop.org/software/systemd/man/latest/journalctl.html)
-- [Google SRE incident management](https://sre.google/sre-book/managing-incidents/)

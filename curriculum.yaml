@@ -321,79 +321,204 @@ technologies:
   difficulty: beginner
   modules:
   - id: linux-m1
-    title: Module 1 · Fundamentals
+    title: Module 1 · Linux Fundamentals
     tutorials:
+    - linux/introduction-to-linux
+    - linux/linux-history-and-open-source
     - linux/linux-fundamentals-distributions-and-architecture
+    - linux/linux-kernel-explained
+    - linux/linux-desktop-vs-server
+    - linux/linux-installation-virtualbox-vmware-wsl
     - linux/boot-process-and-filesystem-hierarchy
+    - linux/first-login-and-terminal
+    - linux/linux-directory-structure-fhs
+    - linux/getting-help-man-info
   - id: linux-m2
-    title: Module 2 · Command Line
+    title: Module 2 · Linux Command Line Essentials
     tutorials:
+    - linux/understanding-the-shell
+    - linux/bash-basics
+    - linux/navigating-the-filesystem
     - linux/essential-linux-commands
+    - linux/viewing-file-contents
+    - linux/searching-files
+    - linux/wildcards-and-globbing
+    - linux/command-history
+    - linux/redirection
+    - linux/pipes
   - id: linux-m3
-    title: Module 3 · Filesystem
+    title: Module 3 · Text Processing
+    tutorials:
+    - linux/text-processing-cat
+    - linux/text-processing-less
+    - linux/text-processing-head
+    - linux/text-processing-tail
+    - linux/text-processing-grep-sed-awk
+    - linux/text-processing-cut
+    - linux/text-processing-sort
+    - linux/text-processing-uniq
+    - linux/text-processing-tr
+    - linux/text-processing-sed
+    - linux/text-processing-awk
+    - linux/text-processing-xargs
+  - id: linux-m4
+    title: Module 4 · File System
     tutorials:
     - linux/filesystem-paths-links-mounts-and-inodes
+    - linux/hard-links
+    - linux/soft-links
+    - linux/permissions-acls-and-special-bits
+    - linux/ownership
+    - linux/umask
+    - linux/acl
+    - linux/file-attributes
+    - linux/mount-points
     - linux/disk-usage-and-file-attributes
-  - id: linux-m4
-    title: Module 4 · Users & Permissions
+  - id: linux-m5
+    title: Module 5 · Users and Groups
     tutorials:
     - linux/users-groups-and-sudo
-    - linux/permissions-acls-and-special-bits
-  - id: linux-m5
-    title: Module 5 · Text Processing
-    tutorials:
-    - linux/text-processing-grep-sed-awk
+    - linux/groups
+    - linux/sudo
+    - linux/password-policies
+    - linux/environment-variables-shell-config
+    - linux/shell-profiles
+    - linux/shell-configuration
+    - linux/ssh-keys
+    - linux/pam-overview
+    - linux/multi-user-environment
   - id: linux-m6
-    title: Module 6 · Processes
+    title: Module 6 · Process Management
     tutorials:
     - linux/process-management
-  - id: linux-m7
-    title: Module 7 · Services & Boot
-    tutorials:
+    - linux/foreground-background-jobs
+    - linux/ps
+    - linux/top
+    - linux/htop
+    - linux/nice
+    - linux/kill
+    - linux/linux-signals
     - linux/systemd-services-and-journalctl
     - linux/systemd-targets-timers-and-boot
-  - id: linux-m8
-    title: Module 8 · Storage
-    tutorials:
-    - linux/storage-disks-partitions-and-filesystems
-    - linux/lvm-swap-and-disk-monitoring
-  - id: linux-m9
-    title: Module 9 · Networking
-    tutorials:
-    - linux/linux-networking-tools
-    - linux/ssh-and-remote-access
-  - id: linux-m10
-    title: Module 10 · Packages
+  - id: linux-m7
+    title: Module 7 · Package Management
     tutorials:
     - linux/package-management
+    - linux/dnf
+    - linux/yum
+    - linux/rpm
+    - linux/snap
+    - linux/flatpak
+    - linux/repository-management
+    - linux/package-updates
+    - linux/security-patches
+    - linux/package-troubleshooting
+  - id: linux-m8
+    title: Module 8 · Networking
+    tutorials:
+    - linux/tcp-ip-basics-for-linux
+    - linux/linux-networking-tools
+    - linux/dns-on-linux
+    - linux/routing-on-linux
+    - linux/ping
+    - linux/traceroute
+    - linux/ss
+    - linux/netstat
+    - linux/curl
+    - linux/wget
+    - linux/ssh-and-remote-access
+    - linux/scp
+    - linux/rsync
+  - id: linux-m9
+    title: Module 9 · Storage Management
+    tutorials:
+    - linux/storage-disks-partitions-and-filesystems
+    - linux/filesystems
+    - linux/mkfs
+    - linux/mounting
+    - linux/lvm-swap-and-disk-monitoring
+    - linux/raid-concepts
+    - linux/swap
+    - linux/quotas
+    - linux/backup-basics
+    - linux/restore
+  - id: linux-m10
+    title: Module 10 · Bash Scripting
+    tutorials:
+    - linux/shell-scripting-fundamentals
+    - linux/bash-conditions
+    - linux/bash-loops
+    - linux/bash-functions
+    - linux/bash-arrays
+    - linux/bash-input
+    - linux/bash-exit-codes
+    - linux/bash-error-handling
+    - linux/bash-logging
+    - linux/bash-script-best-practices
   - id: linux-m11
-    title: Module 11 · Scheduling
-    tutorials:
-    - linux/scheduling-cron-at-and-timers
-  - id: linux-m12
-    title: Module 12 · Logging & Monitoring
-    tutorials:
-    - linux/logging-syslog-journald-logrotate
-    - linux/host-monitoring-vmstat-iostat-sar
-  - id: linux-m13
-    title: Module 13 · Security
+    title: Module 11 · Linux Security
     tutorials:
     - linux/ssh-hardening-and-firewalls
+    - linux/file-permissions-security-review
+    - linux/firewall-ufw
     - linux/selinux-apparmor-fail2ban-auditd-pam
-  - id: linux-m14
-    title: Module 14 · Containers & Cloud
+    - linux/apparmor
+    - linux/fail2ban
+    - linux/audit-logs
+    - linux/security-updates
+    - linux/secrets-management-on-linux
+    - linux/cis-benchmark-basics
+  - id: linux-m12
+    title: Module 12 · Monitoring and Logs
+    tutorials:
+    - linux/logging-syslog-journald-logrotate
+    - linux/syslog
+    - linux/dmesg
+    - linux/logrotate
+    - linux/host-monitoring-vmstat-iostat-sar
+    - linux/memory-monitoring
+    - linux/cpu-monitoring
+    - linux/performance-troubleshooting
+    - linux/crash-investigation
+    - linux/monitoring-best-practices
+  - id: linux-m13
+    title: Module 13 · Linux for DevOps
     tutorials:
     - linux/containers-namespaces-cgroups-and-oci
-  - id: linux-m15
-    title: Module 15 · Troubleshooting
-    tutorials:
-    - linux/troubleshooting-linux-systems
-  - id: linux-m16
-    title: Module 16 · Production Linux
+    - linux/linux-for-kubernetes
+    - linux/linux-for-cicd
+    - linux/linux-for-git
+    - linux/linux-for-terraform
+    - linux/linux-for-ansible
+    - linux/linux-for-jenkins
+    - linux/linux-for-github-actions
+    - linux/linux-for-gitlab-ci
+    - linux/linux-in-cloud-platforms
+  - id: linux-m14
+    title: Module 14 · Production Linux Administration
     tutorials:
     - linux/production-linux-hardening-and-performance
+    - linux/hardening-checklist
+    - linux/performance-tuning
+    - linux/capacity-planning
     - linux/backup-disaster-recovery-and-capacity
-  tutorial_count: 25
+    - linux/disaster-recovery
+    - linux/high-availability-concepts
+    - linux/incident-response
+    - linux/troubleshooting-linux-systems
+    - linux/production-best-practices
+  - id: linux-m15
+    title: Module 15 · Capstone Projects
+    tutorials:
+    - linux/projects/secure-linux-web-server
+    - linux/projects/bastion-host
+    - linux/projects/deploy-git-server
+    - linux/projects/monitoring-server
+    - linux/projects/automate-user-provisioning-bash
+    - linux/projects/linux-server-baseline
+    - linux/projects/harden-ubuntu-server
+    - linux/projects/production-linux-troubleshooting-challenge
+  tutorial_count: 145
 - id: shell
   title: Shell Scripting
   status: ready

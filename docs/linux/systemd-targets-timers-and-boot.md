@@ -330,87 +330,27 @@ cd ~/rebash-linux/lab11
 - Restrict write access to `/etc/systemd/system`.
 - Review `systemctl list-timers --all` during audits.
 
-## Common Mistakes
+# Common Mistakes
 
-!!! warning "Rescue target over SSH"
-    You lose network and may lock the session. Fix: use cloud serial console or avoid isolate on remote VMs.
+❌ Rescue target over SSH.
 
-!!! warning "Enabled service but disabled timer"
-    The schedule unit must be enabled: `systemctl enable foo.timer`.
+✅ You lose network and may lock the session. Fix: use cloud serial console or avoid isolate on remote VMs.
 
-!!! warning "Monolithic cron migration"
-    Copying cron lines without `User=` and logging loses audit trail. Fix: one service unit per job with journal.
+---
 
-!!! warning "Ignoring boot regressions"
-    Kernel updates can slow boot. Fix: capture `systemd-analyze blame` before/after in change notes.
+❌ Enabled service but disabled timer.
 
-## Best Practices
+✅ The schedule unit must be enabled: `systemctl enable foo.timer`.
 
-- Prefer timers for new scheduled work on systemd hosts
-- Use `OnCalendar=*-*-* 02:00:00` for wall-clock schedules in production
-- Add `RandomizedDelaySec` on fleet-wide jobs to avoid thundering herd
-- Document timer units in Git alongside application code
-- Keep default `multi-user.target` on headless servers
+---
 
-## Troubleshooting
+❌ Monolithic cron migration.
 
-| Symptom | Likely cause | Fix |
-|---------|--------------|-----|
-| Timer inactive | Not enabled | `systemctl enable --now timer` |
-| Service runs once at boot only | Wrong timer directives | Check `OnUnitActiveSec` vs `OnCalendar` |
-| Long boot after update | Slow unit in chain | `systemd-analyze critical-chain` |
-| Timer runs as root unexpectedly | No User= in service | Drop-in `User=` for job account |
+✅ Copying cron lines without `User=` and logging loses audit trail. Fix: one service unit per job with journal.
 
-## Summary
+---
 
-**Targets** define boot state; **timers** schedule **services** with journal integration. Use **systemd-analyze** to read boot performance — do not reckless-switch rescue targets on remote VMs. Next you will learn **disks, partitions, and filesystems**.
+❌ Ignoring boot regressions.
 
-## Interview Questions
+✅ Kernel updates can slow boot. Fix: capture `systemd-analyze blame` before/after in change notes.
 
-**1. What is a systemd target?**
-
-??? success "Reveal answer"
-    A target is a systemd unit that groups other units to reach a system state (like multi-user or graphical). It replaces old SysV runlevels with named goals and dependency graphs.
-
-**2. What is the usual default target on a server?**
-
-??? success "Reveal answer"
-    **`multi-user.target`** — multi-user command-line environment with network and services, without requiring a graphical desktop. Desktops often default to **`graphical.target`**, which builds on multi-user.
-
-**3. How does a systemd timer relate to a service?**
-
-??? success "Reveal answer"
-    The **`.timer`** unit defines when to trigger; it activates a matching **`.service`** unit that performs the work. Enable the **timer** (not only the service) for scheduling. Logs appear under the service name in journalctl.
-
-**4. Why use timers instead of cron?**
-
-??? success "Reveal answer"
-    Timers integrate with systemd dependencies, show runs in **journalctl**, support **`Persistent=`** catch-up, and **`RandomizedDelaySec=`** jitter. Easier to audit on homogeneous fleets than scattered crontabs.
-
-**5. What does systemd-analyze blame show?**
-
-??? success "Reveal answer"
-    Time spent starting each unit during boot, sorted slowest first. Helps find which service or mount delayed startup after kernel or package updates — read-only diagnostics.
-
-**6. When is rescue.target dangerous on a cloud VM?**
-
-??? success "Reveal answer"
-    **`systemctl isolate rescue.target`** stops most services including networking on many configs. Over SSH you may lose access with no serial console. Use cloud provider console or avoid isolate on remote-only access.
-
-**7. What does Persistent=true on a timer do?**
-
-??? success "Reveal answer"
-    If the system was off when a scheduled run was due, systemd runs the missed job soon after boot (catch-up). Important for backups and maintenance windows that must not silently skip.
-
-## Related Tutorials
-
-- Prior: [systemd Services and journalctl](systemd-services-and-journalctl.md)
-- Next: [Disks, Partitions, and Filesystems](storage-disks-partitions-and-filesystems.md)
-- Related: [Boot Process and Filesystem Hierarchy](boot-process-and-filesystem-hierarchy.md)
-
-## References
-
-- [systemd.target(5)](https://www.freedesktop.org/software/systemd/man/systemd.target.html)
-- [systemd.timer(5)](https://www.freedesktop.org/software/systemd/man/systemd.timer.html)
-- [systemd-analyze(1)](https://www.freedesktop.org/software/systemd/man/systemd-analyze.html)
-- [REBASH Linux course index](index.md)
