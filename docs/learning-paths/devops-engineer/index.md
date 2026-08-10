@@ -56,54 +56,32 @@ Mid to senior DevOps roles — treat as directional guidance only.
 
 ### Phase 2 · Containers
 
-- [Docker](../../docker/) — ready · 20 tutorials
-- [Kubernetes](../../kubernetes/) — ready · 20 tutorials
-- **Helm** — planned
+- [Docker](../../docker/) — ready
+- [Kubernetes](../../kubernetes/) — ready
+- [Helm](../../helm/) — ready
 
 ### Phase 3 · Cloud & IaC
 
-- [Terraform](../../terraform/) — ready · 20 tutorials
-- **Ansible** — planned
-- [AWS](../../aws/) — ready · 20 tutorials
-- [Azure](../../azure/) — stub / coming soon
-- [Google Cloud](../../gcp/) — complete (16 modules)
+- [Terraform](../../terraform/) — ready
+- [Ansible](../../ansible/) — ready
+- [AWS](../../aws/) — ready
+- [Google Cloud](../../gcp/) — ready
 
 ### Phase 4 · Pipelines
 
-- [GitLab CI/CD](../../gitlab/) — ready · 20 tutorials
-- **GitHub Actions** — planned
-- **Jenkins** — planned
-- **Argo CD** — planned
-
-### Phase 5 · Observability
-
-- **Prometheus** — planned
-- **Grafana** — planned
-- **Loki** — planned
-- **Tempo** — planned
-- **OpenTelemetry** — planned
-
-### Phase 6 · Security
-
-- [DevSecOps](../../devsecops/) — stub / coming soon
-- [Security](../../security/) — stub / coming soon
-
-### Phase 7 · Platform
-
-- **Platform Engineering** — planned
-- **Site Reliability Engineering** — planned
-- [Cloud Architecture](../../architecture/) — stub / coming soon
-
+- [GitLab CI/CD](../../gitlab/) — ready
+- [GitHub Actions](../../github-actions/) — ready
+- [Jenkins](../../jenkins/) — ready
+- [Argo CD](../../argocd/) — ready
 
 ## Skills gained
 
 - Ordered mastery of the technologies on this path
 - Hands-on labs and production-oriented habits
-- Interview and certification readiness for mapped exams
 
 ## Projects
 
-See the [Projects](../../projects/index.md) catalog and [Capstones](../../capstones/index.md). Map picks to this path’s technologies.
+See the [Projects](../../projects/index.md) catalog and Capstones. Map picks to this path’s technologies.
 
 ## Capstone
 

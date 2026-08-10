@@ -29,7 +29,7 @@ A landing zone is the shared foundation that every workload inherits — identit
 
 ## Related courses
 
-- [Cloud Architecture](../architecture/index.md)
+- Cloud Architecture
 - [AWS](../aws/index.md)
 - [Cloud Architect path](../learning-paths/cloud-architect/index.md)
 

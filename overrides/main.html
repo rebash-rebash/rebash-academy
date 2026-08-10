@@ -12,7 +12,14 @@
   {% endif %}
   {% set canonical = page.canonical_url if has_page and page.canonical_url else base_url %}
 
-  <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1">
+  {% set robots_content = (seo_robots if seo_robots is defined and seo_robots else none) %}
+  {% if not robots_content and has_page and page.meta and page.meta.robots %}
+    {% set robots_content = page.meta.robots %}
+  {% endif %}
+  {% if not robots_content %}
+    {% set robots_content = "index, follow" %}
+  {% endif %}
+  <meta name="robots" content="{{ robots_content }}, max-image-preview:large, max-snippet:-1, max-video-preview:-1">
   <meta name="author" content="{{ config.site_author | default('Shaik Basha', true) }}">
   {% if has_page and page.meta and page.meta.tags %}
     <meta name="keywords" content="{{ page.meta.tags | join(', ') }}">

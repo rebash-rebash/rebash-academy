@@ -30,6 +30,6 @@ Security controls only matter if teams keep them on when a release is late.
 
 ## Related courses
 
-- [DevSecOps](../devsecops/index.md)
+- DevSecOps
 - [GitLab CI/CD](../gitlab/index.md)
 - [DevSecOps Engineer path](../learning-paths/devsecops-engineer/index.md)

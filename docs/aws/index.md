@@ -71,5 +71,5 @@ Learn AWS the way operators use it: start from a clear problem, build a simple m
 
 - [Networking](../networking/index.md) · [Linux](../linux/index.md) · [Docker](../docker/index.md)
 - [Kubernetes](../kubernetes/index.md) · [Terraform](../terraform/index.md)
-- [Azure](../azure/index.md) · [GCP](../gcp/index.md)
+- Azure · [GCP](../gcp/index.md)
 - [Cloud Engineer path](../learning-paths/cloud-engineer/index.md)

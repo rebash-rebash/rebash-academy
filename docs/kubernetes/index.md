@@ -70,8 +70,7 @@ Workloads · Services/Ingress · storage · RBAC · NetPol · autoscaling · Hel
 
 ## 3. Practice
 
-- [Labs](../labs/index.md) · [Projects](projects/index.md) · [Quizzes](quizzes/index.md)
-- [Cheat sheets](cheatsheets/index.md) · [Interview](interview/index.md) · [Capstone](capstone/index.md)
+- [Labs](../labs/index.md)
 
 ## Diagrams
 

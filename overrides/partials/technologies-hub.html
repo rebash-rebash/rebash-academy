@@ -1,8 +1,8 @@
 {#-
-  Technologies catalog — tile grid by category.
+  Technologies catalog — only published (ready) courses.
 -#}
-{% macro tech_tile(href, title, desc, ready=false, brand=none, mdi=none, tint="blue") %}
-  <a class="ra-tech-tile{% if not ready %} ra-tech-tile--planned{% endif %}" href="{{ href | url }}">
+{% macro tech_tile(href, title, desc, brand=none, mdi=none, tint="blue") %}
+  <a class="ra-tech-tile" href="{{ href | url }}">
     <span class="ra-tech-tile__icon" aria-hidden="true">
       {% if brand %}
         <img class="ra-tech-tile__brand" src="{{ ('assets/images/brands/' ~ brand) | url }}" alt="" width="22" height="22" decoding="async">
@@ -14,11 +14,7 @@
     <span class="ra-tech-tile__body">
       <span class="ra-tech-tile__title-row">
         <span class="ra-tech-tile__title">{{ title }}</span>
-        {% if ready %}
-          <span class="ra-tech-tile__badge ra-tech-tile__badge--ready">Ready</span>
-        {% else %}
-          <span class="ra-tech-tile__badge ra-tech-tile__badge--planned">Planned</span>
-        {% endif %}
+        <span class="ra-tech-tile__badge ra-tech-tile__badge--ready">Ready</span>
       </span>
       <span class="ra-tech-tile__desc">{{ desc }}</span>
     </span>
@@ -39,66 +35,49 @@
   <header class="ra-tech-hub__intro">
     <h1 class="ra-tech-hub__title">Technologies</h1>
     <p class="ra-tech-hub__lead">
-      Full courses with tutorials, labs, and interview themes.
+      Published courses with tutorials you can start today.
       Prefer a role roadmap? Start with a
       <a href="{{ 'learning-paths/' | url }}">learning path</a>.
+      More technologies will appear here as each course is completed.
     </p>
   </header>
 
   {% call tech_section("Foundations", "ra-tech-foundations") %}
-    {{ tech_tile("linux/", "Linux", "Filesystem, services, SSH, and production ops", true, brand="linux.svg") }}
-    {{ tech_tile("shell/", "Shell", "Bash scripting for automation and pipelines", true, mdi="bash", tint="green") }}
-    {{ tech_tile("networking/", "Networking", "TCP/IP, DNS, HTTP, and load balancing", true, mdi="lan", tint="teal") }}
-    {{ tech_tile("python/", "Python", "CLI tools, APIs, and cloud automation", true, mdi="language-python", tint="blue") }}
-    {{ tech_tile("git/", "Git", "Branching, remotes, and team workflows", true, mdi="git", tint="deep-orange") }}
+    {{ tech_tile("linux/", "Linux", "Filesystem, services, SSH, and production ops", brand="linux.svg") }}
+    {{ tech_tile("shell/", "Shell", "Bash scripting for automation and pipelines", mdi="bash", tint="green") }}
+    {{ tech_tile("networking/", "Networking", "TCP/IP, DNS, HTTP, and load balancing", mdi="lan", tint="teal") }}
+    {{ tech_tile("python/", "Python", "CLI tools, APIs, and cloud automation", mdi="language-python", tint="blue") }}
+    {{ tech_tile("git/", "Git", "Branching, remotes, and team workflows", mdi="git", tint="deep-orange") }}
   {% endcall %}
 
   {% call tech_section("Containers and orchestration", "ra-tech-containers") %}
-    {{ tech_tile("docker/", "Docker", "Images, Compose, and container patterns", true, brand="docker.svg") }}
-    {{ tech_tile("kubernetes/", "Kubernetes", "Workloads, networking, and cluster ops", true, brand="kubernetes.svg") }}
-    {{ tech_tile("helm/", "Helm", "Charts and release management", false, mdi="ship-wheel", tint="indigo") }}
+    {{ tech_tile("docker/", "Docker", "Images, Compose, and container patterns", brand="docker.svg") }}
+    {{ tech_tile("kubernetes/", "Kubernetes", "Workloads, networking, and cluster ops", brand="kubernetes.svg") }}
+    {{ tech_tile("helm/", "Helm", "Charts and release management", mdi="ship-wheel", tint="indigo") }}
   {% endcall %}
 
   {% call tech_section("Infrastructure as Code", "ra-tech-iac") %}
-    {{ tech_tile("terraform/", "Terraform", "Providers, state, modules, and IaC workflows", true, brand="terraform.svg") }}
-    {{ tech_tile("ansible/", "Ansible", "Playbooks, roles, and config management", false, mdi="ansible", tint="red") }}
+    {{ tech_tile("terraform/", "Terraform", "Providers, state, modules, and IaC workflows", brand="terraform.svg") }}
+    {{ tech_tile("ansible/", "Ansible", "Playbooks, roles, and config management", mdi="ansible", tint="red") }}
   {% endcall %}
 
   {% call tech_section("Cloud platforms", "ra-tech-cloud") %}
-    {{ tech_tile("aws/", "AWS", "IAM, VPC, compute, storage, and ops", true, brand="aws.svg") }}
-    {{ tech_tile("azure/", "Microsoft Azure", "Identity, networking, and Azure compute", false, brand="azure.svg") }}
-    {{ tech_tile("gcp/", "Google Cloud", "IAM, networking, and GKE foundations", true, brand="google-cloud.svg") }}
+    {{ tech_tile("aws/", "AWS", "IAM, VPC, compute, storage, and ops", brand="aws.svg") }}
+    {{ tech_tile("gcp/", "Google Cloud", "IAM, networking, and GKE foundations", brand="google-cloud.svg") }}
   {% endcall %}
 
   {% call tech_section("CI/CD", "ra-tech-cicd") %}
-    {{ tech_tile("gitlab/", "GitLab CI/CD", "Pipelines, runners, and delivery patterns", true, brand="gitlab.svg") }}
-    {{ tech_tile("github-actions/", "GitHub Actions", "Workflows and repository automation", false, mdi="github", tint="purple") }}
-    {{ tech_tile("jenkins/", "Jenkins", "Pipelines, agents, shared libraries, and ops", true, mdi="cog", tint="orange") }}
-    {{ tech_tile("argocd/", "Argo CD", "GitOps delivery for Kubernetes", false, mdi="sync", tint="cyan") }}
-  {% endcall %}
-
-  {% call tech_section("Observability", "ra-tech-observability") %}
-    {{ tech_tile("monitoring/", "Monitoring", "Signals, dashboards, and ops patterns", false, mdi="monitor-dashboard", tint="cyan") }}
-    {{ tech_tile("prometheus/", "Prometheus", "Metrics, PromQL, and alerting", false, mdi="chart-timeline-variant", tint="orange") }}
-    {{ tech_tile("grafana/", "Grafana", "Dashboards and visualisation", false, mdi="chart-areaspline", tint="orange") }}
-    {{ tech_tile("loki/", "Loki", "Log aggregation with Grafana", false, mdi="text-box-search", tint="purple") }}
-    {{ tech_tile("tempo/", "Tempo", "Distributed tracing backend", false, mdi="timeline-clock", tint="indigo") }}
-    {{ tech_tile("opentelemetry/", "OpenTelemetry", "Vendor-neutral instrumentation", false, mdi="pulse", tint="teal") }}
-  {% endcall %}
-
-  {% call tech_section("Security", "ra-tech-security") %}
-    {{ tech_tile("devsecops/", "DevSecOps", "Shift-left security in pipelines", false, mdi="shield-lock", tint="red") }}
-    {{ tech_tile("security/", "Security", "Infrastructure and platform security", false, mdi="lock", tint="red") }}
+    {{ tech_tile("gitlab/", "GitLab CI/CD", "Pipelines, runners, and delivery patterns", brand="gitlab.svg") }}
+    {{ tech_tile("github-actions/", "GitHub Actions", "Workflows and repository automation", mdi="github", tint="purple") }}
+    {{ tech_tile("jenkins/", "Jenkins", "Pipelines, agents, shared libraries, and ops", mdi="cog", tint="orange") }}
+    {{ tech_tile("argocd/", "Argo CD", "GitOps delivery for Kubernetes", mdi="sync", tint="cyan") }}
   {% endcall %}
 
   {% call tech_section("Platform and architecture", "ra-tech-platform") %}
-    {{ tech_tile("platform-engineering/", "Platform Engineering", "IDPs, golden paths, and self-service", false, mdi="layers", tint="indigo") }}
-    {{ tech_tile("sre/", "Site Reliability Engineering", "SLOs, error budgets, and incidents", false, mdi="speedometer", tint="cyan") }}
-    {{ tech_tile("system-design/", "System Design", "Trade-offs, diagrams, and design labs", true, mdi="sitemap", tint="indigo") }}
-    {{ tech_tile("architecture/", "Cloud Architecture", "Landing zones and scalable patterns", false, mdi="cloud-braces", tint="indigo") }}
+    {{ tech_tile("system-design/", "System Design", "Trade-offs, diagrams, and design labs", mdi="sitemap", tint="indigo") }}
   {% endcall %}
 
   {% call tech_section("AI", "ra-tech-ai") %}
-    {{ tech_tile("ai/", "AI for DevOps", "AI-assisted ops and automation", true, mdi="brain", tint="magenta") }}
+    {{ tech_tile("ai/", "AI for DevOps", "AI-assisted ops and automation", mdi="brain", tint="magenta") }}
   {% endcall %}
 </article>

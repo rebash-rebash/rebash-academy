@@ -55,4 +55,4 @@ Follow the course in order:
 
 - [Course overview](index.md)  
 - [Linux Mastery](../linux/index.md)  
-- [Labs](../labs/index.md) · [Interview](interview/index.md) · [Cheat sheets](cheatsheets/index.md)  
+- [Labs](../labs/index.md) · Interview · Cheat sheets  

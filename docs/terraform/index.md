@@ -84,12 +84,11 @@ Reusable modules · remote state · pinned providers · CI plan gates · multi-c
 
 ## 3. Practice
 
-- [Labs](../labs/index.md) · [Projects](projects/index.md) · [Quizzes](quizzes/index.md)
-- [Cheat sheets](cheatsheets/index.md) · [Interview](interview/index.md) · [Capstone](capstone/index.md)
-- [Learning roadmap](roadmap.md) · [FAQ](faq.md) · [Certifications](certifications/index.md)
+- [Labs](../labs/index.md)
+- [Learning roadmap](roadmap.md) · [FAQ](faq.md)
 
 ## Related
 
-- [AWS](../aws/index.md) · [Azure](../azure/index.md) · [GCP](../gcp/index.md)
+- [AWS](../aws/index.md) · Azure · [GCP](../gcp/index.md)
 - [Kubernetes](../kubernetes/index.md) · [Helm](../helm/index.md) · [Ansible](../ansible/index.md)
 - [DevOps Engineer path](../learning-paths/devops-engineer/index.md)

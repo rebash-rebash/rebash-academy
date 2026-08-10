@@ -55,7 +55,7 @@ python3 scripts/generate-excalidraw-svg.py
 
 ## How do interview questions work?
 
-In-tutorial sections include **6–8 topic-specific questions**, each with a collapsible `??? success "Reveal answer"` block. Standalone interview prep lives under [Interview](interview/index.md).
+In-tutorial sections include **6–8 topic-specific questions**, each with a collapsible `??? success "Reveal answer"` block. Standalone interview prep lives under Interview.
 
 ## What changed in the 2026-08-03 rewrite?
 
@@ -67,4 +67,4 @@ Learner progress tracking is planned — the course structure and labs are ready
 
 ## Where should I start after finishing the course?
 
-Build the [Capstone](capstone/index.md) platform (reusable workflows, OIDC, multi-cloud stubs, security scanning, releases), then compare with [Jenkins](../jenkins/index.md) or [GitLab CI/CD](../gitlab/index.md) for interview breadth.
+Build the Capstone platform (reusable workflows, OIDC, multi-cloud stubs, security scanning, releases), then compare with [Jenkins](../jenkins/index.md) or [GitLab CI/CD](../gitlab/index.md) for interview breadth.

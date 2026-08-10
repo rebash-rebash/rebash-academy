@@ -44,7 +44,7 @@ Pick one home Region (for example `eu-west-2` or `us-east-1`) and export `AWS_RE
 | SysOps / DevOps | Modules 9–12, 16, IAM + automation |
 | Security Specialty themes | Modules 2, 10, 15 |
 
-See [Certification mapping](certifications/index.md).
+See Certification mapping.
 
 ## I am stuck on AccessDenied — what first?
 

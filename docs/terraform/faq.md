@@ -71,7 +71,7 @@ Open **Module 1–20** in the sidebar, or start from the [modules table](index.m
 
 ## How do labs and projects fit in?
 
-Complete module tutorials first — each includes a topic-specific Hands-on Lab. Then use [Labs](../labs/index.md), [Quizzes](quizzes/index.md), and [Projects](projects/index.md) for portfolio work.
+Complete module tutorials first — each includes a topic-specific Hands-on Lab. Then use [Labs](../labs/index.md), Quizzes, and Projects for portfolio work.
 
 ## Do diagrams use D2 or Mermaid?
 

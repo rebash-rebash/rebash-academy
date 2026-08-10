@@ -53,6 +53,23 @@ extra:
   robots: |
     User-agent: *
     Allow: /
+    Disallow: /azure/
+    Disallow: /prometheus/
+    Disallow: /grafana/
+    Disallow: /loki/
+    Disallow: /tempo/
+    Disallow: /opentelemetry/
+    Disallow: /devsecops/
+    Disallow: /platform-engineering/
+    Disallow: /sre/
+    Disallow: /architecture/
+    Disallow: /monitoring/
+    Disallow: /security/
+    Disallow: /community/
+    Disallow: /youtube/
+    Disallow: /capstones/
+    Disallow: /certifications/
+    Disallow: /career-paths/
     Sitemap: https://rebash.in/sitemap.xml
   # Free book downloads — set ONE of these so registrations are emailed to you:
   # Formspree: https://formspree.io (create a form, paste the form id, e.g. xyzabcde)
@@ -177,6 +194,7 @@ markdown_extensions:
   - pymdownx.tilde
 
 hooks:
+  - hooks/publish_gate.py
   - hooks/on_env.py
   - hooks/render_d2_svg.py
 

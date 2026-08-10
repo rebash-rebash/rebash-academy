@@ -79,9 +79,7 @@ LTS install · Declarative Jenkinsfiles · agent isolation · shared libraries �
 
 ## 3. Practice
 
-- [Labs](labs/index.md) · [Projects](projects/index.md) · [Quizzes](quizzes/index.md)
-- [Cheat sheets](cheatsheets/index.md) · [Interview](interview/index.md) · [Capstone](capstone/index.md)
-- [Roadmap](roadmap.md) · [FAQ](faq.md) · [Certifications](certifications/index.md)
+- [Roadmap](roadmap.md) · [FAQ](faq.md)
 
 ## Diagrams
 

@@ -62,11 +62,10 @@ Typically mid-level systems roles — treat as directional guidance only.
 
 - Ordered mastery of the technologies on this path
 - Hands-on labs and production-oriented habits
-- Interview and certification readiness for mapped exams
 
 ## Projects
 
-See the [Projects](../../projects/index.md) catalog and [Capstones](../../capstones/index.md). Map picks to this path’s technologies.
+See the [Projects](../../projects/index.md) catalog and Capstones. Map picks to this path’s technologies.
 
 ## Capstone
 

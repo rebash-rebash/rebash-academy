@@ -767,7 +767,7 @@ You now possess the networking knowledge expected from professional Network Engi
 
 ## What's Next?
 
-**[Networking Interview Prep](../interview/index.md)**
+**Networking Interview Prep**
 
 Continue building your expertise by exploring:
 

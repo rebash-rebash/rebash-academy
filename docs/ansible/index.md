@@ -80,8 +80,7 @@ Multi-env repo layout · idempotent roles · Vault secrets · syntax-check in CI
 
 ## 3. Practice
 
-- [Labs](../labs/index.md) · [Projects](projects/index.md) · [Quizzes](quizzes/index.md)
-- [Cheat sheets](cheatsheets/index.md) · [Interview](interview/index.md) · [Capstone](capstone/index.md)
+- [Labs](../labs/index.md)
 - [Learning roadmap](roadmap.md) · [FAQ](faq.md)
 
 ## Related

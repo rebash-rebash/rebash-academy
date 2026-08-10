@@ -49,7 +49,6 @@ Senior / principal architecture roles — treat as directional guidance only.
 ### Clouds
 
 - [AWS](../../aws/) — ready · 20 tutorials
-- [Azure](../../azure/) — stub / coming soon
 - [Google Cloud](../../gcp/) — complete (16 modules)
 
 ### IaC & Delivery
@@ -58,22 +57,15 @@ Senior / principal architecture roles — treat as directional guidance only.
 - [Kubernetes](../../kubernetes/) — ready · 20 tutorials
 - [GitLab CI/CD](../../gitlab/) — ready · 20 tutorials
 
-### Architecture
-
-- [Cloud Architecture](../../architecture/) — stub / coming soon
-- [Security](../../security/) — stub / coming soon
-- **Site Reliability Engineering** — planned
-
 
 ## Skills gained
 
 - Ordered mastery of the technologies on this path
 - Hands-on labs and production-oriented habits
-- Interview and certification readiness for mapped exams
 
 ## Projects
 
-See the [Projects](../../projects/index.md) catalog and [Capstones](../../capstones/index.md). Map picks to this path’s technologies.
+See the [Projects](../../projects/index.md) catalog and Capstones. Map picks to this path’s technologies.
 
 ## Capstone
 

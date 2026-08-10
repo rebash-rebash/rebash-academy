@@ -415,7 +415,7 @@ networking that transfers to Linux hosts, containers, and multi-cloud platforms.
     All eight **Capstone Projects** are published. Start with
     [Build a Home Lab Network](projects/home-lab-network.md), or jump to the final
     [Enterprise Network Troubleshooting Challenge](projects/enterprise-network-troubleshooting-challenge.md).
-    Continue with [Networking Interview Prep](interview/index.md).
+    Continue with Networking Interview Prep.
 
 ## Prerequisites
 
@@ -427,4 +427,4 @@ Basic computer literacy and comfort with a Linux terminal. A disposable Ubuntu L
 - [Linux Mastery](../linux/index.md)
 - [DevOps Engineer learning path](../learning-paths/devops-engineer/index.md)
 - [Cloud Engineer learning path](../learning-paths/cloud-engineer/index.md)
-- [Networking interview prep](interview/index.md)
+- Networking interview prep

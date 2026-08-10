@@ -51,37 +51,23 @@ Senior platform / DX roles — treat as directional guidance only.
 - [Linux](../../linux/) — ready · 25 tutorials
 - [Docker](../../docker/) — ready · 20 tutorials
 - [Kubernetes](../../kubernetes/) — ready · 20 tutorials
-- **Helm** — planned
 - [Terraform](../../terraform/) — ready · 20 tutorials
 
 ### Delivery
 
 - [GitLab CI/CD](../../gitlab/) — ready · 20 tutorials
-- **Argo CD** — planned
 - [Python for DevOps](../../python/) — ready · 27 tutorials
 
-### Observability
-
-- **Prometheus** — planned
-- **Grafana** — planned
-- **Loki** — planned
-- **OpenTelemetry** — planned
-
-### Platform
-
-- **Platform Engineering** — planned
-- **Site Reliability Engineering** — planned
 
 
 ## Skills gained
 
 - Ordered mastery of the technologies on this path
 - Hands-on labs and production-oriented habits
-- Interview and certification readiness for mapped exams
 
 ## Projects
 
-See the [Projects](../../projects/index.md) catalog and [Capstones](../../capstones/index.md). Map picks to this path’s technologies.
+See the [Projects](../../projects/index.md) catalog and Capstones. Map picks to this path’s technologies.
 
 ## Capstone
 

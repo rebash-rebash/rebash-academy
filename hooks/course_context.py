@@ -1721,8 +1721,17 @@ def on_page_markdown(markdown, page, config, files):
         tutorial_count = int(page.meta.get("tutorial_count")) if page.meta.get("tutorial_count") is not None else None
     except (TypeError, ValueError):
         tutorial_count = None
-    if status == "planned" and tutorial_count == 0 and not page.meta.get("robots"):
+    if (
+        status in {"planned", "stub"}
+        and (tutorial_count == 0 or tutorial_count is None)
+        and not page.meta.get("robots")
+    ):
         page.meta["robots"] = "noindex, follow"
+        search_meta = page.meta.get("search")
+        if not isinstance(search_meta, dict):
+            search_meta = {}
+        search_meta["exclude"] = True
+        page.meta["search"] = search_meta
 
     if page.meta.get("template"):
         return markdown

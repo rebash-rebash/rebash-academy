@@ -22,7 +22,7 @@ Structured path for **Git & GitHub for Cloud & DevOps Engineers**. Estimated **5
 1. Complete **Modules 1–3** before branching work — vocabulary and daily loop matter.
 2. Run each lab in `~/rebash-git/module-NN` on a Linux VM, macOS, or WSL.
 3. After **Module 8**, add a GitHub sandbox org for Modules 9–11 optional push steps.
-4. Finish **Modules 12–17** before the [capstone](capstone/index.md).
+4. Finish **Modules 12–17** before the capstone.
 5. Use [FAQ](faq.md) for GitHub Actions, GitOps, and recovery questions.
 
 ## Pacing guide
@@ -97,7 +97,7 @@ Regenerate: `python3 scripts/generate-excalidraw-svg.py`
 
 ## Next steps after the roadmap
 
-- [Capstone](capstone/index.md) — production GitOps platform repository
-- [Interview prep](interview/index.md)
-- [Cheat sheets](cheatsheets/index.md)
+- Capstone — production GitOps platform repository
+- Interview prep
+- Cheat sheets
 - Related courses: [Terraform](../terraform/index.md) · [Argo CD](../argocd/index.md) · [Linux](../linux/index.md)

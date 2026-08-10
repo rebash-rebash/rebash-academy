@@ -103,7 +103,7 @@ Topic labs use `~/rebash-git/module-NN` (e.g. `module-03` for Git basics workflo
 
 ### How do labs relate to the capstone?
 
-Module labs build skills; the [capstone](capstone/index.md) combines branch protection, Actions, semver, GitOps layout, and security scanning in one repository design.
+Module labs build skills; the capstone combines branch protection, Actions, semver, GitOps layout, and security scanning in one repository design.
 
 ## Certification and careers
 
@@ -113,7 +113,7 @@ GitHub Foundations, GitHub Actions, GitHub Administration, and Advanced Security
 
 ### Interview preparation?
 
-Every tutorial includes 6–8 topic-specific questions with `??? success "Reveal answer"` blocks. Consolidated banks live under [Interview](interview/index.md).
+Every tutorial includes 6–8 topic-specific questions with `??? success "Reveal answer"` blocks. Consolidated banks live under Interview.
 
 ## Getting help
 

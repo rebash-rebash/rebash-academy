@@ -348,5 +348,5 @@ You have completed the System Design course arc: foundations → building blocks
 
 - Revisit the [roadmap](roadmap.md) and tighten any weak modules  
 - Practise timed designs: shortener, feed, and this board  
-- Explore Academy [projects](projects/index.md) and [interview](interview/index.md) hubs as they grow  
+- Explore Academy projects and interview hubs as they grow  
 - Optional: add Docker/Redis to the chat and board labs for a portfolio demo  

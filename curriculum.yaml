@@ -1157,14 +1157,14 @@ technologies:
   tutorial_count: 20
 - id: helm
   title: Helm
-  status: planned
+  status: ready
   path_prefix: helm/
   difficulty: intermediate
   modules: []
   tutorial_count: 0
 - id: ansible
   title: Ansible
-  status: planned
+  status: ready
   path_prefix: ansible/
   difficulty: intermediate
   modules: []
@@ -1249,21 +1249,21 @@ technologies:
   tutorial_count: 16
 - id: github-actions
   title: GitHub Actions
-  status: planned
+  status: ready
   path_prefix: github-actions/
   difficulty: intermediate
   modules: []
   tutorial_count: 0
 - id: jenkins
   title: Jenkins
-  status: planned
+  status: ready
   path_prefix: jenkins/
   difficulty: intermediate
   modules: []
   tutorial_count: 0
 - id: argocd
   title: Argo CD
-  status: planned
+  status: ready
   path_prefix: argocd/
   difficulty: intermediate
   modules: []

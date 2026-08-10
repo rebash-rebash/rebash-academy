@@ -28,7 +28,7 @@ Open **Module 1–18** in the sidebar, or use the [modules table](index.md#2-mod
 
 ## How do labs and projects fit in?
 
-Complete module tutorials first, then use [Labs](../labs/index.md), [Quizzes](quizzes/index.md), and [Projects](projects/index.md). Labs live under `~/rebash-gitlab/module-NN` and favour lintable `.gitlab-ci.yml` samples.
+Complete module tutorials first, then use [Labs](../labs/index.md), Quizzes, and Projects. Labs live under `~/rebash-gitlab/module-NN` and favour lintable `.gitlab-ci.yml` samples.
 
 ## Do diagrams use D2 or Mermaid?
 

@@ -21,7 +21,7 @@ Follow the course in order for the smoothest path. Allow **6–8 weeks** at 5–
 1. **Course overview** — scope, prerequisites, outcomes ([index](index.md))
 2. **Modules 1–16** — beginner foundations through expert production ops
 3. **Labs / quizzes / projects** — hands-on under `~/rebash-github-actions/module-NN`
-4. **Capstone** — production CI/CD platform ([capstone](capstone/index.md))
+4. **Capstone** — production CI/CD platform (capstone)
 5. **Interview & certifications** — GitHub Foundations / Actions / Administration
 
 ![GitHub Actions architecture](../assets/excalidraw/gha-architecture.svg)
@@ -85,8 +85,8 @@ python3 scripts/generate-excalidraw-svg.py
 
 ## After Module 16
 
-- Complete the [Capstone](capstone/index.md) — enterprise platform with reusables, OIDC, scanning, releases
-- Review [Interview](interview/index.md) questions for workflow design and production scenarios
+- Complete the Capstone — enterprise platform with reusables, OIDC, scanning, releases
+- Review Interview questions for workflow design and production scenarios
 - Cross-study [Jenkins](../jenkins/roadmap.md) or [Git](../git/roadmap.md) for pipeline comparisons in interviews
 
 ## Related

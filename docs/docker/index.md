@@ -68,8 +68,7 @@ Production images · Compose stacks · registry strategy · scanning · security
 
 ## 3. Practice
 
-- [Labs](../labs/index.md) · [Projects](projects/index.md) · [Quizzes](quizzes/index.md)
-- [Cheat sheets](cheatsheets/index.md) · [Interview](interview/index.md) · [Capstone](capstone/index.md)
+- [Labs](../labs/index.md)
 
 ## Diagrams
 
