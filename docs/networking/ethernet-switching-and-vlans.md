@@ -1,424 +1,869 @@
 ---
-title: "Ethernet, Switching, and VLANs"
-description: "Learn MAC addresses, Ethernet frames, switch forwarding, VLAN segmentation, and safe Linux bridge or namespace labs for Cloud and DevOps networks."
+title: "Ethernet"
+description: "Learn Ethernet fundamentals — frames, MAC addressing, EtherType, FCS, speeds, duplex modes, collision domains, and IEEE 802.3 standards."
 difficulty: beginner
-estimated_time: "45–55 min"
+estimated_time: "90 min"
 author: Shaik Basha
-last_updated: "2026-08-02"
+last_updated: "2026-08-10"
 category: networking
 technology: networking
-module: "Module 7 · Switching"
+module: "Module 4 · Switching"
+learning_paths:
+  - cloud-engineer
+  - devops-engineer
+  - site-reliability-engineer
+  - linux-administrator
+  - platform-engineer
 tags:
   - networking
   - ethernet
   - switching
-  - vlan
+  - lan
   - mac-address
-  - bridge
-prerequisites:
-  - networking/routing-fundamentals
-next:
-  - networking/icmp-arp-dhcp-and-network-services
-related:
-  - networking/icmp-arp-dhcp-and-network-services
-  - docker/docker-networking-fundamentals
-  - linux/linux-networking-tools
-labs: []
-interview: interview/networking
+  - rebash-networking-mastery
 comments: false
+status: ready
 ---
 
-# Ethernet, Switching, and VLANs
+# Ethernet — The Foundation of Modern Local Area Networks (LANs)
 
-## Overview
+> **Ethernet** is the world's most widely used **Local Area Network (LAN)** technology. It defines how devices communicate over wired networks using standardised frame formats, Media Access Control (MAC) addresses, and transmission methods. Whether you're connecting Linux servers, enterprise switches, cloud infrastructure, Kubernetes worker nodes, or home computers, Ethernet is the technology that makes communication possible. Every Linux administrator, DevOps engineer, Cloud Architect, Platform Engineer, Site Reliability Engineer (SRE), and Network Engineer should understand how Ethernet works.
 
-Before an Internet Protocol (IP) packet can leave your subnet, it travels as an **Ethernet frame** on a local segment. Switches forward those frames using **Media Access Control (MAC)** addresses. **Virtual Local Area Networks (VLANs)** split one physical fabric into separate broadcast domains so app, data, and management traffic do not share the same Layer 2 space.
+---
 
-On cloud virtual machines (VMs), Docker bridges, and Kubernetes nodes you still meet the same ideas: a host MAC, a virtual switch or bridge, and isolation boundaries that map to subnets or security groups. Wrong VLAN or bridge membership looks like “the IP is fine but neighbours never answer.”
+## Learning Path
 
-This is **Tutorial 7** in **Module 7: Switching** of the REBASH Academy **Networking for Cloud & DevOps Engineers** series. It is written for Cloud, DevOps, Site Reliability Engineering (SRE), and platform engineers. By the end, you will inspect real Layer 2 state on Ubuntu and (when safe) simulate two hosts on a Linux bridge with network namespaces — with evidence under `~/rebash-networking/lab07`.
+<div class="ra-lesson-meta" markdown>
 
-## Prerequisites
+<p class="ra-lesson-meta__crumb" markdown>**Networking Mastery** → Module 4: Switching → Lesson 1</p>
 
-- [Routing Fundamentals](routing-fundamentals.md)
-- A **practice Ubuntu 22.04/24.04 VM** (or similar) with `sudo`
-- Packages: `iproute2` (provides `ip`); optional `bridge-utils` is not required — modern `ip link` is enough
-- Do **not** run namespace or bridge experiments on a shared production jump server
+<div class="ra-meta-grid" markdown>
 
-## Learning Objectives
+<div markdown>**Difficulty:** Beginner</div>
 
-By the end of this tutorial, you will be able to:
+<div markdown>**Reading Time:** 90 Minutes</div>
 
-- [ ] Explain MAC vs IP and how a switch learns, forwards, and floods frames
-- [ ] Define a VLAN, access port, and trunk (802.1Q) in plain language
-- [ ] Inspect interface MACs, bridge devices, and link state with `ip`
-- [ ] Simulate two Layer 2 hosts with network namespaces and a Linux bridge (or document why bridge is unavailable)
-- [ ] State how VLAN IDs map to isolation in cloud and container networks
+</div>
 
-## Architecture
+</div>
 
-Layer 2 sits under routing. Hosts share a broadcast domain (often one VLAN ≈ one subnet). A Layer 3 device routes between VLANs.
+<div class="ra-course-progress" markdown>
 
-![Architecture diagram for Ethernet, Switching, and VLANs](../assets/excalidraw/switching-vlans.svg)
+**Course Progress**
 
-## Theory
+<div class="ra-meta-grid" markdown>
 
-### What it is
+<div markdown>**Course:** Networking Mastery</div>
 
-A **MAC address** is a 48-bit Layer 2 identifier (six hex octets, for example `02:42:ac:11:00:02`). An **Ethernet II** frame carries destination MAC, source MAC, an **EtherType** (for example `0x0800` for IPv4), and a payload. A **switch** (or Linux bridge) forwards frames inside one broadcast domain. A **VLAN** is a logical segment tagged with a numeric **VLAN ID** (1–4094). Access ports carry one VLAN untagged toward a host; **trunk** ports carry many VLANs with **IEEE 802.1Q** tags.
+<div markdown>**Module:** Switching</div>
 
-``` {.bash .ra-terminal title="Terminal"}
-ip -br link
-ip link show
+<div markdown>**Lesson:** 1 of 8</div>
+
+</div>
+
+</div>
+
+---
+
+
+# What You'll Learn
+
+After completing this lesson, you'll be able to:
+
+- Understand Ethernet
+- Learn how Ethernet communication works
+- Understand Ethernet frames
+- Identify Ethernet standards
+- Learn Ethernet speeds
+- Understand collision domains
+- Understand duplex modes
+- Apply Ethernet concepts in enterprise and cloud environments
+
+---
+
+# Prerequisites
+
+Complete:
+
+- Module 1: Networking Fundamentals
+- Module 2: IPv4 Addressing
+- Module 3: IPv6
+
+---
+
+# Why Learn Ethernet?
+
+Imagine a Linux server communicating with another server.
+
+The communication path is:
+
+```text
+Application
+
+↓
+
+TCP
+
+↓
+
+IP
+
+↓
+
+Ethernet
+
+↓
+
+Cable
+
+↓
+
+Switch
+
+↓
+
+Destination
 ```
 
-### Why it matters
+Although IP identifies the destination, **Ethernet** is responsible for delivering frames across the local network.
 
-Cloud VPC subnets, Docker `bridge` networks, and Kubernetes node fabrics are virtual switches. If two apps share the same Layer 2 domain without need, a broadcast or ARP storm can affect both. Mis-matched VLAN IDs between a hypervisor uplink and a guest are a classic “no neighbour, no ping” outage. Platform engineers who understand MAC learning and VLAN isolation debug faster than those who only look at IP routes.
+---
 
-### How it works
+# What is Ethernet?
 
-1. **Learn** — the switch records source MAC → ingress port.
-2. **Forward** — if the destination MAC is known, send only to that port.
-3. **Flood** — unknown unicast or broadcast goes to all ports in the VLAN except the ingress port.
-4. **Isolate** — different VLAN IDs do not share that flood domain; routing is required between them.
+Ethernet is a **Layer 2 (Data Link Layer)** technology that defines how devices communicate within a Local Area Network (LAN).
 
-On Linux, a **bridge** (`ip link add type bridge`) behaves like a small software switch. **Network namespaces** give you isolated network stacks so you can attach virtual Ethernet (`veth`) pairs to a bridge and prove Layer 2 connectivity without buying hardware.
+It specifies:
 
-``` {.bash .ra-terminal title="Terminal"}
-# Conceptual — lab uses safer scripted steps
-sudo ip link add br-lab type bridge
-sudo ip netns add ns-a
+- Frame Format
+- MAC Addressing
+- Error Detection
+- Media Access
+- Physical Cabling Standards
+
+Ethernet operates together with Layer 1 (Physical Layer).
+
+---
+
+# Ethernet in the OSI Model
+
+```text
+Layer 7
+
+Application
 ```
 
-### Key concepts and comparisons
+↓
 
-| Object | Layer | Job |
-|--------|-------|-----|
-| MAC | 2 | Identity on a segment |
-| Switch / bridge | 2 | Forward frames in one VLAN |
-| VLAN ID | 2 | Split broadcast domains |
-| IP / route | 3 | Reach other subnets / VLANs |
+```text
+Layer 6
 
-| Port type | Carries | Tagging |
-|-----------|---------|---------|
-| Access | One VLAN | Untagged to the host |
-| Trunk | Many VLANs | 802.1Q tags on the wire |
-
-| Classic L2 | Cloud / container map |
-|------------|------------------------|
-| Access VLAN + subnet | VPC subnet |
-| Physical switch | Hypervisor / cloud fabric / Linux bridge |
-| Host NIC | ENI, `veth`, `docker0`, `cni0` |
-
-### Common pitfalls
-
-- Thinking MAC addresses route across the Internet — routers rewrite MACs each hop.
-- Using the same VLAN ID for “prod” and “test” on a shared trunk by mistake.
-- Creating real `eth0.VLAN` sub-interfaces on a laptop Wi‑Fi path and breaking the default route.
-- Assuming cloud always exposes 802.1Q to the guest — often isolation is only at the subnet / security-group layer.
-
-## Hands-on Lab
-
-### Objective
-
-On a practice Ubuntu VM, inspect Layer 2 state (MAC, link, optional bridge), then either use an existing bridge **or** build a disposable namespace + bridge lab that proves two virtual hosts can see each other at Layer 2. Save evidence under `~/rebash-networking/lab07`. Document VLAN ID concepts in a small script output (no production VLAN tagging on your uplink).
-
-### Prerequisites
-
-- Ubuntu 22.04/24.04 with sudo
-- `iproute2` installed
-- Ability to create network namespaces (usual on local/practice VMs)
-
-### Lab environment
-
-Workspace: `~/rebash-networking/lab07`
-
-``` {.bash .ra-terminal title="Terminal"}
-mkdir -p ~/rebash-networking/lab07 && cd ~/rebash-networking/lab07
-set -euo pipefail
-whoami | tee admin-user.txt
-ip -br link | tee host-links.txt
-test -n "$(command -v ip)"
-sudo -n true 2>/dev/null || sudo -v
+Presentation
 ```
 
-!!! example "Expected output"
-    `admin-user.txt` and `host-links.txt` exist; `sudo` works.
+↓
 
+```text
+Layer 5
 
-### Real-world scenario
-
-A new microservice will sit on an internal segment. Platform asks you to prove you understand Layer 2 isolation before they allocate a VLAN or cloud subnet. You capture host MAC evidence, show how a software bridge connects two namespaces (like two VMs on one virtual switch), and write a short VLAN ID concept note for the change ticket — without tagging the production uplink.
-
-### Step-by-step tasks
-
-#### Task 1 – Inspect host Layer 2 state
-
-Record MACs and any existing bridges. Prefer read-only inspection.
-
-``` {.bash .ra-terminal title="Terminal"}
-cd ~/rebash-networking/lab07
-set -euo pipefail
-
-ip -br link | tee host-links.txt
-ip -details link | tee host-link-details.txt
-
-# List bridge devices if any (empty is OK)
-{ bridge link 2>/dev/null || ip -d link show type bridge; } | tee bridges.txt || true
-
-# Primary MACs (skip loopback)
-ip -o link show | awk -F': ' '$2 != "lo" {print}' | tee macs.txt
-grep -E 'link/ether|^[0-9]+:' macs.txt || test -s macs.txt
+Session
 ```
 
-!!! example "Expected output"
-    `macs.txt` shows at least one `link/ether` line (or interface entries); bridge list may be empty.
+↓
 
+```text
+Layer 4
 
-#### Task 2 – Namespace + bridge Layer 2 simulation (safe lab)
-
-Create a disposable bridge and two namespaces connected by `veth` pairs. Assign IPs only inside the lab bridge — do not change your default route.
-
-``` {.bash .ra-terminal title="Terminal"}
-cd ~/rebash-networking/lab07
-set -euo pipefail
-
-# Cleanup leftovers from a previous run
-sudo ip netns del rebash-ns-a 2>/dev/null || true
-sudo ip netns del rebash-ns-b 2>/dev/null || true
-sudo ip link del rebash-br0 2>/dev/null || true
-
-sudo ip link add rebash-br0 type bridge
-sudo ip link set rebash-br0 up
-
-sudo ip netns add rebash-ns-a
-sudo ip netns add rebash-ns-b
-
-sudo ip link add veth-a type veth peer name veth-a-br
-sudo ip link add veth-b type veth peer name veth-b-br
-
-sudo ip link set veth-a netns rebash-ns-a
-sudo ip link set veth-b netns rebash-ns-b
-sudo ip link set veth-a-br master rebash-br0
-sudo ip link set veth-b-br master rebash-br0
-sudo ip link set veth-a-br up
-sudo ip link set veth-b-br up
-
-sudo ip -n rebash-ns-a link set lo up
-sudo ip -n rebash-ns-b link set lo up
-sudo ip -n rebash-ns-a link set veth-a up
-sudo ip -n rebash-ns-b link set veth-b up
-
-sudo ip -n rebash-ns-a addr add 10.255.77.1/24 dev veth-a
-sudo ip -n rebash-ns-b addr add 10.255.77.2/24 dev veth-b
-
-# Prove Layer 2 / L3 on the lab segment only
-sudo ip -n rebash-ns-a ping -c 2 10.255.77.2 | tee ns-ping.txt
-sudo ip -n rebash-ns-a ip neigh | tee ns-neigh.txt
-bridge link | tee bridge-ports.txt 2>/dev/null || ip link show master rebash-br0 | tee bridge-ports.txt
-
-grep -E '1 received|2 received|bytes from' ns-ping.txt
+Transport
 ```
 
-!!! example "Expected output"
-    ping between namespaces succeeds; `ns-neigh.txt` shows a neighbour; bridge ports list both `veth-*-br` sides.
+↓
 
+```text
+Layer 3
 
-#### Task 3 – VLAN ID concepts (document + evidence pack)
-
-Do **not** create `eth0.100` on your uplink. Record VLAN ideas as a checklist script output for the ticket.
-
-``` {.bash .ra-terminal title="Terminal"}
-cd ~/rebash-networking/lab07
-set -euo pipefail
+Network (IP)
 ```
 
-Create `vlan-concepts.sh`:
+↓
 
-```bash title="vlan-concepts.sh"
-#!/usr/bin/env bash
-set -euo pipefail
-echo "=== VLAN concept checklist (lab07) ==="
-echo "VLAN ID range: 1-4094 (0 and 4095 reserved in 802.1Q)"
-echo "Access port: one VLAN, untagged toward the host"
-echo "Trunk port: many VLANs, 802.1Q tagged on the wire"
-echo "One VLAN ~= one broadcast domain ~= usually one IP subnet"
-echo "Between VLANs you need a router (L3), not only a switch"
-echo "Cloud note: providers often hide tags; isolation appears as separate subnets"
-echo "Lab bridge rebash-br0 used private 10.255.77.0/24 — not your uplink"
+```text
+Layer 2
+
+Ethernet
 ```
 
-``` {.bash .ra-terminal title="Terminal"}
-chmod +x vlan-concepts.sh
-./vlan-concepts.sh | tee vlan-concepts.txt
+↓
 
-tar -czf l2-evidence.tgz \
-  admin-user.txt host-links.txt macs.txt \
-  ns-ping.txt ns-neigh.txt bridge-ports.txt vlan-concepts.txt \
-  bridges.txt host-link-details.txt 2>/dev/null || \
-tar -czf l2-evidence.tgz \
-  admin-user.txt host-links.txt macs.txt \
-  ns-ping.txt ns-neigh.txt vlan-concepts.txt
-ls -l l2-evidence.tgz | tee evidence-ls.txt
+```text
+Layer 1
+
+Physical Cable
 ```
 
-!!! example "Expected output"
-    `vlan-concepts.txt` lists access vs trunk and VLAN ID range; `l2-evidence.tgz` is non-empty.
+---
 
+# Ethernet Communication
 
-### Validation steps
+Suppose:
 
-- [ ] `macs.txt` shows host interface MAC data
-- [ ] Namespace ping `10.255.77.1` ↔ `10.255.77.2` succeeded
-- [ ] `ns-neigh.txt` has a neighbour entry after ping
-- [ ] `vlan-concepts.txt` explains access vs trunk
-- [ ] `l2-evidence.tgz` exists under `~/rebash-networking/lab07`
+Computer A wants to send data to Computer B.
 
-### Common errors and fixes
+Process:
 
-| Error | Cause | Fix |
-|-------|-------|-----|
-| `Cannot create namespace` | Nested container without privileges | Use a full Ubuntu VM, not a restricted container |
-| `RTNETLINK answers: File exists` | Leftover lab devices | Run the cleanup block, then Task 2 again |
-| Ping fails between namespaces | Peer not enslaved / not UP | Check `bridge link` and `ip -n … link` |
-| No `bridge` command | Optional package missing | Use `ip link show master rebash-br0` instead |
-| Tempted to add `eth0.VLAN` | Trying “real” VLAN on Wi‑Fi | Stay on the disposable `rebash-br0` lab only |
+```text
+Create Data
 
-### Challenge exercise
+↓
 
-Write `bridge-fdb-dump.sh` that runs `bridge fdb show rebash-br0 2>/dev/null || bridge fdb show | grep rebash || ip neigh show` and saves `fdb.txt`. Explain in one line (comment in the script) that FDB/MAC table is how a switch remembers ports — same idea as Task 2 learning after ping.
+Add IP Header
 
-### Learning outcomes
+↓
 
-- Inspected real host MACs and link state
-- Built a safe two-namespace bridge that proves Layer 2 adjacency
-- Documented VLAN ID / access / trunk concepts without tagging production
+Add Ethernet Header
 
-### Cleanup
+↓
 
-``` {.bash .ra-terminal title="Terminal"}
-cd ~/rebash-networking/lab07
-set -euo pipefail
+Send Frame
 
-sudo ip netns del rebash-ns-a 2>/dev/null || true
-sudo ip netns del rebash-ns-b 2>/dev/null || true
-sudo ip link del rebash-br0 2>/dev/null || true
+↓
 
-# Keep evidence if you want it; otherwise:
-# rm -f l2-evidence.tgz *.txt
+Switch
+
+↓
+
+Destination
 ```
 
-## Validation
+The transmitted unit is called an **Ethernet Frame**.
 
-- [ ] Lab finished under `~/rebash-networking/lab07/` with evidence files
-- [ ] You can explain learn / forward / flood in your own words
-- [ ] You can explain why different VLAN IDs need a router between them
-- [ ] You know not to create production VLAN sub-interfaces on a shared laptop uplink for practice
+---
 
-## Code Walkthrough
+# What is an Ethernet Frame?
 
-In real networks, Layer 2 work for switching and VLANs usually follows this order:
+Ethernet does not transmit raw data.
 
-1. **Inspect before you change** — `ip -br link`, bridge list, neighbour table  
-2. **Prefer disposable labs** — namespaces and lab bridges, not the default route interface  
-3. **Prove adjacency** — ping + neighbour entry on the lab segment  
-4. **Document VLAN intent** — ID, access vs trunk, which subnet maps to which VLAN  
-5. **Least surprise** — never retag a production uplink during a learning exercise  
+Instead, it packages data into a structured format called a **Frame**.
 
-Cloud and Kubernetes still use the same mental model even when 802.1Q is hidden.
+Example:
 
-## Security Considerations
+```text
+Destination MAC
 
-- Treat VLAN hopping and mis-trunked ports as isolation failures — review trunk allow-lists  
-- Do not put management and user workloads on the same flat Layer 2 domain without need  
-- Lab namespaces are root-capable; run them only on practice VMs  
-- MAC spoofing is possible on shared L2 — combine with port security or cloud ENI controls where required  
-- Keep evidence free of secrets; MAC and IP of a lab segment are fine to attach to a ticket  
+↓
 
-## Common Mistakes
+Source MAC
 
-!!! warning "Blaming DNS when neighbours never appear"
-    If ARP/neighbour fails, Layer 2 or VLAN membership is wrong. **Fix:** check VLAN/subnet placement and `ip neigh` before changing DNS.
+↓
 
-!!! warning "Creating VLAN sub-interfaces on the wrong NIC"
-    A bad `eth0.100` can drop you off the network. **Fix:** practise only on disposable bridges/namespaces; use console/serial access if you must touch real VLANs.
+EtherType
 
-!!! warning "Assuming one big flat L2 is simpler"
-    Large broadcast domains amplify storms and make blast radius (how much breaks at once) worse. **Fix:** segment with VLANs or cloud subnets.
+↓
 
-!!! warning "Forgetting cleanup after namespace labs"
-    Leftover `veth` and bridges confuse the next change. **Fix:** always delete lab netns and `rebash-br0`.
+Payload
 
-## Best Practices
+↓
 
-- One subnet per VLAN (or cloud subnet) unless you have a strong design reason  
-- Name VLANs by purpose (`app`, `db`, `mgmt`), not only by number  
-- Prefer inspection (`ip`, `bridge`) over packet capture first  
-- Map every VLAN to a documented gateway and security boundary  
-- In containers, know which bridge/CNI owns the MAC — it is still Layer 2  
+FCS
+```
 
-## Troubleshooting
+---
 
-| Symptom | Likely cause | Fix |
-|---------|--------------|-----|
-| Ping works to gateway IP but not to same-subnet host | Wrong VLAN / ACL / isolation | Confirm same L2 domain and security groups |
-| Neighbour stuck `FAILED` | Host down or filtered ARP | Check peer link/`ip link`; clear stale neigh if needed |
-| Namespace ping fails | veth not in bridge or DOWN | Re-run Task 2; verify `bridge link` |
-| `Operation not permitted` | Missing CAP_NET_ADMIN | Use a privileged practice VM |
-| Cloud “VLAN” confusion | Provider hides tags | Design with subnets + routes instead of guest 802.1Q |
+# Ethernet Frame Structure
 
-## Summary
+| Field | Purpose |
+|--------|----------|
+| Destination MAC | Identifies receiver |
+| Source MAC | Identifies sender |
+| EtherType | Identifies Layer 3 protocol |
+| Payload | Actual data |
+| FCS | Error detection |
 
-Ethernet, switches, and VLANs decide **who shares a broadcast domain**. Learn MAC forwarding, keep VLAN IDs intentional, and practise safely with Linux bridges and namespaces. Next, deepen control-plane helpers in [ICMP, ARP, DHCP, and Network Services](icmp-arp-dhcp-and-network-services.md).
+---
 
-## Interview Questions
+# Destination MAC Address
 
-**1. How does a switch decide where to send a unicast Ethernet frame?**
+Example:
 
-??? success "Reveal answer"
-    It looks up the **destination MAC** in its MAC/forwarding table. If the MAC was learned on a port, the frame goes only there. If unknown, the switch **floods** within the VLAN (except the ingress port). Source MACs are learned from frames that arrive, so the table builds over time.
+```text
+00:11:22:33:44:55
+```
 
-**2. What is the difference between an access port and a trunk port?**
+The switch forwards the frame toward this destination.
 
-??? success "Reveal answer"
-    An **access** port carries **one** VLAN and typically sends traffic **untagged** toward the host. A **trunk** carries **multiple** VLANs and uses **802.1Q tags** on the wire so the far end knows which VLAN each frame belongs to. Mismatched access/trunk config is a common “no connectivity” cause.
+---
 
-**3. Why do different VLANs usually need a router between them?**
+# Source MAC Address
 
-??? success "Reveal answer"
-    A VLAN is a **Layer 2 broadcast domain**. Hosts in different VLANs do not share that domain, so ARP and Ethernet flooding do not cross. A **Layer 3** device (router or Layer 3 switch / cloud router) forwards IP between the subnets that map to those VLANs.
+Example:
 
-**4. How do Docker bridges or cloud VPC subnets relate to classic switching?**
+```text
+AA:BB:CC:DD:EE:FF
+```
 
-??? success "Reveal answer"
-    A Docker **bridge** is a software switch for container `veth` pairs — same learn/forward idea. A cloud **subnet** is usually one isolation domain backed by the provider fabric (virtual switching). You may never see 802.1Q tags, but you still design **who shares L2** and **who must route**.
+Identifies the sender of the frame.
 
-**5. You can ping 8.8.8.8 but not a host on the same /24. What Layer 2 checks do you run first?**
+---
 
-??? success "Reveal answer"
-    Check same VLAN/subnet membership, `ip neigh` for the target, MAC/link state (`ip -br link`), and security groups or port ACLs that block ARP or local traffic. Same-subnet failure is often L2/isolation, not default-route failure — because Internet ping already proved a working gateway path.
+# EtherType
 
-**6. What is a VLAN ID, and why is tagging production uplinks risky in a learning lab?**
+The EtherType field tells the receiver which Layer 3 protocol is encapsulated.
 
-??? success "Reveal answer"
-    A **VLAN ID** is the numeric tag (1–4094) that marks which broadcast domain a frame belongs to on a trunk. Creating real tagged sub-interfaces on your only uplink can cut management access if the ID or trunk allow-list is wrong. Labs should use disposable bridges/namespaces first.
+Examples:
 
-**7. What does “flood” mean on a switch, and when is it normal?**
+| EtherType | Protocol |
+|-----------|----------|
+| `0x0800` | IPv4 |
+| `0x86DD` | IPv6 |
+| `0x0806` | Address Resolution Protocol (ARP) |
 
-??? success "Reveal answer"
-    **Flood** means sending a frame out all ports in the VLAN except the one it arrived on. It is normal for **broadcasts** (including ARP requests) and for **unknown unicast** until the destination MAC is learned. Constant flooding of the same unicast can mean flapping MACs or a learning problem — worth investigating.
+---
 
-## Related Tutorials
+# Payload
 
-- [Networking for Cloud & DevOps – Overview](index.md)
-- [Routing Fundamentals](routing-fundamentals.md) *(previous)*
-- [ICMP, ARP, DHCP, and Network Services](icmp-arp-dhcp-and-network-services.md) *(next)*
-- [Linux Networking Tools](../linux/linux-networking-tools.md)
+Contains the Layer 3 packet.
 
-## References
+Examples:
 
-- [IEEE 802.1Q — Virtual Bridged LANs](https://1.ieee802.org/vlan-802-1q/) — VLAN tagging overview  
-- [`ip-link(8)`](https://manpages.ubuntu.com/manpages/jammy/en/man8/ip-link.8.html) — Ubuntu man-pages  
-- [`ip-netns(8)`](https://manpages.ubuntu.com/manpages/jammy/en/man8/ip-netns.8.html) — network namespaces  
-- Track index: [Networking for Cloud & DevOps Engineers](index.md)
+- IPv4 Packet
+- IPv6 Packet
+- ARP Packet
+
+---
+
+# Frame Check Sequence (FCS)
+
+The FCS is used for **error detection**.
+
+Sender:
+
+```text
+Calculate FCS
+
+↓
+
+Transmit Frame
+```
+
+Receiver:
+
+```text
+Calculate Again
+
+↓
+
+Match?
+
+↓
+
+Yes
+
+↓
+
+Accept Frame
+```
+
+If the values differ:
+
+```text
+Discard Frame
+```
+
+---
+
+# Ethernet Frame Size
+
+Standard Ethernet frame:
+
+| Field | Size |
+|--------|------|
+| Minimum Frame | 64 Bytes |
+| Maximum Frame | 1518 Bytes |
+
+Some environments support **Jumbo Frames**, which allow larger payloads, commonly around **9000 bytes**, depending on the network equipment.
+
+---
+
+# Ethernet Speeds
+
+Common Ethernet speeds include:
+
+| Standard | Speed |
+|-----------|------:|
+| Ethernet | 10 Mbps |
+| Fast Ethernet | 100 Mbps |
+| Gigabit Ethernet | 1 Gbps |
+| 10 Gigabit Ethernet | 10 Gbps |
+| 25 Gigabit Ethernet | 25 Gbps |
+| 40 Gigabit Ethernet | 40 Gbps |
+| 100 Gigabit Ethernet | 100 Gbps |
+| 400 Gigabit Ethernet | 400 Gbps |
+
+Modern data centres commonly use 10G, 25G, 40G, 100G, and increasingly 400G links.
+
+---
+
+# Ethernet Cabling
+
+Common Ethernet media:
+
+- Cat5e
+- Cat6
+- Cat6a
+- Cat7
+- Fibre Optic
+
+Choice depends on required speed and distance.
+
+---
+
+# Half Duplex vs Full Duplex
+
+### Half Duplex
+
+Communication:
+
+```text
+Send
+
+OR
+
+Receive
+```
+
+Not both simultaneously.
+
+Example:
+
+```text
+Walkie-Talkie
+```
+
+---
+
+### Full Duplex
+
+Communication:
+
+```text
+Send
+
+AND
+
+Receive
+```
+
+At the same time.
+
+Example:
+
+```text
+Telephone Call
+```
+
+Modern Ethernet switch ports typically operate in **Full Duplex** mode.
+
+---
+
+# Collision Domain
+
+A collision occurs when two devices transmit simultaneously on a shared medium.
+
+Old Ethernet:
+
+```text
+Hub
+
+↓
+
+Collisions
+```
+
+Modern switched Ethernet:
+
+```text
+Switch
+
+↓
+
+Dedicated Link
+
+↓
+
+No Collisions
+```
+
+Each switch port represents its own collision domain.
+
+---
+
+# Broadcast Domain
+
+Ethernet switches forward broadcast frames to all ports within the same Virtual Local Area Network (VLAN).
+
+Example:
+
+```text
+Broadcast Frame
+
+↓
+
+Switch
+
+↓
+
+All Devices
+```
+
+Later in this module, you'll learn how **VLANs** create separate broadcast domains.
+
+---
+
+# Ethernet Standards
+
+Ethernet is standardised by:
+
+```text
+IEEE 802.3
+```
+
+Examples:
+
+- 10BASE-T
+- 100BASE-TX
+- 1000BASE-T
+- 10GBASE-T
+
+These standards define transmission speeds, media, and signaling methods.
+
+---
+
+# Enterprise Example
+
+Office Network:
+
+```text
+Linux Server
+
+↓
+
+Ethernet
+
+↓
+
+Switch
+
+↓
+
+Database Server
+```
+
+Communication occurs entirely using Ethernet frames.
+
+---
+
+# Cloud Perspective
+
+Although cloud networking is virtualised, the underlying physical infrastructure still relies heavily on Ethernet.
+
+Examples:
+
+- Hypervisors
+- Top-of-Rack Switches
+- Storage Networks
+- Data Centre Fabrics
+
+Ethernet remains the dominant Layer 2 technology.
+
+---
+
+# Kubernetes Perspective
+
+Kubernetes worker nodes communicate over Ethernet-based infrastructure.
+
+Example:
+
+```text
+Pod
+
+↓
+
+Node
+
+↓
+
+Ethernet
+
+↓
+
+Switch
+
+↓
+
+Another Node
+```
+
+Even overlay networks ultimately rely on Ethernet at the physical layer.
+
+---
+
+# Linux Perspective
+
+Display network interfaces.
+
+```bash
+ip link
+```
+
+Display interface statistics.
+
+```bash
+ip -s link
+```
+
+Display interface speed (requires `ethtool`).
+
+```bash
+ethtool eth0
+```
+
+Replace `eth0` with your actual interface name if different.
+
+---
+
+# Ethernet Communication Workflow
+
+```text
+Application
+
+↓
+
+TCP
+
+↓
+
+IP Packet
+
+↓
+
+Ethernet Frame
+
+↓
+
+Network Interface Card (NIC)
+
+↓
+
+Switch
+
+↓
+
+Destination Device
+```
+
+---
+
+# Hands-on Lab
+
+## Task 1
+
+Display network interfaces.
+
+```bash
+ip link
+```
+
+---
+
+## Task 2
+
+Display interface statistics.
+
+```bash
+ip -s link
+```
+
+---
+
+## Task 3
+
+Display interface speed.
+
+```bash
+ethtool <interface>
+```
+
+Replace `<interface>` with your interface name (for example, `eth0` or `ens33`).
+
+---
+
+## Task 4
+
+Identify whether your network interface is operating in Full Duplex or Half Duplex.
+
+---
+
+## Task 5
+
+Research the Ethernet standard used by your network adapter.
+
+---
+
+## Task 6
+
+Draw an Ethernet frame and label:
+
+- Destination MAC
+- Source MAC
+- EtherType
+- Payload
+- FCS
+
+---
+
+## Task 7
+
+Compare:
+
+- Hub
+- Switch
+
+Explain why switches eliminate collisions on individual ports.
+
+---
+
+## Task 8
+
+Research which Ethernet speeds are supported by your organisation or cloud environment.
+
+---
+
+# Linux Commands
+
+| Command | Purpose |
+|----------|----------|
+| `ip link` | Display network interfaces |
+| `ip -s link` | Display interface statistics |
+| `ethtool <interface>` | Display Ethernet link information |
+| `hostname -I` | Display assigned IP addresses |
+
+---
+
+# Common Mistakes
+
+❌ Confusing IP addresses with MAC addresses.
+
+✅ Ethernet uses MAC addresses at Layer 2; IP operates at Layer 3.
+
+---
+
+❌ Assuming Ethernet transmits IP packets directly.
+
+✅ Ethernet encapsulates Layer 3 packets inside frames.
+
+---
+
+❌ Thinking collisions occur on modern switched networks.
+
+✅ Full-duplex switched Ethernet eliminates collisions on individual links.
+
+---
+
+❌ Ignoring interface speed and duplex mismatches.
+
+✅ Verify link settings during troubleshooting.
+
+---
+
+❌ Assuming Ethernet only exists in office LANs.
+
+✅ Ethernet underpins enterprise networks, cloud infrastructure, and data centres.
+
+---
+
+# Best Practices
+
+- Use Full Duplex whenever supported.
+- Match interface speeds appropriately.
+- Monitor interface statistics for errors.
+- Use high-quality cabling for higher speeds.
+- Verify Ethernet link health during troubleshooting.
+- Document interface speeds and physical connections.
+
+---
+
+# Interview Questions
+
+## Beginner
+
+1. What is Ethernet?
+2. Which OSI layer does Ethernet operate on?
+3. What is an Ethernet frame?
+4. What is the purpose of the FCS?
+
+---
+
+## Intermediate
+
+1. Explain the structure of an Ethernet frame.
+2. What is the difference between Half Duplex and Full Duplex?
+3. What is a collision domain?
+4. What is the purpose of the EtherType field?
+
+---
+
+## Architect Level
+
+1. Explain why Ethernet remains the dominant LAN technology.
+2. How does Ethernet support cloud and Kubernetes infrastructure?
+3. How would you troubleshoot Ethernet connectivity issues in a production environment?
+
+---
+
+# Summary
+
+In this lesson, you learned:
+
+- What Ethernet is
+- Ethernet frame structure
+- MAC-based communication
+- EtherType
+- Frame Check Sequence (FCS)
+- Ethernet speeds
+- Duplex modes
+- Collision domains
+- IEEE 802.3 standards
+- Linux Ethernet commands
+
+Ethernet is the foundation of modern wired networking. It provides reliable Layer 2 communication through standardised frame formats, MAC addressing, and error detection. Every packet transmitted across a LAN is carried inside an Ethernet frame, making Ethernet one of the most important technologies in enterprise networking, cloud infrastructure, and data centres.
+
+---
+
+## Key Takeaways
+
+- Ethernet operates at **OSI Layer 2**.
+- Ethernet transmits data using **frames**.
+- Frames contain **Source MAC**, **Destination MAC**, **EtherType**, **Payload**, and **FCS**.
+- Modern switched Ethernet operates in **Full Duplex**, eliminating collisions on individual links.
+- Ethernet is standardised by **IEEE 802.3**.
+- Enterprise, cloud, and Kubernetes infrastructure all rely on Ethernet at the physical network layer.
+
+---
+
+## What's Next?
+
+**[MAC Address Table](mac-address-table.md)**
+
+In the next lesson, you'll learn about the **MAC Address Table**.
+
+You'll explore:
+
+- What a MAC Address Table is
+- How switches learn MAC addresses
+- Dynamic vs Static MAC entries
+- MAC address aging
+- Unknown unicast forwarding
+- Switch forwarding decisions
+- Linux tools for viewing MAC information
+
+By the end of the lesson, you'll understand how Ethernet switches intelligently forward frames by building and maintaining MAC address tables.

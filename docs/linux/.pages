@@ -182,12 +182,4 @@ nav:
     - Troubleshooting Methodology: troubleshooting-methodology.md
     - Best Practices: production-best-practices.md
     - Module 14 Summary — Production Linux Administration: module-14-production-linux-administration-summary.md
-  - "Module 15 · Capstone Projects":
-    - Build a Secure Linux Web Server: projects/secure-linux-web-server.md
-    - Configure a Bastion Host: projects/bastion-host.md
-    - Deploy a Git Server: projects/deploy-git-server.md
-    - Create a Monitoring Server: projects/monitoring-server.md
-    - Automate User Provisioning with Bash: projects/automate-user-provisioning-bash.md
-    - Build a Linux Server Baseline: projects/linux-server-baseline.md
-    - Harden an Ubuntu Server: projects/harden-ubuntu-server.md
-    - Production Linux Troubleshooting Challenge: projects/production-linux-troubleshooting-challenge.md
+  - projects

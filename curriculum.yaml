@@ -717,55 +717,192 @@ technologies:
   title: Networking
   status: ready
   path_prefix: networking/
-  difficulty: intermediate
+  difficulty: beginner
   modules:
   - id: networking-m1
-    title: Foundations
+    title: Module 1 · Networking Fundamentals
     tutorials:
     - networking/introduction-to-networking
-    - networking/osi-and-tcp-ip-models
-    - networking/ip-addressing-and-subnetting
+    - networking/types-of-networks
+    - networking/network-topologies
+    - networking/osi-model
+    - networking/tcp-ip-model
+    - networking/data-encapsulation
+    - networking/mac-address
+    - networking/ip-addressing
+    - networking/ports-and-protocols
+    - networking/networking-devices
   - id: networking-m2
-    title: Data Link & Routing
+    title: Module 2 · IPv4 Addressing
+    tutorials:
+    - networking/binary-numbers
+    - networking/ipv4-address-structure
+    - networking/ipv4-classes
+    - networking/private-vs-public-ip
+    - networking/loopback
+    - networking/apipa
+    - networking/cidr
+    - networking/subnetting-and-vlsm
+    - networking/vlsm
+    - networking/supernetting
+  - id: networking-m3
+    title: Module 3 · IPv6
+    tutorials:
+    - networking/why-ipv6
+    - networking/ipv6-structure
+    - networking/ipv6-address-types
+    - networking/slaac
+    - networking/neighbor-discovery
+    - networking/ipv6-routing
+    - networking/ipv4-vs-ipv6
+  - id: networking-m4
+    title: Module 4 · Switching
     tutorials:
     - networking/ethernet-switching-and-vlans
-    - networking/routing-fundamentals
-    - networking/icmp-arp-dhcp-and-network-services
-  - id: networking-m3
-    title: Transport & DNS
+    - networking/mac-address-table
+    - networking/switch-learning
+    - networking/vlan
+    - networking/trunking
+    - networking/spanning-tree-protocol
+    - networking/etherchannel
+    - networking/inter-vlan-routing
+  - id: networking-m5
+    title: Module 5 · Routing
     tutorials:
-    - networking/tcp-and-udp-deep-dive
+    - networking/routing-fundamentals
+    - networking/static-routing
+    - networking/dynamic-routing
+    - networking/rip
+    - networking/ospf
+    - networking/eigrp-concepts
+    - networking/bgp-introduction
+    - networking/default-routes
+    - networking/route-summarization
+    - networking/route-redistribution
+  - id: networking-m6
+    title: Module 6 · DNS and DHCP
+    tutorials:
     - networking/dns-fundamentals
     - networking/dns-records-and-troubleshooting
-  - id: networking-m4
-    title: Application Layer
+    - networking/dns-resolution
+    - networking/icmp-arp-dhcp-and-network-services
+    - networking/dhcp-relay
+    - networking/split-dns
+    - networking/dns-troubleshooting
+  - id: networking-m7
+    title: Module 7 · NAT and Firewalls
     tutorials:
-    - networking/http-https-and-application-layer
+    - networking/nat-and-port-forwarding
+    - networking/pat
+    - networking/static-nat
+    - networking/dynamic-nat
+    - networking/acl
     - networking/firewalls-and-access-control
-    - networking/load-balancing-fundamentals
-    - networking/reverse-proxy-and-ingress-basics
-  - id: networking-m5
-    title: Troubleshooting
+    - networking/stateful-firewalls
+    - networking/linux-firewall
+    - networking/cloud-firewalls
+    - networking/security-groups
+  - id: networking-m8
+    title: Module 8 · Network Security
     tutorials:
-    - networking/network-troubleshooting-methodology
+    - networking/vpn-and-tunneling-basics
+    - networking/ipsec
+    - networking/ssl-tls
+    - networking/ssh-networking
+    - networking/network-security-hardening
+    - networking/ids-ips
+    - networking/zero-trust
+    - networking/network-segmentation-and-trust-boundaries
+    - networking/ddos-protection
+  - id: networking-m9
+    title: Module 9 · Linux Networking
+    tutorials:
+    - networking/linux-networking-toolkit
+    - networking/ss
+    - networking/netstat
     - networking/packet-analysis-tcpdump-wireshark
-  - id: networking-m6
-    title: Cloud & Advanced
+    - networking/traceroute
+    - networking/dig
+    - networking/nslookup
+    - networking/curl
+    - networking/wget
+    - networking/network-namespaces
+  - id: networking-m10
+    title: Module 10 · Cloud Networking
     tutorials:
     - networking/cloud-networking-vpc-and-subnets
-    - networking/nat-and-port-forwarding
-    - networking/vpn-and-tunneling-basics
-    - networking/network-security-hardening
-    - networking/network-automation-and-monitoring
-  - id: networking-m7
-    title: Production Network Operations
+    - networking/azure-vnet
+    - networking/gcp-vpc
+    - networking/cloud-subnets
+    - networking/route-tables
+    - networking/nat-gateway
+    - networking/internet-gateway
+    - networking/cloud-load-balancer
+    - networking/private-connectivity
+    - networking/hybrid-networking
+  - id: networking-m11
+    title: Module 11 · Kubernetes Networking
     tutorials:
-    - networking/network-segmentation-and-trust-boundaries
-    - networking/production-dns-operations
-    - networking/load-balancer-operations-and-health-checks
-    - networking/firewall-change-control-and-production-acls
+    - networking/kubernetes-networking-fundamentals
+    - networking/pod-networking
+    - networking/service-networking
+    - networking/ingress
+    - networking/network-policies
+    - networking/coredns
+    - networking/kube-proxy
+    - networking/service-mesh
+    - networking/ebpf
+  - id: networking-m12
+    title: Module 12 · Network Troubleshooting
+    tutorials:
+    - networking/ping
+    - networking/traceroute-troubleshooting
+    - networking/tcpdump-troubleshooting
+    - networking/wireshark
+    - networking/dns-troubleshooting-deep-dive
+    - networking/routing-issues
+    - networking/mtu-problems
+    - networking/latency
+    - networking/packet-loss
+    - networking/production-scenarios
+  - id: networking-m13
+    title: Module 13 · DevOps Networking
+    tutorials:
+    - networking/docker-networking
+    - networking/kubernetes-networking-devops
+    - networking/cicd-networking
+    - networking/git-networking
+    - networking/vpn-for-devops
+    - networking/reverse-proxy-and-ingress-basics
+    - networking/load-balancing-fundamentals
+    - networking/cdn
+    - networking/api-gateways
+    - networking/service-discovery
+  - id: networking-m14
+    title: Module 14 · Production Networking
+    tutorials:
+    - networking/high-availability
+    - networking/redundancy
+    - networking/network-monitoring
+    - networking/capacity-planning
+    - networking/disaster-recovery
     - networking/network-incident-response-and-observability
-  tutorial_count: 25
+    - networking/network-automation-and-monitoring
+    - networking/networking-best-practices
+    - networking/production-checklists
+    - networking/network-troubleshooting-methodology
+  - id: networking-m15
+    title: Module 15 · Capstone Projects
+    tutorials:
+    - networking/projects/home-lab-network
+    - networking/projects/configure-vlans
+    - networking/projects/build-dns-server
+    - networking/projects/configure-dhcp-server
+    - networking/projects/build-vpn-server
+    - networking/projects/firewall-gateway
+    - networking/projects/cloud-vpc-design
+    - networking/projects/enterprise-network-troubleshooting-challenge
+  tutorial_count: 138
 - id: aws
   title: AWS
   status: ready

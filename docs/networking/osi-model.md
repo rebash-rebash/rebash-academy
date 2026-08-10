@@ -1,402 +1,857 @@
 ---
 title: "OSI Model"
-description: "Use the seven OSI layers as a shared language — map ping, tcpdump, curl and ss to layers, with encapsulation and layered troubleshooting."
+description: "Master the seven layers of the OSI Model — encapsulation, protocols, devices, Linux tools, and layer-by-layer troubleshooting for Cloud and DevOps."
 difficulty: beginner
-estimated_time: "50–65 min"
+estimated_time: "90 min"
 author: Shaik Basha
-last_updated: "2026-08-02"
+last_updated: "2026-08-10"
 category: networking
 technology: networking
-module: "Module 2 · OSI Model"
+module: "Module 1 · Networking Fundamentals"
+learning_paths:
+  - cloud-engineer
+  - devops-engineer
+  - site-reliability-engineer
+  - kubernetes-engineer
+  - platform-engineer
 tags:
   - networking
   - osi
-  - layers
-  - troubleshooting
-prerequisites:
-  - networking/introduction-to-networking
-next:
-  - networking/tcp-ip-model
-related:
-  - networking/tcp-ip-model
-  - networking/network-troubleshooting-methodology
-  - interview/networking
-interview: interview/networking
+  - fundamentals
+  - rebash-networking-mastery
 comments: false
+status: ready
 ---
 
-# OSI Model
+# OSI Model — The Seven Layers of Network Communication
 
-## Overview
+> The **Open Systems Interconnection (OSI) Model** is a conceptual framework that explains how data travels from one device to another across a network. It divides network communication into **seven layers**, where each layer performs a specific function and communicates with the layers directly above and below it. Although the modern Internet primarily uses the TCP/IP model, the OSI Model remains the industry standard for learning networking, troubleshooting connectivity issues, and understanding how protocols interact. Every Linux administrator, DevOps engineer, Cloud Architect, Platform Engineer, Site Reliability Engineer (SRE), and Network Engineer should master the OSI Model.
 
-When an application cannot reach a database, people often say “the network is broken.” That phrase is too vague for an incident. The **Open Systems Interconnection (OSI) model** gives seven named layers so you can say which part failed: cable or Wi‑Fi (Layer 1), Ethernet frames (Layer 2), Internet Protocol (IP) packets (Layer 3), Transmission Control Protocol (TCP) or User Datagram Protocol (UDP) ports (Layer 4), or the application protocol such as Hypertext Transfer Protocol (HTTP) (Layer 7).
+---
 
-You do not need to memorise the OSI model as exam trivia alone. Cloud consoles, load balancers, and security products still say “Layer 4” and “Layer 7”. A Network Load Balancer that forwards TCP ports is Layer 4 style. An Application Load Balancer that reads HTTP host headers is Layer 7 style. On Linux, your tools already sit on layers: `ping` tests Layer 3 reachability with Internet Control Message Protocol (ICMP), `tcpdump` can show frames and packets from Layer 2 upward, and `curl` exercises Layer 7 while depending on everything underneath.
+## Learning Path
 
-Encapsulation is the key mental model: each layer wraps the data from the layer above with its own header (and sometimes a trailer). Troubleshooting works best when you stop at the **first failing layer** instead of guessing at the top. In production, a clear layer statement in the ticket (“DNS works, TCP handshake fails on port 5432”) saves hours.
+<div class="ra-lesson-meta" markdown>
 
-This is **Tutorial 2** in **Module 2: OSI Model** of the REBASH Academy **Networking for Cloud & DevOps Engineers** series. It is written for Cloud, DevOps, Site Reliability Engineering (SRE), and platform engineers. By the end, you will map real commands to layers and save a layer table artefact from a practice Ubuntu VM.
+<p class="ra-lesson-meta__crumb" markdown>**Networking Mastery** → Module 1: Networking Fundamentals → Lesson 4</p>
 
-## Prerequisites
+<div class="ra-meta-grid" markdown>
+
+<div markdown>**Difficulty:** Beginner</div>
+
+<div markdown>**Reading Time:** 90 Minutes</div>
+
+</div>
+
+</div>
+
+<div class="ra-course-progress" markdown>
+
+**Course Progress**
+
+<div class="ra-meta-grid" markdown>
+
+<div markdown>**Course:** Networking Mastery</div>
+
+<div markdown>**Module:** Networking Fundamentals</div>
+
+<div markdown>**Lesson:** 4 of 10</div>
+
+</div>
+
+</div>
+
+---
+
+
+# What You'll Learn
+
+After completing this lesson, you'll be able to:
+
+- Understand the OSI Model
+- Explain all seven OSI layers
+- Identify protocols operating at each layer
+- Understand encapsulation and decapsulation
+- Troubleshoot networking problems using the OSI Model
+- Relate Linux networking tools to OSI layers
+
+---
+
+# Prerequisites
+
+Complete:
 
 - [What is Networking?](introduction-to-networking.md)
-- A **practice Ubuntu 22.04/24.04 VM** with outbound network access
-- Tools: `ip`, `ping`, `ss`, `curl`; `tcpdump` optional but useful (`sudo apt-get install -y tcpdump`)
+- [Types of Networks](types-of-networks.md)
+- [Network Topologies](network-topologies.md)
 
-## Learning Objectives
+---
 
-By the end of this tutorial, you will be able to:
+# Why Learn the OSI Model?
 
-- [ ] Name OSI layers 1–7 with one protocol or example each
-- [ ] Explain encapsulation and the common Protocol Data Unit (PDU) names
-- [ ] Map Linux tools (`ping`, `ss`, `tcpdump`, `curl`) to OSI layers
-- [ ] Run a simple top-down or bottom-up check and stop at the first failure
-- [ ] Explain Layer 4 vs Layer 7 load balancing vocabulary used in cloud products
+Imagine troubleshooting a website that isn't loading.
 
-## Architecture
+The problem could be:
 
-The OSI stack places physical signalling at the bottom and user-facing applications at the top. Each layer serves the layer above and uses the layer below.
+- A damaged cable
+- Incorrect IP address
+- Domain Name System (DNS) failure
+- Firewall blocking traffic
+- Secure Sockets Layer / Transport Layer Security (SSL/TLS) certificate issue
+- Application crash
 
-![OSI seven-layer model](../assets/excalidraw/osi-model.svg)
+The OSI Model provides a structured way to isolate and troubleshoot these problems layer by layer.
 
-## Theory
+---
 
-### What it is
+# What is the OSI Model?
 
-The **OSI model** is a seven-layer reference model published by the International Organization for Standardization (ISO). It is a teaching and vocabulary model. Real Internet traffic follows the TCP/IP suite (next tutorial), but engineers still use OSI layer numbers every day.
+The **Open Systems Interconnection (OSI) Model** is a seven-layer reference model developed to standardise network communication.
 
-| Layer | Name | Job (plain language) | Examples |
-|------:|------|----------------------|----------|
-| 7 | Application | What the user/app speaks | HTTP, DNS, SSH |
-| 6 | Presentation | Data format / encryption (conceptually) | TLS often discussed here or with L5/L7 |
-| 5 | Session | Dialog / session control (conceptually) | Session ideas in APIs; less visible on Linux CLI |
-| 4 | Transport | Ports, reliability choices | TCP, UDP |
-| 3 | Network | Logical addressing and routing | IPv4, IPv6, ICMP |
-| 2 | Data Link | Frames on a local link | Ethernet, MAC addresses, ARP |
-| 1 | Physical | Bits on wire / radio / virtual NIC | Cables, Wi‑Fi PHY, cloud vNIC |
-
-Common PDU names: **bits** (L1), **frames** (L2), **packets** (L3), **segments/datagrams** (L4), **data** (L5–L7).
-
-### Why it matters
-
-Shared language shortens incidents. “Layer 3 is fine, Layer 4 is blocked” tells the firewall owner what to check. “Layer 7 returns 502” tells the platform team to inspect the reverse proxy or upstream app. Without layers, teams argue about “the network” while looking at different problems. Cloud marketing also uses L4/L7 labels — you need the model to choose the right load balancer and security control.
-
-### How it works
-
-1. **Send path** — the application creates data; each lower layer adds a header (encapsulation).
-2. **Wire / path** — frames and packets travel across links and routers.
-3. **Receive path** — each layer removes its header (decapsulation) and passes payload upward.
-4. **Troubleshoot** — pick a direction (bottom-up from Physical/Link, or top-down from Application) and stop at the first failure.
-
-```bash
-# L3 reachability (ICMP)
-ping -c 2 1.1.1.1
-
-# L4 listening sockets
-ss -tuln
-
-# L7 HTTP
-curl -I --max-time 5 https://example.com
-```
-
-### Key concepts and comparisons
-
-| Tool | Primary layers | What it proves |
-|------|----------------|----------------|
-| Link lights / `ip link` | L1–L2 | Interface exists and is UP |
-| `ip addr`, `ping` | L3 | Addressing and IP reachability |
-| `ss`, `nc` / port checks | L4 | Ports open or listening |
-| `curl`, browsers, API clients | L7 | Application protocol works |
-| `tcpdump` / Wireshark | L2–L7 (capture) | What actually went on the wire |
-
-| Load balancer style | OSI focus | Typical use |
-|---------------------|-----------|-------------|
-| L4 | TCP/UDP ports | High performance, simple forward |
-| L7 | HTTP/gRPC hosts and paths | Host-based routing, headers, WAF features |
-
-### Common pitfalls
-
-- Memorising layer names without mapping them to tools you actually run.
-- Blaming Layer 7 when DNS (often discussed at L7) or TCP (L4) never completed.
-- Assuming TLS is “only Layer 6” — in practice you verify certificates and HTTPS with application tools.
-- Capturing with `tcpdump` without a filter and drowning in noise.
-- Skipping Layer 1/2 on cloud VMs — a detached elastic network interface looks like “routing is broken”.
-
-## Hands-on Lab
-
-### Objective
-
-Map real Linux tools to OSI layers on a practice Ubuntu VM, run layer-focused commands, and save a **layer mapping table** artefact plus evidence under `~/rebash-networking/lab02`.
-
-### Prerequisites
-
-- Ubuntu 22.04/24.04 with sudo
-- Packages: `iproute2`, `iputils-ping`, `curl`; install `tcpdump` and `dnsutils` if missing:
-  `sudo apt-get update && sudo apt-get install -y tcpdump dnsutils`
-
-### Lab environment
-
-Workspace: `~/rebash-networking/lab02`
-
-``` {.bash .ra-terminal title="Terminal"}
-mkdir -p ~/rebash-networking/lab02 && cd ~/rebash-networking/lab02
-set -euo pipefail
-hostname | tee hostname.txt
-command -v ping curl ss ip | tee tools-present.txt
-```
-
-!!! example "Expected output"
-    `tools-present.txt` lists paths for `ping`, `curl`, `ss`, and `ip`.
-
-
-### Real-world scenario
-
-During an incident bridge, someone asks: “Is this Layer 3 or Layer 7?” You need a repeatable mini-checklist on the jump host: prove link/IP, prove ports, prove HTTP, and optionally capture a few packets. You leave behind a filled layer table so the handover is clear.
-
-### Step-by-step tasks
-
-#### Task 1 – Layer 1–3 checks with `ip` and `ping`
-
-``` {.bash .ra-terminal title="Terminal"}
-cd ~/rebash-networking/lab02
-set -euo pipefail
-
-ip -br link | tee l1l2-link.txt
-ip -br a | tee l3-addr.txt
-ip route show default | tee l3-default-route.txt || true
-
-ping -c 3 -W 2 1.1.1.1 2>&1 | tee l3-ping.txt || true
-# Local L3 always available
-ping -c 2 127.0.0.1 2>&1 | tee l3-ping-localhost.txt
-```
-
-!!! example "Expected output"
-    `l1l2-link.txt` shows interface states; `l3-ping-localhost.txt` shows successful replies; Internet ping may succeed or be blocked — both outcomes are recorded.
-
-
-#### Task 2 – Layer 4 with `ss` and Layer 7 with `curl`
-
-``` {.bash .ra-terminal title="Terminal"}
-cd ~/rebash-networking/lab02
-set -euo pipefail
-
-ss -tuln | tee l4-ss-tuln.txt
-
-curl -sS -I --max-time 8 https://example.com 2>&1 | tee l7-curl-headers.txt || true
-# Show verbose handshake evidence (TLS + HTTP)
-curl -v --max-time 8 -o /dev/null https://example.com 2>l7-curl-verbose.txt || true
-test -s l7-curl-verbose.txt
-
-# Optional DNS (application-related name resolution)
-if command -v dig >/dev/null 2>&1; then
-  dig +time=2 +tries=1 example.com A 2>&1 | tee l7-dig.txt || true
-fi
-```
-
-!!! example "Expected output"
-    `l4-ss-tuln.txt` lists listening sockets; `l7-curl-verbose.txt` is non-empty (success or connection error text).
-
-
-#### Task 3 – Optional `tcpdump` sample and layer table artefact
-
-If `tcpdump` is installed, capture a few packets while curling. Always write the layer mapping table (the required artefact).
-
-``` {.bash .ra-terminal title="Terminal"}
-cd ~/rebash-networking/lab02
-set -euo pipefail
-
-if command -v tcpdump >/dev/null 2>&1; then
-  # Short capture — may need sudo
-  sudo timeout 5 tcpdump -ni any -c 20 host example.com or icmp 2>tcpdump-stderr.txt \
-    | tee tcpdump-sample.txt || true
-else
-  echo "tcpdump not installed" | tee tcpdump-sample.txt
-fi
-
-
-Create `osi-layer-tool-map.txt`:
+Each layer has a specific responsibility.
 
 ```text
-OSI layer | Name          | Lab command / evidence file           | What success means
-1-2       | Physical/Link | ip -br link  → l1l2-link.txt          | NIC present and UP
-3         | Network       | ping / ip route → l3-*.txt            | IP path or honest block
-4         | Transport     | ss -tuln → l4-ss-tuln.txt             | See listeners / ports
-7         | Application   | curl / dig → l7-*.txt                 | App protocol responds
-2-4       | Capture       | tcpdump → tcpdump-sample.txt          | Packets observed
+Application
+
+↓
+
+Presentation
+
+↓
+
+Session
+
+↓
+
+Transport
+
+↓
+
+Network
+
+↓
+
+Data Link
+
+↓
+
+Physical
 ```
+
+Data travels from the top layer to the bottom layer on the sender and from the bottom layer to the top layer on the receiver.
+
+---
+
+# Why Seven Layers?
+
+Separating networking into layers provides:
+
+- Simpler troubleshooting
+- Vendor independence
+- Easier protocol development
+- Modular network design
+- Better interoperability
+
+Each layer focuses on one specific function.
+
+---
+
+# OSI Layers
+
+| Layer | Name | Primary Function |
+|--------|------|------------------|
+| 7 | Application | User-facing network services |
+| 6 | Presentation | Data formatting, encryption, compression |
+| 5 | Session | Session establishment and management |
+| 4 | Transport | Reliable end-to-end communication |
+| 3 | Network | Routing and IP addressing |
+| 2 | Data Link | MAC addressing and frame delivery |
+| 1 | Physical | Electrical, optical, and wireless transmission |
+
+---
+
+# Layer 7 — Application Layer
+
+The Application Layer provides network services directly to applications used by users.
+
+Examples:
+
+- Web browsers
+- Email clients
+- File Transfer Protocol (FTP) clients
+- Secure Shell (SSH) clients
+
+Common protocols:
+
+- Hypertext Transfer Protocol (HTTP)
+- Hypertext Transfer Protocol Secure (HTTPS)
+- FTP
+- Simple Mail Transfer Protocol (SMTP)
+- Post Office Protocol version 3 (POP3)
+- Internet Message Access Protocol (IMAP)
+- DNS
+- SSH
+
+---
+
+# Example
+
+Opening a website:
+
+```text
+Browser
+
+↓
+
+HTTPS
+
+↓
+
+Application Layer
+```
+
+This is the layer closest to the user.
+
+---
+
+# Layer 6 — Presentation Layer
+
+The Presentation Layer prepares data for transmission.
+
+Responsibilities:
+
+- Encryption
+- Decryption
+- Compression
+- Data translation
+- Character encoding
+
+Examples:
+
+- SSL/TLS encryption
+- JPEG images
+- PNG images
+- UTF-8 encoding
+
+---
+
+# Example
+
+When accessing an HTTPS website:
+
+```text
+Browser
+
+↓
+
+TLS Encryption
+
+↓
+
+Presentation Layer
+```
+
+---
+
+# Layer 5 — Session Layer
+
+The Session Layer establishes, manages, and terminates communication sessions.
+
+Responsibilities:
+
+- Session establishment
+- Authentication
+- Synchronisation
+- Session recovery
+
+Examples:
+
+- Remote desktop sessions
+- Database connections
+- Remote Procedure Call (RPC) communication
+
+---
+
+# Layer 4 — Transport Layer
+
+The Transport Layer provides reliable communication between applications.
+
+Responsibilities:
+
+- Segmentation
+- Error recovery
+- Flow control
+- Reliability
+- Port numbers
+
+Protocols:
+
+- Transmission Control Protocol (TCP)
+- User Datagram Protocol (UDP)
+
+---
+
+# TCP
+
+Reliable communication.
+
+Features:
+
+- Acknowledgments
+- Retransmission
+- Ordered delivery
+- Error detection
+
+Used by:
+
+- HTTPS
+- SSH
+- FTP
+- SMTP
+
+---
+
+# UDP
+
+Fast communication.
+
+Features:
+
+- No acknowledgments
+- No retransmissions
+- Lower latency
+
+Used by:
+
+- DNS
+- Streaming
+- Voice over IP (VoIP)
+- Online gaming
+
+---
+
+# Layer 3 — Network Layer
+
+The Network Layer moves packets between different networks.
+
+Responsibilities:
+
+- Routing
+- IP addressing
+- Path selection
+
+Protocols:
+
+- Internet Protocol version 4 (IPv4)
+- Internet Protocol version 6 (IPv6)
+- Internet Control Message Protocol (ICMP)
+
+Devices:
+
+- Routers
+- Layer 3 Switches
+
+---
+
+# Example
+
+```text
+192.168.1.10
+
+↓
+
+Router
+
+↓
+
+8.8.8.8
+```
+
+The router forwards packets toward their destination.
+
+---
+
+# Layer 2 — Data Link Layer
+
+The Data Link Layer provides communication between devices on the same local network.
+
+Responsibilities:
+
+- Media Access Control (MAC) addressing
+- Frame creation
+- Error detection
+- Switching
+
+Protocols:
+
+- Ethernet
+- Wi-Fi (802.11)
+- Point-to-Point Protocol (PPP)
+
+Devices:
+
+- Switches
+- Bridges
+
+---
+
+# Example
+
+```text
+Laptop
+
+↓
+
+Switch
+
+↓
+
+Server
+```
+
+Communication uses MAC addresses within the Local Area Network (LAN).
+
+---
+
+# Layer 1 — Physical Layer
+
+The Physical Layer transmits raw bits across the communication medium.
+
+Responsibilities:
+
+- Electrical signals
+- Fibre optics
+- Radio waves
+- Connectors
+- Cables
+
+Examples:
+
+- Ethernet cables
+- Fibre cables
+- Wi-Fi signals
+
+Devices:
+
+- Network cables
+- Repeaters
+- Hubs
+- Network interface cards (NICs)
+
+---
+
+# Data Flow Through the OSI Model
+
+Sending data:
+
+```text
+Application
+
+↓
+
+Presentation
+
+↓
+
+Session
+
+↓
+
+Transport
+
+↓
+
+Network
+
+↓
+
+Data Link
+
+↓
+
+Physical
+
+↓
+
+Cable/Wireless
+```
+
+Receiving data:
+
+```text
+Cable/Wireless
+
+↓
+
+Physical
+
+↓
+
+Data Link
+
+↓
+
+Network
+
+↓
+
+Transport
+
+↓
+
+Session
+
+↓
+
+Presentation
+
+↓
+
+Application
+```
+
+---
+
+# Encapsulation
+
+As data moves down the OSI layers, each layer adds its own header.
+
+```text
+Application Data
+
+↓
+
+Segment
+
+↓
+
+Packet
+
+↓
+
+Frame
+
+↓
+
+Bits
+```
+
+This process is called **Encapsulation**.
+
+---
+
+# Decapsulation
+
+When data reaches the destination, each layer removes its corresponding header.
+
+```text
+Bits
+
+↓
+
+Frame
+
+↓
+
+Packet
+
+↓
+
+Segment
+
+↓
+
+Application Data
+```
+
+This process is called **Decapsulation**.
+
+---
+
+# Protocols by Layer
+
+| Layer | Common Protocols |
+|--------|------------------|
+| Application | HTTP, HTTPS, FTP, DNS, SSH, SMTP |
+| Presentation | TLS, SSL, JPEG, PNG |
+| Session | RPC, NetBIOS |
+| Transport | TCP, UDP |
+| Network | IPv4, IPv6, ICMP |
+| Data Link | Ethernet, Wi-Fi, PPP |
+| Physical | Ethernet Cable, Fiber, Radio |
+
+---
+
+# Devices by Layer
+
+| Layer | Devices |
+|--------|----------|
+| Application | Web Servers |
+| Presentation | SSL/TLS Gateways |
+| Session | Session Managers |
+| Transport | Firewalls, Load Balancers |
+| Network | Routers |
+| Data Link | Switches |
+| Physical | Cables, Hubs, NICs |
+
+---
+
+# OSI Troubleshooting Example
+
+A website is unreachable.
+
+Possible troubleshooting sequence:
+
+| Layer | Investigation |
+|--------|---------------|
+| 7 | Is the web application running? |
+| 6 | Is the TLS certificate valid? |
+| 5 | Is the session established? |
+| 4 | Is TCP port 443 open? |
+| 3 | Can the server be reached via IP? |
+| 2 | Is the switch forwarding traffic? |
+| 1 | Is the network cable connected? |
+
+The OSI Model helps isolate the problem systematically.
+
+---
+
+# Linux Commands by OSI Layer
+
+| Layer | Linux Command |
+|--------|---------------|
+| 7 | `curl`, `wget` |
+| 6 | `openssl` |
+| 5 | `ssh` |
+| 4 | `ss`, `netstat` |
+| 3 | `ping`, `ip route` |
+| 2 | `ip link`, `arp` |
+| 1 | `ethtool` |
+
+---
+
+# Memory Aid
+
+Many engineers remember the layers using:
+
+```text
+7  Application
+
+6  Presentation
+
+5  Session
+
+4  Transport
+
+3  Network
+
+2  Data Link
+
+1  Physical
+```
+
+Mnemonic (Top to Bottom):
+
+> **All People Seem To Need Data Processing**
+
+Mnemonic (Bottom to Top):
+
+> **Please Do Not Throw Sausage Pizza Away**
+
+Use whichever is easier for you to remember.
+
+---
+
+# Production Perspective
+
+Cloud platforms, Kubernetes, enterprise data centres, and Internet applications rely on all seven OSI concepts.
+
+Examples:
+
+- HTTPS → Layer 7
+- TLS → Layer 6
+- TCP → Layer 4
+- IP Routing → Layer 3
+- Ethernet Switching → Layer 2
+- Fibre Optics → Layer 1
+
+Although engineers may not explicitly reference the OSI Model every day, it remains invaluable for troubleshooting.
+
+---
+
+# Hands-on Lab
+
+## Task 1
+
+Display IP addresses.
 
 ```bash
-cat osi-layer-tool-map.txt
-
-tar -czf osi-layer-evidence.tgz \
-  hostname.txt tools-present.txt \
-  l1l2-link.txt l3-addr.txt l3-default-route.txt \
-  l3-ping.txt l3-ping-localhost.txt \
-  l4-ss-tuln.txt l7-curl-headers.txt l7-curl-verbose.txt \
-  tcpdump-sample.txt osi-layer-tool-map.txt \
-  $(ls l7-dig.txt tcpdump-stderr.txt 2>/dev/null || true)
-ls -l osi-layer-evidence.tgz | tee evidence-ls.txt
-test -s osi-layer-evidence.tgz
+ip addr
 ```
 
-!!! example "Expected output"
-    `osi-layer-tool-map.txt` exists with the mapping table; `osi-layer-evidence.tgz` is non-empty.
+---
 
+## Task 2
 
-### Validation steps
-
-- [ ] Localhost ping succeeded and is logged
-- [ ] `ss -tuln` evidence file exists
-- [ ] `curl -v` evidence file exists (even if the remote site failed)
-- [ ] `osi-layer-tool-map.txt` maps tools to layers
-- [ ] `osi-layer-evidence.tgz` exists under `~/rebash-networking/lab02`
-
-### Common errors and fixes
-
-| Error | Cause | Fix |
-|-------|-------|-----|
-| `ping: Operation not permitted` | Capabilities / policy | Use localhost ping + `curl`; install `iputils-ping` |
-| `curl: could not resolve host` | DNS failure (often discussed at L7) | Fix resolvers; note layer in the table |
-| `tcpdump: permission denied` | Needs root | `sudo tcpdump ...` or skip capture and keep the table |
-| Empty Internet ping | ICMP blocked | Expected in some clouds — document it |
-| `ss: command not found` | Old image | `sudo apt-get install -y iproute2` |
-
-### Challenge exercise
-
-Create an executable script `~/rebash-networking/lab02/osi-checklist.sh` that prints a pass/fail line for: (1) any non-`lo` interface UP, (2) default route present, (3) localhost ping, (4) at least one listening TCP socket in `ss -tuln`, (5) `curl -I` to `https://example.com` within 8 seconds. Write results to `osi-checklist-results.txt`. Run the script once. This is a working artefact, not a notes file.
-
-### Learning outcomes
-
-- Mapped OSI layers to concrete Linux commands
-- Separated L3, L4, and L7 failure signals
-- Produced a reusable layer table for incident handovers
-- Practised optional packet capture without changing production routes
-
-### Cleanup
+Display routing table.
 
 ```bash
-cd ~/rebash-networking/lab02
-set -euo pipefail
-# No persistent network changes in the main lab
-# Optional: rm -f *.txt *.tgz
-ls -la
+ip route
 ```
 
-## Validation
+---
 
-- [ ] Lab finished under `~/rebash-networking/lab02/` with evidence archive
-- [ ] You can name layers 1–7 with one example each
-- [ ] You can explain encapsulation in one short paragraph
-- [ ] You can distinguish L4 vs L7 load balancing vocabulary
+## Task 3
 
-## Code Walkthrough
+Test connectivity.
 
-Layered checks in operations usually follow:
+```bash
+ping google.com
+```
 
-1. **Link** — is the NIC UP? (`ip -br link`)  
-2. **Network** — address and ping / route (`ip addr`, `ip route`, `ping`)  
-3. **Transport** — is the port listening or reachable? (`ss`, port probe)  
-4. **Application** — does HTTP/DNS/SSH succeed? (`curl`, `dig`, client errors)  
-5. **Capture** — when needed, `tcpdump` with a tight filter  
+---
 
-Stop at the first failing layer; escalate with that layer named in the ticket.
+## Task 4
 
-## Security Considerations
+Display listening ports.
 
-- Packet captures can include secrets (tokens in HTTP, credentials) — store captures carefully  
-- Prefer filtered `tcpdump` on practice hosts; avoid long captures on production without approval  
-- Do not disable firewalls “to test Layer 4” on shared servers  
-- Treat verbose `curl -v` logs as sensitive if they show Authorization headers  
-- Use least privilege: many checks need no root; capture and interface changes often do  
+```bash
+ss -tuln
+```
 
-## Common Mistakes
+---
 
-!!! warning "Calling every failure Layer 7"
-    Timeouts during TCP handshake are Layer 4 path/firewall issues. **Fix:** confirm `ss`/port reachability before debugging HTTP status codes.
+## Task 5
 
-!!! warning "Ignoring ARP / local link"
-    Same-subnet failures can be Layer 2. **Fix:** check `ip neigh` and NIC state, not only routes.
+Retrieve a webpage.
 
-!!! warning "Memorising without tools"
-    Interview answers need examples. **Fix:** keep the layer↔tool map from this lab.
+```bash
+curl https://example.com
+```
 
-!!! warning "Huge unfiltered captures"
-    You miss the packet that matters. **Fix:** filter by host and port; limit `-c` count.
+---
 
-## Best Practices
+## Task 6
 
-- State the failing layer in incident updates  
-- Keep a personal OSI↔tool cheat sheet (this lab’s table)  
-- Use bottom-up for “new VM has no network”, top-down for “one URL fails”  
-- Align cloud LB choice with L4 vs L7 needs  
-- Re-test after each fix at the layer you changed  
+View Ethernet interface details.
 
-## Troubleshooting
+```bash
+ethtool eth0
+```
 
-| Symptom | Likely cause | Fix |
-|---------|--------------|-----|
-| NIC DOWN | Detached interface / driver | Cloud console NIC; `ip link set … up` only if appropriate |
-| Ping fails, TCP works | ICMP blocked | Use TCP/`curl` checks |
-| Connection timed out | L3/L4 path or firewall | Trace routes/security groups; `ss` on server |
-| HTTP 502/504 | L7 upstream | Check proxy and app health, not only ping |
-| TLS errors | Certificate / time / SNI | Inspect `curl -v`; fix certs or clock |
+---
 
-## Summary
+## Task 7
 
-The OSI model is a seven-layer language for designing and debugging networks. Map each layer to tools, prove failures with evidence, and speak clearly about L4 versus L7 services. Next, connect OSI vocabulary to the four-layer Internet model in [TCP/IP Model](tcp-ip-model.md).
+Use `openssl` to inspect a website's TLS certificate.
 
-## Interview Questions
+```bash
+openssl s_client -connect example.com:443
+```
 
-**1. Name the seven OSI layers from Layer 1 to Layer 7 and give one example for each of Layers 2, 3, 4, and 7.**
+---
 
-??? success "Reveal answer"
-    Layers: Physical, Data Link, Network, Transport, Session, Presentation, Application. Examples: **L2** Ethernet/MAC, **L3** IPv4/ICMP, **L4** TCP/UDP ports, **L7** HTTP or DNS. Interviewers care that you can map examples, not only recite names.
+## Task 8
 
-**2. What is encapsulation?**
+Choose a network issue (for example, "cannot access a website") and identify which OSI layer or layers you would investigate first. Explain your reasoning.
 
-??? success "Reveal answer"
-    **Encapsulation** means each layer adds its own header (and sometimes trailer) around the payload from the layer above before sending downward. On receive, headers are removed (decapsulation). That is why a capture shows Ethernet, IP, and TCP headers around an HTTP request.
+---
 
-**3. Which OSI layers do `ping`, `ss -tuln`, and `curl` primarily exercise?**
+# Common Mistakes
 
-??? success "Reveal answer"
-    **`ping`** primarily tests **Layer 3** (ICMP over IP). **`ss -tuln`** shows **Layer 4** sockets (TCP/UDP listen state). **`curl`** is an **Layer 7** client (HTTP/HTTPS) that still depends on DNS, TCP, IP, and the link underneath. Always mention the dependencies in interviews.
+❌ Memorising layers without understanding their purpose.
 
-**4. A user sees HTTP 503 in the browser. Which layer is that message from, and what should you verify underneath first?**
+✅ Learn what each layer actually does.
 
-??? success "Reveal answer"
-    **503** is an **application (Layer 7)** response from a proxy or service — so L7 is reachable enough to return HTTP. Still verify L4 connectivity to the upstream and that the upstream process is healthy. Do not start with cable checks if you already have an HTTP status from the edge.
+---
 
-**5. How do Layer 4 and Layer 7 load balancers differ?**
+❌ Confusing IP and MAC addresses.
 
-??? success "Reveal answer"
-    A **Layer 4** load balancer forwards based on IP and TCP/UDP ports without reading HTTP. A **Layer 7** load balancer understands application protocols (HTTP host, path, headers) and can route or terminate TLS with richer rules. Choose L4 for raw performance/simplicity; L7 for content-based routing and app features.
+✅ IP belongs to Layer 3; MAC belongs to Layer 2.
 
-**6. Why is “the network is down” a weak incident statement?**
+---
 
-??? success "Reveal answer"
-    It does not name a layer, symptom, or evidence. Prefer: “DNS resolves, TCP to port 443 times out from subnet A” or “ICMP blocked but HTTPS works.” Layered statements assign owners faster (platform vs network vs app).
+❌ Assuming the OSI Model is a real protocol stack.
 
-**7. Where does ARP sit in OSI thinking, and when does it matter?**
+✅ It is a conceptual reference model.
 
-??? success "Reveal answer"
-    Address Resolution Protocol (ARP) maps IPv4 addresses to MAC addresses on a local link — **Layer 2** work supporting **Layer 3** delivery on Ethernet. It matters for same-subnet failures, wrong VLANs, and duplicate IPs. Check with `ip neigh` when local peers fail but remote routing looks fine.
+---
 
-**8. How would you use OSI layers in a design review for a public API?**
+❌ Ignoring lower layers during troubleshooting.
 
-??? success "Reveal answer"
-    Call out L3 addressing and routing (public/private), L4 ports and security groups, L7 TLS and HTTP behaviour, and which LB layer you need. Mention observability per layer (flow logs vs access logs). This shows you design with failure domains, not only happy-path diagrams.
+✅ Always troubleshoot from the most likely layer.
 
-## Related Tutorials
+---
 
-- [What is Networking?](introduction-to-networking.md) *(previous)*
-- [TCP/IP Model](tcp-ip-model.md) *(next)*
-- [Network Troubleshooting Methodology](network-troubleshooting-methodology.md)
-- [Packet Analysis with tcpdump and Wireshark](packet-analysis-tcpdump-wireshark.md)
+❌ Believing every protocol maps perfectly to one layer.
 
-## References
+✅ Some protocols interact with multiple layers.
 
-- [ISO/IEC 7498 OSI reference model](https://www.iso.org/standard/20269.html) — OSI overview (standards catalogue)  
-- [RFC 3439](https://www.rfc-editor.org/rfc/rfc3439) — some realities of protocol layering  
-- [`tcpdump` man-page](https://www.tcpdump.org/manpages/tcpdump.1.html)  
-- Track index: [Networking for Cloud & DevOps Engineers](index.md)
+---
+
+# Best Practices
+
+- Learn the responsibilities of each layer.
+- Use the OSI Model as a troubleshooting framework.
+- Associate common protocols with their layers.
+- Practice identifying the layer where failures occur.
+- Understand how data is encapsulated and decapsulated.
+
+---
+
+# Interview Questions
+
+## Beginner
+
+1. What is the OSI Model?
+2. How many layers does it have?
+3. Which layer handles IP addressing?
+4. Which layer handles MAC addresses?
+
+---
+
+## Intermediate
+
+1. Explain encapsulation and decapsulation.
+2. Compare TCP and UDP in the Transport Layer.
+3. Which devices operate at Layer 2 and Layer 3?
+4. How would you troubleshoot a website using the OSI Model?
+
+---
+
+## Architect Level
+
+1. Why is the OSI Model still relevant in cloud-native environments?
+2. How does the OSI Model assist in production incident response?
+3. Explain how Kubernetes networking relates to multiple OSI layers.
+
+---
+
+# Summary
+
+In this lesson, you learned:
+
+- The purpose of the OSI Model
+- The seven OSI layers
+- Responsibilities of each layer
+- Common protocols and devices
+- Encapsulation and decapsulation
+- Troubleshooting using the OSI Model
+
+The OSI Model provides a structured way to understand and troubleshoot network communication. While modern networks primarily implement the TCP/IP protocol suite, the OSI Model remains one of the most valuable conceptual tools for designing, operating, and troubleshooting enterprise networks.
+
+---
+
+## Key Takeaways
+
+- The OSI Model has seven layers.
+- Each layer performs a specific networking function.
+- Data is encapsulated before transmission and decapsulated at the destination.
+- Different protocols and devices operate at different layers.
+- The OSI Model is widely used as a troubleshooting framework.
+
+---
+
+## What's Next?
+
+**[TCP/IP Model](tcp-ip-model.md)**

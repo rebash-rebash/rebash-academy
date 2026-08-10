@@ -57,14 +57,14 @@ python:
 networking:
   icon: lan
   theme: devops
-  eyebrow: Production networking course
-  tagline: TCP/IP, DNS, HTTP, load balancing, and cloud network operations.
+  eyebrow: REBASH Networking Mastery
+  tagline: Master practical networking for Linux, Cloud, Kubernetes, DevOps, and enterprise — REBASH Networking Mastery.
   related: [linux, aws, kubernetes, security]
   learning_paths: [cloud-engineer, devops-engineer, site-reliability-engineer]
-  labs: 2
+  labs: 40
   quizzes: 0
-  projects: 0
-  capstones: 0
+  projects: 8
+  capstones: 8
   cheatsheets: 0
   interview: 0
   certifications: []

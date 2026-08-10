@@ -1,403 +1,855 @@
 ---
-title: "ICMP, ARP, DHCP, and Network Services"
-description: "Use ping, ip neigh, dig, and read-only DHCP lease inspection to prove how ICMP, ARP, and DHCP support everyday Cloud and DevOps connectivity."
-difficulty: intermediate
-estimated_time: "45–55 min"
+title: "DHCP Process"
+description: "Learn Dynamic Host Configuration Protocol (DHCP) — DORA process, scopes, leases, options, reservations, and Linux dhclient troubleshooting."
+difficulty: beginner
+estimated_time: "100 min"
 author: Shaik Basha
-last_updated: "2026-08-02"
+last_updated: "2026-08-10"
 category: networking
 technology: networking
-module: "Module 7 · Switching"
+module: "Module 6 · DNS and DHCP"
+learning_paths:
+  - cloud-engineer
+  - devops-engineer
+  - site-reliability-engineer
+  - linux-administrator
+  - platform-engineer
 tags:
   - networking
-  - icmp
-  - arp
   - dhcp
-  - ping
-  - neighbour
-prerequisites:
-  - networking/ethernet-switching-and-vlans
-next:
-  - networking/tcp-and-udp-deep-dive
-related:
-  - networking/ethernet-switching-and-vlans
-  - networking/dns-fundamentals
-  - linux/linux-networking-tools
-labs:
-  - labs/networking-dns-firewall-triage
-interview: interview/networking
+  - dora
+  - ip-addressing
+  - rebash-networking-mastery
 comments: false
+status: ready
 ---
 
-# ICMP, ARP, DHCP, and Network Services
+# DHCP Process — Automatically Assigning IP Addresses
 
-## Overview
+> **Dynamic Host Configuration Protocol (DHCP)** is a network protocol that automatically assigns **IP addresses** and other network configuration information to devices. Instead of manually configuring every computer, server, printer, or mobile device, DHCP provides automatic network configuration, making administration faster, simpler, and less error-prone. Nearly every enterprise, cloud environment, home network, and Wi-Fi network relies on DHCP. Every Linux administrator, DevOps engineer, Cloud Architect, Platform Engineer, Site Reliability Engineer (SRE), and Network Engineer should understand how DHCP works.
 
-TCP and HTTP only work after quieter protocols do their jobs. **Dynamic Host Configuration Protocol (DHCP)** often assigns addressing. **Address Resolution Protocol (ARP)** (and the Linux neighbour table) finds the next-hop Media Access Control (MAC) address. **Internet Control Message Protocol (ICMP)** reports path problems when firewalls allow it. **Network Time Protocol (NTP)** keeps clocks honest for logs and certificates.
+---
 
-Failed `ping` is the most misread alert in operations — ICMP is often filtered while HTTPS still works. Stale neighbours cause “same IP, wrong MAC” black holes after failover. Wrong DHCP options hand out a bad gateway or Domain Name System (DNS) server.
+## Learning Path
 
-This is **Tutorial 8** in **Module 7: Switching** of the REBASH Academy **Networking for Cloud & DevOps Engineers** series. It is written for Cloud, DevOps, Site Reliability Engineering (SRE), and platform engineers. By the end, you will collect ping, neighbour, DNS, and lease evidence under `~/rebash-networking/lab08`.
+<div class="ra-lesson-meta" markdown>
 
-## Prerequisites
+<p class="ra-lesson-meta__crumb" markdown>**Networking Mastery** → Module 6: DNS & DHCP → Lesson 4</p>
 
-- [Ethernet, Switching, and VLANs](ethernet-switching-and-vlans.md)
-- A practice Ubuntu 22.04/24.04 VM with outbound network access
-- Tools: `ip`, `ping`, `dig` (`dnsutils` on Ubuntu), optional `curl`
-- Read-only access to DHCP/NetworkManager lease files when present
+<div class="ra-meta-grid" markdown>
 
-## Learning Objectives
+<div markdown>**Difficulty:** Beginner</div>
 
-By the end of this tutorial, you will be able to:
+<div markdown>**Reading Time:** 100 Minutes</div>
 
-- [ ] Explain key ICMP types and why ping can fail while TCP works
-- [ ] Read `ip neigh` states after a successful gateway ping
-- [ ] Describe the DHCP DORA flow and inspect a lease file read-only
-- [ ] Use `dig` as a simple name-resolution check during triage
-- [ ] Separate “no route / no ARP / filtered ICMP / bad lease” symptoms
+</div>
 
-## Architecture
+</div>
 
-A new host typically: get address (DHCP or cloud metadata) → resolve gateway MAC (ARP) → optional ICMP check → use DNS and apps. Time sync runs in parallel.
+<div class="ra-course-progress" markdown>
 
-![Architecture diagram for ICMP, ARP, and DHCP path](../assets/excalidraw/network-services-icmp-arp-dhcp.svg)
+**Course Progress**
 
-## Theory
+<div class="ra-meta-grid" markdown>
 
-### What it is
+<div markdown>**Course:** Networking Mastery</div>
 
-**ICMP** is a Layer 3 control protocol carried in IP. Echo Request/Reply power `ping`. **ARP** answers “Who has this IPv4 address?” on the local Ethernet segment; Linux stores answers in the **neighbour table** (`ip neigh`). **DHCP** uses **DORA** — Discover, Offer, Request, Ack — to lease an address plus options (mask, gateway, DNS, lease time). Cloud metadata often replaces classic DHCP, but you still ask “who gave me this address?”
+<div markdown>**Module:** DNS & DHCP</div>
+
+<div markdown>**Lesson:** 4 of 7</div>
+
+</div>
+
+</div>
+
+---
+
+
+# What You'll Learn
+
+After completing this lesson, you'll be able to:
+
+- Understand DHCP
+- Learn the DHCP architecture
+- Understand the DORA process
+- Learn DHCP lease management
+- Understand DHCP options
+- Configure DHCP on Linux
+- Troubleshoot DHCP issues
+
+---
+
+# Prerequisites
+
+Complete:
+
+- [DNS Fundamentals](dns-fundamentals.md)
+- [DNS Records](dns-records-and-troubleshooting.md)
+- [DNS Resolution](dns-resolution.md)
+
+---
+
+# Why Learn DHCP?
+
+Imagine a company with:
+
+- 2,000 Employees
+- 1,500 Laptops
+- 500 Servers
+- 1,000 Mobile Devices
+
+Without DHCP:
+
+```text
+Configure Every Device
+
+Manually
+
+❌ Impossible
+```
+
+Instead:
+
+```text
+Connect Device
+
+↓
+
+Receive IP Automatically
+```
+
+---
+
+# What is DHCP?
+
+**Dynamic Host Configuration Protocol (DHCP)** automatically assigns network configuration to clients.
+
+Typical information includes:
+
+- IP Address
+- Subnet Mask
+- Default Gateway
+- Domain Name System (DNS) Servers
+- Lease Time
+- Domain Name
+- Additional Network Options
+
+---
+
+# Why Use DHCP?
+
+Benefits include:
+
+- Automatic IP Assignment
+- Centralised Management
+- Reduced Configuration Errors
+- Faster Device Deployment
+- Efficient IP Address Utilisation
+- Simplified Administration
+
+---
+
+# DHCP Components
+
+A DHCP environment consists of:
+
+- DHCP Client
+- DHCP Server
+- DHCP Scope
+- DHCP Lease
+
+---
+
+# DHCP Client
+
+A DHCP Client is any device requesting network configuration.
+
+Examples:
+
+- Laptop
+- Desktop
+- Mobile Phone
+- Server
+- Printer
+- Internet of Things (IoT) Device
+
+---
+
+# DHCP Server
+
+The DHCP Server manages IP address allocation.
+
+Responsibilities:
+
+- Assign IP Addresses
+- Track Leases
+- Prevent Duplicate Addresses
+- Renew Leases
+- Release Expired Addresses
+
+---
+
+# DHCP Scope
+
+A **Scope** (or Pool) defines the range of addresses available for assignment.
+
+Example:
+
+```text
+192.168.10.100
+
+↓
+
+192.168.10.200
+```
+
+Only addresses within this range are assigned.
+
+---
+
+# DHCP Lease
+
+A DHCP lease is a temporary assignment of an IP address.
+
+Example:
+
+```text
+IP Address
+
+192.168.10.120
+
+Lease Time
+
+24 Hours
+```
+
+When the lease expires, the client renews it or obtains a new address.
+
+---
+
+# The DORA Process
+
+DHCP uses a four-step process known as:
+
+```text
+DORA
+```
+
+Which stands for:
+
+- Discover
+- Offer
+- Request
+- Acknowledgment
+
+---
+
+# Step 1 — DHCP Discover
+
+The client has:
+
+```text
+No IP Address
+```
+
+It broadcasts:
+
+```text
+DHCP Discover
+```
+
+Meaning:
+
+```text
+Is There
+
+A DHCP Server?
+```
+
+---
+
+# Step 2 — DHCP Offer
+
+The DHCP Server replies:
+
+```text
+DHCP Offer
+```
+
+Example:
+
+```text
+IP Address
+
+192.168.10.101
+```
+
+The server offers available network configuration.
+
+---
+
+# Step 3 — DHCP Request
+
+The client responds:
+
+```text
+DHCP Request
+```
+
+Meaning:
+
+```text
+I Want
+
+192.168.10.101
+```
+
+If multiple servers respond, the client selects one offer and requests that address.
+
+---
+
+# Step 4 — DHCP Acknowledgment (ACK)
+
+The server confirms:
+
+```text
+DHCP ACK
+```
+
+The client receives:
+
+- IP Address
+- Subnet Mask
+- Gateway
+- DNS Servers
+- Lease Time
+
+The device can now communicate on the network.
+
+---
+
+# DORA Workflow
+
+```text
+Client
+
+↓
+
+DHCP Discover
+
+↓
+
+Server
+
+↓
+
+DHCP Offer
+
+↓
+
+Client
+
+↓
+
+DHCP Request
+
+↓
+
+Server
+
+↓
+
+DHCP ACK
+```
+
+---
+
+# DHCP Packet Flow
+
+```text
+Device Boots
+
+↓
+
+Broadcast Discover
+
+↓
+
+Receive Offer
+
+↓
+
+Request Address
+
+↓
+
+Receive ACK
+
+↓
+
+Network Ready
+```
+
+---
+
+# DHCP Lease Lifecycle
+
+Example:
+
+```text
+Lease Granted
+
+↓
+
+Client Uses Address
+
+↓
+
+Lease Renewal
+
+↓
+
+Lease Extended
+```
+
+If renewal fails and the lease expires:
+
+```text
+Lease Expires
+
+↓
+
+Restart DORA Process
+```
+
+---
+
+# Lease Renewal
+
+Clients attempt to renew leases before expiration.
+
+Typical process:
+
+```text
+50% Lease Time
+
+↓
+
+Renew
+
+↓
+
+Continue Using IP
+```
+
+If renewal fails, additional attempts occur before the lease expires.
+
+---
+
+# DHCP Options
+
+DHCP can provide more than just an IP address.
+
+Common options include:
+
+- Default Gateway
+- DNS Servers
+- Domain Name
+- Network Time Protocol (NTP) Servers
+- Boot Server
+- Preboot Execution Environment (PXE) Boot Information
+- Static Routes
+
+---
+
+# DHCP Reservation
+
+Some devices should always receive the same IP address.
+
+Examples:
+
+- Printers
+- Servers
+- Firewalls
+- Network Appliances
+
+DHCP Reservation maps:
+
+```text
+Media Access Control (MAC) Address
+
+↓
+
+Fixed IP Address
+```
+
+---
+
+# DHCP vs Static IP
+
+| DHCP | Static IP |
+|-------|-----------|
+| Automatic | Manual |
+| Easy Management | Manual Configuration |
+| Dynamic Assignment | Permanent Address |
+| Ideal for Clients | Ideal for Infrastructure |
+
+---
+
+# Enterprise Example
+
+Employee Laptop:
+
+```text
+Power On
+
+↓
+
+DHCP
+
+↓
+
+IP Assigned
+
+↓
+
+Access Network
+```
+
+No manual configuration is required.
+
+---
+
+# Cloud Perspective
+
+Cloud providers use DHCP to automatically configure:
+
+- Virtual Machines
+- Virtual Network Interfaces
+- Containers
+- Managed Services
+
+Instances receive:
+
+- Private IP
+- Gateway
+- DNS Configuration
+
+automatically during startup.
+
+---
+
+# Kubernetes Perspective
+
+Kubernetes nodes typically receive IP addresses from the underlying infrastructure using DHCP or cloud networking.
+
+Pods themselves usually receive IP addresses from the Container Network Interface (CNI) rather than directly from DHCP.
+
+---
+
+# Linux Perspective
+
+Display IP configuration.
 
 ```bash
-ping -c 2 127.0.0.1
-ip neigh show
+ip addr
 ```
 
-### Why it matters
+Display routing table.
 
-If you equate ping failure with “host down,” you will open wrong tickets. Security groups often drop ICMP. If you ignore `FAILED` neighbours after a virtual IP (VIP) move, traffic goes to a dead MAC until the cache expires. If DHCP gives the wrong default gateway, “Internet is down” is really “lease is wrong.” Clock skew (NTP) breaks Transport Layer Security (TLS) and signed cloud Application Programming Interface (API) calls — check `timedatectl` when certificates “suddenly” fail.
-
-### How it works
-
-1. **Address** — DHCP (or static / cloud) configures IP, mask, gateway, DNS.
-2. **On-link next hop** — for a remote destination, ARP targets the **gateway** IP; for a same-subnet host, ARP targets that host.
-3. **ICMP** — optional reachability and path messages (filtered often).
-4. **Apps** — TCP/UDP use the resolved path; DNS uses UDP/TCP 53.
-
-``` {.bash .ra-terminal title="Terminal"}
-ip route | awk '/default/ {print; exit}'
-# Then ping that gateway and re-check neighbours
+```bash
+ip route
 ```
 
-### Key concepts and comparisons
+Request a DHCP lease (client).
 
-| ICMP type | Common use |
-|-----------|------------|
-| 8 / 0 | Echo Request / Reply (`ping`) |
-| 3 | Destination Unreachable |
-| 11 | Time Exceeded (traceroute) |
-
-| DHCP step | Role |
-|-----------|------|
-| Discover / Offer | Find server; propose lease |
-| Request / Ack | Accept offer; confirm |
-
-| Neighbour state (examples) | Meaning |
-|----------------------------|---------|
-| REACHABLE | Recently confirmed |
-| STALE | May still work; needs refresh |
-| FAILED | Resolution failed |
-
-### Common pitfalls
-
-- Equating ping failure with host failure.
-- Ignoring neighbour `FAILED` after IP moves or VIP failover.
-- Editing lease files instead of reading them.
-- Assuming every host uses `/var/lib/dhcp` — NetworkManager and cloud-init paths differ.
-- Disabling all ICMP and wondering why traceroute is blank.
-
-## Hands-on Lab
-
-### Objective
-
-On a practice Ubuntu VM, prove ICMP and ARP/neighbour behaviour with `ping` and `ip neigh`, run a simple `dig` check, and collect **read-only** DHCP or NetworkManager lease evidence. Pack outputs under `~/rebash-networking/lab08`.
-
-### Prerequisites
-
-- Ubuntu with `ip`, `ping`, `dig`
-- Outbound ICMP may be filtered to the Internet — localhost and gateway tests still count
-- Sudo only if needed to read lease directories (prefer readable paths first)
-
-### Lab environment
-
-Workspace: `~/rebash-networking/lab08`
-
-``` {.bash .ra-terminal title="Terminal"}
-mkdir -p ~/rebash-networking/lab08 && cd ~/rebash-networking/lab08
-set -euo pipefail
-whoami | tee admin-user.txt
-ip -br a | tee addrs.txt
-ip route | tee routes.txt
-test -n "$(command -v ping)"
-command -v dig >/dev/null || { sudo apt-get update && sudo apt-get install -y dnsutils; }
+```bash
+sudo dhclient
 ```
 
-!!! example "Expected output"
-    address and route files exist; `dig` is available.
+Release current lease.
 
-
-### Real-world scenario
-
-Users say “the server is down” because ping failed. You must prove whether ICMP is filtered, whether the gateway neighbour is healthy, whether DNS resolves, and how the host got its address — then attach evidence to the incident ticket.
-
-### Step-by-step tasks
-
-#### Task 1 – ICMP: localhost and gateway
-
-``` {.bash .ra-terminal title="Terminal"}
-cd ~/rebash-networking/lab08
-set -euo pipefail
-
-ping -c 2 127.0.0.1 | tee ping-localhost.txt
-grep -E 'bytes from|1 received|2 received' ping-localhost.txt
-
-GW="$(ip route | awk '/default/ {print $3; exit}')"
-echo "gateway=${GW:-none}" | tee gateway.txt
-
-if [ -n "${GW:-}" ]; then
-  ping -c 3 "$GW" | tee ping-gateway.txt || true
-  # Internet ICMP often filtered — record attempt without failing the lab
-  ping -c 2 1.1.1.1 | tee ping-internet.txt || echo "internet ICMP failed or filtered" | tee ping-internet.txt
-else
-  echo "No default gateway — skip remote ping" | tee ping-gateway.txt
-  echo "No default gateway" | tee ping-internet.txt
-fi
+```bash
+sudo dhclient -r
 ```
 
-!!! example "Expected output"
-    localhost ping succeeds; gateway ping recorded when a default route exists.
+View DNS configuration.
 
-
-#### Task 2 – ARP / neighbour table evidence
-
-``` {.bash .ra-terminal title="Terminal"}
-cd ~/rebash-networking/lab08
-set -euo pipefail
-
-ip neigh show | tee neigh-before.txt || true
-
-GW="$(awk -F= '/gateway=/ {print $2}' gateway.txt)"
-if [ -n "$GW" ] && [ "$GW" != "none" ]; then
-  ping -c 1 "$GW" >/dev/null 2>&1 || true
-  ip neigh show "$GW" | tee neigh-gateway.txt
-  ip neigh show | tee neigh-after.txt
-  grep -E 'REACHABLE|STALE|DELAY|PROBE|FAILED' neigh-after.txt || test -s neigh-after.txt
-else
-  echo "No gateway to resolve" | tee neigh-gateway.txt
-  ip neigh show | tee neigh-after.txt
-fi
+```bash
+cat /etc/resolv.conf
 ```
 
-!!! example "Expected output"
-    after gateway ping, `neigh-gateway.txt` or `neigh-after.txt` shows a neighbour entry when L2 works.
+---
 
+# DHCP Example
 
-#### Task 3 – dig check + read-only DHCP / NM leases
+Network:
 
-``` {.bash .ra-terminal title="Terminal"}
-cd ~/rebash-networking/lab08
-set -euo pipefail
+```text
+Laptop
 
-dig +short example.com A | tee dig-example.txt
-test -s dig-example.txt
+↓
 
-# Read-only lease hunt (do not edit these files)
-{
-  echo "=== resolv.conf ==="
-  cat /etc/resolv.conf 2>/dev/null || true
-  echo "=== DHCP / NetworkManager lease clues ==="
-  ls -la /var/lib/dhcp/ 2>/dev/null || echo "no /var/lib/dhcp"
-  ls -la /var/lib/NetworkManager/ 2>/dev/null || echo "no NetworkManager dir"
-  for f in /var/lib/dhcp/dhclient*.leases \
-           /var/lib/dhcpcd5/dhcpcd.leases \
-           /var/lib/NetworkManager/*.lease \
-           /run/systemd/netif/leases/*; do
-    if [ -r "$f" ]; then
-      echo "---- $f ----"
-      # shellcheck disable=SC2002
-      cat "$f" | head -n 40
-    fi
-  done
-  if command -v nmcli >/dev/null 2>&1; then
-    echo "=== nmcli device show (IP4) ==="
-    nmcli -f GENERAL,IP4 device show 2>/dev/null | head -n 80 || true
-  fi
-  if command -v timedatectl >/dev/null 2>&1; then
-    echo "=== timedatectl ==="
-    timedatectl | head -n 20
-  fi
-} | tee lease-and-time.txt
+Switch
 
-tar -czf services-evidence.tgz \
-  admin-user.txt addrs.txt routes.txt gateway.txt \
-  ping-localhost.txt ping-gateway.txt ping-internet.txt \
-  neigh-before.txt neigh-gateway.txt neigh-after.txt \
-  dig-example.txt lease-and-time.txt
-ls -l services-evidence.tgz | tee evidence-ls.txt
+↓
+
+DHCP Server
+
+↓
+
+Gateway
+
+↓
+
+Internet
 ```
 
-!!! example "Expected output"
-    `dig-example.txt` has an IPv4 address; `lease-and-time.txt` shows resolv.conf and whatever lease paths exist; archive is non-empty.
+The laptop receives:
 
+- IP Address
+- Gateway
+- DNS Server
 
-### Validation steps
+within seconds.
 
-- [ ] Localhost ping succeeded
-- [ ] Gateway (if present) was recorded and neighbour table inspected
-- [ ] `dig-example.txt` is non-empty
-- [ ] `lease-and-time.txt` captured resolv.conf and lease/NM clues
-- [ ] `services-evidence.tgz` exists under `~/rebash-networking/lab08`
+---
 
-### Common errors and fixes
+# Advantages of DHCP
 
-| Error | Cause | Fix |
-|-------|-------|-----|
-| Internet ping fails | ICMP filtered | Normal — use TCP/`curl` for app proof |
-| Empty neighbour table | No recent traffic / no gateway | Ping gateway; check L2 |
-| `dig: command not found` | `dnsutils` missing | `sudo apt-get install -y dnsutils` |
-| Cannot read lease file | Permissions | Note the path; use `sudo cat` read-only if policy allows |
-| No `/var/lib/dhcp` | NM / cloud-init / static IP | Document how address was assigned instead |
+- Automatic Configuration
+- Centralised Administration
+- Reduced Errors
+- Efficient Address Allocation
+- Faster Device Deployment
+- Simplified Network Management
 
-### Challenge exercise
+---
 
-Write `triage-services.sh` that prints: default gateway, `ping -c1` exit code to gateway, `ip neigh` line for gateway, and `dig +short example.com`. Save stdout to `triage-out.txt`. This script is the working artefact — not a markdown notes file.
+# Limitations
 
-### Learning outcomes
+- DHCP server failure can prevent new clients from obtaining addresses
+- Misconfigured scopes can cause address exhaustion
+- Rogue DHCP servers can assign incorrect network settings
+- Critical infrastructure often requires static addressing or reservations
 
-- Separated ICMP filter from true host failure
-- Proved neighbour resolution after gateway ping
-- Collected dig + read-only lease evidence for tickets
+---
 
-### Cleanup
+# Hands-on Lab
 
-``` {.bash .ra-terminal title="Terminal"}
-cd ~/rebash-networking/lab08
-set -euo pipefail
-# Inspection-only lab — optional:
-# rm -f services-evidence.tgz *.txt
+## Task 1
+
+Display your IP configuration.
+
+```bash
+ip addr
 ```
 
-## Validation
+---
 
-- [ ] Lab finished under `~/rebash-networking/lab08/` with evidence
-- [ ] You can list DORA in order
-- [ ] You can explain when ARP targets the gateway vs the destination
-- [ ] You know ICMP filter ≠ application down
+## Task 2
 
-## Code Walkthrough
+Display routing information.
 
-Production triage for these services usually follows:
+```bash
+ip route
+```
 
-1. **Confirm local stack** — localhost ping, interface UP, default route  
-2. **Prove next hop** — ping gateway (if allowed) + `ip neigh`  
-3. **Prove name resolution** — `dig` / `getent` before blaming the app  
-4. **Ask who configured the host** — DHCP lease, NetworkManager, cloud-init, static  
-5. **Check time** — `timedatectl` when TLS or API signatures fail  
+---
 
-Automate the checklist; keep humans for “is ICMP filtered here?” judgement.
+## Task 3
 
-## Security Considerations
+Release the current DHCP lease.
 
-- Treat rogue DHCP as a real risk on flat networks — prefer authenticated / managed pools  
-- Do not paste full lease files with customer hostnames into public tickets without redaction  
-- ICMP can aid reconnaissance; filtering edge ICMP is common — document exceptions for ops  
-- Neighbour spoofing (ARP spoof) is possible on shared L2 — combine with port security or cloud controls  
-- Read lease files read-only; never hand-edit them to “fix” production  
+```bash
+sudo dhclient -r
+```
 
-## Common Mistakes
+---
 
-!!! warning "Declaring the host down because ping failed"
-    Many clouds drop ICMP. **Fix:** test the real TCP/UDP port (`curl`, `nc`) and check security groups.
+## Task 4
 
-!!! warning "Clearing the whole neighbour table during an incident"
-    You may remove good entries and add churn. **Fix:** inspect the one IP you care about; delete selectively if stale.
+Request a new DHCP lease.
 
-!!! warning "Editing dhclient leases by hand"
-    Leases are rewritten by the client. **Fix:** fix DHCP server/options or static config properly; reboot/renew.
+```bash
+sudo dhclient
+```
 
-!!! warning "Ignoring clock skew"
-    TLS and Kerberos fail in confusing ways. **Fix:** check `timedatectl` / chrony early in the runbook.
+---
 
-## Best Practices
+## Task 5
 
-- Always record gateway + neighbour + dig in the first evidence pack  
-- Prefer `ip neigh` over legacy `arp -a`  
-- Document whether Internet ICMP is allowed in each environment  
-- Renew DHCP cleanly (`dhclient` / NM) instead of editing lease files  
-- Correlate NTP status with certificate and API signature failures  
+View configured DNS servers.
 
-## Troubleshooting
+```bash
+cat /etc/resolv.conf
+```
 
-| Symptom | Likely cause | Fix |
-|---------|--------------|-----|
-| Ping fails, HTTPS works | ICMP filtered | Use app-port tests; adjust monitoring |
-| Same-subnet unreachable | ARP/neigh FAILED | Check peer, VLAN, security groups |
-| Wrong DNS after reboot | Bad DHCP option | Fix server options; verify lease |
-| No default route | DHCP failed / static misconfig | Inspect leases and `ip route` |
-| TLS handshake fails randomly | Clock skew | Fix NTP; verify `timedatectl` |
+---
 
-## Summary
+## Task 6
 
-ICMP, ARP/neighbour, DHCP, and time sync are the quiet services under every app path. Prove them with ping, `ip neigh`, `dig`, and read-only lease inspection — then decide what is filtered versus broken. Next: [TCP and UDP Deep Dive](tcp-and-udp-deep-dive.md).
+Draw the DORA process.
 
-## Interview Questions
+Include:
 
-**1. Why can `ping` fail while `curl https://service` works?**
+- Client
+- DHCP Server
+- Discover
+- Offer
+- Request
+- ACK
 
-??? success "Reveal answer"
-    **ICMP Echo** is a different protocol from TCP 443. Firewalls and cloud security groups often **drop ICMP** while allowing HTTPS. Ping is a hint, not proof the host or application is down. Interviewers want you to test the real port and read security-group rules.
+---
 
-**2. When does ARP resolve the gateway instead of the destination host?**
+## Task 7
 
-??? success "Reveal answer"
-    If the destination IP is **off-link** (not in a connected route), the host sends frames to the **default gateway** MAC. ARP therefore asks for the gateway’s IP. If the destination is **on-link** (same subnet), ARP asks for that host’s IP directly.
+Compare:
 
-**3. Explain DHCP DORA in order and what a lease contains.**
+- DHCP
+- Static IP Addressing
 
-??? success "Reveal answer"
-    **Discover → Offer → Request → Ack**. The lease typically includes IPv4 address, subnet mask, default gateway, DNS servers, and lease lifetime. On Linux you may see this in dhclient/NetworkManager lease files or via `nmcli` — cloud VMs may get the same ideas from metadata instead of classic DHCP.
+---
 
-**4. What does a neighbour state of FAILED usually mean?**
+## Task 8
 
-??? success "Reveal answer"
-    Linux tried to resolve the IP to a MAC and **did not get a usable reply**. Causes include host down, wrong VLAN, filtered ARP, or a stale VIP. Fix the Layer 2 path; clearing one stale entry can help after failover, but do not blindly flush everything.
+Design a DHCP scope for:
 
-**5. How would you prove in a ticket that DHCP handed out the wrong DNS servers?**
+- 500 Employee Devices
+- 50 Servers
+- 20 Network Printers
 
-??? success "Reveal answer"
-    Attach `/etc/resolv.conf`, the readable lease or `nmcli` IP4 DNS fields, and `dig` output showing which resolver was queried. Compare with the intended DHCP option or cloud DNS setting. Evidence beats “DNS feels wrong.”
+Include reserved addresses for infrastructure.
 
-**6. How does NTP relate to “network” incidents?**
+---
 
-??? success "Reveal answer"
-    Large **clock skew** breaks TLS certificate validity windows, Kerberos, and signed cloud API requests. The network path may be fine. Include `timedatectl` (or chrony) in early triage when errors mention certificates or authentication timestamps.
+# Linux Commands
 
-**7. What is the difference between ICMP Destination Unreachable and a TCP connection timeout?**
+| Command | Purpose |
+|----------|----------|
+| `ip addr` | Display IP configuration |
+| `ip route` | Display routing table |
+| `dhclient` | Request DHCP lease |
+| `dhclient -r` | Release DHCP lease |
+| `cat /etc/resolv.conf` | View DNS configuration |
 
-??? success "Reveal answer"
-    **Destination Unreachable** is an ICMP message saying a hop or host actively reported a problem (for example port unreachable, or administratively prohibited). A **TCP timeout** often means probes were **dropped silently** (filter) or the path is black-holed — you get no RST and no useful ICMP. Different signals, different fixes.
+---
 
-## Related Tutorials
+# Common Mistakes
 
-- [Networking for Cloud & DevOps – Overview](index.md)
-- [Ethernet, Switching, and VLANs](ethernet-switching-and-vlans.md) *(previous)*
-- [TCP and UDP Deep Dive](tcp-and-udp-deep-dive.md) *(next)*
-- [Lab — DNS / firewall triage](../labs/networking-dns-firewall-triage.md)
+❌ Mixing DHCP and static addresses in the same allocation range.
 
-## References
+✅ Reserve a separate range for static addresses.
 
-- [RFC 792 — ICMP](https://www.rfc-editor.org/rfc/rfc792)  
-- [RFC 826 — ARP](https://www.rfc-editor.org/rfc/rfc826)  
-- [RFC 2131 — DHCP](https://www.rfc-editor.org/rfc/rfc2131)  
-- [`ip-neighbour(8)`](https://manpages.ubuntu.com/manpages/jammy/en/man8/ip-neighbour.8.html)  
-- Track index: [Networking for Cloud & DevOps Engineers](index.md)
+---
+
+❌ Forgetting DHCP reservations for infrastructure.
+
+✅ Use reservations for printers, servers, and network devices.
+
+---
+
+❌ Creating a DHCP scope that is too small.
+
+✅ Plan capacity with future growth in mind.
+
+---
+
+❌ Ignoring lease duration.
+
+✅ Choose lease times appropriate for the network environment.
+
+---
+
+❌ Not securing the network against rogue DHCP servers.
+
+✅ Enable DHCP Snooping on managed switches where supported.
+
+---
+
+# Best Practices
+
+- Keep infrastructure devices on static IPs or DHCP reservations.
+- Use appropriately sized DHCP scopes.
+- Configure redundant DHCP servers where supported.
+- Monitor lease utilisation regularly.
+- Protect networks with DHCP Snooping.
+- Document scopes, exclusions, and reservations.
+
+---
+
+# Interview Questions
+
+## Beginner
+
+1. What is DHCP?
+2. What is the purpose of DHCP?
+3. What does DORA stand for?
+4. What is a DHCP lease?
+
+---
+
+## Intermediate
+
+1. Explain the DORA process.
+2. What is a DHCP scope?
+3. What is a DHCP reservation?
+4. How does lease renewal work?
+
+---
+
+## Architect Level
+
+1. Design a highly available DHCP architecture for a large enterprise.
+2. How would you prevent rogue DHCP servers?
+3. How would you troubleshoot clients that fail to obtain an IP address?
+
+---
+
+# Summary
+
+In this lesson, you learned:
+
+- DHCP fundamentals
+- DHCP Components
+- DHCP Scope
+- DHCP Lease
+- DORA Process
+- Lease Renewal
+- DHCP Options
+- DHCP Reservations
+- Linux DHCP Commands
+- Enterprise DHCP Design
+
+DHCP automates IP address assignment and network configuration, allowing devices to join networks with minimal manual effort. Through the DORA process, DHCP efficiently provides addresses, gateways, DNS servers, and other essential settings, making it a cornerstone of modern enterprise, cloud, and campus networking.
+
+---
+
+## Key Takeaways
+
+- DHCP automatically assigns **IP addresses** and network settings.
+- The **DORA** process consists of **Discover**, **Offer**, **Request**, and **Acknowledgment**.
+- DHCP leases are temporary and can be renewed.
+- DHCP options provide additional configuration such as DNS and default gateway.
+- Reservations provide consistent IP addresses for critical devices.
+- DHCP significantly reduces administrative effort and configuration errors.
+
+---
+
+## What's Next?
+
+**[DHCP Relay](dhcp-relay.md)**
+
+In the next lesson, you'll learn about **DHCP Relay**.
+
+You'll explore:
+
+- What DHCP Relay is
+- Why DHCP Relay is needed
+- Broadcast limitations
+- Relay Agents
+- DHCP Relay workflow
+- Enterprise network design
+- DHCP troubleshooting
+
+By the end of the lesson, you'll understand how DHCP requests can cross subnet boundaries, allowing centralised DHCP servers to serve multiple networks efficiently.

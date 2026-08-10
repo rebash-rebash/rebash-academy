@@ -1,413 +1,936 @@
 ---
-title: "Linux Networking Toolkit"
-description: "Use ip, ss, dig, traceroute/tracepath, and curl as one diagnostic toolkit, and produce a reusable evidence tarball for networking incidents."
-difficulty: intermediate
-estimated_time: "50–60 min"
+title: "Linux ip Command"
+description: "Learn the Linux ip command — interfaces, addresses, routes, neighbor tables, VLANs, namespaces, and a practical connectivity troubleshooting workflow."
+difficulty: beginner
+estimated_time: "140 min"
 author: Shaik Basha
-last_updated: "2026-08-02"
+last_updated: "2026-08-10"
 category: networking
 technology: networking
-module: "Module 12 · Linux Networking"
+module: "Module 9 · Linux Networking"
+learning_paths:
+  - cloud-engineer
+  - devops-engineer
+  - site-reliability-engineer
+  - linux-administrator
+  - platform-engineer
 tags:
   - networking
   - linux
   - ip
-  - ss
-  - dig
-  - curl
-prerequisites:
-  - networking/firewalls-and-access-control
-next:
-  - networking/load-balancing-fundamentals
-related:
-  - linux/linux-networking-tools
-  - networking/packet-analysis-tcpdump-wireshark
-  - networking/network-troubleshooting-methodology
-interview: interview/networking
+  - iproute2
+  - rebash-networking-mastery
 comments: false
+status: ready
 ---
 
-# Linux Networking Toolkit
+# Linux `ip` Command — Managing and Troubleshooting Network Configuration
 
-## Overview
+> The **`ip` command** is the modern Linux networking utility used to configure, manage, and troubleshoot **network interfaces, IP addresses, routing tables, ARP/Neighbor tables, tunnels, Virtual Local Area Networks (VLANs), and network namespaces**. It replaces legacy networking tools such as **ifconfig**, **route**, **arp**, and **netstat** for many networking tasks. Every Linux administrator, DevOps engineer, Cloud Architect, Platform Engineer, Site Reliability Engineer (SRE), and Network Engineer should master the `ip` command.
 
-When an application “cannot connect”, the console shows a symptom. The **Linux networking toolkit** shows the truth on the host: addresses, routes, sockets, Domain Name System (DNS), path, and Hypertext Transfer Protocol (HTTP). The core tools are `ip`, `ss`, `dig` (or `host`), `traceroute`/`tracepath`, and `curl`.
+---
 
-Operators who jump randomly between tools waste time. A fixed order — **identity → route → port → DNS → HTTP → path** — turns panic into a checklist. In this tutorial you will run that sequence and wrap it in a small script that builds an **evidence tarball** under `~/rebash-networking/lab15` for tickets and post-incident reviews.
+## Learning Path
 
-Cloud agents, Kubernetes nodes, and Continuous Integration (CI) runners are still Linux underneath. The same commands work on a practice Ubuntu VM and on a production bastion (with care about captures and secrets). Prefer modern tools (`ip` over deprecated `ifconfig`, `ss` over `netstat` when available).
+<div class="ra-lesson-meta" markdown>
 
-This is the core tutorial in **Module 12: Linux Networking** of the REBASH Academy **Networking for Cloud & DevOps Engineers** series. It is written for DevOps, Cloud, SRE, and platform engineers.
+<p class="ra-lesson-meta__crumb" markdown>**Networking Mastery** → Module 9: Linux Networking → Lesson 1</p>
 
-## Prerequisites
+<div class="ra-meta-grid" markdown>
 
-- [Firewalls and Access Control](firewalls-and-access-control.md)
-- Comfort with [Routing Fundamentals](routing-fundamentals.md) and [DNS Fundamentals](dns-fundamentals.md)
-- Ubuntu practice VM with network access (lab uses public DNS-friendly targets; replace if offline)
+<div markdown>**Difficulty:** Beginner</div>
 
-## Learning Objectives
+<div markdown>**Reading Time:** 140 Minutes</div>
 
-By the end of this tutorial, you will be able to:
+</div>
 
-- [ ] Inspect addresses and routes with `ip`
-- [ ] List listening and established sockets with `ss`
-- [ ] Query DNS with `dig` and explain the answer section
-- [ ] Probe reachability with `ping` and path with `traceroute`/`tracepath`
-- [ ] Debug HTTP with `curl -v` / `-I`
-- [ ] Run a cohesive diagnostic script that produces an evidence tarball
+</div>
 
-## Architecture
+<div class="ra-course-progress" markdown>
 
-Each tool interrogates a layer of the local stack and the path beyond. Your script collects the same layers into one artefact for humans and tickets.
+**Course Progress**
 
-![Architecture diagram for Linux Networking Toolkit](../assets/excalidraw/linux-networking-stack.svg)
+<div class="ra-meta-grid" markdown>
 
-## Theory
+<div markdown>**Course:** Networking Mastery</div>
 
-### What it is
+<div markdown>**Module:** Linux Networking</div>
 
-| Tool | Question it answers |
-|------|---------------------|
-| `ip addr` / `ip route` | Who am I on the network, and where do packets go next? |
-| `ss` | What is listening, and what is connected? |
-| `dig` / `host` | Does the name resolve, and to which records? |
-| `ping` | Does Internet Control Message Protocol (ICMP) echo work? |
-| `traceroute` / `tracepath` | Where does the path fail or slow down? |
-| `curl` | Does the application protocol succeed (HTTP status, TLS)? |
+<div markdown>**Lesson:** 1 of 10</div>
 
-``` {.bash .ra-terminal title="Terminal"}
-ip -br addr
+</div>
+
+</div>
+
+---
+
+
+# What You'll Learn
+
+After completing this lesson, you'll be able to:
+
+- Understand the `ip` command
+- Manage network interfaces
+- Configure IP addresses
+- Manage routing tables
+- View neighbor tables
+- Troubleshoot Linux networking
+- Work with VLANs and network namespaces
+
+---
+
+# Prerequisites
+
+Complete:
+
+- Module 1–8
+
+Basic understanding of:
+
+- IP Addressing
+- Routing
+- Linux Commands
+
+---
+
+# Why Learn the `ip` Command?
+
+Almost every networking problem on Linux starts with one question:
+
+```text
+Does the machine have
+
+Network Connectivity?
+```
+
+The first tool every Linux engineer uses is:
+
+```bash
+ip
+```
+
+Whether you're troubleshooting:
+
+- No Internet
+- Wrong IP Address
+- Routing Issues
+- Kubernetes Networking
+- Docker Networking
+- Cloud VM Connectivity
+
+the `ip` command is one of the first diagnostic tools.
+
+---
+
+# What is the `ip` Command?
+
+The `ip` command belongs to the:
+
+```text
+iproute2
+```
+
+package.
+
+It manages:
+
+- Network Interfaces
+- IP Addresses
+- Routes
+- Neighbor Tables
+- Tunnels
+- VLANs
+- Network Namespaces
+
+---
+
+# Why Replace ifconfig?
+
+Older Linux systems used:
+
+```bash
+ifconfig
+route
+arp
+```
+
+Modern Linux uses:
+
+```bash
+ip
+```
+
+Advantages:
+
+- Unified Tool
+- IPv4 & IPv6 Support
+- More Features
+- Better Performance
+- Active Development
+
+---
+
+# Basic Syntax
+
+```bash
+ip OBJECT COMMAND
+```
+
+Examples:
+
+```bash
+ip addr
+```
+
+```bash
 ip route
-ss -lntu
-dig +short example.com A
 ```
 
-### Why it matters
-
-Incidents often mix DNS, firewall, and application failures. Without a toolkit order, teams bounce between “restart the pod” and “flush DNS” with no evidence. A tarball of command output is what on-call and vendors ask for. It also trains juniors to show proof, not guesses.
-
-### How it works
-
-1. **Identity** — hostname, `ip -br addr`, default route.  
-2. **Sockets** — `ss -lntup` (needs sudo for process names).  
-3. **DNS** — `dig` against a known name; note server and status.  
-4. **Path** — `ping -c 3`, then `tracepath` or `traceroute`.  
-5. **App** — `curl -I` / `curl -v` to the URL.  
-6. **Pack** — tar the text outputs for the ticket.
-
-``` {.bash .ra-terminal title="Terminal"}
-curl -sS -o /dev/null -w '%{http_code}\n' https://example.com/
+```bash
+ip link
 ```
 
-### Key concepts and comparisons
+---
 
-| Old habit | Prefer | Why |
-|-----------|--------|-----|
-| `ifconfig` | `ip addr` | Maintained, scriptable |
-| `netstat` | `ss` | Faster, modern |
-| `nslookup` only | `dig` | Clear sections, scripting |
-| Random `tcpdump` first | Toolkit then capture | Narrow the filter |
+# Display Interfaces
 
-### Common pitfalls
+Show all network interfaces.
 
-- Trusting `ping` alone (ICMP may be blocked while TCP works).  
-- Forgetting `sudo` on `ss -p` and misreading process owners.  
-- Using `curl` without `-v` when TLS or redirects matter.  
-- Pasting secrets from `curl -v` Authorization headers into tickets.  
-- Running long `tcpdump` on production without a filter or time limit.
-
-## Hands-on Lab
-
-### Objective
-
-Build and run `netdiag.sh` that collects `ip`, `ss`, `dig`, path, and `curl` evidence into `evidence.tgz` under `~/rebash-networking/lab15`.
-
-### Prerequisites
-
-- Ubuntu with `iproute2`, `iputils-ping`, `curl`
-- `dnsutils` (`dig`) recommended: `sudo apt-get update && sudo apt-get install -y dnsutils`
-- `iputils-tracepath` or `traceroute` (script falls back gracefully)
-
-### Lab environment
-
-Workspace: `~/rebash-networking/lab15`
-
-``` {.bash .ra-terminal title="Terminal"}
-mkdir -p ~/rebash-networking/lab15 && cd ~/rebash-networking/lab15
-set -euo pipefail
-whoami | tee admin-user.txt
-uname -a | tee uname.txt
+```bash
+ip link
 ```
 
-!!! example "Expected output"
-    workspace exists; identity files written.
+Example output:
 
-
-### Real-world scenario
-
-A teammate reports “the API is down”. You are on a jump host and must produce a structured evidence pack in five minutes: addresses, sockets, DNS, path, and HTTP headers — without changing production config.
-
-### Step-by-step tasks
-
-#### Task 1 – Manual toolkit pass
-
-``` {.bash .ra-terminal title="Terminal"}
-cd ~/rebash-networking/lab15
-set -euo pipefail
-
-ip -br addr | tee 01-ip-addr.txt
-ip route show | tee 02-ip-route.txt
-ss -lntu | tee 03-ss-listen.txt
-
-if command -v dig >/dev/null 2>&1; then
-  dig example.com A +noall +answer | tee 04-dig.txt
-else
-  getent hosts example.com | tee 04-dig.txt
-fi
-
-ping -c 3 example.com 2>&1 | tee 05-ping.txt || true
-
-if command -v tracepath >/dev/null 2>&1; then
-  tracepath -n example.com 2>&1 | head -n 20 | tee 06-path.txt || true
-elif command -v traceroute >/dev/null 2>&1; then
-  traceroute -n -m 10 example.com 2>&1 | tee 06-path.txt || true
-else
-  echo "no traceroute/tracepath" | tee 06-path.txt
-fi
-
-curl -sSI --max-time 10 https://example.com/ 2>&1 | tee 07-curl-headers.txt || true
+```text
+1: lo
+2: eth0
+3: ens5
 ```
 
-!!! example "Expected output"
-    files `01`–`07` exist; dig/curl may vary with network policy but commands must run.
+---
 
+# Display IP Addresses
 
-#### Task 2 – Cohesive diagnostic script
-
-``` {.bash .ra-terminal title="Terminal"}
-cd ~/rebash-networking/lab15
-set -euo pipefail
+```bash
+ip addr
 ```
 
-Create `netdiag.sh`:
+Shortcut:
 
-```bash title="netdiag.sh"
-#!/usr/bin/env bash
-set -euo pipefail
-TARGET_HOST="${1:-example.com}"
-TARGET_URL="${2:-https://example.com/}"
-OUT="${3:-./diag-out}"
-mkdir -p "$OUT"
-{
-  echo "ts=$(date -Is)"
-  echo "host=$(hostname)"
-  echo "target_host=$TARGET_HOST"
-  echo "target_url=$TARGET_URL"
-} | tee "$OUT/meta.txt"
-
-ip -br addr | tee "$OUT/ip-addr.txt"
-ip route | tee "$OUT/ip-route.txt"
-ss -lntu | tee "$OUT/ss-listen.txt"
-(ss -s 2>/dev/null || true) | tee "$OUT/ss-summary.txt"
-
-if command -v dig >/dev/null 2>&1; then
-  dig "$TARGET_HOST" A +noall +answer +stats | tee "$OUT/dig.txt"
-else
-  getent hosts "$TARGET_HOST" | tee "$OUT/dig.txt"
-fi
-
-ping -c 3 "$TARGET_HOST" 2>&1 | tee "$OUT/ping.txt" || true
-
-if command -v tracepath >/dev/null 2>&1; then
-  tracepath -n "$TARGET_HOST" 2>&1 | head -n 25 | tee "$OUT/path.txt" || true
-elif command -v traceroute >/dev/null 2>&1; then
-  traceroute -n -m 12 "$TARGET_HOST" 2>&1 | tee "$OUT/path.txt" || true
-else
-  echo "path-tool=missing" | tee "$OUT/path.txt"
-fi
-
-curl -sSI --max-time 15 "$TARGET_URL" 2>&1 | tee "$OUT/curl-head.txt" || true
-curl -sS -o /dev/null -w 'http_code=%{http_code} time=%{time_total}\n' \
-  --max-time 15 "$TARGET_URL" 2>&1 | tee "$OUT/curl-timing.txt" || true
-
-tar -czf "$OUT/../evidence.tgz" -C "$OUT" .
-ls -l "$OUT/../evidence.tgz"
+```bash
+ip a
 ```
 
-``` {.bash .ra-terminal title="Terminal"}
-chmod +x netdiag.sh
-./netdiag.sh example.com https://example.com/ ./diag-out
-test -s evidence.tgz
-ls -l evidence.tgz | tee evidence-ls.txt
+Example:
+
+```text
+eth0
+
+192.168.1.10/24
 ```
 
-!!! example "Expected output"
-    `netdiag.sh` is executable; `evidence.tgz` is non-empty.
+---
 
+# Display IPv4 Only
 
-#### Task 3 – Quick asserts on the pack
-
-``` {.bash .ra-terminal title="Terminal"}
-cd ~/rebash-networking/lab15
-set -euo pipefail
-
-tar -tzf evidence.tgz | tee evidence-list.txt
-grep -E 'ip-addr|ss-listen|dig|curl' evidence-list.txt
-test -f netdiag.sh
+```bash
+ip -4 addr
 ```
 
-!!! example "Expected output"
-    tarball listing includes the core artefact names.
+---
 
+# Display IPv6 Only
 
-### Validation steps
-
-- [ ] Manual `01`–`07` files exist
-- [ ] `./netdiag.sh` runs without syntax errors
-- [ ] `evidence.tgz` lists `ip-addr.txt`, `ss-listen.txt`, DNS and curl outputs
-- [ ] You can explain the toolkit order from memory
-
-### Common errors and fixes
-
-| Error | Cause | Fix |
-|-------|-------|-----|
-| `dig: command not found` | `dnsutils` missing | `sudo apt-get install -y dnsutils` or use `getent` |
-| `ping: Name or service not known` | DNS/offline | Use an IP target or fix resolvers (`resolvectl status`) |
-| Empty `curl` output | Proxy/TLS/firewall | Read `curl-head.txt` errors; try `-v` offline notes |
-| `ss` shows no process | Need sudo for `-p` | Optional: `sudo ss -lntup` |
-
-### Challenge exercise
-
-Extend `netdiag.sh` to accept `TARGET_HOST` and write an extra `ss -tn state established | head` snapshot to `ss-established.txt` inside the tarball. Re-run and confirm the new file appears in `tar -tzf evidence.tgz`.
-
-### Learning outcomes
-
-- Ran a fixed triage order with modern Linux tools
-- Built a reusable `netdiag.sh` evidence producer
-- Separated ICMP path checks from HTTP success
-- Produced a ticket-ready `evidence.tgz`
-
-### Cleanup
-
-``` {.bash .ra-terminal title="Terminal"}
-cd ~/rebash-networking/lab15
-# Keep netdiag.sh and evidence.tgz for your notes; remove temp dir if desired:
-# rm -rf diag-out
-# Optional: rm -f 0*.txt
+```bash
+ip -6 addr
 ```
 
-## Validation
+---
 
-- [ ] Lab finished under `~/rebash-networking/lab15/`
-- [ ] You can run the toolkit without looking up every flag
-- [ ] You know when ping lies and curl tells the truth
-- [ ] You redact secrets before sharing tarballs
+# Show Specific Interface
 
-## Code Walkthrough
+```bash
+ip addr show eth0
+```
 
-Production triage often looks like:
+or
 
-1. **Confirm the host** — right VM/pod node?  
-2. **`ip` / route** — wrong interface or missing default route  
-3. **`ss`** — nothing listening / wrong port  
-4. **`dig`** — wrong answer or SERVFAIL  
-5. **`curl`** — TLS, HTTP status, redirects  
-6. **Path / capture** — only if still unclear  
+```bash
+ip a show eth0
+```
 
-Your script should stay **read-only**. Never put passwords in command lines that land in shell history or tarballs.
+---
 
-## Security Considerations
+# Bring Interface Up
 
-- Redact `Authorization` and cookie headers from `curl -v` before sharing  
-- Avoid unrestricted `tcpdump` on production without change control  
-- Prefer least privilege: diagnostics rarely need permanent root shells  
-- Do not disable firewalls “to test” on shared hosts  
-- Store evidence in ticket systems with proper access control  
+```bash
+sudo ip link set eth0 up
+```
 
-## Common Mistakes
+---
 
-!!! warning "Declaring the network down because ping failed"
-    Many networks block ICMP. **Fix:** test the real TCP/TLS port with `curl` or `nc`.
+# Bring Interface Down
 
-!!! warning "Skipping DNS when the URL ‘looks fine’"
-    Stale or split-horizon DNS is common. **Fix:** always `dig` the exact hostname clients use.
+```bash
+sudo ip link set eth0 down
+```
 
-!!! warning "Pasting full `curl -v` with tokens into Slack"
-    Secrets leak. **Fix:** scrub headers; share status lines and timings.
+---
 
-!!! warning "Changing sysctl during first triage"
-    You destroy evidence and may cause outages. **Fix:** collect first; change only with rollback.
+# Assign IP Address
 
-## Best Practices
+```bash
+sudo ip addr add 192.168.1.100/24 dev eth0
+```
 
-- Keep a personal `netdiag.sh` and version it in your team’s runbooks  
-- Use the same order every time  
-- Capture timestamps and hostname in every pack  
-- Prefer `ss` and `ip` on modern distros  
-- Escalate to packet capture only after toolkit gaps remain  
+---
 
-## Troubleshooting
+# Remove IP Address
 
-| Symptom | Likely cause | Fix |
-|---------|--------------|-----|
-| No default route | DHCP/VPC misconfig | Fix route/gateway |
-| Listen socket missing | App down / wrong ns | Restart app; check netns/containers |
-| DNS SERVFAIL | Resolver/policy | Try alternate resolver; check `/etc/resolv.conf` |
-| HTTP 502/504 | Upstream/proxy | Move to load balancer / reverse proxy modules |
-| Tracepath all `*` | ICMP filtered | Rely on TCP/`curl`; ask network team |
+```bash
+sudo ip addr del 192.168.1.100/24 dev eth0
+```
 
-## Summary
+---
 
-The Linux networking toolkit turns vague “network issues” into layered evidence. Master `ip`, `ss`, `dig`, path tools, and `curl`, then automate the pack. Next, apply traffic distribution ideas in [Load Balancing Fundamentals](load-balancing-fundamentals.md).
+# Display Routing Table
 
-## Interview Questions
+```bash
+ip route
+```
 
-**1. Walk through your first five commands on a host where users say “the site is down”.**
+Shortcut:
 
-??? success "Reveal answer"
-    Typical order: `ip -br addr` and `ip route` (identity/routing), `ss -lntu` (listen ports), `dig` for the hostname, `curl -I` to the URL, then path (`tracepath`/`traceroute`) if still unclear. Interviewers want a **stable method**, not a random tool dump.
+```bash
+ip r
+```
 
-**2. Why might `ping` fail while `curl https://service` works?**
+Example:
 
-??? success "Reveal answer"
-    ICMP echo can be **blocked** by firewalls while TCP 443 is allowed. Ping proves only ICMP reachability. Always test the application protocol and port that clients use.
+```text
+default via 192.168.1.1
 
-**3. What is the difference between `dig` and `getent hosts` for troubleshooting?**
+192.168.1.0/24 dev eth0
+```
 
-??? success "Reveal answer"
-    **`dig`** queries DNS directly and shows records/status/server. **`getent hosts`** uses the Name Service Switch (NSS) path (`files`, DNS, possibly others) — closer to what some apps resolve, but less detailed. Use both when results disagree.
+---
 
-**4. How do you get the process holding a port on Linux?**
+# Add Default Route
 
-??? success "Reveal answer"
-    `sudo ss -lntup` (or `ss -lntup`) shows the process (PID/program) for listening sockets. `lsof -i :port` is an alternative. Without privileges, process columns may be blank.
+```bash
+sudo ip route add default via 192.168.1.1
+```
 
-**5. What belongs in a networking evidence tarball for a vendor ticket?**
+---
 
-??? success "Reveal answer"
-    Timestamp, hostname, `ip addr`/`ip route`, `ss` listen/summary, DNS answer for the failing name, ping/path if allowed, and `curl -I`/`-w` timings — **with secrets redacted**. Avoid huge unfiltered packet captures unless requested.
+# Delete Default Route
 
-**6. When do you escalate from this toolkit to `tcpdump`?**
+```bash
+sudo ip route del default
+```
 
-??? success "Reveal answer"
-    When sockets, DNS, and HTTP still disagree with client reports — for example TCP SYN seen but no ACK, or TLS alerts. Use a **tight filter** and short duration. Toolkit first keeps captures small and purposeful.
+---
 
-**7. `ip route` shows a default via the wrong gateway after a cloud change. What is the user impact?**
+# Add Static Route
 
-??? success "Reveal answer"
-    Packets leave via the wrong next hop: blackholes, asymmetric paths, or wrong NAT. Apps may hang or become one-way. Fix the route table/DHCP options/cloud route, then re-validate with `ip route` and `curl`.
+```bash
+sudo ip route add 10.10.10.0/24 via 192.168.1.1
+```
 
-## Related Tutorials
+---
 
-- [Networking for Cloud & DevOps – Overview](index.md)
-- [Firewalls and Access Control](firewalls-and-access-control.md) *(previous)*
-- [Load Balancing Fundamentals](load-balancing-fundamentals.md) *(next)*
-- [Packet Analysis with tcpdump and Wireshark](packet-analysis-tcpdump-wireshark.md)
-- [Linux networking tools (Linux track)](../linux/linux-networking-tools.md)
+# Delete Static Route
 
-## References
+```bash
+sudo ip route del 10.10.10.0/24
+```
 
-- [`ip(8)`](https://manpages.ubuntu.com/manpages/jammy/en/man8/ip.8.html) — iproute2  
-- [`ss(8)`](https://manpages.ubuntu.com/manpages/jammy/en/man8/ss.8.html) — sockets  
-- [dig — BIND9](https://manpages.ubuntu.com/manpages/jammy/en/man1/dig.1.html) — DNS queries  
-- Track index: [Networking for Cloud & DevOps Engineers](index.md)
+---
+
+# Neighbor Table
+
+Display ARP/Neighbor entries.
+
+```bash
+ip neigh
+```
+
+Example:
+
+```text
+192.168.1.1
+
+aa:bb:cc:dd:ee:ff
+```
+
+---
+
+# Flush Neighbor Cache
+
+```bash
+sudo ip neigh flush all
+```
+
+---
+
+# Interface Statistics
+
+```bash
+ip -s link
+```
+
+Displays:
+
+- RX Packets
+- TX Packets
+- Errors
+- Dropped Packets
+
+---
+
+# Monitor Network Changes
+
+```bash
+ip monitor
+```
+
+Displays changes in real time.
+
+Useful for:
+
+- Interface State Changes
+- Address Changes
+- Route Updates
+
+---
+
+# Display Routing Rules
+
+```bash
+ip rule
+```
+
+Useful for:
+
+- Policy-Based Routing
+- Multiple Routing Tables
+
+---
+
+# Display Routing Tables
+
+```bash
+ip route show table all
+```
+
+---
+
+# Create VLAN Interface
+
+Example:
+
+```bash
+sudo ip link add link eth0 name eth0.100 type vlan id 100
+```
+
+Bring it up.
+
+```bash
+sudo ip link set eth0.100 up
+```
+
+Assign an address.
+
+```bash
+sudo ip addr add 192.168.100.10/24 dev eth0.100
+```
+
+---
+
+# Network Namespaces
+
+List namespaces.
+
+```bash
+ip netns list
+```
+
+Create namespace.
+
+```bash
+sudo ip netns add lab1
+```
+
+Delete namespace.
+
+```bash
+sudo ip netns del lab1
+```
+
+Run command inside namespace.
+
+```bash
+sudo ip netns exec lab1 ip addr
+```
+
+Network namespaces will be covered in detail later in this module.
+
+---
+
+# Tunnel Interfaces
+
+Display tunnel interfaces.
+
+```bash
+ip tunnel
+```
+
+Examples include:
+
+- GRE
+- SIT
+- IPIP
+
+---
+
+# Enterprise Example
+
+Production server:
+
+```text
+Internet
+
+↓
+
+Router
+
+↓
+
+Linux Server
+```
+
+Troubleshooting steps:
+
+```bash
+ip addr
+
+↓
+
+ip route
+
+↓
+
+ip neigh
+
+↓
+
+ping Gateway
+```
+
+---
+
+# Cloud Perspective
+
+Cloud engineers frequently use:
+
+```bash
+ip addr
+```
+
+to verify:
+
+- Private IP
+- Secondary IPs
+- IPv6 Address
+
+Use:
+
+```bash
+ip route
+```
+
+to troubleshoot:
+
+- Cloud Routing
+- VPN
+- Network Address Translation (NAT)
+- Load Balancer Issues
+
+---
+
+# Kubernetes Perspective
+
+On Kubernetes nodes:
+
+```bash
+ip addr
+```
+
+shows:
+
+- Pod Interfaces
+- Container Network Interface (CNI) Interfaces
+- Bridge Interfaces
+
+Example:
+
+```text
+cni0
+
+flannel.1
+
+vxlan.calico
+```
+
+Routes can be inspected using:
+
+```bash
+ip route
+```
+
+---
+
+# Linux Networking Workflow
+
+```text
+Application
+
+↓
+
+Socket
+
+↓
+
+Network Interface
+
+↓
+
+Routing
+
+↓
+
+Gateway
+
+↓
+
+Internet
+```
+
+The `ip` command helps inspect each stage of this path.
+
+---
+
+# Common `ip` Commands
+
+| Command | Purpose |
+|----------|----------|
+| `ip addr` | Show IP addresses |
+| `ip link` | Show interfaces |
+| `ip route` | Show routing table |
+| `ip neigh` | Show ARP/Neighbor table |
+| `ip -s link` | Show interface statistics |
+| `ip monitor` | Monitor network changes |
+| `ip rule` | Show routing rules |
+| `ip netns list` | List network namespaces |
+
+---
+
+# Hands-on Lab
+
+## Task 1
+
+Display interfaces.
+
+```bash
+ip link
+```
+
+---
+
+## Task 2
+
+Display IP addresses.
+
+```bash
+ip addr
+```
+
+---
+
+## Task 3
+
+Display routing table.
+
+```bash
+ip route
+```
+
+---
+
+## Task 4
+
+Display neighbor table.
+
+```bash
+ip neigh
+```
+
+---
+
+## Task 5
+
+Display interface statistics.
+
+```bash
+ip -s link
+```
+
+---
+
+## Task 6
+
+Create a temporary IP address.
+
+```bash
+sudo ip addr add 192.168.10.100/24 dev eth0
+```
+
+Verify:
+
+```bash
+ip addr
+```
+
+Remove it:
+
+```bash
+sudo ip addr del 192.168.10.100/24 dev eth0
+```
+
+---
+
+## Task 7
+
+Create a network namespace.
+
+```bash
+sudo ip netns add demo
+```
+
+Verify:
+
+```bash
+ip netns list
+```
+
+Delete it:
+
+```bash
+sudo ip netns del demo
+```
+
+---
+
+## Task 8
+
+Create a troubleshooting checklist using:
+
+- `ip addr`
+- `ip link`
+- `ip route`
+- `ip neigh`
+- `ping`
+- `traceroute`
+
+---
+
+# Common Troubleshooting Workflow
+
+When a Linux server has no network connectivity:
+
+Step 1
+
+```bash
+ip link
+```
+
+Interface up?
+
+↓
+
+Step 2
+
+```bash
+ip addr
+```
+
+IP assigned?
+
+↓
+
+Step 3
+
+```bash
+ip route
+```
+
+Default gateway exists?
+
+↓
+
+Step 4
+
+```bash
+ip neigh
+```
+
+Gateway reachable?
+
+↓
+
+Step 5
+
+```bash
+ping Gateway
+```
+
+↓
+
+Step 6
+
+```bash
+ping 8.8.8.8
+```
+
+↓
+
+Step 7
+
+```bash
+ping google.com
+```
+
+This systematic approach quickly identifies Layer 2, Layer 3, or Domain Name System (DNS) issues.
+
+---
+
+# Common Mistakes
+
+❌ Forgetting `sudo` for configuration changes.
+
+✅ Use elevated privileges when modifying network settings.
+
+---
+
+❌ Bringing down the wrong interface.
+
+✅ Verify interface names before making changes.
+
+---
+
+❌ Adding duplicate IP addresses.
+
+✅ Check existing configuration first.
+
+---
+
+❌ Removing the default route accidentally.
+
+✅ Verify routing before deleting entries.
+
+---
+
+❌ Assuming `ip` changes are persistent.
+
+✅ Use your distribution's network configuration tools to make permanent changes.
+
+---
+
+# Best Practices
+
+- Use `ip` instead of legacy networking commands.
+- Verify interface status before troubleshooting applications.
+- Always check routing after IP configuration changes.
+- Monitor interface statistics for packet drops and errors.
+- Document production network changes.
+- Use network namespaces for testing isolated network configurations.
+- Avoid modifying production routes without a rollback plan.
+
+---
+
+# Interview Questions
+
+## Beginner
+
+1. What is the `ip` command?
+2. How do you display IP addresses?
+3. How do you display the routing table?
+4. How do you bring an interface up?
+
+---
+
+## Intermediate
+
+1. Explain the difference between `ip addr` and `ip link`.
+2. How do you add a static route?
+3. What is the Neighbor table?
+4. What are Network Namespaces?
+
+---
+
+## Architect Level
+
+1. Explain how you would troubleshoot a Linux server with no network connectivity using the `ip` command.
+2. Design a Linux networking troubleshooting workflow.
+3. Explain how the `ip` command is used in Kubernetes and cloud networking.
+
+---
+
+# Summary
+
+In this lesson, you learned:
+
+- The `ip` command
+- Network Interfaces
+- IP Address Management
+- Routing Tables
+- Neighbor Tables
+- Interface Statistics
+- VLAN Configuration
+- Network Namespaces
+- Linux Network Troubleshooting
+
+The `ip` command is the most important networking utility on modern Linux systems. It provides a unified interface for managing network interfaces, IP addresses, routing, neighbor discovery, VLANs, tunnels, and namespaces. Mastering this command is essential for troubleshooting Linux servers, cloud infrastructure, Kubernetes nodes, and enterprise networks.
+
+---
+
+## Key Takeaways
+
+- `ip` is the **modern replacement** for `ifconfig`, `route`, and `arp`.
+- Use **`ip addr`** to view and manage IP addresses.
+- Use **`ip link`** to manage network interfaces.
+- Use **`ip route`** to inspect and configure routing.
+- Use **`ip neigh`** to view ARP and Neighbor Discovery information.
+- Network namespaces provide isolated networking environments.
+- The `ip` command is one of the first tools used for Linux network troubleshooting.
+
+---
+
+## What's Next?
+
+**[ss](ss.md)**
+
+In the next lesson, you'll learn about **`ss` (Socket Statistics)**.
+
+You'll explore:
+
+- What `ss` is
+- Viewing TCP and UDP Connections
+- Listening Ports
+- Socket States
+- Process Information
+- Network Troubleshooting
+- Performance Analysis
+
+By the end of the lesson, you'll understand how to inspect sockets, active connections, listening services, and network activity using one of the fastest and most powerful networking diagnostic tools available on Linux.

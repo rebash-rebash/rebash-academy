@@ -1,392 +1,856 @@
 ---
-title: "Network Segmentation and Trust Boundaries"
-description: "Design tiered segments and trust boundaries, then prove allow and deny paths with a dmz/app/db Linux namespace reachability matrix."
+title: "Network Segmentation"
+description: "Learn network segmentation — VLANs, physical vs logical isolation, micro-segmentation, East-West traffic control, and Zero Trust alignment."
 difficulty: intermediate
-estimated_time: "50–65 min"
+estimated_time: "120 min"
 author: Shaik Basha
-last_updated: "2026-08-02"
+last_updated: "2026-08-10"
 category: networking
 technology: networking
-module: "Module 16 · Production Networking"
+module: "Module 8 · Network Security"
+learning_paths:
+  - cloud-engineer
+  - devops-engineer
+  - site-reliability-engineer
+  - linux-administrator
+  - platform-engineer
 tags:
   - networking
   - segmentation
-  - zero-trust
-  - trust-boundaries
-prerequisites:
-  - networking/network-security-hardening
-next:
-  - networking/network-automation-and-monitoring
-related:
-  - networking/firewalls-and-access-control
-  - networking/kubernetes-networking-fundamentals
-labs: []
-interview: interview/networking
+  - vlan
+  - micro-segmentation
+  - rebash-networking-mastery
 comments: false
+status: ready
 ---
 
-# Network Segmentation and Trust Boundaries
+# Network Segmentation — Dividing Networks for Better Security and Performance
 
-## Overview
+> **Network Segmentation** is the practice of dividing a computer network into smaller, isolated segments to improve **security, performance, availability, and manageability**. Instead of allowing unrestricted communication across the entire network, segmentation limits traffic between network zones based on business and security requirements. Modern enterprises use network segmentation to reduce attack surfaces, prevent lateral movement, improve compliance, and implement Zero Trust architectures. Every Linux administrator, DevOps engineer, Cloud Architect, Platform Engineer, Site Reliability Engineer (SRE), and Network Engineer should understand network segmentation.
 
-**Segmentation** splits a network into zones so a problem in one zone cannot freely reach every other zone. A **trust boundary** is the line where traffic must meet a stronger control — firewall rule, Security Group, Kubernetes NetworkPolicy, or identity check. Classic three-tier designs (edge / app / data) still matter; cloud SG graphs and NetworkPolicies are how you enforce them today.
+---
 
-In Cloud and DevOps work you map subnets and filters to those tiers: public edge (DMZ-like), application, and database. After one web tier compromise, the attacker should not open a direct path to the database. Micro-segmentation goes further — allow only the specific service identities that need to talk.
+## Learning Path
 
-In production, flat networks turn one stolen credential into a wide outage or breach. Over-segmentation without clear allows breaks health checks and deployments. Good design states allowed paths in a matrix, then proves both **allow** and **deny**.
+<div class="ra-lesson-meta" markdown>
 
-This is **Tutorial 22** in **Module 16: Production Networking** of the REBASH Academy **Networking for Cloud & DevOps Engineers** series. It is written for Cloud, DevOps, Platform, SRE, and DevSecOps engineers. By the end you will run a dmz/app/db namespace lab with a reachability matrix under `~/rebash-networking/lab22`.
+<p class="ra-lesson-meta__crumb" markdown>**Networking Mastery** → Module 8: Network Security → Lesson 8</p>
 
-## Prerequisites
+<div class="ra-meta-grid" markdown>
 
-- [Network Security Hardening](network-security-hardening.md)
-- [Firewalls and Access Control](firewalls-and-access-control.md)
-- Practice Ubuntu VM with `sudo` and `iproute2` (`ip netns`, `veth`)
+<div markdown>**Difficulty:** Intermediate</div>
 
-## Learning Objectives
+<div markdown>**Reading Time:** 120 Minutes</div>
 
-By the end of this tutorial, you will be able to:
+</div>
 
-- [ ] Define edge (DMZ), app, data, and admin trust boundaries
-- [ ] Map subnets + Security Groups + policies to those boundaries
-- [ ] Build a three-tier namespace model with veth links
-- [ ] Produce a reachability matrix and prove a deny path
-- [ ] Explain blast radius with a concrete failure story
-- [ ] Relate micro-segmentation to identity-aware allows
+</div>
 
-## Architecture
+<div class="ra-course-progress" markdown>
 
-Traffic should cross trust boundaries only on approved paths: edge → app → data, not edge → data directly.
+**Course Progress**
 
-![Network segmentation](../assets/excalidraw/network-segmentation.svg)
+<div class="ra-meta-grid" markdown>
 
-## Theory
+<div markdown>**Course:** Networking Mastery</div>
 
-### What it is
+<div markdown>**Module:** Network Security</div>
 
-Segmentation places workloads into zones with different trust levels. East-west traffic inside a zone may be freer; north-south across boundaries is filtered. **Blast radius** is how much of the system an attacker or fault can reach after crossing one boundary (plain meaning: how wide the damage can spread).
+<div markdown>**Lesson:** 8 of 9</div>
+
+</div>
+
+</div>
+
+---
+
+
+# What You'll Learn
+
+After completing this lesson, you'll be able to:
+
+- Understand Network Segmentation
+- Compare Physical and Logical Segmentation
+- Learn VLAN-Based Segmentation
+- Understand Micro-Segmentation
+- Control East-West Traffic
+- Design secure enterprise networks
+- Apply segmentation in cloud and Kubernetes environments
+
+---
+
+# Prerequisites
+
+Complete:
+
+- [VPN](vpn-and-tunneling-basics.md)
+- [IPSec](ipsec.md)
+- [SSL/TLS](ssl-tls.md)
+- [SSH](ssh-networking.md)
+- [Network Hardening](network-security-hardening.md)
+- [IDS/IPS](ids-ips.md)
+- [Zero Trust](zero-trust.md)
+
+---
+
+# Why Learn Network Segmentation?
+
+Imagine an enterprise where:
+
+- Finance
+- HR
+- Engineering
+- Database Servers
+- User PCs
+
+all share one network.
+
+```text
+Single Flat Network
+
+↓
+
+Everyone
+
+Can Reach
+
+Everything
+
+❌
+```
+
+If one computer is compromised:
+
+```text
+Attacker
+
+↓
+
+Entire Network
+
+At Risk
+```
+
+With segmentation:
+
+```text
+Finance
+
+↓
+
+Separate Network
+```
+
+```text
+Engineering
+
+↓
+
+Separate Network
+```
+
+```text
+Database
+
+↓
+
+Separate Network
+```
+
+Attackers cannot freely move across the organisation.
+
+---
+
+# What is Network Segmentation?
+
+Network Segmentation divides a network into:
+
+```text
+Smaller
+
+Independent
+
+Network Segments
+```
+
+Each segment has:
+
+- Security Policies
+- Access Controls
+- Firewall Rules
+- Traffic Restrictions
+
+---
+
+# Goals of Network Segmentation
+
+Segmentation provides:
+
+- Better Security
+- Reduced Attack Surface
+- Improved Performance
+- Regulatory Compliance
+- Easier Troubleshooting
+- Better Traffic Control
+
+---
+
+# Flat Network vs Segmented Network
+
+## Flat Network
+
+```text
+All Devices
+
+↓
+
+Same Broadcast Domain
+```
+
+Problems:
+
+- Large Broadcast Traffic
+- Easy Lateral Movement
+- Poor Security
+
+---
+
+## Segmented Network
+
+```text
+Users
+
+↓
+
+Application
+
+↓
+
+Database
+
+↓
+
+Management
+```
+
+Each network is isolated.
+
+---
+
+# Types of Segmentation
+
+Organisations commonly use:
+
+- Physical Segmentation
+- Logical Segmentation
+- VLAN Segmentation
+- Micro-Segmentation
+
+---
+
+# Physical Segmentation
+
+Uses:
+
+- Separate Switches
+- Separate Routers
+- Separate Firewalls
+- Separate Cabling
+
+Example:
+
+```text
+Finance Network
+
+↓
+
+Dedicated Switch
+```
+
+Highly secure but more expensive.
+
+---
+
+# Logical Segmentation
+
+Uses:
+
+- Virtual Local Area Networks (VLANs)
+- Subnets
+- Routing
+- Access Control Lists (ACLs)
+- Firewalls
+
+No additional physical hardware is required.
+
+---
+
+# VLAN-Based Segmentation
+
+Example:
+
+```text
+VLAN 10
+
+Finance
+```
+
+```text
+VLAN 20
+
+Engineering
+```
+
+```text
+VLAN 30
+
+HR
+```
+
+Communication between VLANs requires routing and can be controlled using firewalls or ACLs.
+
+---
+
+# Subnet Segmentation
+
+Example:
+
+```text
+Finance
+
+10.10.10.0/24
+```
+
+```text
+Engineering
+
+10.10.20.0/24
+```
+
+```text
+Database
+
+10.10.30.0/24
+```
+
+Each subnet represents a separate network segment.
+
+---
+
+# Security Zones
+
+Networks are often divided into security zones.
+
+Example:
+
+```text
+Internet
+
+↓
+
+Demilitarised Zone (DMZ)
+
+↓
+
+Application
+
+↓
+
+Database
+
+↓
+
+Management
+```
+
+Each zone has its own security policy.
+
+---
+
+# East-West Traffic
+
+Traffic between internal systems is called:
+
+```text
+East-West Traffic
+```
+
+Example:
+
+```text
+Web Server
+
+↓
+
+Application Server
+
+↓
+
+Database
+```
+
+Modern security solutions inspect this internal traffic to prevent lateral movement.
+
+---
+
+# North-South Traffic
+
+Traffic entering or leaving the organisation.
+
+```text
+Internet
+
+↓
+
+Firewall
+
+↓
+
+Internal Network
+```
+
+Traditional firewalls primarily inspect North-South traffic.
+
+---
+
+# Micro-Segmentation
+
+Micro-segmentation applies security policies at the workload level.
+
+Example:
+
+```text
+Web Server
+
+↓
+
+Application Server
+
+↓
+
+Database
+```
+
+Each communication path is independently controlled.
+
+Benefits:
+
+- Reduced Lateral Movement
+- Fine-Grained Security
+- Zero Trust Support
+
+---
+
+# Enterprise Example
+
+```text
+Internet
+
+↓
+
+Firewall
+
+↓
+
+DMZ
+
+↓
+
+Web Tier
+
+↓
+
+Application Tier
+
+↓
+
+Database Tier
+
+↓
+
+Management Network
+```
+
+Each layer is isolated with dedicated security controls.
+
+---
+
+# Healthcare Example
+
+Separate networks for:
+
+- Medical Devices
+- Patient Records
+- Administration
+- Guest Wi-Fi
+
+This limits access and helps meet compliance requirements.
+
+---
+
+# Financial Institution Example
+
+Separate segments for:
+
+- Customer Banking Systems
+- Payment Processing
+- Internal Applications
+- Administrative Systems
+- Security Operations Centre (SOC)
+
+Strict firewall policies control communication between each segment.
+
+---
+
+# Cloud Perspective
+
+Cloud segmentation uses:
+
+- Virtual Private Clouds (VPCs)
+- Virtual Networks (VNets)
+- Subnets
+- Security Groups
+- Network ACLs
+- Cloud Firewalls
+
+Each application environment can be isolated.
+
+---
+
+# Kubernetes Perspective
+
+Segmentation in Kubernetes uses:
+
+- Namespaces
+- Network Policies
+- Service Mesh
+- Role-Based Access Control (RBAC)
+- Pod Security Standards
+
+Pods communicate only when explicitly permitted.
+
+---
+
+# Linux Perspective
+
+Useful commands:
+
+Display IP addresses.
 
 ```bash
-# Conceptual allow list (cloud SG style)
-# app-sg  -> db-sg :5432
-# dmz-sg  -> app-sg :80
-# dmz-sg  -X-> db-sg  (deny)
+ip addr
 ```
 
-### Why it matters
+Display routing table.
 
-Ransomware and credential theft move sideways on flat networks. Compliance regimes expect separation of data tiers. Kubernetes NetworkPolicies and cloud SG references are the enforcement points engineers actually operate. If you cannot show a deny path, you do not have segmentation — you have a diagram.
-
-### How it works
-
-1. **Name tiers** — edge/DMZ, app, data, admin/management.
-2. **Place subnets** — often one subnet (or more) per tier per AZ.
-3. **Write the matrix** — who may talk to whom on which port.
-4. **Enforce** — SG/NSG, host firewall, NetworkPolicy, service mesh authz.
-5. **Prove** — connectivity tests for allow and deny.
-6. **Review** — temporary allows expire; IaC prevents silent widenings.
-
-| From \\ To | DMZ/Edge | App | DB |
-|------------|----------|-----|-----|
-| Internet | Allow 443 (LB) | Deny | Deny |
-| DMZ | — | Allow app ports | **Deny** |
-| App | Limited | Peer as needed | Allow DB port |
-| DB | Deny | Reply to app | Peer backups only |
-
-### Common pitfalls
-
-- Diagram without enforcement (no SG/NetworkPolicy)
-- Allowing DMZ straight to DB “temporarily”
-- Forgetting health-check / DNS paths in the matrix
-- Micro-segmentation so tight that deploys fail without a canary plan
-- Treating VLAN alone as enough in cloud (cloud filters are usually SG/policy)
-
-## Hands-on Lab
-
-### Objective
-
-Create three namespaces (`dmz`, `app`, `db`) linked with veth pairs through a tiny router namespace. Allow DMZ→app and app→db; **deny** DMZ→db. Save a reachability matrix under `~/rebash-networking/lab22`.
-
-### Prerequisites
-
-- Ubuntu with `sudo`, `iproute2`, `ping`, `python3` (for a tiny HTTP listener) or `nc`
-- Practice VM only — namespaces need root
-
-### Lab environment
-
-Workspace: `~/rebash-networking/lab22`
-
-``` {.bash .ra-terminal title="Terminal"}
-mkdir -p ~/rebash-networking/lab22 && cd ~/rebash-networking/lab22
-set -euo pipefail
-whoami | tee admin-user.txt
+```bash
+ip route
 ```
 
-!!! example "Expected output"
-    workspace ready.
+Display firewall rules.
 
-
-### Real-world scenario
-
-Your platform team wants a simple proof that the edge tier cannot open the database directly. Before changing cloud Security Groups, you build a namespace model that matches the intended matrix and attach the deny evidence to the design review.
-
-### Step-by-step tasks
-
-#### Task 1 – Build dmz / app / db namespaces
-
-``` {.bash .ra-terminal title="Terminal"}
-cd ~/rebash-networking/lab22
-set -euo pipefail
-
-for ns in lab22-dmz lab22-app lab22-db lab22-rtr; do
-  sudo ip netns del "$ns" 2>/dev/null || true
-done
-for ns in lab22-dmz lab22-app lab22-db lab22-rtr; do
-  sudo ip netns add "$ns"
-  sudo ip -n "$ns" link set lo up
-done
-
-# dmz 10.22.1.0/24, app 10.22.2.0/24, db 10.22.3.0/24 via router
-sudo ip link add v-dmz type veth peer name r-dmz
-sudo ip link add v-app type veth peer name r-app
-sudo ip link add v-db type veth peer name r-db
-sudo ip link set v-dmz netns lab22-dmz
-sudo ip link set v-app netns lab22-app
-sudo ip link set v-db netns lab22-db
-sudo ip link set r-dmz netns lab22-rtr
-sudo ip link set r-app netns lab22-rtr
-sudo ip link set r-db netns lab22-rtr
-
-sudo ip -n lab22-dmz addr add 10.22.1.10/24 dev v-dmz
-sudo ip -n lab22-app addr add 10.22.2.10/24 dev v-app
-sudo ip -n lab22-db addr add 10.22.3.10/24 dev v-db
-sudo ip -n lab22-rtr addr add 10.22.1.1/24 dev r-dmz
-sudo ip -n lab22-rtr addr add 10.22.2.1/24 dev r-app
-sudo ip -n lab22-rtr addr add 10.22.3.1/24 dev r-db
-
-for nsdev in "lab22-dmz:v-dmz" "lab22-app:v-app" "lab22-db:v-db" "lab22-rtr:r-dmz" "lab22-rtr:r-app" "lab22-rtr:r-db"; do
-  ns="${nsdev%%:*}"; dev="${nsdev##*:}"
-  sudo ip -n "$ns" link set "$dev" up
-done
-
-sudo ip -n lab22-dmz route add default via 10.22.1.1
-sudo ip -n lab22-app route add default via 10.22.2.1
-sudo ip -n lab22-db route add default via 10.22.3.1
-sudo ip netns exec lab22-rtr sysctl -w net.ipv4.ip_forward=1 >/dev/null
-
-sudo ip -n lab22-rtr addr | tee topology-addrs.txt
+```bash
+sudo iptables -L
 ```
 
-!!! example "Expected output"
-    three tiers addressing through `lab22-rtr`.
+Display nftables rules.
 
-
-#### Task 2 – Enforce deny DMZ→DB with router iptables / nft
-
-``` {.bash .ra-terminal title="Terminal"}
-cd ~/rebash-networking/lab22
-set -euo pipefail
-
-# Prefer iptables in the router namespace; flush lab chain first
-sudo ip netns exec lab22-rtr iptables -F FORWARD 2>/dev/null || true
-sudo ip netns exec lab22-rtr iptables -P FORWARD DROP
-# Allow established
-sudo ip netns exec lab22-rtr iptables -A FORWARD -m conntrack --ctstate ESTABLISHED,RELATED -j ACCEPT
-# Allow dmz -> app
-sudo ip netns exec lab22-rtr iptables -A FORWARD -s 10.22.1.0/24 -d 10.22.2.0/24 -j ACCEPT
-# Allow app -> db
-sudo ip netns exec lab22-rtr iptables -A FORWARD -s 10.22.2.0/24 -d 10.22.3.0/24 -j ACCEPT
-# Allow app -> dmz replies path already covered by ESTABLISHED; optional app->dmz new:
-sudo ip netns exec lab22-rtr iptables -A FORWARD -s 10.22.2.0/24 -d 10.22.1.0/24 -j ACCEPT
-# Explicit deny dmz -> db (also covered by policy DROP, but log-friendly reject)
-sudo ip netns exec lab22-rtr iptables -A FORWARD -s 10.22.1.0/24 -d 10.22.3.0/24 -j REJECT
-
-sudo ip netns exec lab22-rtr iptables -L FORWARD -n -v | tee forward-rules.txt
+```bash
+sudo nft list ruleset
 ```
 
-!!! example "Expected output"
-    FORWARD policy DROP with allow dmz→app and app→db; dmz→db rejected.
+Display listening ports.
 
-
-#### Task 3 – Reachability matrix (allow and deny proof)
-
-``` {.bash .ra-terminal title="Terminal"}
-cd ~/rebash-networking/lab22
-set -euo pipefail
-
-probe() {
-  local from="$1" to="$2" ip="$3"
-  if sudo ip netns exec "$from" ping -c 1 -W 1 "$ip" >/dev/null 2>&1; then
-    echo "$from -> $to ($ip): ALLOW"
-  else
-    echo "$from -> $to ($ip): DENY"
-  fi
-}
-
-{
-  echo "reachability_matrix"
-  probe lab22-dmz app 10.22.2.10
-  probe lab22-app db 10.22.3.10
-  probe lab22-dmz db 10.22.3.10
-  probe lab22-db app 10.22.2.10
-} | tee matrix.txt
-
-grep -q 'lab22-dmz -> app .*ALLOW' matrix.txt
-grep -q 'lab22-app -> db .*ALLOW' matrix.txt
-grep -q 'lab22-dmz -> db .*DENY' matrix.txt
-
-tar -czf segmentation-evidence.tgz \
-  admin-user.txt topology-addrs.txt forward-rules.txt matrix.txt
-ls -l segmentation-evidence.tgz | tee evidence-ls.txt
+```bash
+ss -tuln
 ```
 
-!!! example "Expected output"
-    matrix shows ALLOW for dmz→app and app→db, **DENY** for dmz→db.
+---
 
+# Segmentation Workflow
 
-### Validation steps
+```text
+User
 
-- [ ] Namespaces `lab22-dmz`, `lab22-app`, `lab22-db` exist during the lab
-- [ ] `matrix.txt` proves deny on dmz→db
-- [ ] FORWARD rules documented in `forward-rules.txt`
-- [ ] Evidence archive under `~/rebash-networking/lab22`
+↓
 
-### Common errors and fixes
+Firewall
 
-| Error | Cause | Fix |
-|-------|-------|-----|
-| All pings DENY | Forwarding off or policy DROP without allows | Re-run Task 1–2; check `ip_forward=1` |
-| dmz→db ALLOW | Missing reject / wrong order | Flush FORWARD and re-apply Task 2 |
-| `iptables: No chain/target` | iptables not installed | Install `iptables` package on Ubuntu |
-| `Cannot open network namespace` | No sudo | Use practice VM with sudo |
+↓
 
-### Challenge exercise
+Web Tier
 
-Add a tiny HTTP service in `lab22-app` on port `8080` (`python3 -m http.server` bound to `10.22.2.10`) and allow only TCP 8080 from DMZ using an extra iptables rule. Prove `curl` from DMZ works and that DMZ still cannot reach DB. Save `curl-dmz-to-app.txt`.
+↓
 
-### Learning outcomes
+Firewall
 
-- Modelled three-tier trust boundaries with namespaces
-- Enforced allow and deny at the router
-- Produced a matrix suitable for a design review
+↓
 
-### Cleanup
+Application Tier
 
-``` {.bash .ra-terminal title="Terminal"}
-cd ~/rebash-networking/lab22
-set -euo pipefail
-for ns in lab22-dmz lab22-app lab22-db lab22-rtr; do
-  sudo ip netns del "$ns" 2>/dev/null || true
-done
+↓
+
+Firewall
+
+↓
+
+Database
 ```
 
-## Validation
+Each security boundary enforces access policies.
 
-- [ ] Lab finished under `~/rebash-networking/lab22/`
-- [ ] You can draw edge/app/data boundaries and name controls
-- [ ] You can explain blast radius in plain language
-- [ ] You know how SG/NetworkPolicy maps to the matrix
+---
 
-## Code Walkthrough
+# Physical vs Logical Segmentation
 
-Production segmentation usually follows:
+| Physical Segmentation | Logical Segmentation |
+|-----------------------|----------------------|
+| Separate Hardware | Shared Hardware |
+| Higher Cost | Lower Cost |
+| Strong Isolation | Flexible Deployment |
+| More Complex Expansion | Easier to Scale |
 
-1. **Write the matrix** before opening ports
-2. **Enforce in IaC** — SG references, NetworkPolicies
-3. **Prove allow and deny** with tests in CI or a lab
-4. **Prefer identity-aware allows** (SG→SG, service accounts) over wide CIDRs
-5. **Expire temporary cross-tier breaks**
+---
 
-## Security Considerations
+# Advantages of Network Segmentation
 
-- Never leave DMZ→DB open for debugging
-- Log denies at boundaries during incidents
-- Separate admin networks from data planes
-- In Kubernetes, default-deny NetworkPolicies carefully with DNS exceptions
-- Review peerings and shared services that bypass tier diagrams
+- Improved Security
+- Reduced Lateral Movement
+- Better Performance
+- Easier Compliance
+- Better Traffic Visibility
+- Simplified Troubleshooting
+- Supports Zero Trust
 
-## Common Mistakes
+---
 
-!!! warning "Pretty diagram, flat Security Groups"
-    Without enforcement, segmentation is fiction. **Fix:** map each arrow to an SG/NetworkPolicy rule and a test.
+# Limitations
 
-!!! warning "Temporary DMZ→DB rule left forever"
-    Attackers love forgotten allows. **Fix:** expiry dates, IaC review, automated drift detection.
+- Requires careful planning
+- Additional routing and firewall policies
+- Misconfiguration can interrupt communication
+- Ongoing maintenance is required
 
-!!! warning "Blocking health checks across tiers"
-    Load balancers fail and rollbacks look like outages. **Fix:** include probe paths in the matrix.
+---
 
-!!! warning "Equating VLAN ID with cloud segmentation"
-    Cloud routing and SG/NSG decide reachability. **Fix:** design filters explicitly per tier.
+# Hands-on Lab
 
-## Best Practices
+## Task 1
 
-- One matrix per environment (dev/stage/prod may differ)
-- SG→SG or namespace selectors instead of `/0` sources
-- Prove deny paths in the same ticket as allow paths
-- Align Kubernetes NetworkPolicies with the same tier story
-- Document shared services (DNS, monitoring) as first-class matrix rows
+Display IP configuration.
 
-## Troubleshooting
+```bash
+ip addr
+```
 
-| Symptom | Likely cause | Fix |
-|---------|--------------|-----|
-| App cannot reach DB | Missing allow / wrong SG | Check matrix vs live rules |
-| Edge reaches DB | Over-broad allow | Remove rule; add deny proof |
-| Intermittent allow | Asymmetric path / stateful mismatch | Check return path and conntrack |
-| K8s DNS breaks after NetworkPolicy | Forgot DNS egress | Allow kube-dns / CoreDNS |
+---
 
-## Summary
+## Task 2
 
-Segmentation limits how far damage can spread. Define trust boundaries, enforce them with filters, and prove both allow and deny. Next, automate probes and alerts in [Network Automation and Monitoring](network-automation-and-monitoring.md).
+Display routing table.
 
-## Interview Questions
+```bash
+ip route
+```
 
-**1. What is a trust boundary in networking?**
+---
 
-??? success "Reveal answer"
-    A trust boundary is where traffic moves between zones of different trust and must meet a stronger control — for example edge to app, or app to database — enforced by firewalls, Security Groups, or NetworkPolicies.
+## Task 3
 
-**2. Why should the DMZ/edge not talk directly to the database tier?**
+Display firewall rules.
 
-??? success "Reveal answer"
-    If the edge is compromised (common internet-facing risk), a direct path to the database makes data theft or ransomware much easier. The app tier should be the only consumer of the DB port, with its own tighter controls.
+```bash
+sudo iptables -L
+```
 
-**3. How do cloud Security Groups implement segmentation?**
+---
 
-??? success "Reveal answer"
-    Attach different SGs to edge, app, and data instances/ENIs. Allow **app SG → db SG on the DB port**, and do **not** allow the edge SG to the DB SG. Prefer SG references over wide CIDR lists.
+## Task 4
 
-**4. What is blast radius, in plain language?**
+Draw an enterprise segmented network including:
 
-??? success "Reveal answer"
-    Blast radius is **how much of the system can be hurt** after one fault or compromise. Segmentation aims to keep that damage inside one tier or service instead of the whole network.
+- Internet
+- DMZ
+- Web Tier
+- Application Tier
+- Database Tier
+- Management Network
 
-**5. How would you prove segmentation works in an interview or ticket?**
+---
 
-??? success "Reveal answer"
-    Show a reachability matrix with an **ALLOW** test for intended paths and a **DENY** test for forbidden paths (for example edge→DB fails). Attach command output. Diagrams alone are not proof.
+## Task 5
 
-**6. What is micro-segmentation?**
+Compare:
 
-??? success "Reveal answer"
-    Finer allows than big VLAN tiers — often per service or identity (SG pairs, NetworkPolicies, service mesh authorisation). It reduces lateral movement further but needs clear ownership or it becomes an outage generator.
+- Physical Segmentation
+- Logical Segmentation
 
-**7. A Kubernetes NetworkPolicy default-deny breaks DNS. What happened?**
+---
 
-??? success "Reveal answer"
-    Pods must reach CoreDNS (kube-dns) on UDP/TCP 53. A default-deny without a DNS allow blocks name resolution and looks like a total network failure. Add an explicit DNS egress rule (or equivalent) in the policy design.
+## Task 6
 
-## Related Tutorials
+Design VLANs for:
 
-- [Networking for Cloud & DevOps – Overview](index.md)
-- [Network Security Hardening](network-security-hardening.md) *(previous)*
-- [Network Automation and Monitoring](network-automation-and-monitoring.md) *(next)*
-- [Firewalls and Access Control](firewalls-and-access-control.md)
-- [Kubernetes Networking Fundamentals](kubernetes-networking-fundamentals.md)
+- Finance
+- HR
+- Engineering
+- Guest Network
 
-## References
+---
 
-- [AWS Security Groups](https://docs.aws.amazon.com/vpc/latest/userguide/vpc-security-groups.html)
-- [Kubernetes Network Policies](https://kubernetes.io/docs/concepts/services-networking/network-policies/)
-- Track index: [Networking for Cloud & DevOps Engineers](index.md)
+## Task 7
+
+Design Kubernetes segmentation using:
+
+- Namespaces
+- Network Policies
+- RBAC
+
+---
+
+## Task 8
+
+Research segmentation strategies for:
+
+- Enterprise Data Centres
+- Cloud Environments
+- Kubernetes Clusters
+
+Compare how each environment implements workload isolation.
+
+---
+
+# Linux Commands
+
+| Command | Purpose |
+|----------|----------|
+| `ip addr` | Display IP configuration |
+| `ip route` | Display routing table |
+| `iptables -L` | Display firewall rules |
+| `nft list ruleset` | Display nftables rules |
+| `ss -tuln` | Display listening ports |
+| `ping` | Test connectivity |
+| `traceroute` | Trace network path |
+
+---
+
+# Common Mistakes
+
+❌ Creating one large flat network.
+
+✅ Divide networks into security zones.
+
+---
+
+❌ Allowing unrestricted communication between segments.
+
+✅ Use firewalls and ACLs to control traffic.
+
+---
+
+❌ Ignoring East-West traffic.
+
+✅ Inspect internal communication as well as Internet traffic.
+
+---
+
+❌ Overcomplicating segmentation.
+
+✅ Balance security with operational simplicity.
+
+---
+
+❌ Not documenting network segments.
+
+✅ Maintain accurate diagrams and policies.
+
+---
+
+# Best Practices
+
+- Segment networks based on business functions.
+- Apply the principle of least privilege.
+- Protect inter-segment traffic with firewalls.
+- Inspect East-West traffic.
+- Use VLANs and subnets effectively.
+- Implement micro-segmentation for critical workloads.
+- Monitor traffic between network segments.
+- Regularly review segmentation policies.
+- Align segmentation with Zero Trust principles.
+
+---
+
+# Interview Questions
+
+## Beginner
+
+1. What is Network Segmentation?
+2. Why is network segmentation important?
+3. What is the difference between a flat network and a segmented network?
+4. What is a VLAN?
+
+---
+
+## Intermediate
+
+1. Compare Physical and Logical Segmentation.
+2. What is East-West traffic?
+3. What is Micro-Segmentation?
+4. How does segmentation improve security?
+
+---
+
+## Architect Level
+
+1. Design a segmented enterprise network for a financial institution.
+2. Explain segmentation in Kubernetes and cloud environments.
+3. How would you implement Zero Trust using network segmentation?
+
+---
+
+# Summary
+
+In this lesson, you learned:
+
+- Network Segmentation
+- Physical Segmentation
+- Logical Segmentation
+- VLAN Segmentation
+- Subnet Segmentation
+- Security Zones
+- East-West Traffic
+- Micro-Segmentation
+- Enterprise Network Design
+
+Network segmentation is one of the most effective ways to improve security and reduce the impact of cyber attacks. By dividing networks into isolated segments and controlling communication between them, organisations limit lateral movement, improve performance, simplify compliance, and strengthen Zero Trust architectures across enterprise, cloud, and Kubernetes environments.
+
+---
+
+## Key Takeaways
+
+- Network segmentation divides networks into **secure, isolated segments**.
+- **Physical segmentation** uses dedicated hardware, while **logical segmentation** uses VLANs, subnets, and routing.
+- **Micro-segmentation** protects individual workloads.
+- **East-West traffic** should be monitored and controlled.
+- Segmentation reduces the attack surface and limits lateral movement.
+- Network segmentation is a foundational component of **Zero Trust security**.
+
+---
+
+## What's Next?
+
+**[DDoS Protection](ddos-protection.md)**
+
+In the next lesson, you'll learn about **DDoS Protection**.
+
+You'll explore:
+
+- What Distributed Denial of Service (DDoS) attacks are
+- Types of DDoS Attacks
+- Volumetric, Protocol, and Application-Layer Attacks
+- DDoS Detection
+- DDoS Mitigation Techniques
+- Cloud DDoS Protection Services
+- Enterprise Incident Response
+
+By the end of the lesson, you'll understand how organisations detect, mitigate, and defend against DDoS attacks to maintain the availability and resilience of critical services.

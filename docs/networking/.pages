@@ -1,50 +1,165 @@
 title: Networking
 icon: material/lan
+
 nav:
-  - index.md
-  - Module 1 · Fundamentals:
-    - introduction-to-networking.md
-  - Module 2 · OSI Model:
-    - osi-model.md
-  - Module 3 · TCP/IP Model:
-    - tcp-ip-model.md
-  - Module 4 · IP Addressing:
-    - ip-addressing.md
-  - Module 5 · Subnetting:
-    - subnetting-and-vlsm.md
-  - Module 6 · Routing:
-    - routing-fundamentals.md
-  - Module 7 · Switching:
-    - ethernet-switching-and-vlans.md
-    - icmp-arp-dhcp-and-network-services.md
-  - Module 8 · TCP & UDP:
-    - tcp-and-udp-deep-dive.md
-  - Module 9 · DNS:
-    - dns-fundamentals.md
-    - dns-records-and-troubleshooting.md
-  - Module 10 · HTTP & HTTPS:
-    - http-https-and-application-layer.md
-  - Module 11 · NAT & Firewalls:
-    - nat-and-port-forwarding.md
-    - firewalls-and-access-control.md
-  - Module 12 · Linux Networking:
-    - linux-networking-toolkit.md
-  - Module 13 · Load Balancing:
-    - load-balancing-fundamentals.md
-    - reverse-proxy-and-ingress-basics.md
-  - Module 14 · Kubernetes Networking:
-    - kubernetes-networking-fundamentals.md
-  - Module 15 · Cloud Networking:
-    - cloud-networking-vpc-and-subnets.md
-  - Module 16 · Production Networking:
-    - vpn-and-tunneling-basics.md
-    - network-security-hardening.md
-    - network-segmentation-and-trust-boundaries.md
-    - network-automation-and-monitoring.md
-    - production-dns-operations.md
-    - load-balancer-operations-and-health-checks.md
-    - firewall-change-control-and-production-acls.md
-  - Module 17 · Troubleshooting:
-    - network-troubleshooting-methodology.md
-    - packet-analysis-tcpdump-wireshark.md
-    - network-incident-response-and-observability.md
+  - Overview: index.md
+  - Glossary: glossary.md
+  - "Module 1 · Networking Fundamentals":
+    - What is Networking?: introduction-to-networking.md
+    - Types of Networks (LAN, WAN, MAN, PAN): types-of-networks.md
+    - Network Topologies: network-topologies.md
+    - OSI Model: osi-model.md
+    - TCP/IP Model: tcp-ip-model.md
+    - Data Encapsulation: data-encapsulation.md
+    - MAC Address: mac-address.md
+    - IP Address: ip-addressing.md
+    - Ports and Protocols: ports-and-protocols.md
+    - Networking Devices: networking-devices.md
+    - Module 1 Summary — Networking Fundamentals: module-1-networking-fundamentals-summary.md
+  - "Module 2 · IPv4 Addressing":
+    - Binary Numbers: binary-numbers.md
+    - IPv4 Address Structure: ipv4-address-structure.md
+    - IPv4 Classes: ipv4-classes.md
+    - Private vs Public IP: private-vs-public-ip.md
+    - Loopback: loopback.md
+    - APIPA: apipa.md
+    - CIDR: cidr.md
+    - Subnetting: subnetting-and-vlsm.md
+    - VLSM: vlsm.md
+    - Supernetting: supernetting.md
+    - Module 2 Summary — IPv4 Addressing: module-2-ipv4-addressing-summary.md
+  - "Module 3 · IPv6":
+    - Why IPv6: why-ipv6.md
+    - IPv6 Structure: ipv6-structure.md
+    - Types of IPv6 Addresses: ipv6-address-types.md
+    - SLAAC: slaac.md
+    - Neighbor Discovery: neighbor-discovery.md
+    - IPv6 Routing: ipv6-routing.md
+    - IPv4 vs IPv6: ipv4-vs-ipv6.md
+    - Module 3 Summary — IPv6: module-3-ipv6-summary.md
+  - "Module 4 · Switching":
+    - Ethernet: ethernet-switching-and-vlans.md
+    - MAC Address Table: mac-address-table.md
+    - Switch Learning: switch-learning.md
+    - VLAN: vlan.md
+    - Trunking: trunking.md
+    - STP: spanning-tree-protocol.md
+    - EtherChannel: etherchannel.md
+    - Inter-VLAN Routing: inter-vlan-routing.md
+    - Module 4 Summary — Switching: module-4-switching-summary.md
+  - "Module 5 · Routing":
+    - Routing Basics: routing-fundamentals.md
+    - Static Routing: static-routing.md
+    - Dynamic Routing: dynamic-routing.md
+    - RIP: rip.md
+    - OSPF: ospf.md
+    - EIGRP Concepts: eigrp-concepts.md
+    - BGP Introduction: bgp-introduction.md
+    - Default Routes: default-routes.md
+    - Route Summarization: route-summarization.md
+    - Route Redistribution: route-redistribution.md
+    - Module 5 Summary — Routing: module-5-routing-summary.md
+  - "Module 6 · DNS and DHCP":
+    - DNS Fundamentals: dns-fundamentals.md
+    - DNS Records: dns-records-and-troubleshooting.md
+    - DNS Resolution: dns-resolution.md
+    - DHCP Process: icmp-arp-dhcp-and-network-services.md
+    - DHCP Relay: dhcp-relay.md
+    - Split DNS: split-dns.md
+    - DNS Troubleshooting: dns-troubleshooting.md
+    - Module 6 Summary — DNS & DHCP: module-6-dns-dhcp-summary.md
+  - "Module 7 · NAT and Firewalls":
+    - NAT: nat-and-port-forwarding.md
+    - PAT: pat.md
+    - Static NAT: static-nat.md
+    - Dynamic NAT: dynamic-nat.md
+    - ACL: acl.md
+    - Firewall Basics: firewalls-and-access-control.md
+    - Stateful Firewalls: stateful-firewalls.md
+    - Linux Firewall: linux-firewall.md
+    - Cloud Firewalls: cloud-firewalls.md
+    - Security Groups: security-groups.md
+    - Module 7 Summary — NAT & Firewalls: module-7-nat-firewalls-summary.md
+  - "Module 8 · Network Security":
+    - VPN: vpn-and-tunneling-basics.md
+    - IPSec: ipsec.md
+    - SSL/TLS: ssl-tls.md
+    - SSH: ssh-networking.md
+    - Network Hardening: network-security-hardening.md
+    - IDS/IPS: ids-ips.md
+    - Zero Trust: zero-trust.md
+    - Network Segmentation: network-segmentation-and-trust-boundaries.md
+    - DDoS Protection: ddos-protection.md
+    - Module 8 Summary — Network Security: module-8-network-security-summary.md
+  - "Module 9 · Linux Networking":
+    - ip Command: linux-networking-toolkit.md
+    - ss: ss.md
+    - netstat: netstat.md
+    - tcpdump: packet-analysis-tcpdump-wireshark.md
+    - traceroute: traceroute.md
+    - dig: dig.md
+    - nslookup: nslookup.md
+    - curl: curl.md
+    - wget: wget.md
+    - Network Namespaces: network-namespaces.md
+    - Module 9 Summary — Linux Networking: module-9-linux-networking-summary.md
+  - "Module 10 · Cloud Networking":
+    - AWS VPC: cloud-networking-vpc-and-subnets.md
+    - Azure VNet: azure-vnet.md
+    - GCP VPC: gcp-vpc.md
+    - Subnets: cloud-subnets.md
+    - Route Tables: route-tables.md
+    - NAT Gateway: nat-gateway.md
+    - Internet Gateway: internet-gateway.md
+    - Load Balancer: cloud-load-balancer.md
+    - Private Connectivity: private-connectivity.md
+    - Hybrid Networking: hybrid-networking.md
+    - Module 10 Summary — Cloud Networking: module-10-cloud-networking-summary.md
+  - "Module 11 · Kubernetes Networking":
+    - CNI: kubernetes-networking-fundamentals.md
+    - Pod Networking: pod-networking.md
+    - Service Networking: service-networking.md
+    - Ingress: ingress.md
+    - Network Policies: network-policies.md
+    - CoreDNS: coredns.md
+    - kube-proxy: kube-proxy.md
+    - Service Mesh: service-mesh.md
+    - eBPF: ebpf.md
+    - Module 11 Summary — Kubernetes Networking: module-11-kubernetes-networking-summary.md
+  - "Module 12 · Network Troubleshooting":
+    - Ping: ping.md
+    - traceroute: traceroute-troubleshooting.md
+    - tcpdump: tcpdump-troubleshooting.md
+    - Wireshark: wireshark.md
+    - DNS Troubleshooting: dns-troubleshooting-deep-dive.md
+    - Routing Issues: routing-issues.md
+    - MTU Problems: mtu-problems.md
+    - Latency: latency.md
+    - Packet Loss: packet-loss.md
+    - Production Scenarios: production-scenarios.md
+    - Module 12 Summary — Network Troubleshooting: module-12-network-troubleshooting-summary.md
+  - "Module 13 · DevOps Networking":
+    - Docker Networking: docker-networking.md
+    - Kubernetes Networking: kubernetes-networking-devops.md
+    - CI/CD Networking: cicd-networking.md
+    - Git Networking: git-networking.md
+    - VPN for DevOps: vpn-for-devops.md
+    - Reverse Proxy: reverse-proxy-and-ingress-basics.md
+    - Load Balancing: load-balancing-fundamentals.md
+    - CDN: cdn.md
+    - API Gateways: api-gateways.md
+    - Service Discovery: service-discovery.md
+    - Module 13 Summary — DevOps Networking: module-13-devops-networking-summary.md
+  - "Module 14 · Production Networking":
+    - High Availability: high-availability.md
+    - Redundancy: redundancy.md
+    - Network Monitoring: network-monitoring.md
+    - Capacity Planning: capacity-planning.md
+    - Disaster Recovery: disaster-recovery.md
+    - Incident Response: network-incident-response-and-observability.md
+    - Network Automation: network-automation-and-monitoring.md
+    - Best Practices: networking-best-practices.md
+    - Production Checklists: production-checklists.md
+    - Troubleshooting Methodology: network-troubleshooting-methodology.md
+    - Module 14 Summary — Production Networking: module-14-production-networking-summary.md
+  - projects

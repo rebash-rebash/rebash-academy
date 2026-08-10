@@ -1,412 +1,915 @@
 ---
-title: "DNS Records and Troubleshooting"
-description: "Query A, AAAA, MX, TXT, and CNAME records with dig, provoke NXDOMAIN safely, and run a scripted DNS troubleshooting checklist for Cloud and DevOps work."
-difficulty: intermediate
-estimated_time: "45–55 min"
+title: "DNS Records"
+description: "Learn DNS Resource Records (RRs) — A, AAAA, CNAME, MX, NS, TXT, PTR, SOA, and SRV — plus TTL, forward and reverse lookups, and Linux dig queries."
+difficulty: beginner
+estimated_time: "100 min"
 author: Shaik Basha
-last_updated: "2026-08-02"
+last_updated: "2026-08-10"
 category: networking
 technology: networking
-module: "Module 9 · DNS"
+module: "Module 6 · DNS and DHCP"
+learning_paths:
+  - cloud-engineer
+  - devops-engineer
+  - site-reliability-engineer
+  - linux-administrator
+  - platform-engineer
 tags:
   - networking
   - dns
-  - records
   - dig
-  - cname
-  - mx
-  - txt
-prerequisites:
-  - networking/dns-fundamentals
-next:
-  - networking/http-https-and-application-layer
-related:
-  - networking/production-dns-operations
-  - networking/load-balancing-fundamentals
-  - networking/tcp-and-udp-deep-dive
-labs:
-  - labs/networking-dns-firewall-triage
-interview: interview/networking
+  - dns-records
+  - rebash-networking-mastery
 comments: false
+status: ready
 ---
 
-# DNS Records and Troubleshooting
+# DNS Records — The Building Blocks of DNS
 
-## Overview
+> **DNS Records** (also called **Resource Records (RRs)**) are entries stored in a DNS zone that define how a domain behaves. They map domain names to IP addresses, identify mail servers, specify authoritative name servers, verify domain ownership, and provide configuration information for applications and services. Every website, email service, cloud application, Kubernetes cluster, and enterprise network depends on DNS records. Every Linux administrator, DevOps engineer, Cloud Architect, Platform Engineer, Site Reliability Engineer (SRE), and Network Engineer should understand the most common DNS record types.
 
-Resolution knowledge is half the job. Production breaks on bad **CNAME** choices at the zone apex, stale **TXT** verification records, wrong **MX** for mail, dangling aliases after a load balancer delete, and **split-horizon** mismatches between internal and public Domain Name System (DNS).
+---
 
-This tutorial focuses on the record types you will query every week and a **repeatable dig checklist** implemented as a script that prints evidence — not a markdown notes file as the main artefact.
+## Learning Path
 
-This is **Tutorial 11** in **Module 9: DNS** of the REBASH Academy **Networking for Cloud & DevOps Engineers** series. It is written for Cloud, DevOps, Site Reliability Engineering (SRE), and platform engineers. Lab workspace: `~/rebash-networking/lab11`.
+<div class="ra-lesson-meta" markdown>
 
-## Prerequisites
+<p class="ra-lesson-meta__crumb" markdown>**Networking Mastery** → Module 6: DNS & DHCP → Lesson 2</p>
+
+<div class="ra-meta-grid" markdown>
+
+<div markdown>**Difficulty:** Beginner</div>
+
+<div markdown>**Reading Time:** 100 Minutes</div>
+
+</div>
+
+</div>
+
+<div class="ra-course-progress" markdown>
+
+**Course Progress**
+
+<div class="ra-meta-grid" markdown>
+
+<div markdown>**Course:** Networking Mastery</div>
+
+<div markdown>**Module:** DNS & DHCP</div>
+
+<div markdown>**Lesson:** 2 of 7</div>
+
+</div>
+
+</div>
+
+---
+
+
+# What You'll Learn
+
+After completing this lesson, you'll be able to:
+
+- Understand DNS Records
+- Learn the purpose of different record types
+- Configure common DNS records
+- Understand forward and reverse DNS
+- Apply DNS records in enterprise and cloud environments
+- Troubleshoot DNS record issues
+
+---
+
+# Prerequisites
+
+Complete:
 
 - [DNS Fundamentals](dns-fundamentals.md)
-- Ubuntu host with `dig` (`dnsutils`)
-- Comfort with UDP/TCP 53 from [TCP and UDP Deep Dive](tcp-and-udp-deep-dive.md)
 
-## Learning Objectives
+---
 
-By the end of this tutorial, you will be able to:
+# Why Learn DNS Records?
 
-- [ ] Explain A, AAAA, CNAME, MX, TXT, NS, and SOA at a practical level
-- [ ] Query each common type with `dig` and read the answer section
-- [ ] Recognise NXDOMAIN vs SERVFAIL vs NOERROR empty answers
-- [ ] Run a scripted troubleshooting checklist that prints evidence
-- [ ] Describe TTL and dangling CNAME risks in cutovers
+Imagine typing:
 
-## Architecture
+```text
+www.rebash.in
+```
 
-Clients ask for record types. Aliases (CNAME) point to other names; address records (A/AAAA) end at IPs; MX/TXT serve mail and verification use cases.
+How does DNS know:
 
-![DNS record types](../assets/excalidraw/dns-records.svg)
+- Website IP Address?
+- Mail Server?
+- Name Server?
+- IPv6 Address?
 
-## Theory
+The answer lies in:
 
-### What it is
+```text
+DNS Records
+```
 
-| Type | Meaning |
-|------|---------|
-| A | Name → IPv4 |
-| AAAA | Name → IPv6 |
-| CNAME | Name → another name (alias) |
-| MX | Mail exchangers (priority + host) |
-| TXT | Free-form text (SPF, verification, ACME) |
-| NS | Authoritative name servers for a zone |
-| SOA | Zone apex metadata (serial, timers) |
-| PTR | Reverse DNS (IP → name) — optional deep dive |
+---
+
+# What are DNS Records?
+
+DNS Records are entries stored inside a DNS zone.
+
+Example:
+
+```text
+google.com
+
+↓
+
+A Record
+
+↓
+
+142.250.x.x
+```
+
+Each record has a specific purpose.
+
+---
+
+# Common DNS Records
+
+The most common DNS records are:
+
+- A
+- AAAA
+- CNAME
+- MX
+- NS
+- TXT
+- PTR
+- SOA
+- SRV
+
+---
+
+# A Record
+
+**A (Address) Record**
+
+Maps:
+
+```text
+Hostname
+
+↓
+
+IPv4 Address
+```
+
+Example:
+
+```text
+www.example.com
+
+↓
+
+192.168.10.20
+```
+
+Example DNS record:
+
+```text
+www    IN    A      192.168.10.20
+```
+
+---
+
+# AAAA Record
+
+Maps:
+
+```text
+Hostname
+
+↓
+
+IPv6 Address
+```
+
+Example:
+
+```text
+www.example.com
+
+↓
+
+2001:db8::20
+```
+
+Example record:
+
+```text
+www    IN    AAAA   2001:db8::20
+```
+
+---
+
+# CNAME Record
+
+**Canonical Name Record**
+
+Creates an alias.
+
+Example:
+
+```text
+blog.example.com
+
+↓
+
+www.example.com
+```
+
+Example record:
+
+```text
+blog    IN    CNAME    www.example.com.
+```
+
+Instead of creating multiple A records, several hostnames can point to one canonical name.
+
+---
+
+# MX Record
+
+**Mail Exchange Record**
+
+Specifies where email should be delivered.
+
+Example:
+
+```text
+example.com
+
+↓
+
+mail.example.com
+```
+
+Record:
+
+```text
+example.com.    IN    MX    10 mail.example.com.
+```
+
+Priority:
+
+```text
+10
+
+↓
+
+Higher Priority
+```
+
+Lower preference values indicate higher priority.
+
+---
+
+# NS Record
+
+**Name Server Record**
+
+Identifies the authoritative DNS servers for a domain.
+
+Example:
+
+```text
+example.com
+
+↓
+
+ns1.example.com
+
+↓
+
+ns2.example.com
+```
+
+Example record:
+
+```text
+example.com.    IN    NS    ns1.example.com.
+```
+
+---
+
+# TXT Record
+
+Stores arbitrary text information.
+
+Common uses:
+
+- Sender Policy Framework (SPF)
+- DomainKeys Identified Mail (DKIM)
+- Domain-based Message Authentication, Reporting and Conformance (DMARC)
+- Domain Verification
+- Cloud Service Validation
+
+Example:
+
+```text
+example.com.
+
+↓
+
+TXT
+
+↓
+
+"v=spf1 include:_spf.google.com ~all"
+```
+
+---
+
+# PTR Record
+
+**Pointer Record**
+
+Used for:
+
+```text
+Reverse DNS
+
+IP Address
+
+↓
+
+Hostname
+```
+
+Example:
+
+```text
+8.8.8.8
+
+↓
+
+dns.google
+```
+
+PTR records are stored in reverse lookup zones.
+
+---
+
+# SOA Record
+
+**Start of Authority Record**
+
+Every DNS zone contains exactly one SOA record.
+
+It defines:
+
+- Primary Name Server
+- Administrator Email
+- Serial Number
+- Refresh Timer
+- Retry Timer
+- Expire Timer
+- Minimum Time To Live (TTL)
+
+Example:
+
+```text
+example.com.
+
+↓
+
+SOA
+```
+
+---
+
+# SRV Record
+
+**Service Record**
+
+Specifies the location of network services.
+
+Example:
+
+```text
+_sip._tcp.example.com
+```
+
+Contains:
+
+- Service
+- Protocol
+- Priority
+- Weight
+- Port
+- Target
+
+Often used by:
+
+- Microsoft Active Directory
+- Session Initiation Protocol (SIP)
+- Extensible Messaging and Presence Protocol (XMPP)
+- Kubernetes
+- Service Discovery
+
+---
+
+# Record Comparison
+
+| Record | Purpose |
+|----------|----------|
+| A | Hostname → IPv4 |
+| AAAA | Hostname → IPv6 |
+| CNAME | Alias |
+| MX | Mail Server |
+| NS | Name Server |
+| TXT | Text Information |
+| PTR | Reverse Lookup |
+| SOA | Zone Information |
+| SRV | Service Discovery |
+
+---
+
+# Time To Live (TTL)
+
+Every DNS record contains:
+
+```text
+TTL
+
+(Time To Live)
+```
+
+Example:
+
+```text
+3600 Seconds
+```
+
+Meaning:
+
+```text
+Cache
+
+1 Hour
+```
+
+After TTL expires, the resolver requests fresh information.
+
+---
+
+# Forward Lookup
+
+Example:
+
+```text
+example.com
+
+↓
+
+A Record
+
+↓
+
+192.168.10.10
+```
+
+---
+
+# Reverse Lookup
+
+Example:
+
+```text
+192.168.10.10
+
+↓
+
+PTR Record
+
+↓
+
+example.com
+```
+
+---
+
+# Enterprise Example
+
+Company:
+
+```text
+portal.company.com
+
+↓
+
+A Record
+```
+
+```text
+mail.company.com
+
+↓
+
+MX Record
+```
+
+```text
+vpn.company.com
+
+↓
+
+A Record
+```
+
+```text
+teams.company.com
+
+↓
+
+CNAME
+```
+
+Different services use different DNS record types.
+
+---
+
+# Cloud Perspective
+
+Cloud providers commonly create DNS records for:
+
+- Load Balancers
+- Public IP Addresses
+- Private Endpoints
+- Storage Accounts
+- Kubernetes Ingress
+- Content Delivery Network (CDN) Endpoints
+
+Many cloud services automatically manage DNS records during deployment.
+
+---
+
+# Kubernetes Perspective
+
+Kubernetes uses DNS extensively.
+
+Examples:
+
+```text
+frontend.default.svc.cluster.local
+```
+
+Service discovery relies on DNS records managed by the cluster DNS service.
+
+External DNS controllers can also automatically create:
+
+- A Records
+- CNAME Records
+
+for Kubernetes Ingress resources.
+
+---
+
+# Linux Perspective
+
+Query A record.
 
 ```bash
-dig example.com A +short
-dig example.com MX +short
-dig example.com TXT +short
+dig google.com
 ```
 
-### Why it matters
-
-Certificate automation often depends on **TXT**. Mail routing depends on **MX**. Content delivery network (CDN) and load balancer onboarding often use **CNAME**. A dangling CNAME (alias to a deleted cloud resource) is a security and availability risk. Wrong record type troubleshooting wastes hours.
-
-### How it works
-
-1. Ask for the type you need (`dig name TYPE`).
-2. Follow CNAMEs until you reach A/AAAA (dig often shows the chain).
-3. Read **status**: `NOERROR`, `NXDOMAIN`, `SERVFAIL`.
-4. Check **TTL** and **authority** (NS/SOA) when answers look stale or wrong.
+Query AAAA record.
 
 ```bash
-dig this-name-should-not-exist-rebash-lab.example.com A
-# Expect status: NXDOMAIN (for a name that truly does not exist)
+dig AAAA google.com
 ```
 
-### Key concepts and comparisons
+Query MX record.
 
-| Status | Meaning |
-|--------|---------|
-| NOERROR | Query processed; answer may still be empty |
-| NXDOMAIN | Name does not exist |
-| SERVFAIL | Resolver/server failed to get a valid answer |
-
-| Pitfall | Why it hurts |
-|---------|----------------|
-| CNAME at apex | Breaks other apex records (MX/NS) in classic DNS |
-| Low/high TTL | Slow cutover vs excessive query load |
-| Split-horizon | Internal vs public answers disagree |
-
-### Common pitfalls
-
-- Querying only A when the app uses another name (CNAME chain).
-- Treating NXDOMAIN as “resolver broken” (it may be a typo).
-- Leaving TXT verification records forever without review.
-- Using a markdown runbook as the only lab output — automate the checklist.
-
-## Hands-on Lab
-
-### Objective
-
-Query A/AAAA/MX/TXT/CNAME-related data for public names, deliberately observe **NXDOMAIN**, and produce a **shell script** whose stdout is a troubleshooting checklist with dig evidence under `~/rebash-networking/lab11`.
-
-### Prerequisites
-
-- `dig` installed
-- Outbound DNS allowed
-
-### Lab environment
-
-Workspace: `~/rebash-networking/lab11`
-
-``` {.bash .ra-terminal title="Terminal"}
-mkdir -p ~/rebash-networking/lab11 && cd ~/rebash-networking/lab11
-set -euo pipefail
-whoami | tee admin-user.txt
-command -v dig >/dev/null || { sudo apt-get update && sudo apt-get install -y dnsutils; }
+```bash
+dig MX gmail.com
 ```
 
-!!! example "Expected output"
-    workspace ready; `dig` present.
+Query NS record.
 
-
-### Real-world scenario
-
-Marketing added a TXT verification record and mail still fails; someone else reports NXDOMAIN for a microsite. You run a typed dig sweep and a scripted checklist so the incident channel sees facts, not guesses.
-
-### Step-by-step tasks
-
-#### Task 1 – Record type sweep for example.com
-
-``` {.bash .ra-terminal title="Terminal"}
-cd ~/rebash-networking/lab11
-set -euo pipefail
-
-for t in A AAAA MX TXT NS SOA; do
-  echo "===== $t ====="
-  dig example.com "$t" +noall +answer +authority | tee "dig-example-${t}.txt"
-done
-
-dig www.example.com A +noall +answer | tee dig-www-a.txt
-# www may be CNAME or A depending on operator — record what you get
-dig www.example.com CNAME +noall +answer | tee dig-www-cname.txt || true
-
-test -s dig-example-A.txt
-grep -E 'IN[[:space:]]+A|IN[[:space:]]+AAAA|IN[[:space:]]+MX|IN[[:space:]]+TXT|IN[[:space:]]+NS|IN[[:space:]]+SOA' \
-  dig-example-A.txt dig-example-MX.txt dig-example-NS.txt
+```bash
+dig NS example.com
 ```
 
-!!! example "Expected output"
-    A, MX, NS, SOA answers present for `example.com`; TXT often present; AAAA optional.
+Query TXT record.
 
-
-#### Task 2 – Deliberate NXDOMAIN
-
-``` {.bash .ra-terminal title="Terminal"}
-cd ~/rebash-networking/lab11
-set -euo pipefail
-
-MISSING="rebash-no-such-host-$(date +%s).example.com"
-echo "$MISSING" | tee nxdomain-name.txt
-
-dig "$MISSING" A | tee dig-nxdomain.txt
-grep -E 'status: NXDOMAIN|NXDOMAIN' dig-nxdomain.txt
-
-# Contrast with a NOERROR name
-dig example.com A | tee dig-noerror.txt
-grep -E 'status: NOERROR' dig-noerror.txt
+```bash
+dig TXT example.com
 ```
 
-!!! example "Expected output"
-    missing name shows `NXDOMAIN`; `example.com` shows `NOERROR`.
+Reverse lookup.
 
-
-#### Task 3 – Troubleshooting checklist script (working artefact)
-
-``` {.bash .ra-terminal title="Terminal"}
-cd ~/rebash-networking/lab11
-set -euo pipefail
+```bash
+dig -x 8.8.8.8
 ```
 
-Create `dns-troubleshoot.sh`:
+Alternative tools.
 
-```bash title="dns-troubleshoot.sh"
-#!/usr/bin/env bash
-# DNS troubleshooting checklist — prints evidence (not a markdown notes file)
-set -euo pipefail
-NAME="${1:-example.com}"
-MISS="${2:-rebash-no-such-host.example.com}"
-
-section() { printf '\n==== %s ====\n' "$1"; }
-
-section "1) Resolver stub"
-cat /etc/resolv.conf
-
-section "2) A / AAAA"
-dig "$NAME" A +short
-dig "$NAME" AAAA +short
-
-section "3) MX / TXT"
-dig "$NAME" MX +short
-dig "$NAME" TXT +short | head -n 20
-
-section "4) NS / SOA"
-dig "$NAME" NS +short
-dig "$NAME" SOA +short
-
-section "5) Status samples"
-dig "$NAME" A | awk '/status:/ {print}'
-dig "$MISS" A | awk '/status:/ {print}'
-
-section "6) SERVER used"
-dig "$NAME" A | awk '/^;; SERVER/ {print}'
-
-section "7) Quick decisions"
-echo "If NXDOMAIN: check spelling and zone delegation"
-echo "If SERVFAIL: check recursive resolver and upstream"
-echo "If wrong IP: check TTL, CNAME chain, split-horizon"
-echo "If mail issue: verify MX priorities and related TXT (SPF)"
+```bash
+host google.com
 ```
 
-``` {.bash .ra-terminal title="Terminal"}
-chmod +x dns-troubleshoot.sh
-
-./dns-troubleshoot.sh example.com "$(cat nxdomain-name.txt)" | tee checklist-output.txt
-grep -E 'NXDOMAIN|NOERROR|SERVER|====' checklist-output.txt
-test -s checklist-output.txt
-
-tar -czf dns-records-evidence.tgz \
-  admin-user.txt dig-example-*.txt dig-www-a.txt dig-www-cname.txt \
-  nxdomain-name.txt dig-nxdomain.txt dig-noerror.txt \
-  dns-troubleshoot.sh checklist-output.txt
-ls -l dns-records-evidence.tgz | tee evidence-ls.txt
+```bash
+nslookup google.com
 ```
 
-!!! example "Expected output"
-    `dns-troubleshoot.sh` prints numbered sections to `checklist-output.txt`; archive exists.
+---
 
+# Example DNS Zone
 
-### Validation steps
+```text
+example.com.
 
-- [ ] A/MX/NS/SOA dig files exist for `example.com`
-- [ ] NXDOMAIN demonstrated for a missing name
-- [ ] `dns-troubleshoot.sh` ran and produced `checklist-output.txt`
-- [ ] Evidence archive under `~/rebash-networking/lab11`
+↓
 
-### Common errors and fixes
+SOA
 
-| Error | Cause | Fix |
-|-------|-------|-----|
-| Empty TXT | None published | Note absence; not a lab failure |
-| www has no CNAME | Apex/www is flat A | Record A answer; still valid |
-| Grep misses NXDOMAIN | Locale/format | Search `status:` line in full dig output |
-| Script not executable | chmod skipped | `chmod +x dns-troubleshoot.sh` |
-| Corporate DNS blocks example.com | Policy | Use an allowed name; keep the same record types |
+↓
 
-### Challenge exercise
+NS
 
-Add a `CNAME` follow mode to `dns-troubleshoot.sh`: if `dig www.example.com CNAME +short` returns a target, also `dig` A on that target and append section `8) CNAME follow`. Re-run and save `checklist-cname.txt`.
+↓
 
-### Learning outcomes
+A
 
-- Queried the common record types used in Cloud/DevOps
-- Distinguished NXDOMAIN from NOERROR with evidence
-- Shipped a scripted checklist artefact for incidents
+↓
 
-### Cleanup
+AAAA
 
-``` {.bash .ra-terminal title="Terminal"}
-cd ~/rebash-networking/lab11
-# Optional: rm -f dns-records-evidence.tgz *.txt
-# Keep dns-troubleshoot.sh if you want it in your toolkit
+↓
+
+MX
+
+↓
+
+TXT
+
+↓
+
+CNAME
+
+↓
+
+SRV
 ```
 
-## Validation
+Each record contributes different information to the DNS zone.
 
-- [ ] Lab finished under `~/rebash-networking/lab11/`
-- [ ] You can explain A vs CNAME vs MX vs TXT
-- [ ] You can say when NXDOMAIN is “expected”
-- [ ] You prefer a scripted checklist over ad-hoc dig history
+---
 
-## Code Walkthrough
+# Advantages of DNS Records
 
-DNS record troubleshooting usually follows:
+- Flexible Name Resolution
+- Email Routing
+- IPv4 and IPv6 Support
+- Service Discovery
+- Domain Verification
+- Cloud Integration
 
-1. **Confirm the exact name** — typo and search-domain concatenation  
-2. **Query the right types** — A/AAAA/CNAME/MX/TXT as relevant  
-3. **Read status** — NXDOMAIN vs SERVFAIL vs NOERROR  
-4. **Follow aliases** — CNAME chain to final A/AAAA  
-5. **Check authority and TTL** — NS/SOA and cache lifetime  
+---
 
-Automate steps 2–4; keep humans for split-horizon judgement.
+# Limitations
 
-## Security Considerations
+- Incorrect records can cause application failures
+- DNS changes require propagation time
+- Misconfigured MX records can affect email delivery
+- Incorrect TTL values can delay updates
 
-- Dangling CNAMEs can be claimed by attackers on some clouds — delete unused aliases  
-- TXT records can leak environment details — publish only what you need  
-- MX changes affect mail security (SPF/DKIM/DMARC via TXT) — change with review  
-- Do not paste full internal zone dumps into public chats  
-- Prefer signed/managed DNS APIs with least-privilege credentials  
+---
 
-## Common Mistakes
+# Hands-on Lab
 
-!!! warning "Putting a CNAME on the zone apex next to MX"
-    Classic DNS forbids other data next to a CNAME at the same name. **Fix:** use A/AAAA/ALIAS/ANAME features your DNS vendor documents, or redesign.
+## Task 1
 
-!!! warning "Assuming NXDOMAIN means DNS is down"
-    NXDOMAIN means the name does not exist. **Fix:** verify spelling and delegation; compare SERVFAIL separately.
+Query an A record.
 
-!!! warning "Leaving stale TXT forever"
-    Old verification strings confuse audits. **Fix:** track TXT purpose and expiry in change tickets.
+```bash
+dig google.com
+```
 
-!!! warning "Writing only a markdown checklist as the lab output"
-    Checklists rot when not executed. **Fix:** keep a script that prints live dig evidence.
+---
 
-## Best Practices
+## Task 2
 
-- Lower TTL before planned cutovers  
-- Document CNAME targets and owners  
-- Pair MX changes with TXT (SPF) review  
-- Store `dns-troubleshoot.sh` in your team’s ops scripts repo  
-- Test public and private views for split-horizon zones  
+Query an AAAA record.
 
-## Troubleshooting
+```bash
+dig AAAA google.com
+```
 
-| Symptom | Likely cause | Fix |
-|---------|--------------|-----|
-| NXDOMAIN | Typo / missing record / bad delegation | Fix zone; verify NS |
-| SERVFAIL | Broken resolver or DNSSEC issues | Try another resolver; check DNSSEC |
-| Wrong site after change | TTL cache | Wait or flush controlled caches |
-| Mail bounce | MX/TXT mismatch | Fix MX priority and SPF |
-| Intermittent answers | Multiple resolvers / anycast lag | Compare SERVER lines over time |
+---
 
-## Summary
+## Task 3
 
-Record types tell DNS what kind of answer you need. Query them deliberately, read status codes carefully, and keep a script that prints a live checklist. Next: [HTTP, HTTPS, and the Application Layer](http-https-and-application-layer.md).
+Query MX records.
 
-## Interview Questions
+```bash
+dig MX gmail.com
+```
 
-**1. What is the difference between an A record and a CNAME?**
+---
 
-??? success "Reveal answer"
-    An **A** record maps a name directly to an **IPv4 address**. A **CNAME** maps a name to **another name**. Clients (or resolvers) must continue lookup until they reach address records. CNAMEs are useful for aliases to load balancers or CDNs but are constrained at the zone apex in classic DNS.
+## Task 4
 
-**2. How do MX records work with priorities?**
+Query NS records.
 
-??? success "Reveal answer"
-    An **MX** record lists a mail server name and a **priority** number. Lower numbers are preferred. Senders try the best available MX. MX targets should resolve to A/AAAA (not typically to a CNAME in strict setups). Mis-ordered priorities cause unexpected mail routing.
+```bash
+dig NS google.com
+```
 
-**3. Give two common uses of TXT records in Cloud/DevOps.**
+---
 
-??? success "Reveal answer"
-    **Domain verification** (prove you own a domain to a cloud or software as a service vendor) and **email authentication** such as SPF (and related DMARC policies). Let’s Encrypt DNS-01 challenges also use TXT. TXT is powerful and easy to leave stale — track ownership.
+## Task 5
 
-**4. How do you distinguish NXDOMAIN from SERVFAIL in dig?**
+Query TXT records.
 
-??? success "Reveal answer"
-    Read the **`status:`** field. **NXDOMAIN** means the name does not exist according to authority. **SERVFAIL** means the resolver could not complete a valid answer (upstream failure, timeout, DNSSEC validation failure, and similar). Fixes differ: create/fix the name vs repair the resolver path.
+```bash
+dig TXT google.com
+```
 
-**5. What is a dangling CNAME and why is it dangerous?**
+---
 
-??? success "Reveal answer"
-    A **dangling CNAME** points to a target that no longer exists (for example a deleted cloud load balancer hostname). Attackers may register or claim that target in some platforms and receive your traffic. Delete unused aliases and monitor for NXDOMAIN on CNAME targets.
+## Task 6
 
-**6. Why is a scripted dig checklist better than pasting random dig commands in chat?**
+Perform a reverse lookup.
 
-??? success "Reveal answer"
-    A script ensures the **same fields** every time — resolver config, A/AAAA, MX/TXT, NS/SOA, status lines, and SERVER. That makes diffs between “before” and “after” possible and speeds handovers. Interviewers like operational discipline, not only protocol trivia.
+```bash
+dig -x 8.8.8.8
+```
 
-**7. What does SOA help you check during a zone change?**
+---
 
-??? success "Reveal answer"
-    The **SOA** (Start of Authority) includes the **serial** and timing fields. Operators bump the serial when the zone changes. Comparing SOA serials across secondaries helps confirm propagation. It does not replace checking the specific record you care about, but it is a useful authority-side signal.
+## Task 7
 
-## Related Tutorials
+Create a table comparing:
 
-- [Networking for Cloud & DevOps – Overview](index.md)
-- [DNS Fundamentals](dns-fundamentals.md) *(previous)*
-- [HTTP, HTTPS, and the Application Layer](http-https-and-application-layer.md) *(next)*
-- [Production DNS Operations](production-dns-operations.md)
+- A
+- AAAA
+- CNAME
+- MX
+- NS
+- TXT
+- PTR
+- SOA
+- SRV
 
-## References
+---
 
-- [IANA — DNS Resource Record Types](https://www.iana.org/assignments/dns-parameters/dns-parameters.xhtml)  
-- [`dig(1)`](https://manpages.ubuntu.com/manpages/jammy/en/man1/dig.1.html)  
-- [RFC 1035 — DNS](https://www.rfc-editor.org/rfc/rfc1035)  
-- Track index: [Networking for Cloud & DevOps Engineers](index.md)
+## Task 8
+
+Design DNS records for:
+
+- Company Website
+- Mail Server
+- VPN Gateway
+- Internal Portal
+- Kubernetes Ingress
+
+---
+
+# Linux Commands
+
+| Command | Purpose |
+|----------|----------|
+| `dig domain.com` | Query A record |
+| `dig AAAA domain.com` | Query IPv6 record |
+| `dig MX domain.com` | Query mail records |
+| `dig NS domain.com` | Query name servers |
+| `dig TXT domain.com` | Query TXT records |
+| `dig SRV domain.com` | Query SRV records |
+| `dig -x <IP>` | Reverse DNS lookup |
+| `host domain.com` | Display DNS information |
+| `nslookup domain.com` | DNS lookup utility |
+
+---
+
+# Common Mistakes
+
+❌ Using a CNAME at the zone apex where unsupported.
+
+✅ Use an A or AAAA record unless your DNS provider supports alias records.
+
+---
+
+❌ Confusing A and AAAA records.
+
+✅ A is for IPv4; AAAA is for IPv6.
+
+---
+
+❌ Incorrect MX priorities.
+
+✅ Lower numbers indicate higher priority.
+
+---
+
+❌ Forgetting to update the SOA serial number on manual DNS servers.
+
+✅ Increment the serial after zone changes.
+
+---
+
+❌ Setting an excessively long TTL during migrations.
+
+✅ Lower the TTL before planned DNS changes.
+
+---
+
+# Best Practices
+
+- Use meaningful hostnames.
+- Configure both A and AAAA records where IPv6 is available.
+- Keep TTL values appropriate for the environment.
+- Protect authoritative DNS zones from unauthorised changes.
+- Regularly verify DNS records.
+- Document DNS changes and maintain version control for zone files.
+
+---
+
+# Interview Questions
+
+## Beginner
+
+1. What is a DNS record?
+2. What is an A record?
+3. What is an AAAA record?
+4. What is a CNAME record?
+
+---
+
+## Intermediate
+
+1. Explain MX records.
+2. What is a PTR record?
+3. What is an SOA record?
+4. What is TTL?
+
+---
+
+## Architect Level
+
+1. Design DNS records for a multi-region enterprise application.
+2. Explain how DNS records support cloud load balancers.
+3. How would you troubleshoot incorrect DNS record resolution?
+
+---
+
+# Summary
+
+In this lesson, you learned:
+
+- DNS Records
+- A Records
+- AAAA Records
+- CNAME Records
+- MX Records
+- NS Records
+- TXT Records
+- PTR Records
+- SOA Records
+- SRV Records
+- TTL
+- Linux DNS Query Commands
+
+DNS records define how domains, services, and applications are discovered on the Internet and within enterprise networks. From mapping hostnames to IP addresses to directing email and enabling service discovery, DNS records are a critical part of modern networking, cloud infrastructure, and Kubernetes environments.
+
+---
+
+## Key Takeaways
+
+- **A Records** map hostnames to IPv4 addresses.
+- **AAAA Records** map hostnames to IPv6 addresses.
+- **CNAME Records** create aliases.
+- **MX Records** identify mail servers.
+- **NS Records** specify authoritative name servers.
+- **TXT Records** store verification and policy information.
+- **PTR Records** support reverse DNS lookups.
+- **SOA Records** define DNS zone authority and metadata.
+- **SRV Records** enable service discovery.
+
+---
+
+## What's Next?
+
+**[DNS Resolution](dns-resolution.md)**
+
+In the next lesson, you'll learn about **DNS Resolution**.
+
+You'll explore:
+
+- Recursive Resolution
+- Iterative Resolution
+- DNS Query Process
+- DNS Caching
+- Root, TLD, and Authoritative Servers
+- DNS Response Flow
+- Enterprise DNS Architecture
+
+By the end of the lesson, you'll understand the complete journey of a DNS query—from entering a domain name in a browser to receiving the correct IP address from authoritative DNS servers.

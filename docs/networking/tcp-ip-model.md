@@ -1,389 +1,839 @@
 ---
 title: "TCP/IP Model"
-description: "Map the four-layer TCP/IP Internet model to OSI, place real protocols, and prove the stack with ss and curl -v on Ubuntu."
+description: "Learn the four-layer TCP/IP Model — Application, Transport, Internet, and Network Access — and how it powers the Internet, cloud, and Kubernetes."
 difficulty: beginner
-estimated_time: "45–60 min"
+estimated_time: "90 min"
 author: Shaik Basha
-last_updated: "2026-08-02"
+last_updated: "2026-08-10"
 category: networking
 technology: networking
-module: "Module 3 · TCP/IP Model"
+module: "Module 1 · Networking Fundamentals"
+learning_paths:
+  - cloud-engineer
+  - devops-engineer
+  - site-reliability-engineer
+  - kubernetes-engineer
+  - platform-engineer
 tags:
   - networking
   - tcp-ip
-  - protocols
-  - internet
-prerequisites:
-  - networking/osi-model
-next:
-  - networking/ip-addressing
-related:
-  - networking/tcp-and-udp-deep-dive
-  - networking/dns-fundamentals
-  - interview/networking
-interview: interview/networking
+  - fundamentals
+  - rebash-networking-mastery
 comments: false
+status: ready
 ---
 
-# TCP/IP Model
+# TCP/IP Model — The Foundation of Modern Internet Communication
 
-## Overview
+> The **TCP/IP Model** (Transmission Control Protocol/Internet Protocol Model) is the networking architecture used by the Internet and virtually every modern network. While the OSI Model provides a conceptual framework with seven layers, the TCP/IP Model defines the practical protocols and communication methods that power websites, cloud platforms, mobile applications, Kubernetes clusters, and enterprise networks. Every Linux administrator, DevOps engineer, Cloud Architect, Platform Engineer, Site Reliability Engineer (SRE), and Network Engineer should understand how the TCP/IP Model works.
 
-The Internet does not run on seven OSI layers as a strict implementation. It runs on the **TCP/IP model** (also called the Internet protocol suite): a practical four-layer stack — **Link**, **Internet**, **Transport**, and **Application**. Ethernet and Wi‑Fi live at Link. Internet Protocol (IP) and Internet Control Message Protocol (ICMP) live at Internet. Transmission Control Protocol (TCP) and User Datagram Protocol (UDP) live at Transport. Hypertext Transfer Protocol (HTTP), Domain Name System (DNS), and Secure Shell (SSH) live at Application.
+---
 
-Engineers still use OSI numbers in conversation (“Layer 4 load balancer”) while configuring TCP/IP protocols on real hosts. You need both: OSI for shared vocabulary, TCP/IP for what is deployed. On a Linux VM you can see the stack in action: `ip` and ARP-related neighbours for Link/Internet behaviour, `ss -tuln` for Transport sockets, and `curl -v` for an Application request that rides on TCP and IP.
+## Learning Path
 
-In Cloud and DevOps work, almost every design diagram is a TCP/IP story: subnet routes (Internet layer), security groups on ports (Transport), and HTTPS APIs (Application). Containers and Kubernetes add virtual links, but the four layers remain. If you mis-place a protocol — for example treating DNS as “only Layer 3” — you will pick the wrong debug tool.
+<div class="ra-lesson-meta" markdown>
 
-This is **Tutorial 3** in **Module 3: TCP/IP Model** of the REBASH Academy **Networking for Cloud & DevOps Engineers** series. It is written for Cloud, DevOps, Site Reliability Engineering (SRE), and platform engineers. By the end, you will map OSI to TCP/IP with concrete protocol examples and save socket plus HTTP evidence.
+<p class="ra-lesson-meta__crumb" markdown>**Networking Mastery** → Module 1: Networking Fundamentals → Lesson 5</p>
 
-## Prerequisites
+<div class="ra-meta-grid" markdown>
 
+<div markdown>**Difficulty:** Beginner</div>
+
+<div markdown>**Reading Time:** 90 Minutes</div>
+
+</div>
+
+</div>
+
+<div class="ra-course-progress" markdown>
+
+**Course Progress**
+
+<div class="ra-meta-grid" markdown>
+
+<div markdown>**Course:** Networking Mastery</div>
+
+<div markdown>**Module:** Networking Fundamentals</div>
+
+<div markdown>**Lesson:** 5 of 10</div>
+
+</div>
+
+</div>
+
+---
+
+
+# What You'll Learn
+
+After completing this lesson, you'll be able to:
+
+- Understand the TCP/IP Model
+- Explain all four TCP/IP layers
+- Compare TCP/IP with the OSI Model
+- Understand data flow in TCP/IP
+- Identify protocols used at each layer
+- Understand why TCP/IP powers the Internet
+
+---
+
+# Prerequisites
+
+Complete:
+
+- [What is Networking?](introduction-to-networking.md)
+- [Types of Networks](types-of-networks.md)
+- [Network Topologies](network-topologies.md)
 - [OSI Model](osi-model.md)
-- A **practice Ubuntu 22.04/24.04 VM** with outbound HTTPS allowed if possible
-- Tools: `ip`, `ss`, `curl`, `ping`
 
-## Learning Objectives
+---
 
-By the end of this tutorial, you will be able to:
+# Why Learn the TCP/IP Model?
 
-- [ ] Name the four TCP/IP layers and the job of each
-- [ ] Map TCP/IP layers to OSI layers with a clear table
-- [ ] Place common protocols (Ethernet, IP, TCP/UDP, HTTP/DNS) on the correct TCP/IP layer
-- [ ] Trace an HTTPS request through the stack in plain language
-- [ ] Collect Transport and Application evidence with `ss -tuln` and `curl -v`
+Every Internet connection uses TCP/IP.
 
-## Architecture
+Examples include:
 
-The diagram maps the four TCP/IP layers to the seven OSI layers and shows where familiar protocols sit.
+- Opening websites
+- Sending emails
+- Cloud Computing
+- Kubernetes communication
+- Docker networking
+- Mobile applications
+- Video streaming
+- Online banking
 
-![TCP/IP model mapped to OSI](../assets/excalidraw/tcp-ip-model.svg)
+Without TCP/IP, the Internet as we know it would not exist.
 
-## Theory
+---
 
-### What it is
+# What is the TCP/IP Model?
 
-The **TCP/IP model** describes the protocol stack used on the Internet. Names vary slightly in textbooks (some say Network Access instead of Link; some say Host-to-Host instead of Transport). This course uses:
+The **TCP/IP Model** is a practical networking architecture developed by the U.S. Department of Defense to enable reliable communication between different computer systems.
 
-| TCP/IP layer | Job | Typical protocols |
-|--------------|-----|-------------------|
-| Application | User services and APIs | HTTP/HTTPS, DNS, SSH, TLS (as used by apps) |
-| Transport | Process-to-process delivery | TCP, UDP |
-| Internet | Host-to-host logical addressing / routing | IPv4, IPv6, ICMP |
-| Link | Local network delivery | Ethernet, Wi‑Fi, ARP (IPv4 neighbour mapping) |
+Unlike the OSI Model, which is primarily a reference model, the TCP/IP Model defines the actual protocols used in real-world networking.
 
-### Why it matters
+---
 
-Packet flows, security groups, network policies, and service meshes are easier when you know which layer you are changing. Opening port 443 in a cloud security group is a Transport rule. Adding a route to `10.0.0.0/8` is an Internet-layer rule. Rotating a TLS certificate is Application-layer work (with Transport underneath). Mixing those layers in a change ticket causes the wrong team to be paged.
+# TCP/IP Layers
 
-### How it works
+The TCP/IP Model consists of four layers.
 
-1. **Application** creates a request (for example HTTP GET).
-2. **Transport** (usually TCP) provides ports and, for TCP, reliable byte streams.
-3. **Internet** (IP) routes packets hop by hop toward the destination IP.
-4. **Link** delivers frames to the next hop on the local network.
-5. On the receiver, the path reverses up the stack to the listening application.
+```text
+Application
 
-``` {.bash .ra-terminal title="Terminal"}
+↓
+
+Transport
+
+↓
+
+Internet
+
+↓
+
+Network Access
+```
+
+Each layer provides services to the layer above it.
+
+---
+
+# TCP/IP Layers Overview
+
+| Layer | Purpose |
+|--------|---------|
+| Application | User-facing network services |
+| Transport | End-to-end communication |
+| Internet | IP addressing and routing |
+| Network Access | Local network communication |
+
+---
+
+# Layer 4 — Application Layer
+
+The Application Layer combines the responsibilities of the top three OSI layers:
+
+- Application
+- Presentation
+- Session
+
+Responsibilities:
+
+- User applications
+- Data formatting
+- Encryption
+- Session management
+
+Common protocols:
+
+- Hypertext Transfer Protocol (HTTP)
+- Hypertext Transfer Protocol Secure (HTTPS)
+- Domain Name System (DNS)
+- File Transfer Protocol (FTP)
+- Secure Shell (SSH)
+- Simple Mail Transfer Protocol (SMTP)
+- Internet Message Access Protocol (IMAP)
+- Post Office Protocol version 3 (POP3)
+
+---
+
+# Example
+
+Opening a website:
+
+```text
+Browser
+
+↓
+
+HTTPS
+
+↓
+
+Application Layer
+```
+
+The browser communicates with a web server using HTTP or HTTPS.
+
+---
+
+# Layer 3 — Transport Layer
+
+The Transport Layer provides communication between applications.
+
+Responsibilities:
+
+- Segmentation
+- Reliability
+- Flow control
+- Error detection
+- Port numbers
+
+Protocols:
+
+- Transmission Control Protocol (TCP)
+- User Datagram Protocol (UDP)
+
+---
+
+# TCP
+
+Reliable communication.
+
+Features:
+
+- Three-way handshake
+- Acknowledgments
+- Retransmissions
+- Ordered delivery
+- Error checking
+
+Common uses:
+
+- Web browsing
+- SSH
+- FTP
+- Email
+
+---
+
+# UDP
+
+Fast communication.
+
+Features:
+
+- Connectionless
+- No acknowledgments
+- Lower latency
+- Best-effort delivery
+
+Common uses:
+
+- DNS
+- Video streaming
+- Voice over IP (VoIP)
+- Online gaming
+
+---
+
+# Layer 2 — Internet Layer
+
+The Internet Layer is responsible for moving packets between networks.
+
+Responsibilities:
+
+- Logical addressing
+- Routing
+- Packet forwarding
+- Path selection
+
+Protocols:
+
+- Internet Protocol version 4 (IPv4)
+- Internet Protocol version 6 (IPv6)
+- Internet Control Message Protocol (ICMP)
+- Internet Group Management Protocol (IGMP)
+
+Devices:
+
+- Routers
+- Layer 3 Switches
+
+---
+
+# Example
+
+```text
+192.168.1.10
+
+↓
+
+Router
+
+↓
+
+8.8.8.8
+```
+
+Routers examine IP addresses and forward packets toward the destination.
+
+---
+
+# Layer 1 — Network Access Layer
+
+The Network Access Layer combines the Physical and Data Link layers of the OSI Model.
+
+Responsibilities:
+
+- Physical transmission
+- Media Access Control (MAC) addressing
+- Frame creation
+- Local network communication
+- Error detection
+
+Technologies:
+
+- Ethernet
+- Wi-Fi
+- Fibre
+- Point-to-Point Protocol (PPP)
+
+Devices:
+
+- Switches
+- Network Interface Cards (NICs)
+- Access Points
+
+---
+
+# Data Flow
+
+When sending data:
+
+```text
+Application
+
+↓
+
+Transport
+
+↓
+
+Internet
+
+↓
+
+Network Access
+
+↓
+
+Physical Medium
+```
+
+When receiving data:
+
+```text
+Physical Medium
+
+↓
+
+Network Access
+
+↓
+
+Internet
+
+↓
+
+Transport
+
+↓
+
+Application
+```
+
+---
+
+# TCP/IP vs OSI Model
+
+| OSI Model | TCP/IP Model |
+|------------|--------------|
+| Application | Application |
+| Presentation | Application |
+| Session | Application |
+| Transport | Transport |
+| Network | Internet |
+| Data Link | Network Access |
+| Physical | Network Access |
+
+---
+
+# Why Does TCP/IP Have Fewer Layers?
+
+The TCP/IP Model merges related OSI layers.
+
+For example:
+
+OSI:
+
+```text
+Application
+
+Presentation
+
+Session
+```
+
+TCP/IP:
+
+```text
+Application
+```
+
+Similarly,
+
+OSI:
+
+```text
+Data Link
+
+Physical
+```
+
+TCP/IP:
+
+```text
+Network Access
+```
+
+This simplification reflects how modern networking protocols are implemented.
+
+---
+
+# Communication Example
+
+Suppose you visit:
+
+```text
+https://example.com
+```
+
+The communication process is:
+
+```text
+Browser
+
+↓
+
+HTTPS
+
+↓
+
+TCP
+
+↓
+
+IP
+
+↓
+
+Ethernet/Wi-Fi
+
+↓
+
+Internet
+
+↓
+
+Server
+```
+
+The server processes the request and sends the response back using the same layered approach.
+
+---
+
+# Encapsulation
+
+As data moves down the TCP/IP stack, each layer adds protocol information.
+
+```text
+Application Data
+
+↓
+
+TCP Segment
+
+↓
+
+IP Packet
+
+↓
+
+Ethernet Frame
+
+↓
+
+Bits
+```
+
+This process prepares data for transmission.
+
+---
+
+# Decapsulation
+
+The receiving device removes protocol information layer by layer.
+
+```text
+Bits
+
+↓
+
+Ethernet Frame
+
+↓
+
+IP Packet
+
+↓
+
+TCP Segment
+
+↓
+
+Application Data
+```
+
+The application finally receives the original data.
+
+---
+
+# Common TCP/IP Protocols
+
+| Layer | Protocols |
+|--------|-----------|
+| Application | HTTP, HTTPS, DNS, SSH, FTP, SMTP |
+| Transport | TCP, UDP |
+| Internet | IPv4, IPv6, ICMP |
+| Network Access | Ethernet, Wi-Fi, PPP |
+
+---
+
+# Linux Commands by TCP/IP Layer
+
+| Layer | Linux Commands |
+|--------|----------------|
+| Application | `curl`, `wget`, `dig`, `ssh` |
+| Transport | `ss`, `netstat` |
+| Internet | `ping`, `ip route`, `traceroute` |
+| Network Access | `ip link`, `ethtool`, `arp` |
+
+---
+
+# Example: Loading a Website
+
+```text
+User Types URL
+
+↓
+
+DNS Resolves Domain
+
+↓
+
+TCP Connection Established
+
+↓
+
+HTTPS Request Sent
+
+↓
+
+Router Forwards Packets
+
+↓
+
+Web Server Responds
+
+↓
+
+Browser Displays Webpage
+```
+
+All of this occurs in a fraction of a second.
+
+---
+
+# TCP/IP in Cloud Computing
+
+Cloud platforms use TCP/IP for:
+
+- Virtual Private Clouds (VPCs)
+- Load Balancers
+- Virtual Private Networks (VPNs)
+- Internet Gateways
+- Application Programming Interface (API) communication
+- Storage access
+- Kubernetes networking
+
+Every cloud service communicates using TCP/IP.
+
+---
+
+# TCP/IP in Kubernetes
+
+Kubernetes networking depends heavily on TCP/IP.
+
+Examples:
+
+- Pod-to-Pod communication
+- Service networking
+- Ingress traffic
+- Cluster DNS
+- API Server communication
+
+Every Kubernetes packet follows the TCP/IP model.
+
+---
+
+# Production Perspective
+
+Every major technology stack uses TCP/IP, including:
+
+- Linux Servers
+- Windows Servers
+- macOS
+- AWS
+- Azure
+- Google Cloud
+- Docker
+- Kubernetes
+- VMware
+- Enterprise Data Centres
+
+TCP/IP is the universal language of modern networking.
+
+---
+
+# Hands-on Lab
+
+## Task 1
+
+Display IP addresses.
+
+```bash
+ip addr
+```
+
+---
+
+## Task 2
+
+Display the routing table.
+
+```bash
+ip route
+```
+
+---
+
+## Task 3
+
+Test Internet connectivity.
+
+```bash
+ping google.com
+```
+
+---
+
+## Task 4
+
+Display active TCP and UDP ports.
+
+```bash
 ss -tuln
-curl -v --max-time 8 -o /dev/null https://example.com
 ```
 
-### Key concepts and comparisons
+---
 
-| OSI layers (approx.) | TCP/IP layer | Memory hook |
-|----------------------|--------------|-------------|
-| 5–7 | Application | DNS, HTTP, SSH |
-| 4 | Transport | TCP/UDP ports |
-| 3 | Internet | IP addresses, ICMP |
-| 1–2 | Link | MAC, Ethernet, ARP |
+## Task 5
 
-| Protocol | TCP/IP layer | OSI-oriented view |
-|----------|--------------|-------------------|
-| Ethernet | Link | L1–L2 |
-| ARP | Link (support for IPv4 on Ethernet) | L2 |
-| IPv4/IPv6 | Internet | L3 |
-| ICMP | Internet | L3 |
-| TCP/UDP | Transport | L4 |
-| HTTP/DNS/SSH | Application | L7 (mostly) |
+Resolve a domain name.
 
-### Common pitfalls
-
-- Believing TCP/IP “replaced” OSI so layer numbers no longer matter — cloud UIs still use L4/L7.
-- Placing TLS only in one rigid layer — discuss it as Application security over TCP.
-- Forgetting that UDP applications (DNS, QUIC-related stacks) still sit on Transport.
-- Debugging HTTP before confirming TCP reachability to the port.
-- Using `ifconfig`/`netstat` instead of `ip`/`ss` on modern Ubuntu.
-
-## Hands-on Lab
-
-### Objective
-
-Build an OSI↔TCP/IP mapping artefact with concrete protocol examples, then capture Transport sockets (`ss -tuln`) and Application evidence (`curl -v`) under `~/rebash-networking/lab03`.
-
-### Prerequisites
-
-- Ubuntu 22.04/24.04
-- `iproute2`, `curl`, `iputils-ping`
-- Optional: `dnsutils` for `dig`
-
-### Lab environment
-
-Workspace: `~/rebash-networking/lab03`
-
-``` {.bash .ra-terminal title="Terminal"}
-mkdir -p ~/rebash-networking/lab03 && cd ~/rebash-networking/lab03
-set -euo pipefail
-hostname | tee hostname.txt
-command -v ss curl ip | tee tools-present.txt
+```bash
+dig example.com
 ```
 
-!!! example "Expected output"
-    `tools-present.txt` shows `ss`, `curl`, and `ip`.
+---
 
+## Task 6
 
-### Real-world scenario
+Retrieve a webpage.
 
-A new engineer asks whether “security groups are Layer 3 or Layer 4.” You produce a one-page mapping of OSI to TCP/IP with protocol examples, then prove on a lab VM that Transport sockets and an HTTPS Application request can be evidenced with standard tools — the same proof style used in production change tickets.
-
-### Step-by-step tasks
-
-#### Task 1 – Write the OSI↔TCP/IP mapping artefact
-
-``` {.bash .ra-terminal title="Terminal"}
-cd ~/rebash-networking/lab03
-set -euo pipefail
+```bash
+curl https://example.com
 ```
 
-Create `osi-tcpip-map.txt`:
+---
 
-```text title="osi-tcpip-map.txt"
-TCP/IP layer | OSI layers (approx) | Protocols (examples)        | Linux evidence idea
-Application  | 5–7                 | HTTP, HTTPS, DNS, SSH       | curl -v, dig
-Transport    | 4                   | TCP, UDP                    | ss -tuln
-Internet     | 3                   | IPv4, IPv6, ICMP            | ip addr, ping, ip route
-Link         | 1–2                 | Ethernet, Wi-Fi, ARP        | ip -br link, ip neigh
+## Task 7
 
-Concrete walkthrough for HTTPS GET example.com:
-1. Application: HTTP request inside TLS
-2. Transport: TCP destination port 443
-3. Internet: packets to the resolved A/AAAA address
-4. Link: frames to the local gateway MAC
+Trace the network path to a remote server.
+
+```bash
+traceroute example.com
 ```
 
-``` {.bash .ra-terminal title="Terminal"}
-cat osi-tcpip-map.txt
-grep -E 'Application|Transport|Internet|Link' osi-tcpip-map.txt
-```
+---
 
-!!! example "Expected output"
-    `osi-tcpip-map.txt` contains all four TCP/IP layer names and the HTTPS walkthrough.
+## Task 8
 
+Map the following protocols to their TCP/IP layers:
 
-#### Task 2 – Transport evidence with `ss -tuln`
+- HTTPS
+- DNS
+- TCP
+- UDP
+- IPv4
+- Ethernet
+- Wi-Fi
 
-``` {.bash .ra-terminal title="Terminal"}
-cd ~/rebash-networking/lab03
-set -euo pipefail
+Explain the role of each protocol.
 
-ss -tuln | tee ss-tuln.txt
-ss -s | tee ss-summary.txt
+---
 
-# Count listening TCP lines (header excluded carefully)
-awk 'NR>1 && /tcp/ && /LISTEN/ {c++} END{print c+0}' ss-tuln.txt | tee ss-listen-tcp-count.txt
+# TCP/IP vs OSI Comparison
 
-# Neighbour / link support for the Internet layer on LAN
-ip neigh show | tee ip-neigh.txt || true
-ip -br link | tee ip-br-link.txt
-```
+| Feature | OSI Model | TCP/IP Model |
+|----------|-----------|--------------|
+| Layers | 7 | 4 |
+| Purpose | Reference Model | Practical Protocol Suite |
+| Internet Usage | Conceptual | Actual Implementation |
+| Standardization | ISO | DoD/IETF |
+| Industry Usage | Learning & Troubleshooting | Production Networking |
 
-!!! example "Expected output"
-    `ss-tuln.txt` exists; `ss-listen-tcp-count.txt` contains a number (zero is possible on a minimal VM).
+---
 
+# Common Mistakes
 
-#### Task 3 – Application evidence with `curl -v` and pack
+❌ Thinking TCP/IP replaces the OSI Model.
 
-``` {.bash .ra-terminal title="Terminal"}
-cd ~/rebash-networking/lab03
-set -euo pipefail
+✅ Use OSI for concepts and troubleshooting, TCP/IP for real-world implementation.
 
-curl -v --max-time 10 -o /dev/null https://example.com 2>curl-verbose.txt || true
-test -s curl-verbose.txt
+---
 
-# Pull a few useful lines if present
-grep -Ei 'Connected to|ALPN|HTTP/|SSL connection|Trying|Could not' curl-verbose.txt \
-  | tee curl-highlights.txt || cp curl-verbose.txt curl-highlights.txt
+❌ Confusing TCP with TCP/IP.
 
-# Internet-layer companion check
-ping -c 2 -W 2 127.0.0.1 2>&1 | tee ping-localhost.txt
-ip route show default 2>&1 | tee default-route.txt || true
+✅ TCP is one protocol within the TCP/IP suite.
 
-tar -czf tcpip-stack-evidence.tgz \
-  hostname.txt tools-present.txt osi-tcpip-map.txt \
-  ss-tuln.txt ss-summary.txt ss-listen-tcp-count.txt \
-  ip-neigh.txt ip-br-link.txt \
-  curl-verbose.txt curl-highlights.txt \
-  ping-localhost.txt default-route.txt
-ls -l tcpip-stack-evidence.tgz | tee evidence-ls.txt
-test -s tcpip-stack-evidence.tgz
-```
+---
 
-!!! example "Expected output"
-    `curl-verbose.txt` is non-empty; `tcpip-stack-evidence.tgz` is created and non-empty.
+❌ Assuming TCP and UDP are interchangeable.
 
+✅ Choose the protocol based on reliability and performance requirements.
 
-### Validation steps
+---
 
-- [ ] `osi-tcpip-map.txt` maps all four TCP/IP layers to OSI ranges and protocols
-- [ ] `ss -tuln` output saved
-- [ ] `curl -v` output saved
-- [ ] Evidence tarball exists under `~/rebash-networking/lab03`
+❌ Ignoring lower layers during troubleshooting.
 
-### Common errors and fixes
+✅ Always verify physical and network connectivity first.
 
-| Error | Cause | Fix |
-|-------|-------|-----|
-| `curl: (6) Could not resolve host` | DNS / Application dependency | Fix resolvers; still keep verbose log as evidence |
-| `curl: (7) Failed to connect` | Transport/Internet path | Check route, security groups, `ss` on server side |
-| Empty `ss` LISTEN list | Minimal host | Valid — count can be 0; note it in the ticket |
-| Permission noise in neigh table | Normal | `ip neigh` still useful without sudo on many systems |
+---
 
-### Challenge exercise
+❌ Believing only Internet traffic uses TCP/IP.
 
-Create executable script `~/rebash-networking/lab03/stack-probe.sh` that: (1) writes timestamped `ss -tuln` to `probe-ss.txt`, (2) runs `curl -v --max-time 8 -o /dev/null https://example.com` saving stderr to `probe-curl.txt`, (3) appends a one-line summary `TCPIP_PROBE_OK=yes` or `TCPIP_PROBE_OK=no` to `probe-summary.env` depending on whether `curl` exit code was 0. Run it once. Working artefact required — not a markdown notes file.
+✅ Most private enterprise networks also use TCP/IP.
 
-### Learning outcomes
+---
 
-- Mapped OSI vocabulary onto the deployed TCP/IP stack
-- Placed everyday protocols on the correct layer
-- Evidenced Transport and Application behaviour on Linux
-- Practised the HTTPS-through-the-stack story used in design reviews
+# Best Practices
 
-### Cleanup
+- Understand both the OSI and TCP/IP models.
+- Learn common protocols at each TCP/IP layer.
+- Practice using Linux networking tools.
+- Use the TCP/IP Model to understand real-world communication.
+- Combine TCP/IP knowledge with OSI troubleshooting techniques.
 
-``` {.bash .ra-terminal title="Terminal"}
-cd ~/rebash-networking/lab03
-set -euo pipefail
-# No persistent routes or firewall changes in the main lab
-ls -la
-# Optional: rm -f *.txt *.env *.tgz
-```
+---
 
-## Validation
+# Interview Questions
 
-- [ ] Lab finished under `~/rebash-networking/lab03/` with `tcpip-stack-evidence.tgz`
-- [ ] You can list four TCP/IP layers and map them to OSI
-- [ ] You can walk an HTTPS request down and up the stack
-- [ ] You prefer `ss` over `netstat` on modern Ubuntu
+## Beginner
 
-## Code Walkthrough
+1. What is the TCP/IP Model?
+2. How many layers does it have?
+3. Which protocol provides reliable communication?
+4. Which layer is responsible for IP addressing?
 
-A practical stack check for TCP/IP:
+---
 
-1. **Link** — `ip -br link`, `ip neigh`  
-2. **Internet** — `ip addr`, `ip route`, `ping`  
-3. **Transport** — `ss -tuln`, port connectivity  
-4. **Application** — `curl -v`, `dig`, client error messages  
+## Intermediate
 
-Use the mapping file from Task 1 whenever someone mixes OSI numbers with protocol names.
+1. Compare TCP/IP and the OSI Model.
+2. Why does TCP/IP have only four layers?
+3. Explain how TCP establishes a connection.
+4. What is the difference between TCP and UDP?
 
-## Security Considerations
+---
 
-- Verbose HTTP logs may include cookies or tokens — redact before sharing  
-- Opening Transport ports in cloud security groups widens attack surface — least privilege  
-- Prefer TLS (HTTPS) for Application traffic on untrusted networks  
-- Do not disable IP-level filtering to “simplify” demos on shared VMs  
-- Understand that Link-level access on a LAN can expose ARP spoofing risks on untrusted segments  
+## Architect Level
 
-## Common Mistakes
+1. Why has TCP/IP become the universal networking standard?
+2. How does Kubernetes rely on the TCP/IP Model?
+3. Explain the role of TCP/IP in cloud-native architectures.
 
-!!! warning "Treating TCP/IP and OSI as rivals"
-    Production uses both. **Fix:** map them with a table; use OSI numbers when the product UI does.
+---
 
-!!! warning "Calling security groups ‘Layer 7 firewalls’ by default"
-    Classic security groups/NACLs are mostly L3/L4. **Fix:** reserve L7 for WAF/proxy rules that read HTTP.
+# Summary
 
-!!! warning "Skipping Transport checks"
-    Application retries hide connection failures. **Fix:** prove the TCP port before tuning HTTP timeouts.
+In this lesson, you learned:
 
-!!! warning "Placing IP in the Application layer"
-    IP addressing is Internet layer. **Fix:** keep addresses/routes separate from HTTP paths in designs.
+- The TCP/IP Model
+- Four TCP/IP layers
+- TCP/IP vs OSI comparison
+- TCP and UDP
+- Internet Layer responsibilities
+- Network Access Layer
+- Encapsulation and decapsulation
+- Real-world networking examples
 
-## Best Practices
+The TCP/IP Model is the foundation of modern networking. Every Internet service, cloud platform, Linux server, container, and Kubernetes cluster communicates using this protocol suite. Understanding TCP/IP enables you to design, troubleshoot, and operate production networks effectively.
 
-- Keep an OSI↔TCP/IP cheat sheet in the team wiki  
-- Name the layer in every network change ticket  
-- Use `curl -v` (or equivalent) when explaining TLS/HTTP issues  
-- Standardise on `ip`/`ss` in runbooks  
-- Teach new joiners with one HTTPS trace through all four layers  
+---
 
-## Troubleshooting
+## Key Takeaways
 
-| Symptom | Likely layer | Fix focus |
-|---------|--------------|-----------|
-| No carrier / NIC DOWN | Link | Attach NIC; check `ip link` |
-| No route to host | Internet | Routes, gateways, VPC tables |
-| Connection refused | Transport | Process not listening; wrong port |
-| Connection timed out | Internet/Transport | Firewall, path, wrong IP |
-| HTTP 4xx/5xx after connect | Application | App/proxy logic, not basic IP |
+- The TCP/IP Model consists of four layers.
+- It defines the protocols used by the modern Internet.
+- TCP provides reliable communication, while UDP prioritises speed.
+- The Internet Layer handles IP addressing and routing.
+- Every modern network relies on TCP/IP for communication.
 
-## Summary
+---
 
-The TCP/IP model is the four-layer stack the Internet actually uses. Map it to OSI, place protocols correctly, and prove Transport and Application behaviour with `ss` and `curl -v`. Next, learn how hosts are numbered in [IP Addressing](ip-addressing.md).
+## What's Next?
 
-## Interview Questions
-
-**1. What are the four layers of the TCP/IP model, and what does each do?**
-
-??? success "Reveal answer"
-    **Link** delivers frames on the local network. **Internet** handles logical addressing and routing with IP (and ICMP). **Transport** delivers data to processes with TCP or UDP ports. **Application** is where protocols such as HTTP, DNS, and SSH live. Together they describe real Internet communication.
-
-**2. How do TCP/IP layers map to OSI layers?**
-
-??? success "Reveal answer"
-    Rough mapping: TCP/IP **Application** ≈ OSI 5–7, **Transport** ≈ OSI 4, **Internet** ≈ OSI 3, **Link** ≈ OSI 1–2. Exact textbook names vary, but this mapping is what interviewers expect for Cloud/DevOps roles.
-
-**3. At which TCP/IP layer would you place Ethernet, IPv4, TCP, and HTTPS?**
-
-??? success "Reveal answer"
-    Ethernet → **Link**; IPv4 → **Internet**; TCP → **Transport**; HTTPS (HTTP over TLS) → **Application** (running on TCP). Mentioning TLS as protecting Application data over Transport earns extra credit.
-
-**4. Walk through an HTTPS request from a VM to `example.com` using TCP/IP layers.**
-
-??? success "Reveal answer"
-    Application builds HTTP and uses TLS; Transport opens TCP to port 443; Internet sends IP packets to the resolved address; Link frames carry packets to the local gateway. The server reverses the path up to its web process. DNS is an Application protocol used before the HTTP request if a name must be resolved.
-
-**5. Why do engineers still say “Layer 7 load balancer” if we deploy TCP/IP?**
-
-??? success "Reveal answer"
-    OSI numbers remain industry vocabulary. “Layer 7” means the balancer understands application protocols (HTTP), while “Layer 4” means TCP/UDP forwarding. The data plane is still TCP/IP; the label describes feature depth.
-
-**6. Which command evidence would you attach to show Transport vs Application health?**
-
-??? success "Reveal answer"
-    Transport: `ss -tuln` (and connection attempts to a port). Application: `curl -v` or application logs/status codes. Together they show whether you failed before the app spoke HTTP or after.
-
-**7. Is ICMP in the Transport layer? Why or why not?**
-
-??? success "Reveal answer"
-    **No.** ICMP is part of the **Internet** layer alongside IP. It carries control and error messages (including echo request/reply used by `ping`). It is not a process-port Transport protocol like TCP/UDP.
-
-**8. How does this model help when debugging Kubernetes or cloud security groups?**
-
-??? success "Reveal answer"
-    Network policies and security groups often match on IP and ports (Internet + Transport). Ingress/HTTPRoutes act at Application. Knowing the layer prevents fixing the wrong object — for example editing an HTTP route when packets never reach the node IP.
-
-## Related Tutorials
-
-- [OSI Model](osi-model.md) *(previous)*
-- [IP Addressing](ip-addressing.md) *(next)*
-- [TCP and UDP Deep Dive](tcp-and-udp-deep-dive.md)
-- [DNS Fundamentals](dns-fundamentals.md)
-
-## References
-
-- [RFC 1122](https://www.rfc-editor.org/rfc/rfc1122) — Requirements for Internet Hosts — Communication Layers  
-- [RFC 793](https://www.rfc-editor.org/rfc/rfc793) — Transmission Control Protocol  
-- [RFC 791](https://www.rfc-editor.org/rfc/rfc791) — Internet Protocol  
-- [`ss(8)`](https://manpages.ubuntu.com/manpages/jammy/en/man8/ss.8.html) — Ubuntu man-page  
-- Track index: [Networking for Cloud & DevOps Engineers](index.md)
+**[Data Encapsulation](data-encapsulation.md)**

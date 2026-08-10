@@ -1,0 +1,11 @@
+title: Module 15 · Capstone Projects
+nav:
+  - Overview: index.md
+  - Build a Secure Linux Web Server: secure-linux-web-server.md
+  - Configure a Bastion Host: bastion-host.md
+  - Deploy a Git Server: deploy-git-server.md
+  - Create a Monitoring Server: monitoring-server.md
+  - Automate User Provisioning with Bash: automate-user-provisioning-bash.md
+  - Build a Linux Server Baseline: linux-server-baseline.md
+  - Harden an Ubuntu Server: harden-ubuntu-server.md
+  - Production Linux Troubleshooting Challenge: production-linux-troubleshooting-challenge.md

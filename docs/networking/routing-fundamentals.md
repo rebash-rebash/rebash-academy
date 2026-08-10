@@ -1,423 +1,812 @@
 ---
-title: "Routing Fundamentals"
-description: "Read Linux routing tables with ip route, safely add and delete a temporary route in a network namespace, and use traceroute evidence without leaving leftover routes."
+title: "Routing Basics"
+description: "Learn routing fundamentals — routers, routing tables, next-hop forwarding, default gateways, longest prefix match, and Linux routing commands."
 difficulty: beginner
-estimated_time: "55–70 min"
+estimated_time: "90 min"
 author: Shaik Basha
-last_updated: "2026-08-02"
+last_updated: "2026-08-10"
 category: networking
 technology: networking
-module: "Module 6 · Routing"
+module: "Module 5 · Routing"
+learning_paths:
+  - cloud-engineer
+  - devops-engineer
+  - site-reliability-engineer
+  - linux-administrator
+  - platform-engineer
 tags:
   - networking
   - routing
   - ip-route
-  - traceroute
-prerequisites:
-  - networking/subnetting-and-vlsm
-next:
-  - networking/ethernet-switching-and-vlans
-related:
-  - networking/linux-networking-toolkit
-  - networking/cloud-networking-vpc-and-subnets
-  - interview/networking
-interview: interview/networking
+  - gateway
+  - rebash-networking-mastery
 comments: false
+status: ready
 ---
 
-# Routing Fundamentals
+# Routing Basics — Understanding How Routers Connect Networks
 
-## Overview
+> **Routing** is the process of forwarding packets between different networks. Unlike switches, which forward Ethernet frames using **MAC addresses**, routers make forwarding decisions using **IP addresses** and **routing tables**. Every time you access a website, connect to a cloud service, communicate between subnets, or browse the Internet, routers determine the best path for your packets. Routing is the foundation of enterprise networking, cloud computing, data centres, and the Internet. Every Linux administrator, DevOps engineer, Cloud Architect, Platform Engineer, Site Reliability Engineer (SRE), and Network Engineer should understand routing fundamentals.
 
-**Routing** is how a host or router chooses the **next hop** for a packet when the destination is not on the local subnet. On Linux, the kernel consults a **routing table**. You read it with `ip route show`. A typical workstation has a **default route** (`default via …`) toward a gateway that knows how to reach the rest of the Internet Protocol (IP) world.
+---
 
-Cloud Virtual Private Clouds (VPCs) use the same idea with route tables attached to subnets: local VPC traffic stays local; `0.0.0.0/0` often points to an Internet gateway or Network Address Translation (NAT) gateway. If the route is wrong, you see timeouts even when security groups allow the port. If two routes match, the **longest prefix** (most specific) wins; metrics break remaining ties depending on the platform.
+## Learning Path
 
-In this tutorial you practise safe operations: inspect routes, optionally create a **network namespace** lab playground to add and delete a temporary unreachable route without disturbing the host’s main table, and capture a `traceroute` (or `tracepath`) toward `1.1.1.1` when the network allows it. Cleanup must remove any temporary routes you add.
+<div class="ra-lesson-meta" markdown>
 
-This is **Tutorial 6** in **Module 6: Routing** of the REBASH Academy **Networking for Cloud & DevOps Engineers** series. It is written for Cloud, DevOps, Site Reliability Engineering (SRE), and platform engineers. By the end, you will explain route selection, prove it with Linux tools, and leave the system clean.
+<p class="ra-lesson-meta__crumb" markdown>**Networking Mastery** → Module 5: Routing → Lesson 1</p>
 
-## Prerequisites
+<div class="ra-meta-grid" markdown>
 
-- [Subnetting and VLSM](subnetting-and-vlsm.md)
-- A **practice Ubuntu 22.04/24.04 VM** where you have `sudo`
-- Tools: `iproute2` (`ip`), `iputils-ping`; `traceroute` or `tracepath` (`sudo apt-get install -y traceroute` optional)
+<div markdown>**Difficulty:** Beginner</div>
 
-## Learning Objectives
+<div markdown>**Reading Time:** 90 Minutes</div>
 
-By the end of this tutorial, you will be able to:
+</div>
 
-- [ ] Explain what a route is and what a default gateway does
-- [ ] Read `ip route show` and identify connected, via-gateway, and default routes
-- [ ] Describe longest-prefix matching in plain language
-- [ ] Add and delete a temporary route inside a network namespace (safe sandbox) or document the table carefully
-- [ ] Capture path evidence with `traceroute`/`tracepath` to `1.1.1.1` when permitted, and always clean up
+</div>
 
-## Architecture
+<div class="ra-course-progress" markdown>
 
-Hosts send packets to a gateway when the destination is remote. Routers forward hop by hop using their own tables until the destination network is reached.
+**Course Progress**
 
-![Routing fundamentals](../assets/excalidraw/routing-fundamentals.svg)
+<div class="ra-meta-grid" markdown>
 
-## Theory
+<div markdown>**Course:** Networking Mastery</div>
 
-### What it is
+<div markdown>**Module:** Routing</div>
 
-A **route** maps a destination prefix to an interface and often a **next-hop** (gateway) address. Types you will see on Linux:
+<div markdown>**Lesson:** 1 of 10</div>
 
-| Route kind | Example | Meaning |
-|------------|---------|---------|
-| Connected / link | `192.168.1.0/24 dev eth0` | Destination is on that interface’s network |
-| Via gateway | `10.0.0.0/8 via 192.168.1.1` | Send to next hop |
-| Default | `default via 192.168.1.1` | Same as `0.0.0.0/0` — when nothing else matches |
+</div>
 
-**Static routing** means humans (or automation) install routes. **Dynamic routing** (Open Shortest Path First — OSPF, Border Gateway Protocol — BGP) learns routes from peers — covered more deeply in advanced ops; the mental model remains “prefix → next hop”.
+</div>
 
-### Why it matters
+---
 
-Most “cannot reach the database” tickets that are not DNS or firewall end up as routing: missing route to a peered VPC, wrong NAT, blackhole route, or asymmetric return path. Kubernetes nodes, Docker bridges, and service meshes all add routes. If you cannot read `ip route`, you cannot debug them. Cloud interviews expect you to explain default routes and longest-prefix match.
 
-### How it works
+# What You'll Learn
 
-1. **Lookup** — kernel finds the best matching route for the destination IP.
-2. **Longest prefix** — `/32` beats `/24` beats `/16` beats `/0`.
-3. **Forward** — packet goes out the chosen device toward the next hop or local delivery.
-4. **Observe** — `ip route get 1.1.1.1` shows what the kernel would do for one destination.
+After completing this lesson, you'll be able to:
 
-``` {.bash .ra-terminal title="Terminal"}
-ip route show
-ip route get 1.1.1.1
+- Understand routing fundamentals
+- Learn the role of routers
+- Understand routing tables
+- Learn how packets are forwarded
+- Understand next-hop routing
+- Learn direct and indirect routing
+- Apply routing concepts in enterprise and cloud environments
+
+---
+
+# Prerequisites
+
+Complete:
+
+- Module 1: Networking Fundamentals
+- Module 2: IPv4 Addressing
+- Module 3: IPv6
+- Module 4: Switching
+
+---
+
+# Why Learn Routing?
+
+Imagine two computers located in different networks.
+
+Computer A:
+
+```text
+192.168.10.100
 ```
 
-### Key concepts and comparisons
+Computer B:
 
-| Question | Tool |
-|----------|------|
-| What does the host know? | `ip route show` / `ip -4 route` |
-| What would it do for X? | `ip route get X` |
-| Where do packets go hop-by-hop? | `traceroute` / `tracepath` / `mtr` |
-| Isolated experiments | Network namespaces (`ip netns`) |
-
-| Preference | Prefer when | Avoid when |
-|------------|-------------|------------|
-| Inspect only | Production jump hosts | You need to prove add/del safely — use `netns` |
-| Temporary route in `netns` | Learning labs | You forget cleanup on the main table |
-| Changing main table default | Controlled windows only | Shared VMs without approval |
-
-### Common pitfalls
-
-- Adding a bad default route on the main table and losing SSH — use namespaces for experiments.
-- Forgetting cleanup so a blackhole route remains.
-- Reading `traceroute` stars (`* * *`) as total failure — ICMP may be filtered.
-- Confusing “no route” with “firewall drop” — different signals (`Network is unreachable` vs timeout).
-- Using obsolete `route`/`ifconfig` when `ip` is available.
-
-## Hands-on Lab
-
-### Objective
-
-Document the main routing table, practise a temporary route **add/del inside a network namespace** (preferred safe method), capture optional `traceroute` to `1.1.1.1`, and remove all temporary state. Workspace: `~/rebash-networking/lab06`.
-
-### Prerequisites
-
-- Ubuntu 22.04/24.04 with sudo
-- `iproute2` installed
-- Optional: `sudo apt-get install -y traceroute`
-
-### Lab environment
-
-Workspace: `~/rebash-networking/lab06`
-
-``` {.bash .ra-terminal title="Terminal"}
-mkdir -p ~/rebash-networking/lab06 && cd ~/rebash-networking/lab06
-set -euo pipefail
-hostname | tee hostname.txt
-whoami | tee admin-user.txt
-sudo -n true 2>/dev/null || sudo -v
-command -v ip | tee tools-present.txt
+```text
+192.168.20.50
 ```
 
-!!! example "Expected output"
-    sudo works; `ip` is available.
+Since they belong to different networks:
 
+```text
+Direct Communication
 
-### Real-world scenario
-
-Before approving a VPC peering change, you document how a lab VM currently routes Internet and private traffic. You also rehearse adding a deliberate blackhole-style route in a disposable network namespace so you understand failure symptoms — without breaking your SSH session on the main table.
-
-### Step-by-step tasks
-
-#### Task 1 – Document the main routing table and route lookup
-
-``` {.bash .ra-terminal title="Terminal"}
-cd ~/rebash-networking/lab06
-set -euo pipefail
-
-ip route show | tee ip-route.txt
-ip -6 route show 2>/dev/null | tee ip6-route.txt || true
-ip route show default | tee ip-route-default.txt || true
-
-ip route get 1.1.1.1 2>&1 | tee ip-route-get-1.1.1.1.txt || true
-ip route get 127.0.0.1 2>&1 | tee ip-route-get-localhost.txt
-
-# Human-readable summary for the ticket
-{
-  echo "default_line: $(ip route show default 2>/dev/null | head -n1 || echo none)"
-  echo "route_get_1.1.1.1: $(tr '\n' ' ' < ip-route-get-1.1.1.1.txt)"
-} | tee route-summary.txt
+❌ Not Possible
 ```
 
-!!! example "Expected output"
-    `ip-route.txt` lists routes; `ip-route-get-localhost.txt` succeeds; Internet lookup may work or explain missing default.
+A router is required.
 
+---
 
-#### Task 2 – Temporary unreachable route inside a network namespace
+# What is Routing?
 
-This sandbox avoids breaking the host default route. Cleanup deletes the namespace (and its routes).
+Routing is the process of moving packets from one network to another.
 
-``` {.bash .ra-terminal title="Terminal"}
-cd ~/rebash-networking/lab06
-set -euo pipefail
+Example:
 
-NS="rebash-lab06"
-# Clean leftover namespace from a previous interrupted run
-sudo ip netns del "$NS" 2>/dev/null || true
-sudo ip netns add "$NS"
+```text
+Laptop
 
-# Loopback inside netns so the namespace has a basic stack
-sudo ip -n "$NS" link set lo up
-sudo ip -n "$NS" route show | tee netns-routes-before.txt
+↓
 
-# Add a blackhole-style unreachable route for a documentation TEST-NET prefix
-sudo ip -n "$NS" route add unreachable 203.0.113.0/24
-sudo ip -n "$NS" route show | tee netns-routes-after-add.txt
-grep -F '203.0.113.0/24' netns-routes-after-add.txt
+Router
 
-# Show the failure mode inside the namespace (must fail)
-if sudo ip netns exec "$NS" ping -c 1 -W 1 203.0.113.10 2>netns-ping-unreachable.txt; then
-  echo "ERROR: ping unexpectedly succeeded" >&2
-  exit 1
-fi
-cat netns-ping-unreachable.txt
-grep -Ei 'unreachable|Network is unreachable|100% packet loss|Permission|denied|error' \
-  netns-ping-unreachable.txt || test -s netns-ping-unreachable.txt
+↓
 
-# Delete the temporary route, then show table again
-sudo ip -n "$NS" route del unreachable 203.0.113.0/24
-sudo ip -n "$NS" route show | tee netns-routes-after-del.txt
-if grep -F '203.0.113.0/24' netns-routes-after-del.txt; then
-  echo "ERROR: route still present after delete" >&2
-  exit 1
-fi
-echo "route_removed_ok" | tee netns-route-removed.txt
+Internet
+
+↓
+
+Web Server
 ```
 
-!!! example "Expected output"
-    Route appears after add, ping fails as unreachable (or equivalent error text), route is gone after delete, `netns-route-removed.txt` contains `route_removed_ok`.
+The router determines the best path toward the destination.
 
+---
 
-#### Task 3 – Traceroute evidence (safe) and pack; keep cleanup ready
+# What is a Router?
 
-``` {.bash .ra-terminal title="Terminal"}
-cd ~/rebash-networking/lab06
-set -euo pipefail
+A **Router** is a **Layer 3 (Network Layer)** device.
 
-if command -v traceroute >/dev/null 2>&1; then
-  traceroute -n -w 2 -q 1 -m 10 1.1.1.1 2>&1 | tee traceroute-1.1.1.1.txt || true
-elif command -v tracepath >/dev/null 2>&1; then
-  tracepath -n 1.1.1.1 2>&1 | tee traceroute-1.1.1.1.txt || true
-else
-  echo "traceroute/tracepath not installed" | tee traceroute-1.1.1.1.txt
-  # Minimal safe substitute: repeated route get
-  ip route get 1.1.1.1 2>&1 | tee -a traceroute-1.1.1.1.txt || true
-fi
+Its primary responsibilities are:
 
-tar -czf routing-evidence.tgz \
-  hostname.txt admin-user.txt tools-present.txt \
-  ip-route.txt ip6-route.txt ip-route-default.txt \
-  ip-route-get-1.1.1.1.txt ip-route-get-localhost.txt route-summary.txt \
-  netns-routes-before.txt netns-routes-after-add.txt \
-  netns-ping-unreachable.txt netns-routes-after-del.txt netns-route-removed.txt \
-  traceroute-1.1.1.1.txt
-ls -l routing-evidence.tgz | tee evidence-ls.txt
-test -s routing-evidence.tgz
+- Connect Different Networks
+- Forward Packets
+- Maintain Routing Tables
+- Select Best Paths
+- Separate Broadcast Domains
+
+---
+
+# Switch vs Router
+
+| Switch | Router |
+|---------|---------|
+| Layer 2 | Layer 3 |
+| Uses MAC Addresses | Uses IP Addresses |
+| Forwards Frames | Routes Packets |
+| Connects Devices in Same Network | Connects Different Networks |
+
+---
+
+# When is Routing Required?
+
+Routing is needed whenever traffic must leave the local network.
+
+Examples:
+
+- Different Virtual Local Area Networks (VLANs)
+- Different Subnets
+- Branch Offices
+- Cloud Networks
+- Internet Access
+
+---
+
+# Packet Journey
+
+Suppose a user accesses:
+
+```text
+www.example.com
 ```
 
-!!! example "Expected output"
-    `routing-evidence.tgz` is non-empty; traceroute file exists (full path, partial stars, or honest “not installed”).
+The packet travels:
 
+```text
+Application
 
-### Validation steps
+↓
 
-- [ ] Main table captured with `ip route show`
-- [ ] `ip route get` evidence saved for localhost and `1.1.1.1`
-- [ ] Namespace route was added, shown failing, then deleted
-- [ ] Evidence tarball exists under `~/rebash-networking/lab06`
-- [ ] Cleanup (next section) removes the namespace so nothing temporary remains
+TCP
 
-### Common errors and fixes
+↓
 
-| Error | Cause | Fix |
-|-------|-------|-----|
-| `Cannot open network namespace` | Missing privileges | Use `sudo`; ensure `iproute2` installed |
-| Lost SSH after bad route | Edited **main** table default | Prefer `ip netns`; recover via console |
-| `traceroute: not found` | Package missing | Use `tracepath` or `ip route get`; optional install |
-| Ping succeeds to `203.0.113.10` | Route not applied / wrong netns | Re-check `ip -n … route show` |
-| Leftover `rebash-lab06` netns | Skipped cleanup | Run Cleanup commands |
+IP Packet
 
-### Challenge exercise
+↓
 
-Create executable script `~/rebash-networking/lab06/netns-route-lab.sh` that: creates netns `rebash-lab06-ch`, adds `unreachable 198.51.100.0/24`, saves `ip route` before/after to files under a `challenge-out/` directory, deletes the route, deletes the netns, and writes `challenge-out/DONE` containing `OK` only if the route is absent and the netns is gone. Run it once. Working script artefact — not a notes runbook.
+Default Gateway
 
-### Learning outcomes
+↓
 
-- Read and summarised Linux routing tables
-- Used `ip route get` to explain forwarding decisions
-- Practised safe temporary blackhole routes in a network namespace
-- Captured path evidence and removed temporary state
+Router
 
-### Cleanup
+↓
 
-``` {.bash .ra-terminal title="Terminal"}
-cd ~/rebash-networking/lab06
-set -euo pipefail
+Internet
 
-# Remove lab namespaces (main tasks + challenge name if present)
-sudo ip netns del rebash-lab06 2>/dev/null || true
-sudo ip netns del rebash-lab06-ch 2>/dev/null || true
+↓
 
-# Ensure no leftover TEST-NET unreachable routes on the **main** table
-# (should not exist if you followed the lab; remove only if you added by mistake)
-if ip route show | grep -E '203\.0\.113\.0/24|198\.51\.100\.0/24'; then
-  sudo ip route del unreachable 203.0.113.0/24 2>/dev/null || true
-  sudo ip route del unreachable 198.51.100.0/24 2>/dev/null || true
-fi
-
-ip netns list | tee netns-list-after-cleanup.txt || true
-ip route show | tee ip-route-after-cleanup.txt
-echo "cleanup_complete" | tee cleanup-complete.txt
+Destination
 ```
 
-!!! example "Expected output"
-    Lab netns names are gone; main table has no leftover lab unreachable routes; `cleanup-complete.txt` exists.
+Every router along the path forwards the packet closer to its destination.
 
+---
 
-## Validation
+# Routing Table
 
-- [ ] Lab finished under `~/rebash-networking/lab06/` with evidence archive
-- [ ] Temporary namespace routes were removed
-- [ ] You can explain default route and longest-prefix match
-- [ ] You know when traceroute stars are inconclusive
+A router makes decisions using a:
 
-## Code Walkthrough
+```text
+Routing Table
+```
 
-Routing operations on Linux usually follow:
+Example:
 
-1. **Inspect** — `ip route show`, `ip route get DEST`  
-2. **Experiment safely** — network namespaces or change windows  
-3. **Change** — `ip route add` / `del` with documented prefixes  
-4. **Prove** — ping/traceroute/`ip route get`  
-5. **Clean up** — delete temporary routes and namespaces  
+| Destination Network | Next Hop |
+|---------------------|----------|
+| 192.168.10.0/24 | Direct |
+| 192.168.20.0/24 | Router A |
+| 10.0.0.0/8 | Router B |
+| 0.0.0.0/0 | Internet Gateway |
 
-Cloud consoles edit the same ideas as route table entries; Linux `ip route` is the node-level view.
+---
 
-## Security Considerations
+# Directly Connected Network
 
-- Rogue default routes can redirect traffic (man-in-the-middle risk) — protect who may change routes  
-- Blackhole routes can be used for abuse control — document them  
-- Do not experiment on production defaults over SSH without out-of-band console  
-- Treat routing tables as sensitive (internal topology)  
-- Prefer Infrastructure as Code for persistent cloud routes, not manual hotfixes alone  
+Example:
 
-## Common Mistakes
+Router Interface:
 
-!!! warning "Adding lab routes to the main table over SSH"
-    A wrong default can disconnect you. **Fix:** use `ip netns` sandboxes or have serial/console access.
+```text
+192.168.10.1/24
+```
 
-!!! warning "Leaving blackhole routes behind"
-    Later traffic fails mysteriously. **Fix:** always run Cleanup; automate `DONE` checks in challenge scripts.
+Any destination inside:
 
-!!! warning "Treating traceroute `* * *` as proof the Internet is down"
-    ICMP TTL exceeded may be filtered. **Fix:** combine with `ip route get`, TCP checks, and cloud flow logs.
+```text
+192.168.10.0/24
+```
 
-!!! warning "Ignoring longest-prefix match"
-    A leftover `/32` can override a summary. **Fix:** read the full table; delete stale specifics.
+is reached directly.
 
-## Best Practices
+No additional router is required.
 
-- Document default gateway and critical prefixes in baseline packs  
-- Use namespaces or disposable VMs for destructive routing labs  
-- Prefer specific routes over broad surprises when designing VPCs  
-- Pair route changes with rollback commands in the change ticket  
-- Standardise on `ip` for all modern Linux runbooks  
+---
 
-## Troubleshooting
+# Indirect Network
 
-| Symptom | Likely cause | Fix |
-|---------|--------------|-----|
-| `Network is unreachable` | No matching route | Add correct route / fix VPC route table |
-| Connection timeout | Firewall or blackhole | Distinguish with `ip route get` + security group checks |
-| Asymmetric failure | Return path missing | Check peer route tables both ways |
-| Wrong interface used | More specific route | Inspect `ip route get`; remove bad specifics |
-| netns commands fail | Typo / missing sudo | Confirm `ip netns list` |
+Suppose the destination is:
 
-## Summary
+```text
+172.16.50.20
+```
 
-Routing decides the next hop for each destination using prefix matching. Read Linux tables with `ip route`, practise temporary failures safely in a network namespace, gather traceroute evidence when you can, and always remove temporary routes. Next, move from routed IP networks to local Layer 2 design in [Ethernet, Switching, and VLANs](ethernet-switching-and-vlans.md).
+Not directly connected.
 
-## Interview Questions
+Router:
 
-**1. What is a default route, and how does it appear in `ip route` on Linux?**
+```text
+Lookup Routing Table
 
-??? success "Reveal answer"
-    A **default route** is used when no more specific prefix matches. On Linux it usually appears as `default via <gateway> dev <iface>` (equivalent to `0.0.0.0/0`). Without it, a host can often reach its local subnet but not the wider Internet or other remote networks.
+↓
 
-**2. What is longest-prefix matching?**
+Find Next Hop
 
-??? success "Reveal answer"
-    When several routes match a destination, the kernel (or router) chooses the **most specific** prefix — the longest mask. For example, a `/32` host route beats a `/24`, which beats a `/16`, which beats the default `/0`. Stale specific routes are a common outage cause.
+↓
 
-**3. How do you ask Linux which route it would use for `1.1.1.1` without sending a full traceroute?**
+Forward Packet
+```
 
-??? success "Reveal answer"
-    Run **`ip route get 1.1.1.1`**. It shows the selected path (device, source, via/gateway) according to the current table. It is faster and clearer than guessing from a long `ip route` dump.
+---
 
-**4. Why did this lab use a network namespace to add an `unreachable` route?**
+# Next Hop
 
-??? success "Reveal answer"
-    Adding bad routes on the **main** table can break SSH and production traffic. A **network namespace** gives an isolated routing table for experiments. You still learn the symptoms of unreachable destinations, then delete the namespace safely.
+The **Next Hop** is the next router that should receive the packet.
 
-**5. How does VPC routing relate to what you see on an EC2/Ubuntu instance?**
+Example:
 
-??? success "Reveal answer"
-    The cloud **subnet route table** decides where the virtual network sends traffic (local, NAT, peering, Internet gateway). On the instance, `ip route` shows the guest OS view (default via the VPC gateway IP, local subnet routes, and any OS-added routes). Both layers must be correct.
+```text
+Destination
 
-**6. What is the difference between “Network is unreachable” and a hanging TCP timeout?**
+10.10.10.0/24
 
-??? success "Reveal answer"
-    **Unreachable** usually means no route (or an explicit unreachable/blackhole route) — the OS fails fast. A **timeout** often means packets are forwarded somewhere but filtered or dropped without ICMP feedback (firewall/security group/asymmetric path). Choose fixes based on that distinction.
+↓
 
-**7. When is traceroute evidence weak, and what else should you collect?**
+Next Hop
 
-??? success "Reveal answer"
-    Many networks filter ICMP used by traceroute, producing `* * *` even when TCP works. Also collect `ip route get`, successful/failed `curl` to a TCP port, and cloud routing/flow logs. Traceroute is helpful but not definitive alone.
+192.168.1.2
+```
 
-**8. How would you prove cleanup after a routing lab for a change ticket?**
+The packet moves from router to router until it reaches the destination network.
 
-??? success "Reveal answer"
-    Show `ip netns list` without the lab namespace, `ip route show` without the temporary prefixes, and keep before/after files in an evidence tarball. Interviewers and auditors care that temporary blackholes do not remain on shared hosts.
+---
 
-## Related Tutorials
+# Default Gateway
 
-- [Subnetting and VLSM](subnetting-and-vlsm.md) *(previous)*
-- [Ethernet, Switching, and VLANs](ethernet-switching-and-vlans.md) *(next)*
-- [Linux Networking Toolkit](linux-networking-toolkit.md)
-- [Cloud Networking — VPCs and Subnets](cloud-networking-vpc-and-subnets.md)
+Every host has a:
 
-## References
+```text
+Default Gateway
+```
 
-- [`ip-route(8)`](https://manpages.ubuntu.com/manpages/jammy/en/man8/ip-route.8.html) — Ubuntu man-page  
-- [`ip-netns(8)`](https://manpages.ubuntu.com/manpages/jammy/en/man8/ip-netns.8.html) — network namespaces  
-- [RFC 1812](https://www.rfc-editor.org/rfc/rfc1812) — Requirements for IP Version 4 Routers (classic reference)  
-- [RFC 5737](https://www.rfc-editor.org/rfc/rfc5737) — IPv4 Address Blocks Reserved for Documentation (TEST-NET)  
-- Track index: [Networking for Cloud & DevOps Engineers](index.md)
+Example:
+
+Computer:
+
+```text
+192.168.10.100
+```
+
+Gateway:
+
+```text
+192.168.10.1
+```
+
+If the destination is outside the local network:
+
+```text
+Send Packet
+
+↓
+
+Default Gateway
+```
+
+---
+
+# Default Route
+
+Routers also use a:
+
+```text
+Default Route
+```
+
+IPv4:
+
+```text
+0.0.0.0/0
+```
+
+IPv6:
+
+```text
+::/0
+```
+
+If no specific route exists, packets follow the default route.
+
+---
+
+# Longest Prefix Match
+
+Routers always choose the **most specific matching route**.
+
+Example:
+
+Destination:
+
+```text
+10.10.20.15
+```
+
+Available routes:
+
+```text
+10.0.0.0/8
+
+10.10.0.0/16
+
+10.10.20.0/24
+```
+
+Selected route:
+
+```text
+10.10.20.0/24
+```
+
+because it has the longest matching prefix.
+
+---
+
+# Routing Workflow
+
+```text
+Packet Arrives
+
+↓
+
+Read Destination IP
+
+↓
+
+Search Routing Table
+
+↓
+
+Best Match Found
+
+↓
+
+Forward Packet
+
+↓
+
+Next Hop
+```
+
+---
+
+# Routing Decision Example
+
+Host:
+
+```text
+192.168.10.100
+```
+
+Destination:
+
+```text
+8.8.8.8
+```
+
+Host determines:
+
+```text
+Different Network
+
+↓
+
+Send to Gateway
+
+↓
+
+Router Routes Packet
+
+↓
+
+Internet
+```
+
+---
+
+# Enterprise Example
+
+Company Network:
+
+```text
+HR
+
+192.168.10.0/24
+```
+
+↓
+
+```text
+Core Router
+```
+
+↓
+
+```text
+Finance
+
+192.168.20.0/24
+```
+
+↓
+
+```text
+Engineering
+
+192.168.30.0/24
+```
+
+The router enables communication between all departments.
+
+---
+
+# Cloud Perspective
+
+Cloud providers use routing to connect:
+
+- Virtual Machines
+- Subnets
+- Virtual Networks
+- Internet Gateways
+- Virtual Private Network (VPN) Connections
+- Hybrid Networks
+
+Routing tables determine how cloud traffic flows between resources.
+
+---
+
+# Kubernetes Perspective
+
+Routing is essential for:
+
+- Pod-to-Pod Communication
+- Pod-to-Service Communication
+- Node-to-Node Traffic
+- Ingress Traffic
+- Egress Traffic
+
+Container Network Interface (CNI) plugins install routes automatically on Kubernetes nodes.
+
+---
+
+# Linux Perspective
+
+Display routing table.
+
+```bash
+ip route
+```
+
+Display IPv6 routing table.
+
+```bash
+ip -6 route
+```
+
+Display network interfaces.
+
+```bash
+ip addr
+```
+
+Test routing.
+
+```bash
+traceroute google.com
+```
+
+Display the default gateway.
+
+```bash
+ip route | grep default
+```
+
+---
+
+# Routing Example
+
+```text
+PC
+
+↓
+
+Default Gateway
+
+↓
+
+Router
+
+↓
+
+ISP Router
+
+↓
+
+Internet
+
+↓
+
+Web Server
+```
+
+Every router performs a routing table lookup before forwarding the packet.
+
+---
+
+# Hands-on Lab
+
+## Task 1
+
+Display your routing table.
+
+```bash
+ip route
+```
+
+---
+
+## Task 2
+
+Display your IPv6 routing table.
+
+```bash
+ip -6 route
+```
+
+---
+
+## Task 3
+
+Find your default gateway.
+
+```bash
+ip route | grep default
+```
+
+---
+
+## Task 4
+
+Run:
+
+```bash
+traceroute google.com
+```
+
+Observe how packets travel through multiple routers.
+
+---
+
+## Task 5
+
+Draw a network showing:
+
+- Client
+- Router
+- ISP
+- Internet
+- Server
+
+Illustrate packet flow.
+
+---
+
+## Task 6
+
+Create a routing table for:
+
+- HR Network
+- Finance Network
+- Engineering Network
+- Internet
+
+---
+
+## Task 7
+
+Explain the difference between:
+
+- Direct Route
+- Indirect Route
+- Default Route
+
+---
+
+## Task 8
+
+Research routing tables in your preferred cloud provider (AWS, Azure, or GCP).
+
+---
+
+# Linux Commands
+
+| Command | Purpose |
+|----------|----------|
+| `ip route` | Display IPv4 routing table |
+| `ip -6 route` | Display IPv6 routing table |
+| `ip addr` | Display IP addresses |
+| `traceroute` | Trace packet path |
+| `ping` | Test connectivity |
+
+---
+
+# Common Mistakes
+
+❌ Confusing switching with routing.
+
+✅ Switches forward frames; routers forward packets.
+
+---
+
+❌ Forgetting the default gateway.
+
+✅ Configure the correct gateway for every subnet.
+
+---
+
+❌ Assuming routers use MAC addresses for routing.
+
+✅ Routers make forwarding decisions using IP addresses.
+
+---
+
+❌ Ignoring the routing table.
+
+✅ Always verify routes during troubleshooting.
+
+---
+
+❌ Misunderstanding longest prefix matching.
+
+✅ Routers choose the most specific matching route.
+
+---
+
+# Best Practices
+
+- Keep routing tables simple and well documented.
+- Use meaningful IP addressing plans.
+- Verify default gateways on all hosts.
+- Monitor routing changes in production environments.
+- Prefer route summarisation where appropriate.
+- Regularly test end-to-end connectivity.
+
+---
+
+# Interview Questions
+
+## Beginner
+
+1. What is routing?
+2. What is a router?
+3. What is a routing table?
+4. What is a default gateway?
+
+---
+
+## Intermediate
+
+1. Explain how a router forwards packets.
+2. What is a next hop?
+3. What is the difference between direct and indirect routing?
+4. Explain longest prefix matching.
+
+---
+
+## Architect Level
+
+1. Design a routing architecture for a multi-site enterprise.
+2. How would you troubleshoot a routing issue between two data centres?
+3. Explain routing in hybrid cloud environments.
+
+---
+
+# Summary
+
+In this lesson, you learned:
+
+- Routing fundamentals
+- Routers
+- Routing tables
+- Direct routing
+- Indirect routing
+- Default gateways
+- Default routes
+- Next-hop routing
+- Longest prefix matching
+- Linux routing commands
+
+Routing is the foundation of Layer 3 networking. Routers examine destination IP addresses, consult routing tables, and forward packets toward their destination using the best available path. Every enterprise network, cloud platform, and Internet connection depends on efficient routing to deliver data reliably.
+
+---
+
+## Key Takeaways
+
+- Routing connects **different IP networks**.
+- Routers operate at **OSI Layer 3**.
+- Routing decisions are based on **IP addresses**.
+- Routing tables determine where packets are forwarded.
+- The **default gateway** allows hosts to reach remote networks.
+- Routers use **longest prefix matching** to select the most specific route.
+
+---
+
+## What's Next?
+
+**[Static Routing](static-routing.md)**
+
+In the next lesson, you'll learn about **Static Routing**.
+
+You'll explore:
+
+- What static routes are
+- How to configure static routes
+- Default static routes
+- Recursive next-hop routing
+- Floating static routes
+- Linux static route configuration
+- Enterprise use cases
+
+By the end of the lesson, you'll understand how to manually configure routes and when static routing is the right choice for production networks.

@@ -1,0 +1,11 @@
+title: Module 15 · Capstone Projects
+nav:
+  - Overview: index.md
+  - Build a Home Lab Network: home-lab-network.md
+  - Configure VLANs: configure-vlans.md
+  - Build a DNS Server: build-dns-server.md
+  - Configure a DHCP Server: configure-dhcp-server.md
+  - Build a VPN Server: build-vpn-server.md
+  - Create a Firewall Gateway: firewall-gateway.md
+  - Cloud VPC Design: cloud-vpc-design.md
+  - Enterprise Network Troubleshooting Challenge: enterprise-network-troubleshooting-challenge.md

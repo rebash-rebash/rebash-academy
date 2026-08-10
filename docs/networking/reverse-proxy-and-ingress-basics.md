@@ -1,480 +1,1034 @@
 ---
-title: "Reverse Proxy and Ingress Basics"
-description: "Run a local reverse proxy to a backend, prove Host-header routing with curl, and map the same pattern to Kubernetes Ingress."
-difficulty: intermediate
-estimated_time: "45–55 min"
+title: "Reverse Proxy"
+description: "Learn reverse proxy architecture — request routing, TLS termination, caching, authentication, NGINX/Ingress, and production traffic entry points."
+difficulty: advanced
+estimated_time: "220 min"
 author: Shaik Basha
-last_updated: "2026-08-02"
+last_updated: "2026-08-10"
 category: networking
 technology: networking
-module: "Module 13 · Load Balancing"
+module: "Module 13 · DevOps Networking"
+learning_paths:
+  - cloud-engineer
+  - devops-engineer
+  - site-reliability-engineer
+  - linux-administrator
+  - platform-engineer
 tags:
   - networking
   - reverse-proxy
   - nginx
   - ingress
-  - tls
-  - host-header
-prerequisites:
-  - networking/load-balancing-fundamentals
-next:
-  - networking/kubernetes-networking-fundamentals
-related:
-  - networking/http-https-and-application-layer
-  - networking/kubernetes-networking-fundamentals
-  - networking/load-balancer-operations-and-health-checks
-labs: []
-interview: interview/networking
+  - rebash-networking-mastery
 comments: false
+status: ready
 ---
 
-# Reverse Proxy and Ingress Basics
+# Reverse Proxy — Securely Routing Traffic to Backend Applications
 
-## Overview
+> A **Reverse Proxy** is a server that sits between clients and backend applications. Instead of clients connecting directly to application servers, they send requests to the reverse proxy, which forwards those requests to the appropriate backend service. Reverse proxies provide **security, TLS termination, load balancing, caching, compression, authentication, rate limiting, and high availability**. Modern DevOps platforms, Kubernetes clusters, and cloud-native applications rely heavily on reverse proxies such as **NGINX, HAProxy, Envoy, Traefik, and Apache HTTP Server**.
 
-A **reverse proxy** accepts client traffic and forwards it to internal backends. It often terminates Transport Layer Security (TLS), routes by **Host** header or URL path, adds forwarding headers, and applies rate limits. Many products are both proxy and load balancer (nginx upstreams, cloud Application Load Balancers, Kubernetes Ingress controllers).
+---
 
-**Ingress** (and newer Gateway Application Programming Interface (API) resources) declare HTTP routing for Kubernetes Services in YAML; a controller turns that into reverse-proxy config. In this tutorial you will run nginx or Caddy on localhost, proxy to a Python backend, and prove routing with `curl -H 'Host: …'`. Evidence lives under `~/rebash-networking/lab17`.
+## Learning Path
 
-Without a reverse proxy, every service would expose its own certificates and ports. With one, platform teams standardise TLS, logs, and routing. Mistakes with Host headers and `X-Forwarded-*` cause wrong sites, redirect loops, and security bugs when apps trust spoofed headers.
+<div class="ra-lesson-meta" markdown>
 
-This is **Tutorial 2** in **Module 13: Load Balancing** of the REBASH Academy **Networking for Cloud & DevOps Engineers** series. It is written for Cloud, DevOps, SRE, and platform engineers.
+<p class="ra-lesson-meta__crumb" markdown>**Networking Mastery** → Module 13: DevOps Networking → Lesson 6</p>
 
-## Prerequisites
+<div class="ra-meta-grid" markdown>
 
-- [Load Balancing Fundamentals](load-balancing-fundamentals.md)
-- [HTTP, HTTPS, and the Application Layer](http-https-and-application-layer.md)
-- Practice Ubuntu VM with `python3` and preferably `nginx` (or `caddy`)
+<div markdown>**Difficulty:** Advanced</div>
 
-## Learning Objectives
+<div markdown>**Reading Time:** 220 Minutes</div>
 
-By the end of this tutorial, you will be able to:
+</div>
 
-- [ ] Explain reverse proxy vs load balancer roles (they often overlap)
-- [ ] Configure a local reverse proxy to a localhost backend
-- [ ] Prove Host-based routing with `curl -H 'Host: …'`
-- [ ] List common forwarding headers and their risks
-- [ ] Map the pattern to Kubernetes Ingress at a practical level
+</div>
 
-## Architecture
+<div class="ra-course-progress" markdown>
 
-Clients reach the proxy; the proxy selects a backend by Host/path and optionally terminates TLS. Ingress controllers implement the same idea inside a cluster.
+**Course Progress**
 
-![Architecture diagram for Reverse Proxy and Ingress](../assets/excalidraw/reverse-proxy-ingress.svg)
+<div class="ra-meta-grid" markdown>
 
-## Theory
+<div markdown>**Course:** Networking Mastery</div>
 
-### What it is
+<div markdown>**Module:** DevOps Networking</div>
 
-| Role | Focus |
-|------|-------|
-| Reverse proxy | Single entry, routing, TLS, headers, caching |
-| Load balancer | Distribute across many identical backends |
-| Ingress | Kubernetes API for L7 routing to Services |
+<div markdown>**Lesson:** 6 of 10</div>
 
-``` {.bash .ra-terminal title="Terminal"}
-curl -sS -H 'Host: app.lab.local' http://127.0.0.1:18080/
+</div>
+
+</div>
+
+---
+
+
+# What You'll Learn
+
+After completing this lesson, you'll be able to:
+
+- Understand reverse proxy architecture
+- Differentiate reverse and forward proxies
+- Configure request routing
+- Understand TLS termination
+- Learn reverse proxy security features
+- Troubleshoot reverse proxy issues
+- Design production reverse proxy architectures
+
+---
+
+# Prerequisites
+
+Complete:
+
+- [Docker Networking](docker-networking.md)
+- [Kubernetes Networking](kubernetes-networking-devops.md)
+- [CI/CD Networking](cicd-networking.md)
+- [VPN for DevOps](vpn-for-devops.md)
+- DNS
+- HTTP
+- HTTPS
+
+Basic understanding of:
+
+- Web Servers
+- TCP/IP
+- Transport Layer Security (TLS)
+
+---
+
+# Why Do We Need a Reverse Proxy?
+
+Imagine three applications:
+
+```text
+Frontend
+
+Backend
+
+API
 ```
 
-### Why it matters
+Without a reverse proxy:
 
-Virtual hosting packs many sites on one IP. Platforms inject `X-Forwarded-For` and `X-Forwarded-Proto` so apps know the original client and scheme. If an app trusts those headers from the open internet, attackers can spoof identity. Kubernetes Ingress moves the same config into git-reviewed YAML.
+```text
+Users
 
-### How it works
+↓
 
-1. Client connects to proxy listener (often 443).  
-2. Proxy matches **server_name** / Host / path rules.  
-3. Proxy opens (or reuses) a connection to the backend.  
-4. Optional TLS terminate at proxy; backend may be HTTP on a private network.  
-5. Response returns via the proxy; logs show both sides.
-
-### Key concepts and comparisons
-
-| Feature | Reverse proxy | Pure L4 LB |
-|---------|---------------|------------|
-| Host/path routing | Yes | No |
-| TLS terminate | Common | Optional/passthrough |
-| Request buffering / rewrites | Common | Rare |
-
-| Pattern | Prefer when | Avoid when |
-|---------|-------------|------------|
-| Edge TLS terminate | Central cert management | Strict end-to-end TLS mandatory without re-encrypt |
-| Path-based routing | One domain, many apps | Apps need raw TCP |
-| Trust `X-Forwarded-For` only from proxy | Hardened networks | Headers accepted from any client |
-
-### Common pitfalls
-
-- Testing with `curl http://127.0.0.1` but forgetting the **Host** header the vhost needs.  
-- Backend redirects to `http://` when clients used `https://` (missing forwarded proto).  
-- Open proxy that forwards to arbitrary upstreams.  
-- Ingress class mismatch — YAML accepted but no controller implements it.
-
-## Hands-on Lab
-
-### Objective
-
-Run a backend on **18081**, reverse-proxy on **18080**, prove Host-header routing, and clean up. Prefer nginx; fall back to Caddy if present; otherwise a tiny Python proxy artefact.
-
-### Prerequisites
-
-- `python3`, `curl`
-- Preferred: `nginx` or `caddy`
-
-### Lab environment
-
-Workspace: `~/rebash-networking/lab17`
-
-``` {.bash .ra-terminal title="Terminal"}
-mkdir -p ~/rebash-networking/lab17 && cd ~/rebash-networking/lab17
-set -euo pipefail
-whoami | tee admin-user.txt
-command -v nginx >/dev/null && echo nginx=yes | tee tools.txt || echo nginx=no | tee tools.txt
-command -v caddy >/dev/null && echo caddy=yes | tee -a tools.txt || echo caddy=no | tee -a tools.txt
+Application Servers
 ```
 
-!!! example "Expected output"
-    `tools.txt` lists available proxies.
+Problems:
 
+- Multiple Public IPs
+- Difficult TLS Management
+- Poor Security
+- No Centralized Routing
 
-### Real-world scenario
+A reverse proxy solves these problems.
 
-You must show a junior engineer why `curl` to an IP fails for a name-based vhost, and how Ingress will use the same Host rule in Kubernetes. You build a localhost demo with proof files for the change ticket.
+---
 
-### Step-by-step tasks
+# What is a Reverse Proxy?
 
-#### Task 1 – Backend that echoes Host
+A reverse proxy sits in front of backend servers.
 
-``` {.bash .ra-terminal title="Terminal"}
-cd ~/rebash-networking/lab17
-set -euo pipefail
+```text
+Users
+
+↓
+
+Reverse Proxy
+
+↓
+
+Backend Servers
 ```
 
-Create `backend.py`:
+Clients communicate only with the reverse proxy.
 
-```python title="backend.py"
-#!/usr/bin/env python3
-from http.server import BaseHTTPRequestHandler, HTTPServer
+Backend servers remain hidden.
 
-class H(BaseHTTPRequestHandler):
-    def do_GET(self):
-        host = self.headers.get("Host", "")
-        xf = self.headers.get("X-Forwarded-For", "")
-        body = f"backend-ok host={host} xff={xf}\n".encode()
-        self.send_response(200)
-        self.send_header("Content-Type", "text/plain")
-        self.send_header("Content-Length", str(len(body)))
-        self.end_headers()
-        self.wfile.write(body)
-    def log_message(self, *args):
-        pass
+---
 
-HTTPServer.allow_reuse_address = True
-HTTPServer(("127.0.0.1", 18081), H).serve_forever()
+# Reverse Proxy Architecture
+
+```text
+Internet
+
+↓
+
+Reverse Proxy
+
+↓
+
+Application Servers
+
+↓
+
+Database
 ```
 
-``` {.bash .ra-terminal title="Terminal"}
-python3 backend.py >backend.log 2>&1 &
-echo $! > backend.pid
-sleep 0.3
-curl -sS -H 'Host: app.lab.local' http://127.0.0.1:18081/ | tee direct-backend.txt
-grep -q 'backend-ok' direct-backend.txt
+The reverse proxy becomes the single entry point.
+
+---
+
+# Request Flow
+
+```text
+Browser
+
+↓
+
+Reverse Proxy
+
+↓
+
+Application
+
+↓
+
+Response
+
+↓
+
+Browser
 ```
 
-!!! example "Expected output"
-    `direct-backend.txt` contains `backend-ok` and the Host you sent.
+Clients never communicate directly with backend applications.
 
+---
 
-#### Task 2 – Reverse proxy with Host proof
+# Reverse Proxy vs Forward Proxy
 
-Create `nginx-proxy.conf`:
+### Reverse Proxy
 
-```nginx title="nginx-proxy.conf"
-worker_processes 1;
-error_log /tmp/rebash-lab17-nginx.err;
-pid /tmp/rebash-lab17-nginx.pid;
-events { worker_connections 64; }
-http {
-  access_log /tmp/rebash-lab17-nginx.access;
-  server {
-    listen 127.0.0.1:18080;
-    server_name app.lab.local;
-    location / {
-      proxy_pass http://127.0.0.1:18081;
-      proxy_set_header Host $host;
-      proxy_set_header X-Forwarded-For $remote_addr;
-      proxy_set_header X-Forwarded-Proto $scheme;
-    }
-  }
-  server {
-    listen 127.0.0.1:18080 default_server;
-    server_name _;
-    return 404 "no-vhost\n";
-  }
-}
+```text
+Users
+
+↓
+
+Reverse Proxy
+
+↓
+
+Servers
 ```
 
-Create `Caddyfile`:
+Protects:
 
-```text title="Caddyfile"
-http://app.lab.local:18080 {
-  bind 127.0.0.1
-  reverse_proxy 127.0.0.1:18081
-}
+```text
+Servers
 ```
 
-Create `proxy.py`:
+---
 
-```python title="proxy.py"
-#!/usr/bin/env python3
-from http.server import BaseHTTPRequestHandler, HTTPServer
-import urllib.request
+### Forward Proxy
 
-class P(BaseHTTPRequestHandler):
-    def do_GET(self):
-        host = self.headers.get("Host", "")
-        if host.split(":")[0] != "app.lab.local":
-            body = b"no-vhost\n"
-            self.send_response(404)
-            self.end_headers()
-            self.wfile.write(body)
-            return
-        req = urllib.request.Request(
-            "http://127.0.0.1:18081" + self.path,
-            headers={"Host": host, "X-Forwarded-For": self.client_address[0]},
-        )
-        with urllib.request.urlopen(req, timeout=3) as resp:
-            data = resp.read()
-        self.send_response(200)
-        self.send_header("Content-Type", "text/plain")
-        self.send_header("Content-Length", str(len(data)))
-        self.end_headers()
-        self.wfile.write(data)
-    def log_message(self, *args):
-        pass
+```text
+Users
 
-HTTPServer.allow_reuse_address = True
-HTTPServer(("127.0.0.1", 18080), P).serve_forever()
+↓
+
+Forward Proxy
+
+↓
+
+Internet
 ```
 
-``` {.bash .ra-terminal title="Terminal"}
-cd ~/rebash-networking/lab17
-set -euo pipefail
+Protects:
 
-start_nginx() {
-  nginx -t -c "$PWD/nginx-proxy.conf"
-  nginx -c "$PWD/nginx-proxy.conf"
-  echo mode=nginx | tee mode.txt
-}
-
-start_caddy() {
-  caddy run --config "$PWD/Caddyfile" --adapter caddyfile >caddy.log 2>&1 &
-  echo $! > caddy.pid
-  sleep 0.5
-  echo mode=caddy | tee mode.txt
-}
-
-start_python_proxy() {
-  python3 proxy.py >proxy.log 2>&1 &
-  echo $! > proxy.pid
-  echo mode=python-proxy | tee mode.txt
-}
-
-if command -v nginx >/dev/null 2>&1; then
-  start_nginx
-elif command -v caddy >/dev/null 2>&1; then
-  start_caddy
-else
-  start_python_proxy
-fi
-
-# Host header proof
-curl -sS -H 'Host: app.lab.local' http://127.0.0.1:18080/ | tee via-proxy-ok.txt
-grep -q 'backend-ok' via-proxy-ok.txt
-
-curl -sS -H 'Host: other.lab.local' http://127.0.0.1:18080/ | tee via-proxy-miss.txt || true
-grep -E 'no-vhost|404' via-proxy-miss.txt || grep -qv 'backend-ok' via-proxy-miss.txt
+```text
+Clients
 ```
 
-!!! example "Expected output"
-    `via-proxy-ok.txt` shows backend success for `app.lab.local`; wrong Host does not return a normal backend-ok page (404/`no-vhost`).
+---
 
+# Reverse Proxy Responsibilities
 
-#### Task 3 – Evidence and Ingress mental model
+A reverse proxy performs:
 
-``` {.bash .ra-terminal title="Terminal"}
-cd ~/rebash-networking/lab17
-set -euo pipefail
+- Request Routing
+- TLS Termination
+- Load Balancing
+- Authentication
+- Compression
+- Caching
+- Logging
+- Rate Limiting
+
+---
+
+# Request Routing
+
+Example:
+
+```text
+/
+
+↓
+
+Frontend
 ```
 
-Create `ingress-analogy.txt`:
+```text
+/api
 
-```text title="ingress-analogy.txt"
-Kubernetes Ingress (simplified):
-  host: app.lab.local
-  path: /
-  backend service: app-svc:80
-Controller (nginx/traefik/etc.) renders reverse-proxy config — same Host proof as this lab.
+↓
+
+Backend
 ```
 
-``` {.bash .ra-terminal title="Terminal"}
-tar -czf proxy-evidence.tgz \
-  admin-user.txt tools.txt mode.txt \
-  direct-backend.txt via-proxy-ok.txt via-proxy-miss.txt \
-  ingress-analogy.txt backend.py \
-  $(ls nginx-proxy.conf Caddyfile proxy.py 2>/dev/null || true)
+```text
+/admin
 
-ls -l proxy-evidence.tgz | tee evidence-ls.txt
-test -s proxy-evidence.tgz
+↓
+
+Admin Portal
 ```
 
-!!! example "Expected output"
-    `proxy-evidence.tgz` includes Host proof files and the proxy artefact.
+Requests are routed based on URL paths or hostnames.
 
+---
 
-### Validation steps
+# Host-Based Routing
 
-- [ ] Backend alone answers on 18081
-- [ ] Proxy answers on 18080 for `Host: app.lab.local`
-- [ ] Wrong Host does not silently serve the app as a normal 200 backend-ok (per mode)
-- [ ] Cleanup stops proxy and backend
+Example:
 
-### Common errors and fixes
+```text
+app.company.com
 
-| Error | Cause | Fix |
-|-------|-------|-----|
-| Always 404 | Host header missing/wrong | Pass `-H 'Host: app.lab.local'` |
-| `nginx` bind error | Port busy | Stop old lab nginx; check `ss -lnt` |
-| Caddy needs privileges | Low privileged ports | Lab uses 18080 — keep high ports |
-| Backend sees wrong Host | Forgot `proxy_set_header Host` | Set Host/`$host` explicitly |
+↓
 
-### Challenge exercise
-
-Add a second path rule (nginx `location /api/` or Python path check) that returns `api-ok` from a second tiny handler or a static `return 200`. Prove with `curl` to `/` vs `/api/` and save `path-proof.txt`.
-
-### Learning outcomes
-
-- Configured a local reverse proxy to a backend
-- Proved Host-based virtual hosting with curl
-- Connected the demo to Kubernetes Ingress concepts
-- Cleaned up listeners safely
-
-### Cleanup
-
-``` {.bash .ra-terminal title="Terminal"}
-cd ~/rebash-networking/lab17
-set -euo pipefail
-
-if [[ -f /tmp/rebash-lab17-nginx.pid ]]; then
-  nginx -s stop -c "$PWD/nginx-proxy.conf" 2>/dev/null || \
-    kill "$(cat /tmp/rebash-lab17-nginx.pid)" 2>/dev/null || true
-fi
-[[ -f caddy.pid ]] && kill "$(cat caddy.pid)" 2>/dev/null || true
-[[ -f proxy.pid ]] && kill "$(cat proxy.pid)" 2>/dev/null || true
-[[ -f backend.pid ]] && kill "$(cat backend.pid)" 2>/dev/null || true
-rm -f caddy.pid proxy.pid backend.pid
+Frontend
 ```
 
-## Validation
+```text
+api.company.com
 
-- [ ] Lab finished under `~/rebash-networking/lab17/`
-- [ ] You can explain why Host headers matter for vhosts and Ingress
-- [ ] You know risks of trusting `X-Forwarded-*` from clients
-- [ ] You can sketch Ingress → Service → Pods
+↓
 
-## Code Walkthrough
+API
+```
 
-Edge flow: DNS → proxy VIP → optional TLS terminate → match Host/path → proxy to backend with forwarding headers → log at the edge. Kubernetes Ingress YAML is the declarative form of the match/proxy steps; the controller is the nginx/Caddy of the cluster.
+One reverse proxy can serve multiple applications.
 
-## Security Considerations
+---
 
-- Only trust forwarded headers from the proxy network  
-- Keep backends off the public internet when proxied  
-- Manage TLS certificates with automation and expiry monitoring  
-- Rate-limit and authenticate admin UIs at the edge  
-- Review catch-all / default_server behaviour carefully  
+# Path-Based Routing
 
-## Common Mistakes
+Example:
 
-!!! warning "Curling the IP without a Host header"
-    Default server may 404 or serve the wrong site. **Fix:** pass the real Host, or use `--resolve`.
+```text
+/company
 
-!!! warning "Apps trusting X-Forwarded-For from anyone"
-    Clients can spoof IPs. **Fix:** strip/overwrite at the proxy; trust only proxy hops.
+↓
 
-!!! warning "Redirect loops after enabling HTTPS at the edge"
-    App still thinks it is HTTP. **Fix:** set `X-Forwarded-Proto` and configure framework trusted proxies.
+Website
+```
 
-!!! warning "Ingress object exists but no address"
-    Wrong ingress class or controller down. **Fix:** check controller pods and Ingress class name.
+```text
+/api
 
-## Best Practices
+↓
 
-- One clear Host/path map owned by the platform team  
-- Standard forwarding headers, documented for app developers  
-- GitOps for Ingress/Gateway objects  
-- Synthetic probes through the same Host clients use  
-- Separate internal vs public proxies  
+API
+```
 
-## Troubleshooting
+```text
+/images
 
-| Symptom | Likely cause | Fix |
-|---------|--------------|-----|
-| 404 at proxy, 200 at backend | Host/server_name mismatch | Align Host and vhost |
-| 502 Bad Gateway | Backend down / wrong port | Check `ss` and upstream |
-| HTTPS redirect loop | Proto header / app config | Fix forwarded proto |
-| Ingress pending | Controller/class | Fix controller install |
+↓
 
-## Summary
+Image Server
+```
 
-Reverse proxies front applications with Host/path routing and TLS. Prove behaviour with curl Host headers, then recognise the same pattern in Kubernetes Ingress. Next: [Kubernetes Networking Fundamentals](kubernetes-networking-fundamentals.md).
+---
 
-## Interview Questions
+# TLS Termination
 
-**1. How does a reverse proxy differ from a forward proxy?**
+Clients connect securely.
 
-??? success "Reveal answer"
-    A **reverse proxy** protects and routes to **servers** you operate (clients know the proxy name). A **forward proxy** sits in front of **clients** (enterprise egress). Interviewers want this direction clear before nginx details.
+```text
+HTTPS
 
-**2. Why do we set `proxy_set_header Host $host`?**
+↓
 
-??? success "Reveal answer"
-    So the backend sees the **original client Host** (virtual host / generate correct URLs), not the upstream socket name (`127.0.0.1:18081`). Wrong Host breaks multi-tenant apps and absolute redirects.
+Reverse Proxy
 
-**3. What is Kubernetes Ingress in one sentence, related to this lab?**
+↓
 
-??? success "Reveal answer"
-    Ingress is a **declarative HTTP routing object**; a controller turns it into reverse-proxy configuration (Host/path → Service), the same idea as our nginx `server_name` demo.
+HTTP
 
-**4. Why can trusting `X-Forwarded-For` be dangerous?**
+↓
 
-??? success "Reveal answer"
-    If the app accepts the header from the open internet, clients can **spoof** client IPs for logging, allow-lists, or rate limits. Only trust headers appended by your proxy and strip inbound values at the edge.
+Backend
+```
 
-**5. Client uses HTTPS but the app generates `http://` links. What is wrong?**
+Benefits:
 
-??? success "Reveal answer"
-    TLS terminated at the proxy; the app saw HTTP. Pass **`X-Forwarded-Proto: https`** (and configure the framework’s trusted proxy settings) so generated URLs and secure cookies work.
+- Centralized Certificate Management
+- Reduced Backend CPU Usage
+- Simplified Configuration
 
-**6. How do you prove Host-based routing in an interview whiteboard?**
+Backend communication can also remain encrypted if required.
 
-??? success "Reveal answer"
-    Show two `curl` commands to the same IP with different `Host` headers and different responses (as in this lab). That is stronger than drawing boxes alone.
+---
 
-**7. When would you pick Gateway API over classic Ingress?**
+# SSL Offloading
 
-??? success "Reveal answer"
-    When you need richer, more portable L7 expressions, cleaner separation of platform vs app roles, or vendor features moving to Gateway API. Classic Ingress remains common; know both at a practical level.
+Instead of every server performing encryption:
 
-## Related Tutorials
+```text
+Reverse Proxy
 
-- [Networking for Cloud & DevOps – Overview](index.md)
-- [Load Balancing Fundamentals](load-balancing-fundamentals.md) *(previous)*
-- [Kubernetes Networking Fundamentals](kubernetes-networking-fundamentals.md) *(next)*
-- [HTTP, HTTPS, and the Application Layer](http-https-and-application-layer.md)
+↓
 
-## References
+TLS
 
-- [nginx `ngx_http_proxy_module`](https://nginx.org/en/docs/http/ngx_http_proxy_module.html) — reverse proxy  
-- [Kubernetes Ingress](https://kubernetes.io/docs/concepts/services-networking/ingress/) — official docs  
-- [Caddy reverse_proxy](https://caddyserver.com/docs/caddyfile/directives/reverse_proxy) — alternative proxy  
-- Track index: [Networking for Cloud & DevOps Engineers](index.md)
+↓
+
+Backend
+```
+
+Application servers process plain HTTP or re-encrypted HTTPS traffic.
+
+---
+
+# Load Distribution
+
+Multiple servers:
+
+```text
+Users
+
+↓
+
+Reverse Proxy
+
+↓
+
+Server A
+
+↓
+
+Server B
+
+↓
+
+Server C
+```
+
+Traffic is distributed automatically.
+
+---
+
+# Health Checks
+
+The reverse proxy continuously verifies backend health.
+
+```text
+Healthy
+
+↓
+
+Receive Traffic
+```
+
+```text
+Unhealthy
+
+↓
+
+Removed
+```
+
+Requests are not forwarded to failed servers.
+
+---
+
+# Caching
+
+Frequently requested content:
+
+```text
+Users
+
+↓
+
+Reverse Proxy Cache
+
+↓
+
+Application
+```
+
+Benefits:
+
+- Faster Response Time
+- Lower Backend Load
+- Better Scalability
+
+---
+
+# Compression
+
+Reverse proxies compress responses.
+
+Example:
+
+```text
+1 MB
+
+↓
+
+200 KB
+```
+
+Common algorithms:
+
+- Gzip
+- Brotli
+
+This reduces bandwidth usage and improves page load times.
+
+---
+
+# Authentication
+
+Reverse proxy validates:
+
+- OAuth
+- OpenID Connect (OIDC)
+- JSON Web Token (JWT)
+- Basic Authentication
+- Single Sign-On (SSO)
+
+Applications receive only authenticated requests.
+
+---
+
+# Rate Limiting
+
+Example:
+
+```text
+100 Requests
+
+Per Minute
+
+Per Client
+```
+
+Protects against:
+
+- Abuse
+- Bots
+- Distributed Denial of Service (DDoS) Attacks
+- API Misuse
+
+---
+
+# Logging
+
+Every request is logged.
+
+Example:
+
+```text
+Client IP
+
+↓
+
+URL
+
+↓
+
+Status Code
+
+↓
+
+Response Time
+```
+
+Useful for:
+
+- Auditing
+- Monitoring
+- Troubleshooting
+
+---
+
+# Reverse Proxy in Docker
+
+Architecture:
+
+```text
+Internet
+
+↓
+
+NGINX
+
+↓
+
+Frontend Container
+
+↓
+
+Backend Container
+```
+
+Containers remain isolated while the reverse proxy exposes only required services.
+
+---
+
+# Reverse Proxy in Kubernetes
+
+Typical architecture:
+
+```text
+Internet
+
+↓
+
+Load Balancer
+
+↓
+
+Ingress Controller
+
+↓
+
+Services
+
+↓
+
+Pods
+```
+
+Ingress Controllers act as Kubernetes reverse proxies.
+
+Popular options:
+
+- NGINX Ingress
+- Traefik
+- HAProxy
+- Envoy
+
+---
+
+# Reverse Proxy in Microservices
+
+```text
+Client
+
+↓
+
+Reverse Proxy
+
+↓
+
+Auth Service
+
+↓
+
+API Service
+
+↓
+
+Payment Service
+
+↓
+
+Notification Service
+```
+
+Clients communicate through a single endpoint.
+
+---
+
+# Popular Reverse Proxies
+
+Common solutions:
+
+- NGINX
+- HAProxy
+- Envoy
+- Traefik
+- Apache HTTP Server
+
+Each supports routing, TLS, and load balancing.
+
+---
+
+# Production Architecture
+
+```text
+Internet
+
+↓
+
+CDN
+
+↓
+
+Load Balancer
+
+↓
+
+Reverse Proxy
+
+↓
+
+Application Servers
+
+↓
+
+Database
+```
+
+This architecture improves:
+
+- Security
+- Performance
+- Scalability
+- Availability
+
+---
+
+# Security Best Practices
+
+- Enforce HTTPS.
+- Redirect HTTP to HTTPS.
+- Enable HTTP security headers.
+- Hide backend server information.
+- Configure rate limiting.
+- Enable request logging.
+- Restrict administrative endpoints.
+- Keep reverse proxy software updated.
+
+---
+
+# Troubleshooting Reverse Proxy
+
+Verify backend connectivity.
+
+```bash
+curl http://backend:8080
+```
+
+Verify proxy response.
+
+```bash
+curl https://app.company.com
+```
+
+Inspect logs.
+
+```bash
+tail -f /var/log/nginx/access.log
+```
+
+Verify DNS.
+
+```bash
+dig app.company.com
+```
+
+Test TLS.
+
+```bash
+openssl s_client -connect app.company.com:443
+```
+
+---
+
+# Common Problems
+
+| Problem | Possible Cause |
+|----------|----------------|
+| 502 Bad Gateway | Backend Server Unreachable |
+| 503 Service Unavailable | No Healthy Backend |
+| 504 Gateway Timeout | Backend Response Too Slow |
+| TLS Error | Certificate Misconfiguration |
+| Infinite Redirect | Incorrect HTTP/HTTPS Configuration |
+
+---
+
+# CLI Examples
+
+Verify backend.
+
+```bash
+curl http://backend:8080
+```
+
+Verify application.
+
+```bash
+curl https://app.company.com
+```
+
+Check TLS.
+
+```bash
+openssl s_client -connect app.company.com:443
+```
+
+Resolve DNS.
+
+```bash
+dig app.company.com
+```
+
+---
+
+# Hands-on Lab
+
+## Task 1
+
+Deploy NGINX as a reverse proxy.
+
+Route traffic to a backend application.
+
+---
+
+## Task 2
+
+Configure host-based routing.
+
+Example:
+
+- app.local
+- api.local
+
+Verify correct routing.
+
+---
+
+## Task 3
+
+Configure path-based routing.
+
+Example:
+
+```text
+/api
+
+↓
+
+Backend API
+```
+
+Test requests.
+
+---
+
+## Task 4
+
+Enable HTTPS using a TLS certificate.
+
+Verify secure access.
+
+---
+
+## Task 5
+
+Enable Gzip compression.
+
+Measure the reduction in response size.
+
+---
+
+## Task 6
+
+Configure rate limiting.
+
+Generate repeated requests and observe throttling.
+
+---
+
+## Task 7
+
+Deploy an Ingress Controller in Kubernetes.
+
+Expose an application using an Ingress resource.
+
+Verify external access.
+
+---
+
+## Task 8
+
+Draw the following architecture:
+
+```text
+Internet
+
+↓
+
+CDN
+
+↓
+
+Load Balancer
+
+↓
+
+Reverse Proxy
+
+↓
+
+Frontend
+
+↓
+
+Backend
+
+↓
+
+Database
+```
+
+Explain how each component contributes to security, routing, and performance.
+
+---
+
+# Reverse Proxy vs Load Balancer
+
+| Reverse Proxy | Load Balancer |
+|---------------|---------------|
+| Routes Requests | Distributes Traffic |
+| TLS Termination | Load Distribution |
+| URL-Based Routing | Server Selection |
+| Authentication | High Availability |
+| Caching & Compression | Scalability |
+
+> Many modern reverse proxies also include load balancing capabilities.
+
+---
+
+# Reverse Proxy vs API Gateway
+
+| Reverse Proxy | API Gateway |
+|---------------|-------------|
+| General Web Traffic | API-Focused Traffic |
+| Basic Routing | Advanced API Routing |
+| TLS Termination | Authentication & Authorization |
+| Static Content Support | API Policies & Quotas |
+| Infrastructure Layer | Application Layer |
+
+---
+
+# Common Mistakes
+
+❌ Exposing backend servers directly.
+
+✅ Route all traffic through the reverse proxy.
+
+---
+
+❌ Not enabling HTTPS.
+
+✅ Use TLS for every public endpoint.
+
+---
+
+❌ Ignoring health checks.
+
+✅ Remove failed backends automatically.
+
+---
+
+❌ Logging sensitive information.
+
+✅ Sanitize logs and protect personal data.
+
+---
+
+❌ Using a single reverse proxy without redundancy.
+
+✅ Deploy multiple instances behind a load balancer.
+
+---
+
+# Interview Questions
+
+## Beginner
+
+1. What is a reverse proxy?
+2. Why do we use a reverse proxy?
+3. Compare a reverse proxy and a forward proxy.
+4. What is TLS termination?
+
+---
+
+## Intermediate
+
+1. Explain host-based and path-based routing.
+2. How does a reverse proxy improve security?
+3. What is SSL offloading?
+4. How do reverse proxies work in Kubernetes?
+
+---
+
+## Architect Level
+
+1. Design a highly available reverse proxy architecture for a microservices platform.
+2. Explain how reverse proxies improve scalability and security.
+3. How would you troubleshoot intermittent 502 and 504 errors?
+
+---
+
+# Summary
+
+In this lesson, you learned:
+
+- Reverse Proxy Architecture
+- Request Routing
+- Host-Based Routing
+- Path-Based Routing
+- TLS Termination
+- SSL Offloading
+- Caching
+- Compression
+- Authentication
+- Production Reverse Proxy Design
+
+Reverse proxies are a core component of modern DevOps and cloud-native architectures. They provide a secure, centralised entry point for applications while handling routing, TLS, caching, authentication, logging, and performance optimisation. They simplify infrastructure management and improve both security and scalability.
+
+---
+
+## Key Takeaways
+
+- A **reverse proxy** sits in front of backend servers and receives all client requests.
+- It provides **routing**, **TLS termination**, **authentication**, **caching**, and **compression**.
+- Reverse proxies improve **security**, **performance**, and **availability**.
+- Kubernetes **Ingress Controllers** function as reverse proxies.
+- Combine reverse proxies with **load balancers** for highly available production environments.
+- Monitor logs, health checks, and backend connectivity continuously.
+
+---
+
+## What's Next?
+
+**[Load Balancing](load-balancing-fundamentals.md)**
+
+In the next lesson, you'll learn about **Load Balancing**.
+
+You'll explore:
+
+- Load Balancing Fundamentals
+- Load Balancing Algorithms
+- Layer 4 vs Layer 7 Load Balancing
+- Health Checks
+- Session Persistence
+- Cloud Load Balancers
+- Production High Availability
+
+By the end of the lesson, you'll understand how load balancers distribute traffic efficiently across multiple application instances to improve scalability, reliability, and fault tolerance.
