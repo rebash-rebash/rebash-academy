@@ -29,7 +29,7 @@ Assess production Linux skills for Cloud, DevOps, Platform, and SRE roles across
 | Format | Multiple choice (single answer) |
 
 !!! tip "How to use this quiz"
-    Attempt each section without peeking. Use **Reveal answer** only after you commit to a choice.
+    Select an answer for each question, then **Submit quiz** for a scored result. Progress is saved in this browser. Explanations unlock after you submit.
 
 !!! tip "Older Linux quizzes"
     [Linux Fundamentals](linux-fundamentals.md) and [Linux Servers](linux-servers.md) remain available. Prefer **this quiz** for the rewritten 16-module course.

@@ -1,6 +1,6 @@
 ---
 title: Quizzes
-description: "Self-assessment quizzes for Linux, Shell Scripting, Python, Networking, AWS, CI/CD, Docker, and Kubernetes — with explanations and a 70% pass mark."
+description: "Interactive self-assessment quizzes for Linux, Shell Scripting, Python, Networking, AWS, CI/CD, Docker, and Kubernetes — select answers, track progress, and print your results."
 author: Shaik Basha
 category: quizzes
 tags:
@@ -9,8 +9,7 @@ tags:
 
 # Quizzes
 
-Each quiz checks your understanding after a tutorial track. Explanations are included
-with every answer; the pass mark is 70%.
+Pick a topic, answer every question, then **submit** for a scored result. Your progress and scores are saved in this browser so you can resume or revisit later. The pass mark is 70%.
 
 | Quiz | Difficulty | Time |
 |------|------------|------|

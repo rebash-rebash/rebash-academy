@@ -29,7 +29,7 @@ Assess the REBASH Academy GitLab CI track: pipeline anatomy, runners, secrets, q
 | Estimated time | 45–60 minutes |
 
 !!! tip "How to use this quiz"
-    Attempt without peeking. Use Reveal answer only after you choose.
+    Select an answer for each question, then **Submit quiz** for a scored result. Progress is saved in this browser. Explanations unlock after you submit.
 
 !!! note "Other platforms"
     Jenkins and GitHub Actions come later on REBASH Academy — this quiz covers **GitLab CI** only.

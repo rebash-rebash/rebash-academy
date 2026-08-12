@@ -88,6 +88,7 @@ extra_css:
 extra_javascript:
   - assets/javascripts/custom.js
   - assets/javascripts/books.js
+  - assets/javascripts/quiz.js
 
 theme:
   name: material
@@ -117,7 +118,6 @@ theme:
     - content.code.select
     - content.tabs.link
     - content.tooltips
-    - header.autohide
     - navigation.instant
     - navigation.instant.progress
     - navigation.path

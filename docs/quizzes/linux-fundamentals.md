@@ -29,7 +29,7 @@ Validate core Linux administration skills used daily by DevOps and SRE engineers
 | Format | Multiple choice (single answer) |
 
 !!! tip "How to use this quiz"
-    Attempt each section without peeking. Use **Reveal answer** only after you commit to a choice. Score yourself honestly — gaps are the point.
+    Select an answer for each question, then **Submit quiz** for a scored result. Progress is saved in this browser. Explanations unlock after you submit.
 
 !!! tip "Rewritten course quiz"
     For the **Linux for Cloud & DevOps Engineers** 16-module track, prefer [Linux for Cloud & DevOps Fundamentals](linux-for-cloud-devops-fundamentals.md).

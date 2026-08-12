@@ -29,7 +29,7 @@ Assess Module 7 Advanced Linux Servers skills: baseline, nginx reverse proxy, TL
 | Estimated time | 30–40 minutes |
 
 !!! tip "How to use this quiz"
-    Attempt without peeking. Use Reveal answer only after you choose.
+    Select an answer for each question, then **Submit quiz** for a scored result. Progress is saved in this browser. Explanations unlock after you submit.
 
 ## Learning Objectives
 

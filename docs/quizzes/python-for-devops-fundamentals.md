@@ -37,7 +37,7 @@ Assess production-oriented Python skills for DevOps, platform, and SRE engineers
     Prefer the rewritten course assessment: **[Quiz — Python for DevOps Engineers Fundamentals](python-for-devops-engineers-fundamentals.md)** (40 questions covering all 27 modules). This page remains as a legacy practice set.
 
 !!! tip "How to use this quiz"
-    Attempt each section without peeking. Use **Reveal answer** only after you commit to a choice.
+    Select an answer for each question, then **Submit quiz** for a scored result. Progress is saved in this browser. Explanations unlock after you submit.
 
 ## Learning Objectives
 

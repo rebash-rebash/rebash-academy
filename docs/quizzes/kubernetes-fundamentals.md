@@ -29,7 +29,7 @@ Validate Kubernetes fundamentals used on the job: workload APIs, networking abst
 | Format | Multiple choice (single answer) |
 
 !!! tip "How to use this quiz"
-    Attempt each section without peeking. Use **Reveal answer** only after you commit to a choice. Score yourself honestly — gaps are the point.
+    Select an answer for each question, then **Submit quiz** for a scored result. Progress is saved in this browser. Explanations unlock after you submit.
 
 ## Learning Objectives
 

@@ -31,7 +31,7 @@ Assess production-oriented Python skills for DevOps, platform, and SRE engineers
 | Answer key balance | 10 × A · 10 × B · 10 × C · 10 × D |
 
 !!! tip "How to use this quiz"
-    Attempt each section without peeking. Use **Reveal answer** only after you commit to a choice. Covers Modules 1–27.
+    Select an answer for each question, then **Submit quiz** for a scored result. Progress is saved in this browser. Explanations unlock after you submit.
 
 ## Learning Objectives
 

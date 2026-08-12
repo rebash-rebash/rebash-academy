@@ -28,7 +28,7 @@ Assess the REBASH Academy AWS track through Module 6: identity, networking, comp
 | Estimated time | 45–60 minutes |
 
 !!! tip "How to use this quiz"
-    Attempt without peeking. Use Reveal answer only after you choose.
+    Select an answer for each question, then **Submit quiz** for a scored result. Progress is saved in this browser. Explanations unlock after you submit.
 
 ## Learning Objectives
 

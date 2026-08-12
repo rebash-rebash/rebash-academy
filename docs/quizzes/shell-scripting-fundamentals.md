@@ -33,7 +33,7 @@ Assess production Bash skills for Linux admins and DevOps engineers.
 | Format | Multiple choice (single answer) |
 
 !!! tip "How to use this quiz"
-    Attempt each section without peeking. Use **Reveal answer** only after you commit to a choice.
+    Select an answer for each question, then **Submit quiz** for a scored result. Progress is saved in this browser. Explanations unlock after you submit.
 
 ## Learning Objectives
 

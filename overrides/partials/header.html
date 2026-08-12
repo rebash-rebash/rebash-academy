@@ -145,6 +145,41 @@
         </div>
       </div>
 
+      {#- Quizzes dropdown (interactive assessments) -#}
+      <div class="rebash-header-dd rebash-header-dd--wide">
+        <a class="rebash-header-dd__trigger" href="{{ 'quizzes/' | url }}">
+          Quizzes
+          <span class="rebash-header-dd__caret" aria-hidden="true"></span>
+        </a>
+        <div class="rebash-header-dd__panel rebash-header-dd__panel--grouped" role="menu" aria-label="Quizzes">
+          <div class="rebash-header-dd__cols">
+            <div class="rebash-header-dd__col">
+              <div class="rebash-header-dd__group">
+                <p class="rebash-header-dd__label">Foundations</p>
+                <a class="rebash-header-dd__item" href="{{ 'quizzes/linux-for-cloud-devops-fundamentals/' | url }}" role="menuitem">Linux for Cloud &amp; DevOps</a>
+                <a class="rebash-header-dd__item" href="{{ 'quizzes/linux-fundamentals/' | url }}" role="menuitem">Linux Fundamentals</a>
+                <a class="rebash-header-dd__item" href="{{ 'quizzes/linux-servers/' | url }}" role="menuitem">Linux Servers</a>
+                <a class="rebash-header-dd__item" href="{{ 'quizzes/shell-scripting-for-devops-fundamentals/' | url }}" role="menuitem">Shell for DevOps</a>
+                <a class="rebash-header-dd__item" href="{{ 'quizzes/shell-scripting-fundamentals/' | url }}" role="menuitem">Shell Fundamentals</a>
+                <a class="rebash-header-dd__item" href="{{ 'quizzes/python-for-devops-engineers-fundamentals/' | url }}" role="menuitem">Python for DevOps Engineers</a>
+                <a class="rebash-header-dd__item" href="{{ 'quizzes/python-for-devops-fundamentals/' | url }}" role="menuitem">Python for DevOps</a>
+                <a class="rebash-header-dd__item" href="{{ 'quizzes/networking-production/' | url }}" role="menuitem">Networking Production</a>
+              </div>
+            </div>
+            <div class="rebash-header-dd__col">
+              <div class="rebash-header-dd__group">
+                <p class="rebash-header-dd__label">Cloud &amp; platforms</p>
+                <a class="rebash-header-dd__item" href="{{ 'quizzes/aws-fundamentals/' | url }}" role="menuitem">AWS Fundamentals</a>
+                <a class="rebash-header-dd__item" href="{{ 'quizzes/docker-fundamentals/' | url }}" role="menuitem">Docker Fundamentals</a>
+                <a class="rebash-header-dd__item" href="{{ 'quizzes/kubernetes-fundamentals/' | url }}" role="menuitem">Kubernetes Fundamentals</a>
+                <a class="rebash-header-dd__item" href="{{ 'quizzes/cicd-fundamentals/' | url }}" role="menuitem">CI/CD Fundamentals</a>
+              </div>
+            </div>
+          </div>
+          <a class="rebash-header-dd__item rebash-header-dd__item--emph rebash-header-dd__item--footer" href="{{ 'quizzes/' | url }}" role="menuitem">All quizzes →</a>
+        </div>
+      </div>
+
       <a href="{{ 'books/' | url }}">Books</a>
       <a href="{{ 'about/' | url }}">About</a>
       <a href="{{ 'blog/' | url }}">Blog</a>
