@@ -1,6 +1,6 @@
 ---
 title: "Git Interview Preparation"
-description: "40 curated interview questions and model answers for Git — concepts, scenarios, troubleshooting, and production trade-offs."
+description: "60 curated Git interview prompts — model answers plus real interview questions collected across companies (deduplicated by topic)."
 difficulty: intermediate
 estimated_time: "45–90 min"
 author: Shaik Basha
@@ -597,6 +597,31 @@ Answer out loud first, then reveal the model answer. Prefer judgement and verifi
     • Snapshot represents data of a particular time so that we can retrieve it
     • This snapshot is taken in the Staging area in Git which is present between Git workspace and Git
     local repository
+
+## Real interview prompts
+
+Additional questions reported from real DevOps / SRE interviews. Company names are omitted — practise these out loud without notes.
+
+- What happens behind the hood when git add command is provided. File is added but what happens in the background how git knows on this command it has to add file. ( in dept related to git database)?
+- What branching strategy do you follow, and how do you handle merges to avoid breaking the release branch? If a bug appears in production, what’s your approach to resolving it?
+- How to handle merge conflict in git. If 2 people working on same file and did the commit and got conflict err, in how many ways it can be solved (someone explain pls)?
+- In GitHub, after a code commit, what validations do you perform? Do you validate before the commit or after the commit?
+- [ ] What branching strategy do you follow for source code management in a large team with a complex application?
+- Explain your Git branching strategy. How do you deploy code from different branches to different environments?
+- Explain Git Merge and Git Rebase with an example using the main and feature (or master) branches?
+- Write a GitHub/GitLab pipeline to deploy a microservice with 3 services running in parallel?
+- Diff between git fetch and git pull (what happens in background in depth)?
+- write down GIT commands which you use on daily basis and explain the cmds?
+- If someone force-pushed and lost the main branch, how do you recover it?
+- What is the difference between git push --force-with-lease vs --force?
+- What type of GitHub branching strategy are you using? Please explain?
+- What is Git and why we are using it and what is branching strategy?
+- How do you set up GitHub runners for the application environment?
+- What is the difference between Git Merge and Git Rebase?
+- Explain the difference between Git Merge and Git Rebase?
+- What is git branching strategy used in your organisation?
+- what is the differences between git pull and git fetch?
+- How will you resolve the git conflict automatically?
 
 ## Related
 

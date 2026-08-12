@@ -1,6 +1,6 @@
 ---
 title: "Azure Interview Preparation"
-description: "35 curated interview questions and model answers for Azure — concepts, scenarios, troubleshooting, and production trade-offs."
+description: "60 curated Azure interview prompts — model answers plus real interview questions collected across companies (deduplicated by topic)."
 difficulty: intermediate
 estimated_time: "45–90 min"
 author: Shaik Basha
@@ -385,6 +385,36 @@ Answer out loud first, then reveal the model answer. Prefer judgement and verifi
     Pipeline variables at the pipeline or stage level, Variable Groups for values reused across multiple pipelines, the env
     keyword for setting variables directly within a YAML job, and Azure Key Vault references for anything sensitive that
     needs to be securely pulled in.
+
+## Real interview prompts
+
+Additional questions reported from real DevOps / SRE interviews. Company names are omitted — practise these out loud without notes.
+
+- How mysql will interact with azure key vault and it should happen thru privately and should not go anything on public?
+- How the authentication and networking is established between azure devops pipeline and azure keyvault?
+- [ ] Did you create the Azure Key Vault access policies yourself, or did someone else do it for you?
+- Why Dynamic blocks are used in tf and write the skeleton for an azure resource using dynamic block?
+- How would you use Azure DevOps REST API to apply a security policy to all repos programmatically?
+- [ ] What is the advantage of using a YAML file over classic build pipelines in Azure DevOps?
+- [ ] Have you integrated Azure Key Vault into your pipelines or branches in any project?
+- How will you implement dc/dr in azure – which are the services you will be using it?
+- How to set alerts in azure monitor (explain steps and configuration that u do)?
+- • How do you do you integrate And EntraID with your AKS for authentication?
+- How do you assess Azure DevOps migration readiness and plan the transition?
+- Define an Azure Virtual Network (VNet) with a given IP range?
+- How to monitor Azure VM memory and alert if it crosses 80%?
+- Difference between stakeholder and admin in azure devops?
+- What are the different types of subscriptions in azure?
+- • How do you use Azure Key vault's secrets in AKS?
+- What is azure board, what are the things inside it?
+- [ ] Do you have experience using Azure Key Vault?
+- How will you store credentials in azure pipelines?
+- What are the different types of azure storage?
+- How pipeline logs are stored in azure devops?
+- what is the networking you are using in AKS?
+- How azure key vault is integrated in cicd?
+- • How do you secure your AKS cluster?
+- What is azure artifact?
 
 ## Related
 

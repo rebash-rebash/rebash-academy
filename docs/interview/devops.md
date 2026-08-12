@@ -1,6 +1,6 @@
 ---
 title: "DevOps Fundamentals Interview Preparation"
-description: "40 curated interview questions and model answers for DevOps Fundamentals — concepts, scenarios, troubleshooting, and production trade-offs."
+description: "65 curated DevOps Fundamentals interview prompts — model answers plus real interview questions collected across companies (deduplicated by topic)."
 difficulty: intermediate
 estimated_time: "45–90 min"
 author: Shaik Basha
@@ -467,6 +467,36 @@ Answer out loud first, then reveal the model answer. Prefer judgement and verifi
     owner 'root'
     group 'root'
     end
+
+## Real interview prompts
+
+Additional questions reported from real DevOps / SRE interviews. Company names are omitted — practise these out loud without notes.
+
+- When you deploy from CI, you build a package and then need a platform to deploy the application. How do you build that platform, and if it requires human intervention, how do you eliminate that dependency?
+- How and from where to clone repo, is there any local repo you are using and then transferring from local to remote or how? (Honestly I didn’t get this Q, if anyone has real time exposure pls explain)?
+- In a multi-account environment, if the resources are residing in one account and the users are in different accounts, how will you configure so that the user can access the resources?
+- If you have a monolith application and need to convert it to microservices, what prerequisites would you ask from the development and tech teams before starting the work?
+- If your lead or team member is not technically strong or doesn’t behave well, how do you handle the situation and continue working as a team member?
+- You are onboarding a new customer with 5 million+ users. How would you design the complete application architecture as a Solution Architect?
+- Failover happend in DB, so connection is switched from A to B, during this time interval, if user is writing some data, how to manage that ?
+- How the auto scaling works, how things work in the back-end, from worker nodes to master nodes. Communication track behind that?
+- Tell me about a successful DevOps transformation project you were part of. What was your role, and how did you drive change?
+- How would the service account know which role to assume. What all things you would need to configure in the service account?
+- How do you mitigate the risk of misscommunication when there are multi-lingual stakeholders involved in email threads?
+- Design an architecture for the scenario: if I type www.application.com it should get resolved to the backend service?
+- 10 developers are checking in code in GIT, I want to remove the code checkin done by developer 10, how to do that ?
+- I have 3 nodes (small, medium, and large), and I want only data load to go to the large node. How can I do that?
+- In your project, what was your domain name? How are you establishing connection between domain name and service?
+- You also mentioned about basically to reduce the MTTR so can you explain me what automation that you have done?
+- Describe how you handled a rollback situation during a major release. What went wrong, and what did you learn?,?
+- Describe a time when you had to work under tight deadlines. How did you manage team workload and expectations?,?
+- How do you ensure smooth collaboration between development and operations teams in a high-pressure situation?,?
+- Question : What is your knowledge of production system sizing, provisioning, setup, maintenance, and closure?
+- Describe a scenario where you had to introduce a new DevOps tool or practice. How did you get team buy-in?,?
+- Have you deployed both applications and infrastructure? What kind of tech stack have you mainly worked on?
+- Q1. Explain the infrastructure and application setup of your last project. How is the application hosted?
+- Tell me about a conflict you faced within your DevOps or cross-functional team. How did you resolve it?,?
+- If you have an on-prem application, how would you migrate and deploy it in a cloud-native environment?
 
 ## Related
 

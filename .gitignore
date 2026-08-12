@@ -36,3 +36,4 @@ books/*/
 inbox/interview-pdfs/*
 !inbox/interview-pdfs/README.md
 inbox/interview-extracted/
+inbox/interview-github/

@@ -1,6 +1,6 @@
 ---
 title: "Helm Interview Preparation"
-description: "3 curated interview questions and model answers for Helm — concepts, scenarios, troubleshooting, and production trade-offs."
+description: "18 curated Helm interview prompts — model answers plus real interview questions collected across companies (deduplicated by topic)."
 difficulty: intermediate
 estimated_time: "45–90 min"
 author: Shaik Basha
@@ -46,6 +46,26 @@ Answer out loud first, then reveal the model answer. Prefer judgement and verifi
     A Helm chart is a package of YAML templates used to deploy Kubernetes 
     applications through versioned, repeatable, and configurable 
     deployments.
+
+## Real interview prompts
+
+Additional questions reported from real DevOps / SRE interviews. Company names are omitted — practise these out loud without notes.
+
+- Question : Walk me through what is there in helm charts and how it is integrated.explain me that what is written on your helm charts?
+- If a Helm release is partially deployed and some resources are updated while others have failed, how do you perform a rollback?
+- Explain the folder structure of a basic Helm chart. What commands do you use to deploy with Helm?
+- What is email signing and Helm chart signing? Which tools do you use to sign Helm charts?
+- What is the syntax or command you follow to deploy an application using Helm Charts?
+- Helm – Upgrade failed. How do you rollback and troubleshoot?
+- Q9. How do you securely inject sensitive data into Helm?
+- Do you avoid committing secrets in values.yaml?
+- Q8. Have you worked with Helm and Helm Charts?
+- Do you actually use helm for the deployments ?
+- Q10. Can a public Helm chart be customized?
+- what files will be present in helm chart?
+- Why use Helm instead of plain YAML?
+- Did you worked on helm charts?
+- What is values.yaml used for?
 
 ## Related
 

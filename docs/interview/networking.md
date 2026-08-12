@@ -1,6 +1,6 @@
 ---
 title: "Networking Interview Preparation"
-description: "45 curated interview questions and model answers for Networking — concepts, scenarios, troubleshooting, and production trade-offs."
+description: "70 curated Networking interview prompts — model answers plus real interview questions collected across companies (deduplicated by topic)."
 difficulty: intermediate
 estimated_time: "45–90 min"
 author: Shaik Basha
@@ -423,6 +423,36 @@ Answer out loud first, then reveal the model answer. Prefer judgement and verifi
     squared for subnets, 2 to the 6th minus 2 for hosts, since 6 bits remain for hosts.
     KEY POINTS TO MENTION
     • 4 subnets, 62 usable hosts each
+
+## Real interview prompts
+
+Additional questions reported from real DevOps / SRE interviews. Company names are omitted — practise these out loud without notes.
+
+- I have webapp in India and slowly users from abroad are also tyring to access it but there is latency. How would fix this issue, which service can help in reducing latency?
+- How does NAT gateway protect my private subnet, what concept does it use to secure the resource (same masking) = masking is protecting the private subnet ✅ (vpc)?
+- Question : What is your understanding of software architecture components (Load balancers, web servers, application servers, databases, and integrations)?
+- Explain the complete request flow when using Gateway API with multiple GatewayClasses across regions. How do you prevent split-brain routing?
+- What happens when an user hits "www.clarify.com" how the request pass through the network ?? write a diagram and explain it to me?
+- If the frontend, backend, and database are all deployed in private subnets, how can an end user access the application?
+- Once you create that subnet, the instance will get created, but will it be able to communicate with the old instances?
+- You need to expose an application internally without using a LoadBalancer or NodePort service. How would you do it?
+- How do you mentor or support junior DevOps engineers in your team while ensuring timely project delivery?,?
+- Explain amazon traffic architecture how it goes to private subnet? I write diagram and explained it?
+- In which subnet are you placing your EKS cluster and which networking components have you used?
+- Q16. During peak traffic, ingress controller is routing requests slowly. How do you debug it?
+- Suppose we configured a load balancer but it’s not accepting HTTPS request what would you do?
+- In terms of Cost optimisation which one should we use, Az App gateway or network gateway?
+- Can you tell me the difference between REST APIs and WebSocket APIs in API Gateway?
+- How to desgin an web appl handle flucting low latency and how traffice flow in it?
+- Tell me the flow of network packets starting from user hit the application url?
+- What is WAF (Web Application Firewall) and AAF (Application Access Firewall)?
+- Create multiple subnets for different layers (bastion, application, database)?
+- If I don't specify TargetPort in the service object, what is it going to do?
+- How to provide HTTPS access to an application hosted in a private subnet?
+- Can you tell me the difference between NAT Gateway and Internet Gateway?
+- Q10. If NACL denies a CIDR, but SG allows same IP, can the IP access LB?
+- Which App gateway setting is used to upload SSL certification and why?
+- How you will direct traffic to and from a instance in private subnet?
 
 ## Related
 

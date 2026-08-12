@@ -1,6 +1,6 @@
 ---
 title: "GitHub Actions Interview Preparation"
-description: "27 curated interview questions and model answers for GitHub Actions — concepts, scenarios, troubleshooting, and production trade-offs."
+description: "45 curated GitHub Actions interview prompts — model answers plus real interview questions collected across companies (deduplicated by topic)."
 difficulty: intermediate
 estimated_time: "45–90 min"
 author: Shaik Basha
@@ -344,6 +344,29 @@ Answer out loud first, then reveal the model answer. Prefer judgement and verifi
     I add a YAML file under .github/workflows/, specifying on for the triggering event, jobs for the units of work, and steps
     within each job for individual actions -- checking out the repo, running a script, or invoking a pre-built action from the
     marketplace.
+
+## Real interview prompts
+
+Additional questions reported from real DevOps / SRE interviews. Company names are omitted — practise these out loud without notes.
+
+- You are given a GitHub Actions workflow snippet. How would you identify incorrect steps and suggest improvements or missing steps for a robust CI/CD pipeline?
+- Do you have experience with GitHub Actions? Suppose I want to build and test a Java Maven application and create an artifact, what steps would you include?
+- How would you parameterize a workflow so that downstream jobs know which environment to deploy to?
+- Where do you keep the GitHub Actions workflow file, and how do you upload a JAR artifact?
+- In GitHub Actions, if one job depends on another job, which parameter do you use?
+- What is the difference between needs and concurrency in GitHub Actions?
+- What steps are included in your GitHub Actions workflow file?
+- 12 .How do you handle parallel execution in CI/CD workflows?
+- How do you prevent concurrent executions in GitHub Actions?
+- How do you set up a manual trigger in GitHub Actions?
+- How do you run jobs in parallel in GitHub Actions?
+- About K8's Architecture and tell me the workflow?
+- How do you deploy to EKS through GitHub Actions?
+- What is the needs keyword in GitHub Actions?
+- What is GitHub Actions Matrix strategy?
+- Explain your GitHub Actions pipeline?
+- How caching works in Github Actions?
+- What is a matrix in GitHub Actions?
 
 ## Related
 

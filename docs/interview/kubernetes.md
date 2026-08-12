@@ -1,6 +1,6 @@
 ---
 title: "Kubernetes Interview Preparation"
-description: "60 curated interview questions and model answers for Kubernetes — concepts, scenarios, troubleshooting, and production trade-offs."
+description: "100 curated Kubernetes interview prompts — model answers plus real interview questions collected across companies (deduplicated by topic)."
 difficulty: intermediate
 estimated_time: "45–90 min"
 author: Shaik Basha
@@ -501,15 +501,9 @@ Answer out loud first, then reveal the model answer. Prefer judgement and verifi
     With NetworkPolicy, you can restrict ingress/egress traffic based on Pod selectors, namespace 
     selectors, and IP blocks.
 
-**33. What are Pods in Kubernetes?**
-
-??? success "Reveal answer"
-    A Pod is the smallest deployable object in Kubernetes, representing a single instance of a running process that can
-    contain one or more tightly coupled containers sharing the same network namespace and storage.
-
 ## Scenarios and troubleshooting
 
-**34. How do you implement zero-downtime deployments on ECS Fargate with a production traffic cutover strategy?**
+**33. How do you implement zero-downtime deployments on ECS Fargate with a production traffic cutover strategy?**
 
 ??? success "Reveal answer"
     Zero-downtime deployments on ECS Fargate require a combination of rolling updates, health 
@@ -548,7 +542,7 @@ Answer out loud first, then reveal the model answer. Prefer judgement and verifi
      codedeploy = boto3.client('codedeploy') 
      deployment_id =…
 
-**35. How do you deploy the ELK stack on Kubernetes for production log aggregation?**
+**34. How do you deploy the ELK stack on Kubernetes for production log aggregation?**
 
 ??? success "Reveal answer"
     In production Kubernetes environments, the modern approach is: Filebeat DaemonSet → 
@@ -602,7 +596,7 @@ Answer out loud first, then reveal the model answer. Prefer judgement and verifi
      mountPath: /var/lib/docker/containers 
     …
 
-**36. How do you handle rollbacks in the case of a failed deployment?**
+**35. How do you handle rollbacks in the case of a failed deployment?**
 
 ??? success "Reveal answer"
     With blue-green or canary deployments, rollback is just redirecting traffic back to the previous version without
@@ -621,7 +615,7 @@ Answer out loud first, then reveal the model answer. Prefer judgement and verifi
     0
     CONTAINERIZATION: DOCKER & KUBERNETES
 
-**37. How do you handle datebase migrations in production?**
+**36. How do you handle datebase migrations in production?**
 
 ??? success "Reveal answer"
     + Use backward compatible migrations. * DB migration strategies
@@ -638,7 +632,7 @@ Answer out loud first, then reveal the model answer. Prefer judgement and verifi
     =» Real interview questions. Real production scenarios. L* Networking issues
     @
 
-**38. How do you rollback a failed deployment in production?**
+**37. How do you rollback a failed deployment in production?**
 
 ??? success "Reveal answer"
     + Use automated rollback (Jenkins/Kubernetes/CodePipeline) if available. * Knowledge of rollback mechanisms
@@ -648,7 +642,7 @@ Answer out loud first, then reveal the model answer. Prefer judgement and verifi
     + Verify rollback success with health checks and monitoring. * Customer impact awareness
     (3)
 
-**39. Service is running, but pods cannot communicate with each other. How do you troubleshoot?**
+**38. Service is running, but pods cannot communicate with each other. How do you troubleshoot?**
 
 ??? success "Reveal answer"
     « Check if pods are in the same namespace and service discovery works. * Kubernetes networking model
@@ -658,7 +652,7 @@ Answer out loud first, then reveal the model answer. Prefer judgement and verifi
     + Check if correct ports and selectors are configured. * End-to-end. connectivity thinking ’
     e ©
 
-**40. Pods are in CrashLoopBackOff status. How do you troubleshoot and fix it?**
+**39. Pods are in CrashLoopBackOff status. How do you troubleshoot and fix it?**
 
 ??? success "Reveal answer"
     © Check pod description: kubectl describe pod <pod-name> 
@@ -668,14 +662,14 @@ Answer out loud first, then reveal the model answer. Prefer judgement and verifi
     . > + Fix the issue and redeploy. Add readiness/liveness probes if missing. &. Proactive Eivncedaat
     @
 
-**41. How would you deploy a Kubernetes application using GitHub Actions and ArgoCD?**
+**40. How would you deploy a Kubernetes application using GitHub Actions and ArgoCD?**
 
 ??? success "Reveal answer"
     GitHub Actions handles the CI side -- linting manifests, running tests, building and pushing the image, then updating
     the Kubernetes manifests or Helm values in the Git repo ArgoCD watches. ArgoCD picks up that change and
     automatically syncs the cluster to match, so GitHub Actions never needs direct write access to the cluster itself.
 
-**42. A pod is in CrashLoopBackOff. How do you debug it?**
+**41. A pod is in CrashLoopBackOff. How do you debug it?**
 
 ??? success "Reveal answer"
     kubectl describe pod <name> # Check events and last state reason 
@@ -683,7 +677,7 @@ Answer out loud first, then reveal the model answer. Prefer judgement and verifi
     kubectl logs <pod> -c <container> # Specific container logs 
     # Common causes: missing env vars, DB connection failure, OOMKill, bad CMD
 
-**43. What is kubectl debug?**
+**42. What is kubectl debug?**
 
 ??? success "Reveal answer"
     Creates an ephemeral debug container attached to a running Pod — useful for debugging 
@@ -692,7 +686,7 @@ Answer out loud first, then reveal the model answer. Prefer judgement and verifi
 
 ## Practice questions
 
-**44. How do you implement Horizontal Pod Autoscaling (HPA) in Kubernetes?**
+**43. How do you implement Horizontal Pod Autoscaling (HPA) in Kubernetes?**
 
 ??? success "Reveal answer"
     HPA automatically scales the number of Pods in a Deployment based on observed metrics. The 
@@ -740,7 +734,7 @@ Answer out loud first, then reveal the model answer. Prefer judgement and verifi
      - type: Percent 
      value:…
 
-**45. How do you implement cost optimization in a Kubernetes cluster?**
+**44. How do you implement cost optimization in a Kubernetes cluster?**
 
 ??? success "Reveal answer"
     Running Kubernetes in production can be expensive if not managed carefully. Here are the key 
@@ -778,7 +772,7 @@ Answer out loud first, then reveal the model answer. Prefer judgement and verifi
     2. Spot/Preemptible instances for non-critical workloads: 
     # Use…
 
-**46. A node in the cluster is NotReady. How do you investigate?**
+**45. A node in the cluster is NotReady. How do you investigate?**
 
 ??? success "Reveal answer"
     «+ Check node status: kubectl get nodes 
@@ -795,7 +789,7 @@ Answer out loud first, then reveal the model answer. Prefer judgement and verifi
     + Fix constraints or scale the cluster / adjust configs. * Problem isolation skills
     Ss @)
 
-**47. How do you design a system that can scale to millions of users?**
+**46. How do you design a system that can scale to millions of users?**
 
 ??? success "Reveal answer"
     + Use horizontal scaling (add more instances/containers). 1 Horizontal vs vertical sealing 4 _. hutto Sealing Group :
@@ -807,7 +801,7 @@ Answer out loud first, then reveal the model answer. Prefer judgement and verifi
     : " ness continuity?
     — ) (6)
 
-**48. A new deployment was successful, but users are now facing errors. | How do you proceed?**
+**47. A new deployment was successful, but users are now facing errors. | How do you proceed?**
 
 ??? success "Reveal answer"
     ° Check application logs for exceptions and error patterns. * Fast but safe decision making
@@ -817,7 +811,7 @@ Answer out loud first, then reveal the model answer. Prefer judgement and verifi
     | + Rollback if needed to restore service quickly, then investigate. * Learn then fix approach
     OQ)
 
-**49. How does Kubernetes handle storage?**
+**48. How does Kubernetes handle storage?**
 
 ??? success "Reveal answer"
     PersistentVolumes represent actual durable storage resources in the cluster, PersistentVolumeClaims are requests
@@ -831,7 +825,7 @@ Answer out loud first, then reveal the model answer. Prefer judgement and verifi
     2
     KUBERNETES ARCHITECTURE
 
-**50. How do you ensure a deployment is zero-downtime?**
+**49. How do you ensure a deployment is zero-downtime?**
 
 ??? success "Reveal answer"
     + Use strategies like Blue/Green, Canary, or Rolling Update. * Zero downtime techniques
@@ -841,7 +835,7 @@ Answer out loud first, then reveal the model answer. Prefer judgement and verifi
     + Test in staging with production-like data before release. * Production best practices
     @
 
-**51. How does Kubernetes handle scaling?**
+**50. How does Kubernetes handle scaling?**
 
 ??? success "Reveal answer"
     Manual scaling with kubectl scale to directly adjust replica count; Horizontal Pod Autoscaler, which automatically
@@ -854,7 +848,7 @@ Answer out loud first, then reveal the model answer. Prefer judgement and verifi
     3
     INGRESS CONTROLLER
 
-**52. How do you handle subnetting in a Kubernetes environment?**
+**51. How do you handle subnetting in a Kubernetes environment?**
 
 ??? success "Reveal answer"
     Kubernetes needs CIDR ranges allocated for nodes, pods, and services, and getting that sizing right up front matters
@@ -863,7 +857,7 @@ Answer out loud first, then reveal the model answer. Prefer judgement and verifi
     
     The Complete DevOps Engineer Interview Guide (Exhaustive) — 2026
 
-**53. Pod restarts intermittently with OOMKilled. How do you fix?**
+**52. Pod restarts intermittently with OOMKilled. How do you fix?**
 
 ??? success "Reveal answer"
     + Check pod logs and describe for OOMKilled reason. * Resource management knowledge
@@ -873,7 +867,7 @@ Answer out loud first, then reveal the model answer. Prefer judgement and verifi
     + Add alerts for memory threshold breaches. as . * Root cause vs symptom focus s |
     ©
 
-**54. How do you manage secrets for Kubernetes deployments in GitOps using GitHub Actions and ArgoCD?**
+**53. How do you manage secrets for Kubernetes deployments in GitOps using GitHub Actions and ArgoCD?**
 
 ??? success "Reveal answer"
     GitHub Actions secrets handle anything the CI workflow itself needs, while in the cluster I use Sealed Secrets or
@@ -886,28 +880,28 @@ Answer out loud first, then reveal the model answer. Prefer judgement and verifi
     6
     GITLAB
 
-**55. How do you expose a Kubernetes application to external traffic?**
+**54. How do you expose a Kubernetes application to external traffic?**
 
 ??? success "Reveal answer"
     A Service of type LoadBalancer provisions a cloud load balancer for the app; Ingress provides HTTP/HTTPS routing
     with support for features like SSL termination and host/path-based rules; and NodePort exposes the app on a static
     port on every node, which I mostly use for quick testing rather than production.
 
-**56. How does Kubernetes networking work?**
+**55. How does Kubernetes networking work?**
 
 ??? success "Reveal answer"
     Kubernetes uses a flat network model where every Pod gets its own unique IP, and Pods can communicate across
     nodes without NAT. CNI plugins like Calico, Flannel, or Weave implement that connectivity, and kube-proxy on each
     node manages Service networking, routing traffic to the correct backing Pods.
 
-**57. How do you use Python to interact with a Kubernetes cluster?**
+**56. How do you use Python to interact with a Kubernetes cluster?**
 
 ??? success "Reveal answer"
     The official kubernetes Python client lets me load the kubeconfig and call the API directly -- listing pods in a
     namespace with v1.list_namespaced_pod(), for example -- which is also how I've built custom automation like scripts
     that find and report every pod stuck in a bad state across a cluster.
 
-**58. Your Kubernetes cluster nodes are running at 90% memory. What do you do?**
+**57. Your Kubernetes cluster nodes are running at 90% memory. What do you do?**
 
 ??? success "Reveal answer"
     Immediate: 1) kubectl top pods --sort-by=memory — find memory hogs. 2) Check for 
@@ -915,18 +909,70 @@ Answer out loud first, then reveal the model answer. Prefer judgement and verifi
     Run VPA to get recommendations. 6) Enable Cluster Autoscaler. 7) Optimize application memory 
     usage.
 
-**59. How does Kubernetes achieve high availability?**
+**58. How does Kubernetes achieve high availability?**
 
 ??? success "Reveal answer"
     Multiple control plane nodes so losing one doesn't take down cluster management, a clustered, highly available etcd
     for consistent state and failover, and Pod replication across multiple worker nodes so a single node failure doesn't
     take a service down entirely.
 
-**60. What does the Kubernetes Scheduler do?**
+**59. What does the Kubernetes Scheduler do?**
 
 ??? success "Reveal answer"
     The Scheduler assigns Pods to nodes, factoring in resource availability, node conditions, affinity/anti-affinity rules,
     and other constraints, aiming to distribute Pods efficiently across the cluster rather than overloading any single node.
+
+**60. Suppose a new deployment was implemented, suddenly all the PODs (new and old ones) crashed, what's the reason for this ?**
+
+??? success "Reveal answer"
+    New deployment exhausted the resource limit, so we need to use "limit" in our deployment.yaml file
+    
+    Expand this in interview form: state the approach, name the first checks or commands, and call out a failure mode.
+
+## Real interview prompts
+
+Additional questions reported from real DevOps / SRE interviews. Company names are omitted — practise these out loud without notes.
+
+- right? So how it is basically getting deployed in cluster? I mean the deployment is basically failing just on the pod is currently in the error state. It is getting terminated. So how are you going to troubleshoot those such kind of Kubernetes issues?
+- You have a Kubernetes cluster with 30 nodes. 29 nodes are Ready, but 1 node is NotReady. You have already checked kubectl logs, kubectl describe, and other basic commands. How will you troubleshoot the node further?
+- When designing a microservices-oriented infrastructure, what technologies and components (like load balancer, service mesh, Kubernetes) would you bring in, and how would you design the estate?
+- Pod is running fine, all the parameters looks good, but the traffic is not reaching the pod when the user is trying to access the application, what could be the possible reason ?
+- suppose you deploy one application okay and you found some issue, you wanted to roll back using the kubernetes how you roll back to the particular version, what is the command?
+- If you're going with Blue Green deployment, how will you change your configuration to reroute the traffic between blue and green, exactly which configuration needs to changed?
+- difference between deployement and replicaset and daoemonset and statefulset (what key words you will be writing over the, for ex : deployement.yml – rolling update, canary)?
+- Suppose you have in satetfull 3 pods which having name mongo-0 , mongo-1, mongo-2 what happen if mongo-0 dies when new pod will create what will be pod new name ?
+- suppose we have pods 2 running in rolling updates some are in deployments set and some pods are in statefull set , how rolling updates strategy will work here ?
+- Since some features of service mesh are also available through other tools, is it worth adding the burden of installing Istio service mesh into the estate?
+- If you have a Kubernetes cluster with pods running, but when you hit the URL you get HTTP errors (403, 404, 503), what would be your troubleshooting steps?
+- Question : You have optimized Kubernetes deployment configs. So can you explain me what have what was the role and what what have you done there?
+- Can you write a Jenkinsfile for a Node.js application to build, push Docker image, and deploy to Kubernetes? Please also explain it in detail?
+- During a Canary deployment, how would you verify that the 10% deployment is healthy? What metrics would you monitor before proceeding to 100%?
+- How would you structure a multi-stage pipeline that builds, tests and deploys a containerized application to kubernetes using Github Actions?
+- How would you design a Kubernetes cluster that must survive a full AZ failure without data loss, while running stateful workloads at scale?
+- I have an Ingress object that is not routing the traffic to the Kubernetes cluster. What are the reasons and how do you troubleshoot that?
+- Describe a real production incident where a misconfigured HPA caused cascading failure. How would you redesign autoscaling to avoid this?
+- Design a multi-tenant Kubernetes platform where teams must not affect each other’s resource usage, network traffic, or upgrade cycles?
+- If there is file which is being used by 2 customers, and need to deploy that file in k8s cluster and on prem as well, how to do that?
+- If Git is already the source of truth, why do we need Argo CD? Why not deploy directly using the CI/CD pipeline with Helm or kubectl?
+- suppose we have application configured with hpa where it was running fine but suddenly it is not running what will be your approach?
+- Say you have EC2 instances running web servers and need deployment with minimal downtime during updates. How do you approach this?
+- Pods in different namespaces can communicate. How would you block that communication? Where would you implement the NetworkPolicy?
+- If you are implementing HPA for statefulsets if new pod comes the pvc would be empty? How would it be able to serve the request?
+- How do you debug intermittent pod restarts when liveness probes pass, readiness passes, but the pod is still killed by the node?
+- If a pod is created with a Deployment and another with a StatefulSet, will the StatefulSet pod always remain on the same node?
+- [ ] In Kubernetes, how do you manage application deployment, scaling, and rollback? Can you walk through a specific scenario?
+- How would you implement security for Kubernetes(both on container side and the infra side using native Kubernetes solutions)?
+- What happens internally when etcd latency spikes above 500ms? How does it impact the scheduler, controllers, and API server?
+- what is kubernetes operator? If I need to run a shell script before any container to start how can i do it using operator ?
+- How do you create and manage Kubernetes clusters (using tools like Terraform), and what are the master and worker nodes?
+- When you have many services in a service mesh, how do you decide the number of control planes and data planes needed?
+- I have created a service object that is not mapped to a deployment. What could be the reason and how do you debug it?
+- Explain the complete request flow when a user accesses www.ingress.com until the request reaches the application pod?
+- What are common Kubernetes errors you’ve faced (like CrashLoopBackOff, ImagePullError), and how did you resolve them?
+- How would you design container images for ultra-fast cold starts in serverless or autoscaled Kubernetes environments?
+- Q14. Repo has 3 branches: dev, staging, prod. How do you ensure pushing to staging triggers only staging deployment?
+- If your cluster is in a private subnet, then outside kubectl will not be working, right? How are you accessing that?
+- How to assign memory to pod and how to make sure if pod should not get memory constraint. What to do if it happens?
 
 ## Related
 

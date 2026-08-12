@@ -1,6 +1,6 @@
 ---
 title: "AWS Interview Preparation"
-description: "50 curated interview questions and model answers for AWS — concepts, scenarios, troubleshooting, and production trade-offs."
+description: "85 curated AWS interview prompts — model answers plus real interview questions collected across companies (deduplicated by topic)."
 difficulty: intermediate
 estimated_time: "45–90 min"
 author: Shaik Basha
@@ -525,6 +525,46 @@ Answer out loud first, then reveal the model answer. Prefer judgement and verifi
     Security Groups are stateful, instance-level virtual firewalls -- I define allow rules for inbound and outbound traffic,
     and because they're stateful, a response to an allowed inbound request is automatically permitted outbound without
     needing a matching explicit rule.
+
+## Real interview prompts
+
+Additional questions reported from real DevOps / SRE interviews. Company names are omitted — practise these out loud without notes.
+
+- You have RDS and tomorrow, I being your client, will tell you that you need to make the configuration in such a way so that only one user can access the RDS at a time. How will you configure that?
+- I have created an EC2 instance named A, and I want to create another instance B. It should create an instance without deleting instance A. What can I do during this?
+- Suppose in your DevOps team, new team members are added to your team. How can you provide AWS access to your new users, what is the behavior of login to the console?
+- How to spead up s3 upload with files in large size, and client uploaded 10 Gb file but failed after uploading 5 gb how you confirm that 5 gb is uploaded to s3?
+- If there is a vendor who provides VPN services for company A, his manager wants to view some dashboard but do not have AWS account. How would you help him?
+- How do you scale EKS? What are the metrics considered and where do you add your inputs and How? Explain how you have done auto-scaling in your project?
+- You want to create an EC2, and while creating the instance, you are getting an error like IP address exceeded. How will you troubleshoot and fix it?
+- To upgrade the version of DB in RDS, suppose you have 7.0 MySQL installed, and you want to upgrade it into 8.0 and above. What is the process?
+- If you are given a project eg EC2 or EKS or anything else what are the things you would take into consideration from prerequisite till output?
+- Two VPCs need to communicate, but their CIDR ranges overlap. Transit Gateway is not allowed. What alternative solution would you recommend?
+- how to manages certificate in aws. If the certificate expires how are you managing it and what's the action you are taking over here?
+- In Route 53, can you tell me the difference between A record and CNAME record (written as “ad code and symmetry code” in screenshot)?
+- Say you need to configure EC2 instances automatically or replace themselves automatically when they fail. How do you implement this?
+- How do you create AWS Lambda functions and manage the artifacts for deployment? What options do you use to push artifacts to Lambda?
+- You are having lambda function and role everything setup perfectly but logs are not coming up in the cw group how to troubleshoot?
+- Assume you have 10 AWS accounts. How will you securely log in to them, considering access keys are not used for security reasons?
+- If I have EC2 instance for which I don’t want to talk to internet but intra-communication can be possible, how to configure it?
+- Question : can you tell me are you familiar with setting up dashboards and alerts yourself like creating dashboards and alerts?
+- Can you deploy mongo db database in EKS cluster. If yes how and what all configuration things you would need to keep in mind?
+- Question : So can you walk me through what all dashboards that you have created, what type of alerts that you have created?
+- You have created an IAM user in AWS and configured role-based access in EKS. How do you bind the IAM user to the EKS role?
+- I have an S3 bucket, and there is some file inside it — my pod wants to access that S3 bucket. How will it access it?
+- Explain the AWS architecture shown in the diagram (CodePipeline, CodeBuild, CodeDeploy, CloudFormation, CloudWatch)?
+- If any service is down for more than 2 weeks and customer is asking for update, what will you tell to customer?
+- Q8. You found memory pressure on RDS. You cannot resize. What immediate action can you take without downtime?
+- Apart from SageMaker, which AWS or open-source services have you used or are aware of for training ML models?
+- You have an EC2 instance and you would like to migrate it from one region to another. How will you do it?
+- A developer accidentally commits AWS credentials to Git. What is your complete incident response process?
+- How do you manage and connect services like DBs, EC2, EKS, or ECS? Include the command to connect to ECS?
+- What are the security parameters we must consider while we are creating an EC2 instance for production?
+- How do you prevent misuse or unauthorized usage if someone attempts to spin up ML services in AWS?
+- Write a python script to list the EC2 instances running in your cloud which has the tag of PROD,?
+- How to make connections between on prem to AWS suppose if we want to share files from on prem?
+- What if production rds is growing 95% how do you debug and how do you prevent this in future?
+- [ ] Other than Azure and AWS, are you familiar with any other cloud platforms or services?
 
 ## Related
 

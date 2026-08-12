@@ -1,6 +1,6 @@
 ---
 title: "Security & DevSecOps Interview Preparation"
-description: "34 curated interview questions and model answers for Security & DevSecOps — concepts, scenarios, troubleshooting, and production trade-offs."
+description: "49 curated Security & DevSecOps interview prompts — model answers plus real interview questions collected across companies (deduplicated by topic)."
 difficulty: intermediate
 estimated_time: "45–90 min"
 author: Shaik Basha
@@ -269,6 +269,26 @@ Answer out loud first, then reveal the model answer. Prefer judgement and verifi
 
 ??? success "Reveal answer"
     o Integrate security scanning tools (SAST, DAST) into CI/CD.
+
+## Real interview prompts
+
+Additional questions reported from real DevOps / SRE interviews. Company names are omitted — practise these out loud without notes.
+
+- What if developer coming to you and saying that remove code quality from the pipeline as it is slow in scanning the code in this scenario what steps would you take?
+- Follow-up for Q23: If you are using GitHub Marketplace actions, which are third-party tools, how do you ensure security concerns regarding them?
+- What are the security protocols will be taken into consideration while designing three tier architecture.,?
+- how you ensure the best possible security for high availability architectures for 3 tier applications?
+- In your project, what was the application language you scanned with SonarQube?
+- What are the best password security practices used by your organisation?
+- What top-level security risks from OWASP do you usually check for?
+- How will you maintain your base image, vulnerability free?
+- And how did you managed security for application level?
+- What are the vulnerability reports in your sonarqube?
+- How have you implemented security in your project?
+- How will you check the vulnerability of your code?
+- What are NACLs,SecurityGroups,NAT Gateway?
+- How to enable RBAC to Service accounts?
+- How to insert Sonar scanner stage?
 
 ## Related
 

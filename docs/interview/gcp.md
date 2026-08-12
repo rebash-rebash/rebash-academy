@@ -1,6 +1,6 @@
 ---
 title: "Google Cloud Interview Preparation"
-description: "1 curated interview questions and model answers for Google Cloud — concepts, scenarios, troubleshooting, and production trade-offs."
+description: "5 curated Google Cloud interview prompts — model answers plus real interview questions collected across companies (deduplicated by topic)."
 difficulty: intermediate
 estimated_time: "45–90 min"
 author: Shaik Basha
@@ -32,6 +32,15 @@ Answer out loud first, then reveal the model answer. Prefer judgement and verifi
 ??? success "Reveal answer"
     A Kubernetes-based platform for serverless workloads. Provides auto-scaling to zero, event-
     driven invocation, and traffic splitting. Used by Google Cloud Run under the hood.
+
+## Real interview prompts
+
+Additional questions reported from real DevOps / SRE interviews. Company names are omitted — practise these out loud without notes.
+
+- How can you restrict public access to load balancers either standalone or gke?
+- How can you can you migrate one node pool vms to another node pool in gcp?
+- How can you reduce gcp storage buckets costs?
+- What is IAP in gcp?
 
 ## Related
 

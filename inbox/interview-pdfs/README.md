@@ -39,3 +39,18 @@ This folder is **source material only** — not published on the site.
 | Behavioral | `docs/interview/behavioral.md` | create when content arrives |
 
 Cross-topic duplicates keep the **best answer** under the most specific category and get a cross-link where useful.
+
+## Additional source — GitHub interview guide
+
+We also ingest [litu54/DevOps-Interview-Guide](https://github.com/litu54/DevOps-Interview-Guide):
+
+- Company folders are **flattened** (no company-level pages)
+- Questions with short hints become model-answer entries
+- Answerless bullets become **Real interview prompts** on each topic page
+- Deduped against PDF/OCR questions via `interview-question-registry.yaml`
+
+Clone lands under `inbox/interview-github/` (gitignored). Re-run:
+
+```bash
+python3 scripts/process_interview_pdfs.py
+```

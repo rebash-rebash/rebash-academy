@@ -1,6 +1,6 @@
 ---
 title: "Argo CD Interview Preparation"
-description: "9 curated interview questions and model answers for Argo CD — concepts, scenarios, troubleshooting, and production trade-offs."
+description: "11 curated Argo CD interview prompts — model answers plus real interview questions collected across companies (deduplicated by topic)."
 difficulty: intermediate
 estimated_time: "45–90 min"
 author: Shaik Basha
@@ -143,6 +143,13 @@ Answer out loud first, then reveal the model answer. Prefer judgement and verifi
 
 ??? success "Reveal answer"
     o GitOps enforces version-controlled infrastructure and automatic reconciliation.
+
+## Real interview prompts
+
+Additional questions reported from real DevOps / SRE interviews. Company names are omitted — practise these out loud without notes.
+
+- How do you design GitOps for 1000+ clusters with environment drift detection, emergency hotfixes, and controlled manual overrides?
+- What is argocd and why we are using it?
 
 ## Related
 

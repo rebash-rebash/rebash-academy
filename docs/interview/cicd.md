@@ -1,6 +1,6 @@
 ---
 title: "CI/CD Interview Preparation"
-description: "40 curated interview questions and model answers for CI/CD — concepts, scenarios, troubleshooting, and production trade-offs."
+description: "65 curated CI/CD interview prompts — model answers plus real interview questions collected across companies (deduplicated by topic)."
 difficulty: intermediate
 estimated_time: "45–90 min"
 author: Shaik Basha
@@ -572,6 +572,36 @@ Answer out loud first, then reveal the model answer. Prefer judgement and verifi
     OS package vulnerabilities across distributions like Ubuntu or Alpine, language-specific vulnerabilities in npm,
     Python, or Ruby dependencies, misconfigurations in infrastructure-as-code files, and known vulnerabilities in
     third-party libraries.
+
+## Real interview prompts
+
+Additional questions reported from real DevOps / SRE interviews. Company names are omitted — practise these out loud without notes.
+
+- Suppose you are implementing a Canary deployment where only 10% of users receive the new version. How would you implement it through your CI/CD pipeline?
+- [ ] You mentioned improving CI/CD efficiency by 60%. Can you explain the specific optimizations you made for this?
+- What happens internally when you run a Maven build — how does it fetch dependencies from the repository?
+- How do you write in yaml to create a ci/cd pipeline from scratch to test and deploy from Dev to UAT?
+- Any challenges have you faced in CI/CD in your team, Tell me about it. How did you overcome this?
+- With respect to DevOps, to set the CI/CD pipeline, which tools and services have you used?
+- How do you prioritize and manage multiple critical issues in a CI/CD pipeline failure?,?
+- What is the output of sonarqube, how to fix if any smell code/vurnabilities found?
+- Explain your complete CI/CD pipeline from code commit to production deployment?
+- Explain Continuous Integration, Continuous Delivery, and Continuous Deployment?
+- How do you design and implement a complete CI/CD pipeline for ML models?
+- Explain the pre-build, build, and post-build stages in a CI/CD pipeline?
+- CI/CD pipeline needs rollback capability. How would you implement it?
+- If credentials are visible in CI/CD pipeline logs, what will you do?
+- [ ] How do you integrate tools like SonarQube into your pipelines?
+- Where do you store application credentials in your CI/CD pipeline?
+- Difference between Continuous Delivery and Continuous Deployment?
+- Where do you store CI/CD secrets such as pipeline credentials?
+- Explain your end-to-end CI/CD pipeline in your current project?
+- How would you set up entire CI/CD setup for this application?
+- Q16. Have you integrated SonarQube in your CI/CD pipeline?
+- You said you configured SonarQube. What does SonarQube do?
+- What kind of CI/CD pipelines are you familiar with?
+- What ci/cd do u use tell us about it in detail?
+- How do you set up quality gates in SonarQube?
 
 ## Related
 

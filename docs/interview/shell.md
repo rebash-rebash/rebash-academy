@@ -1,6 +1,6 @@
 ---
 title: "Shell Interview Preparation"
-description: "35 curated interview questions and model answers for Shell — concepts, scenarios, troubleshooting, and production trade-offs."
+description: "55 curated Shell interview prompts — model answers plus real interview questions collected across companies (deduplicated by topic)."
 difficulty: intermediate
 estimated_time: "45–90 min"
 author: Shaik Basha
@@ -324,6 +324,31 @@ Answer out loud first, then reveal the model answer. Prefer judgement and verifi
 ??? success "Reveal answer"
     Redirects stderr (file descriptor 2) to wherever stdout (file descriptor 1) is currently pointing. Used 
     to capture both stdout and stderr together.
+
+## Real interview prompts
+
+Additional questions reported from real DevOps / SRE interviews. Company names are omitted — practise these out loud without notes.
+
+- if you were required to run pre-task checks, main tasks and post-task validation for patch automation, how would you structure your RedHat Automation & Virtulization scripts?
+- How to schedule pipeline, lets say i have validated the pipeline with some update and i want to schedule it to stage/main branch, how to do? (This also someone explain)?
+- Do you use pipeline for three different env or one for all? Explain how?write a groovy script using any ci cd took for build, test and deploy stages?
+- What is runs-on in a pipeline? Which type of runners are you using in your organization, and do you know how to configure self-hosted runners?
+- Do you have experience with AWS DevOps services like CodeDeploy, CodeBuild, and CodePipeline? How would you set up a pipeline using them?
+- [ ] What is a recent challenge you faced while implementing a DevOps practice or pipeline in your team or organization?
+- Can you share an experience where your automation strategy failed or caused problems? What was your corrective action?,?
+- What is the command or pipeline syntax used to refer the variable output of the previous stage in the current stage?
+- Can you tell me the difference between single ampersand (&) and double ampersand (&&) in shell scripting?
+- Write a script that renames all .txt files in a directory by appending the current date to the filename?
+- Write a script to monitor a directory and automatically copy any new files to a remote server using SCP?
+- Have you used any artifact repositories like Nexus or Artifactory, and where do you store dependencies?
+- [ ] What is your approach to integrating automated testing in pipelines to ensure high code quality?
+- Write a shell script that takes an integer N as input and prints numbers in a triangular pattern?
+- Write a shell script that checks if a service is running, restarts it if not, and logs the event?
+- You have a multi-cloud environment. How do you manage pipelines for all those cloud environments?
+- How you will build single or minimal reusuable pipeline templates for 50 different applications?
+- If the pipeline fails due to existing resources, how do you handle RIP (Remove, Import, Plan)?
+- Write a shell script to find and delete all files in a directory that are older than 30 days?
+- Which version of SonarQube have you used — Community, Developer, Enterprise, or SonarCloud?
 
 ## Related
 

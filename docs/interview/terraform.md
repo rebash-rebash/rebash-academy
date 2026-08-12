@@ -1,6 +1,6 @@
 ---
 title: "Terraform Interview Preparation"
-description: "40 curated interview questions and model answers for Terraform — concepts, scenarios, troubleshooting, and production trade-offs."
+description: "65 curated Terraform interview prompts — model answers plus real interview questions collected across companies (deduplicated by topic)."
 difficulty: intermediate
 estimated_time: "45–90 min"
 author: Shaik Basha
@@ -527,6 +527,36 @@ Answer out loud first, then reveal the model answer. Prefer judgement and verifi
     é tainer: : , 3
     Exec ae amt ‘abel pect < ker log cement — = =.
     2 2 to aor ? =
+
+## Real interview prompts
+
+Additional questions reported from real DevOps / SRE interviews. Company names are omitted — practise these out loud without notes.
+
+- I have created an EC2 instance through Terraform. I don't have a backup of the Terraform state file, it is not in the remote state and locally not available. Now when I do apply, what can I do?
+- Could you elaborate your experience with automating and optimizing the deployment over large infrastructure using AWS and other tools like Terraform and Ansible from your previous roles?
+- 2 Instances are created using terraform. Statefile is located locally and also in remote backend(S3). If a user deletes 1 instance what would happen? How would you handle this?
+- Question : Set up the nodes and everything. what do you write inside a terraform code basically now what will be inside your provider file provided ATF in your main dotf?
+- For example, if someone modifies a security group in Terraform and opens it to 0.0.0.0/0, what mechanisms can we use in Terraform to stop such changes from being applied?
+- In Terraform, how would you create multiple EC2 instances, each with different configurations (for example, different instance types, AMIs, tags, or volumes)?
+- Difference between Iam users.. GitHub Oidc role and terraform io role.. which is secured and when to use use GitHub Oidc and when to use terraform io role?
+- You have defined a multi-region Terraform configuration (region1, region2, region3). If you create an EC2 instance, in which region will it be deployed?
+- Suppose you have created an EC2 instance by logging into the AWS console. And now you would like to manage it using Terraform. How shall you do it?
+- Draw and explain your Terraform repository structure. How do your dev, qa, and prod environments consume shared modules like the VPC module?
+- In which file you will define where Terraform state file should be generated and where it has to be maintained (which config file)?
+- If we can use terraform import for existing AWS resources which are not created by Terraform, then what is the use of data source?
+- How do you safely refactor a Terraform monorepo with hundredsgg of state files into a module-based architecture without downtime?
+- How would you manage Terraform when multiple teams deploy to the same AWS account but must not overwrite each other’s resources?
+- Two engineers are working on the same Terraform code. How do you prevent conflicts and handle Terraform state locking or drift?
+- Question : How do you import a resource into Terraform that was created manually in AWS or GCP? What command would you use?
+- Terraform provisioned resource should not delete by deleteing resource configuration in terraform code how can you do it?
+- Explain how Terraform handles dependency graphs internally. How can circular dependencies still appear in real projects?
+- Describe a production failure caused by terraform apply. What guardrails would you implement to prevent it permanently?
+- Say I created an S3 bucket using Terraform and want to modify the bucket name. Is it possible? How would you do this?
+- What AWS resources have you created using Terraform and how do you promote a read replica to primary using Terraform?
+- [ ] Can you describe a real-time scenario where you used Terraform to provision a highly scalable infrastructure?
+- If something is created on the cloud platform and it is not present in Terraform, how will you achieve it?
+- What is Terraform and how do you use terraform in your project and what all resources have you provisioned?
+- How would you migrate a Terraform backend from local to a remote backend like S3 with DynamoDB locking?
 
 ## Related
 

@@ -1,6 +1,6 @@
 ---
 title: "Jenkins Interview Preparation"
-description: "45 curated interview questions and model answers for Jenkins — concepts, scenarios, troubleshooting, and production trade-offs."
+description: "70 curated Jenkins interview prompts — model answers plus real interview questions collected across companies (deduplicated by topic)."
 difficulty: intermediate
 estimated_time: "45–90 min"
 author: Shaik Basha
@@ -668,6 +668,36 @@ Answer out loud first, then reveal the model answer. Prefer judgement and verifi
 ??? success "Reveal answer"
     Use Jenkins Credentials Store (Manage Jenkins → Credentials). Reference in pipeline 
     via withCredentials([]) or credentials() binding. Never hardcode secrets in Jenkinsfile.
+
+## Real interview prompts
+
+Additional questions reported from real DevOps / SRE interviews. Company names are omitted — practise these out loud without notes.
+
+- Describe your typical deployment flow and CI/CD workflow. What stages do you define in your Jenkins pipeline, and how do you ensure full quality checks during deployment?
+- In a Jenkins pipeline, at which stage would you publish or push artifacts/images to Nexus or Artifactory—pre-build, build, or post-build? Why?
+- How do you use Jenkins shared libraries? Explain their typical structure and how they are integrated into your Jenkinsfiles?
+- Explain the CI/CD workflow you follow and the kind of pipeline you use. How do you define and invoke pipelines in Jenkins?
+- What is the difference between Continuous Delivery and Continuous Deployment, and how do you implement them in Jenkins?
+- What if I have 10 FE micro services and 10 BE micro services how do you design the cicd pipeline using jenkins?
+- How does authentication happen in Jenkins pipeline to use aws with particular login, if you have 1 logout?
+- What kind of applications do you deploy using Jenkins pipelines, and what deployment tools do you use?
+- If the Jenkins pipeline runs but the build doesn’t happen, what possible issues could be causing it?
+- How do you perform complete backup up of Jenkins including jobs/configurations/authentications,?
+- Jenkins – If the controller (master) node goes down, how will you troubleshoot and restore it?
+- How would you implement dynamic stages in a Jenkinsfile based on environment variables?
+- How do you manage concurrent builds in Jenkins and ensure performance doesn’t degrade?
+- Explain how you would set up a multi-branch Jenkins pipeline for a GitHub repository?
+- Explain if a standalone Jenkins server setup will work, and what to consider?
+- how do you copy the jobs from one jenkins worker node to another worker node?
+- What are shared libraries in Jenkins, and how are they written and defined?
+- Have you worked on Jenkins as your CI/CD tool, or used others like GitLab?
+- How would trigger pipeline B in jenkins automatically after pipeline B?
+- Which type of Jenkins File u r using? Can u pls Write a Jenkins File?
+- How do you deploy python application on aws using jenkins pipeline?
+- Your CI/CD pipeline has failed in jenkins. How do you investigate?
+- Write Jenkins script to trigger simultaneous/ parallel execution?
+- How do you store sensitive information like passwords in jenkins?
+- Q17. If a Jenkins job starts but gets stuck, how do you debug?
 
 ## Related
 

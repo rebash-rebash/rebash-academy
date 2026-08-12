@@ -1,6 +1,6 @@
 ---
 title: "Monitoring & Observability Interview Preparation"
-description: "40 curated interview questions and model answers for Monitoring & Observability — concepts, scenarios, troubleshooting, and production trade-offs."
+description: "65 curated Monitoring & Observability interview prompts — model answers plus real interview questions collected across companies (deduplicated by topic)."
 difficulty: intermediate
 estimated_time: "45–90 min"
 author: Shaik Basha
@@ -540,6 +540,36 @@ Answer out loud first, then reveal the model answer. Prefer judgement and verifi
 ??? success "Reveal answer"
     Reading and filtering log files directly in Python, or integrating with a stack like ELK for larger scale, lets me search
     for patterns like "ERROR" and trigger alerts through Slack or email notifications when specific patterns show up.
+
+## Real interview prompts
+
+Additional questions reported from real DevOps / SRE interviews. Company names are omitted — practise these out loud without notes.
+
+- how the alert is created with which metrics when cpu and memory goes high in vm, what is action group, how do you create an alert explain step by step etc, some basic troubleshooting kql queries in log analytics workspace - check on those things, any automation done with scripting etc for monitoring?
+- Question : Have you used it in your day-to-day basis of dashboarding and alerting like based on the principles of SRE golden signals to set up alerts and dashboards?
+- Question : Can you, talked about the dashboards of observability? Which are the observability framework tools That you're currently using?
+- Create a script to monitor the disk usage of a server. If usage exceeds 80%, log the details to a file and send an alert email?
+- Question : In Observability there is a concept of SLO based alerting. So have you configured that in your project?
+- How do you perform infrastructure cost optimization using monitoring and observability tools?
+- What kind of observability tools have you used, and what metrics have you been monitoring?
+- Question : What is your experience with alerts, logging, and incident/problem resolution?
+- How do you set up monitoring and observability for ML models in production?
+- What proactive monitoring solutions have you implemented in your projects?
+- What monitoring agents have you installed in your environment?
+- How do you receive alerts in your project and how is it setup?
+- How will you create the Custom alerts, tell me the procedure?
+- How do you configure Prometheus and Grafana for monitoring?
+- What dashboards and alerts have you configured in Grafana?
+- How can AI assist us in cloud infrastructure monitoring?
+- what is nagios , how to integerate jenknins in nagios?
+- How will you monitor the cluster through Prometheus?
+- Explain installation of prometheus and grafana?
+- Difference between observality and monitoring?
+- What metrics do you monitor using Prometheus?
+- What are data sources for Grafana, Kibana?
+- What are the alerts you setup on graffana?
+- How do you configure a Grafana dashboard?
+- How to integrate grafana with prometheus?
 
 ## Related
 

@@ -16,8 +16,18 @@ ROOT = Path(__file__).resolve().parents[1]
 PDF_DIR = ROOT / "inbox" / "interview-pdfs"
 OUT_DIR = ROOT / "inbox" / "interview-extracted"
 OCR_DIR = OUT_DIR / "ocr"
+GITHUB_DIR = ROOT / "inbox" / "interview-github" / "DevOps-Interview-Guide"
+GITHUB_REPO = "https://github.com/litu54/DevOps-Interview-Guide.git"
 REGISTRY = ROOT / "docs" / "_curriculum" / "interview-question-registry.yaml"
 INTERVIEW_DIR = ROOT / "docs" / "interview"
+
+SKIP_PROMPT_RE = re.compile(
+    r"(?i)^(self\s*intro|tell me about yourself|introduce yourself|"
+    r"what is your (notice|current ctc|expected|salary)|"
+    r"why (do you want to|are you)|are you (comfortable|willing)|"
+    r"day to day|walk me through your (resume|profile|experience)$|"
+    r"scenario based includes|any questions for (us|me))"
+)
 
 TOPIC_KEYWORDS: dict[str, tuple[str, ...]] = {
     "linux": (
@@ -615,7 +625,103 @@ def _ingest_pairs(source: str, pairs: list[tuple[str, str]], records: list[dict]
     return kept
 
 
-def extract_all() -> list[dict]:
+def ensure_github_repo() -> Path | None:
+    """Clone or reuse litu54/DevOps-Interview-Guide (company folders flattened on ingest)."""
+    if GITHUB_DIR.is_dir() and any(GITHUB_DIR.rglob("*.md")):
+        return GITHUB_DIR
+    parent = GITHUB_DIR.parent
+    parent.mkdir(parents=True, exist_ok=True)
+    import subprocess
+
+    target = parent / "DevOps-Interview-Guide"
+    if target.exists():
+        return target if any(target.rglob("*.md")) else None
+    print(f"cloning {GITHUB_REPO} …")
+    try:
+        subprocess.run(
+            ["git", "clone", "--depth", "1", GITHUB_REPO, str(target)],
+            check=True,
+            capture_output=True,
+            text=True,
+        )
+    except (subprocess.CalledProcessError, FileNotFoundError) as exc:
+        print(f"github clone failed: {exc}")
+        # Fall back to /tmp clone if present
+        alt = Path("/tmp/DevOps-Interview-Guide")
+        return alt if alt.is_dir() else None
+    return target
+
+
+def extract_github_guide(repo: Path) -> tuple[list[dict], list[dict]]:
+    """
+    Flatten company folders into topic Q&A + answerless prompts.
+    Company names are discarded — only the question text is kept.
+    """
+    answered: list[dict] = []
+    prompts: list[dict] = []
+    files = [p for p in repo.rglob("*.md") if p.name != "README.md"]
+    for path in files:
+        text = path.read_text(encoding="utf-8", errors="ignore")
+        for m in re.finditer(r"(?m)^\s*[-*]\s+(.+)$", text):
+            line = clean_ws(m.group(1))
+            if not line or len(line) < 12:
+                continue
+            # Drop nested lettered sub-bullets that are fragments
+            if re.match(r"^[a-z]\)\s+", line):
+                # keep scenario sub-questions — they are real prompts
+                line = re.sub(r"^[a-z]\)\s+", "", line)
+            if SKIP_PROMPT_RE.search(line):
+                continue
+            # Split optional short interviewer hint
+            hint = ""
+            for sep in ("→", "->", "—>", "=>"):
+                if sep in line:
+                    left, right = line.split(sep, 1)
+                    line, hint = left.strip(), right.strip()
+                    break
+            q = clean_question(line)
+            if not q or len(q) < 12:
+                continue
+            if not q.endswith("?"):
+                # Many real prompts are imperative ("Write a Dockerfile")
+                if not re.match(
+                    r"(?i)^(what|how|why|when|where|which|who|can|do|is|are|does|did|explain|difference|diff|compare|define|describe|list|name|tell|write|create|design|troubleshoot|debug)",
+                    q,
+                ):
+                    continue
+            topic = classify(q, hint)
+            norm = normalize_question(q)
+            if hint and len(hint) >= 8:
+                answer = rewrite_answer(
+                    f"{hint}\n\n"
+                    "Expand this in interview form: state the approach, "
+                    "name the first checks or commands, and call out a failure mode."
+                )
+                answered.append(
+                    {
+                        "source": "github:litu54/DevOps-Interview-Guide",
+                        "topic": topic,
+                        "question": q if q.endswith("?") else q,
+                        "answer": answer,
+                        "norm": norm,
+                        "kind": "qa",
+                    }
+                )
+            else:
+                prompts.append(
+                    {
+                        "source": "github:litu54/DevOps-Interview-Guide",
+                        "topic": topic,
+                        "question": q,
+                        "answer": "",
+                        "norm": norm,
+                        "kind": "prompt",
+                    }
+                )
+    return answered, prompts
+
+
+def extract_all() -> tuple[list[dict], list[dict]]:
     records: list[dict] = []
     for pdf_name, parser in PARSERS.items():
         path = PDF_DIR / pdf_name
@@ -639,7 +745,20 @@ def extract_all() -> list[dict]:
         pairs = parser(text)
         kept = _ingest_pairs(f"ocr:{ocr_name}", pairs, records)
         print(f"OCR {ocr_name}: extracted {len(pairs)} kept {kept}")
-    return records
+
+    prompts: list[dict] = []
+    repo = ensure_github_repo()
+    if repo:
+        gh_answered, gh_prompts = extract_github_guide(repo)
+        print(
+            f"github guide: answered={len(gh_answered)} prompts={len(gh_prompts)} "
+            f"(company folders flattened)"
+        )
+        records.extend(gh_answered)
+        prompts.extend(gh_prompts)
+    else:
+        print("github guide: not available")
+    return records, prompts
 
 
 def dedupe(records: list[dict]) -> list[dict]:
@@ -723,15 +842,47 @@ def score_record(rec: dict) -> int:
     return score
 
 
-def render_topic_page(topic: str, records: list[dict]) -> str:
+PROMPT_CAPS = {
+    "devops": 25,
+    "linux": 30,
+    "shell": 20,
+    "networking": 25,
+    "python": 20,
+    "git": 20,
+    "docker": 30,
+    "kubernetes": 40,
+    "aws": 35,
+    "azure": 25,
+    "gcp": 20,
+    "terraform": 25,
+    "ansible": 25,
+    "jenkins": 25,
+    "github-actions": 20,
+    "gitlab": 15,
+    "argocd": 15,
+    "helm": 15,
+    "cicd": 25,
+    "monitoring": 25,
+    "security": 25,
+}
+
+
+def render_topic_page(
+    topic: str, records: list[dict], prompts: list[dict] | None = None
+) -> str:
     title, tech, _brand, track = TOPIC_META[topic]
     records = sorted(records, key=score_record, reverse=True)
     cap = TOPIC_CAPS.get(topic, 40)
     records = records[:cap]
+    prompts = prompts or []
+    prompt_cap = PROMPT_CAPS.get(topic, 20)
+    # Prefer longer / scenario prompts
+    prompts = sorted(prompts, key=lambda r: len(r["question"]), reverse=True)[:prompt_cap]
     today = "2026-08-12"
+    total = len(records) + len(prompts)
     desc = (
-        f"{len(records)} curated interview questions and model answers for {title} — "
-        "concepts, scenarios, troubleshooting, and production trade-offs."
+        f"{total} curated {title} interview prompts — model answers plus real "
+        "interview questions collected across companies (deduplicated by topic)."
     )
     related = []
     if track:
@@ -773,6 +924,22 @@ def render_topic_page(topic: str, records: list[dict]) -> str:
         chunk, n = section(heading, items, n)
         if chunk:
             body_parts.append(chunk)
+
+    if prompts:
+        lines = [
+            "## Real interview prompts",
+            "",
+            "Additional questions reported from real DevOps / SRE interviews. "
+            "Company names are omitted — practise these out loud without notes.",
+            "",
+        ]
+        for rec in prompts:
+            q = rec["question"]
+            if not q.endswith("?"):
+                q = q.rstrip(".") + "?"
+            lines.append(f"- {q}")
+        lines.append("")
+        body_parts.append("\n".join(lines))
 
     fm = f"""---
 title: "{title} Interview Preparation"
@@ -825,8 +992,9 @@ def write_registry(published: list[dict]) -> None:
                 "topic": r["topic"],
                 "question": r["question"],
                 "aliases": [],
-                "source": f"pdf:{r['source']}",
-                "status": "published",
+                "source": r.get("source", "unknown"),
+                "status": "published" if r.get("kind") != "prompt" else "prompt",
+                "kind": r.get("kind", "qa"),
             }
             for r in sorted(published, key=lambda x: (x["topic"], x["norm"]))
         ],
@@ -836,36 +1004,85 @@ def write_registry(published: list[dict]) -> None:
 
 def main() -> None:
     OUT_DIR.mkdir(parents=True, exist_ok=True)
-    raw = extract_all()
+    # Prefer existing /tmp clone for speed if inbox clone missing
+    if not GITHUB_DIR.is_dir() and Path("/tmp/DevOps-Interview-Guide").is_dir():
+        GITHUB_DIR.parent.mkdir(parents=True, exist_ok=True)
+        if not (GITHUB_DIR.parent / "DevOps-Interview-Guide").exists():
+            import shutil
+
+            shutil.copytree("/tmp/DevOps-Interview-Guide", GITHUB_DIR.parent / "DevOps-Interview-Guide")
+
+    raw, prompt_raw = extract_all()
     (OUT_DIR / "raw.json").write_text(json.dumps(raw, indent=2), encoding="utf-8")
+    (OUT_DIR / "github-prompts-raw.json").write_text(
+        json.dumps(prompt_raw, indent=2), encoding="utf-8"
+    )
     unique = dedupe(raw)
+    # Dedupe prompts against each other and against answered questions
+    answered_norms = {r["norm"] for r in unique}
+    prompt_best: dict[str, dict] = {}
+    for rec in prompt_raw:
+        key = rec["norm"]
+        if not key or len(key) < 10 or key in answered_norms:
+            continue
+        prev = prompt_best.get(key)
+        if not prev or len(rec["question"]) > len(prev["question"]):
+            prompt_best[key] = rec
+    unique_prompts = list(prompt_best.values())
     (OUT_DIR / "unique.json").write_text(json.dumps(unique, indent=2), encoding="utf-8")
-    print(f"raw={len(raw)} unique={len(unique)}")
+    (OUT_DIR / "unique-prompts.json").write_text(
+        json.dumps(unique_prompts, indent=2), encoding="utf-8"
+    )
+    print(
+        f"raw_qa={len(raw)} unique_qa={len(unique)} "
+        f"raw_prompts={len(prompt_raw)} unique_prompts={len(unique_prompts)}"
+    )
 
     by_topic: dict[str, list[dict]] = defaultdict(list)
     for rec in unique:
         by_topic[rec["topic"]].append(rec)
+    prompts_by_topic: dict[str, list[dict]] = defaultdict(list)
+    for rec in unique_prompts:
+        prompts_by_topic[rec["topic"]].append(rec)
 
     published_all: list[dict] = []
     counts = {}
-    for topic, recs in sorted(by_topic.items()):
-        if topic not in TOPIC_META:
+    for topic in sorted(TOPIC_META):
+        recs = by_topic.get(topic, [])
+        prompts = prompts_by_topic.get(topic, [])
+        if not recs and not prompts:
             continue
         cap = TOPIC_CAPS.get(topic, 40)
         chosen = sorted(recs, key=score_record, reverse=True)[:cap]
-        counts[topic] = (len(recs), len(chosen))
-        page = render_topic_page(topic, chosen)
+        prompt_cap = PROMPT_CAPS.get(topic, 20)
+        chosen_prompts = sorted(prompts, key=lambda r: len(r["question"]), reverse=True)[
+            :prompt_cap
+        ]
+        counts[topic] = {
+            "unique_qa": len(recs),
+            "published_qa": len(chosen),
+            "unique_prompts": len(prompts),
+            "published_prompts": len(chosen_prompts),
+        }
+        page = render_topic_page(topic, chosen, chosen_prompts)
         out = INTERVIEW_DIR / f"{topic}.md"
         out.write_text(page, encoding="utf-8")
         published_all.extend(chosen)
-        print(f"wrote {out.relative_to(ROOT)} unique={len(recs)} published={len(chosen)}")
+        published_all.extend(chosen_prompts)
+        print(
+            f"wrote {out.relative_to(ROOT)} qa={len(chosen)}/{len(recs)} "
+            f"prompts={len(chosen_prompts)}/{len(prompts)}"
+        )
 
     write_registry(published_all)
     summary = {
-        "raw": len(raw),
-        "unique": len(unique),
+        "raw_qa": len(raw),
+        "unique_qa": len(unique),
+        "raw_prompts": len(prompt_raw),
+        "unique_prompts": len(unique_prompts),
         "published": len(published_all),
-        "by_topic": {k: {"unique": v[0], "published": v[1]} for k, v in counts.items()},
+        "by_topic": counts,
+        "github_source": GITHUB_REPO,
         "ocr_sources": sorted(OCR_SOURCES.keys()),
         "skipped_scans": sorted(
             p.name

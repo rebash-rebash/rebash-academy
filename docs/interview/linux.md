@@ -1,6 +1,6 @@
 ---
 title: "Linux Interview Preparation"
-description: "31 curated interview questions and model answers for Linux — concepts, scenarios, troubleshooting, and production trade-offs."
+description: "54 curated Linux interview prompts — model answers plus real interview questions collected across companies (deduplicated by topic)."
 difficulty: intermediate
 estimated_time: "45–90 min"
 author: Shaik Basha
@@ -286,6 +286,34 @@ Answer out loud first, then reveal the model answer. Prefer judgement and verifi
     crontab -e 
     # Add: 
     */15 * * * * /path/to/script.sh
+
+## Real interview prompts
+
+Additional questions reported from real DevOps / SRE interviews. Company names are omitted — practise these out loud without notes.
+
+- Write a shell script where you have one virtual machine ubuntu1, auto ssh enabled, ssh -i for private key, directory path /nobackup to be copied in another VM?
+- Do you have experience with operating systems — Windows or Linux? What types of file permissions exist in Linux?
+- How would you schedule a task to run every 15 minutes in windows using powershell and linux with cron?
+- When you run a module like yum or apt and get “command not found,” what’s the reason?
+- If vm deployed in private subent how can you do patch updates like apt update?
+- How you connect to private instances when the SSH connection is not working?
+- how will you troubleshoot if a system goes down in Linux - tell the commands?
+- How to troubleshoot the issue and what will be checked during the process?
+- Add 50GB to /opt using LVM without any downtime. What are the steps?
+- You’re locked out via SSH with no root access. How do you recover?
+- How to check linux process without use of ps or top command?
+- How do you print the last 15 lines of a file in Linux?
+- Whats ur organisation current cicd process and tools?
+- In Linux, how do you attach and detach a filesystem?
+- How to set a CPU and memory limit in Linux machine?
+- How do servers get connected in Linux? explain?
+- Diff between mount and directories in Linux?
+- how to find the mount point space of linux?
+- How to create a user without an SSH access?
+- How to check load of linux machine?
+- How to kill the running process?
+- How to check the linux process?
+- What is Iptables in linux?
 
 ## Related
 

@@ -1,6 +1,6 @@
 ---
 title: "Python Interview Preparation"
-description: "6 curated interview questions and model answers for Python — concepts, scenarios, troubleshooting, and production trade-offs."
+description: "21 curated Python interview prompts — model answers plus real interview questions collected across companies (deduplicated by topic)."
 difficulty: intermediate
 estimated_time: "45–90 min"
 author: Shaik Basha
@@ -71,6 +71,26 @@ Answer out loud first, then reveal the model answer. Prefer judgement and verifi
     The psutil library gives direct access to CPU and memory usage -- psutil.cpu_percent() and psutil.virtual_memory() --
     which I can extend to push those metrics into Prometheus or Grafana for ongoing monitoring rather than just a
     one-off check.
+
+## Real interview prompts
+
+Additional questions reported from real DevOps / SRE interviews. Company names are omitted — practise these out loud without notes.
+
+- How does Python's GIL affect multi-threaded web service performance and what alternatives exist to overcome it? what is Python's GIL affect multi-threaded web service?
+- Write a Python function that takes a list of dictionaries representing job logs. The function should return a list of job IDs where the "status" is "FAILED"?
+- What is the difference between set and list in python(Counter question of the above)?
+- If a Python program is failing due to memory issues, what can be the cause?
+- What is the difference between shallow copy and deep copy in Python?
+- In Python, what are lists and tuples, and how do they differ?
+- How to configure the Flask in Jenkin, tell me procedure ?
+- Can you write code in Python? (Provided some samples)?
+- Do you have any experience on python scripting?
+- Create a python script for this requirement?
+- write python program for reverse a string?
+- What are Lists and Tuples in Python?
+- What is search keyword in Python?
+- what is list and tuple in python?
+- What are decorators in Python?
 
 ## Related
 

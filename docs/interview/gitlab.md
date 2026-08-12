@@ -1,6 +1,6 @@
 ---
 title: "GitLab CI/CD Interview Preparation"
-description: "4 curated interview questions and model answers for GitLab CI/CD — concepts, scenarios, troubleshooting, and production trade-offs."
+description: "4 curated GitLab CI/CD interview prompts — model answers plus real interview questions collected across companies (deduplicated by topic)."
 difficulty: intermediate
 estimated_time: "45–90 min"
 author: Shaik Basha

@@ -1,6 +1,6 @@
 ---
 title: "Ansible Interview Preparation"
-description: "40 curated interview questions and model answers for Ansible — concepts, scenarios, troubleshooting, and production trade-offs."
+description: "62 curated Ansible interview prompts — model answers plus real interview questions collected across companies (deduplicated by topic)."
 difficulty: intermediate
 estimated_time: "45–90 min"
 author: Shaik Basha
@@ -474,6 +474,33 @@ Answer out loud first, then reveal the model answer. Prefer judgement and verifi
     - name: Install HTTPD server on centos 7
     action: yum name='{{pkgname}}' state=installed
     CI/CD & Jenkins
+
+## Real interview prompts
+
+Additional questions reported from real DevOps / SRE interviews. Company names are omitted — practise these out loud without notes.
+
+- Describe the structure and advantage of using an Ansible role to manage a three-tier web application. what do you mean by three-tier web application?
+- Why is PUT request called idempotency in nature. If I made another entry and name is same but location is differnet then what will db store.,?
+- Write a playbook to deploy an Nginx server and ensure the service is started and enabled on boot. How would you manage secrets in Ansible?
+- if you have custom plugins that multiple roles depends on, how do you manage them in the context of Ansible Roles Management?
+- What is your hands-on experience with Ansible? Explain a real project where you used it?
+- If you have two different VMs,, how will you modify your playbook for diff requirement?
+- How do you write an Ansible playbook, and what client requirements do you consider?
+- In ansible if you need to execute something as root user how do you that?
+- Ansible playbook times out on one host out of twenty. What do you check?
+- How can you install a patch through ansible in more than 20 servers?
+- What is the difference between import and include in Ansible?
+- What is an Ansible Role, and how do you create it?
+- how to run anisble playbook and diff options?
+- what are the ansible modules you have used?
+- write a playbook to install apache in VM?
+- What does idempotent mean in Ansible?
+- What is an Ansible Playbook?
+- Any expercience on ansible?
+- What is Ansibler galaxy ?
+- What is Jenkins, Ansible?
+- What is Ansible Tower?
+- what is ansible roles?
 
 ## Related
 

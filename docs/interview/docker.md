@@ -1,6 +1,6 @@
 ---
 title: "Docker Interview Preparation"
-description: "50 curated interview questions and model answers for Docker — concepts, scenarios, troubleshooting, and production trade-offs."
+description: "80 curated Docker interview prompts — model answers plus real interview questions collected across companies (deduplicated by topic)."
 difficulty: intermediate
 estimated_time: "45–90 min"
 author: Shaik Basha
@@ -610,6 +610,41 @@ Answer out loud first, then reveal the model answer. Prefer judgement and verifi
 ??? success "Reveal answer"
     Through plugins -- the Git plugin to pull code from a repository, the Maven plugin for building Java projects, and the
     Docker plugin for building and deploying containers, all configured within a job or pipeline.
+
+## Real interview prompts
+
+Additional questions reported from real DevOps / SRE interviews. Company names are omitted — practise these out loud without notes.
+
+- Explain Docker layer caching. During a Docker build, if layers 1–10 are already cached and you modify Layer 5, what happens to Layers 6–10? Will Docker reuse the cache or rebuild them? Explain why?
+- Are you aware of security scanning tools? How do you scan Docker images—both during build and at the registry level? Are you using any extensions or tools for image scanning?
+- How about your experience developing CI/CD pipeline and utilizing tools such as Docker, Grafana and Prometheous. Share a particular project where these skills were critical?
+- You are unable to push docker image to dockerhub due to access issue. What are the sources where you can push your docker image other than dockerhub?
+- Why does a container sometimes exit immediately even though the application works perfectly in local testing? Give 3 real production causes?
+- Recommended tools for CI/CD, artifact storage, vulnerability scanning, and container registry in a hybrid (on-prem + Azure) setup?
+- How do you pass environment variables during Docker build commands? What services do you use for storing Docker images?
+- If you have 10 layers in a Dockerfile and layer 6 fails, after fixing it, where will the rebuild start from and why?
+- in ur projects how many containers u ran? can u give me the use case where can run 4-5 containers in a pod?
+- Multi stage docker build. In which scenarios it would be useful. Is is suitable for compile based language?
+- [ ] How do you design and manage a containerized environment to ensure scalability and high availability?
+- If a Docker image becomes very large with many layers, what steps would you take to reduce its size?
+- Write the structure for building and pushing a Docker image for an application in GitHub Actions?
+- How to write a multistage Dockerfile for a Node.js app — removing secrets and unnecessary layers?
+- What are the stages in a Docker image build? Why do we use ENTRYPOINT and CMD instructions?
+- Can you explain Docker Compose and how it helps in multi-container application deployments?
+- What wil happen if the docker image has port 8080 and container/application has some port?
+- What is Docker and how do you use in your project, Any docker file you have written?
+- Jenkins is failing to push a Docker image to the registry. How do you troubleshoot?
+- What is the role of container runtime and which runtime do you use and why?
+- Docker cmd and entrypoint difference, how to configure sonarqube with azure?
+- Docker containers stopped suddenly after starting, how do you troubleshoot?
+- If Docker containers are consuming too much disk space, how do you fix it?
+- Which network will be used to isolate a communication b/w two containers?
+- What is a multi-stage Docker build? How does it help reduce image size?
+- Do you use any tool for Docker image layer caching? If yes, which one?
+- How were you authenticating Jenkins to push docker image to registery?
+- I want pass a value while building a docker image how can it be done?
+- How do you manage and version Docker images stored in Amazon ECR?
+- Which container registry do you use for storing Docker images?
 
 ## Related
 
