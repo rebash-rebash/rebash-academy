@@ -1,6 +1,6 @@
 ---
 title: "Shell Interview Preparation"
-description: "35 curated Shell interview questions with model answers — deduplicated from DevOps / SRE sources and edited for clear practise."
+description: "20 curated Shell interview questions with model answers — deduplicated from DevOps / SRE sources and edited for clear practise."
 difficulty: intermediate
 estimated_time: "45–90 min"
 author: Shaik Basha
@@ -26,320 +26,403 @@ Prefer judgement and verification over memorised lists.
     3. Call out a failure mode and a rollback
     4. Tie the answer to least privilege and blast radius
 
+<div class="ra-interview-qa" markdown="1">
+
 ## Core concepts
 
-**1. What are artifacts, and how do you manage them in a pipeline?**
+**1. What is the purpose of `#!/bin/bash` (the shebang)?**
 
 ??? success "Reveal answer"
-    Artifacts are the actual build outputs -- JAR/WAR files, Docker images, zip packages, binaries. I manage them by
-    storing them in a repository like Nexus, Artifactory, or Docker Hub, versioning and tagging each one based on the
-    release or build number for traceability and rollback, and applying retention policies so old, unused artifacts don't
-    accumulate indefinitely.
+    **In short:** The shebang selects the interpreter used when you execute a script directly.
     
-    The Complete DevOps Engineer Interview Guide (Exhaustive) — 2026
+    **Key points**
+    
+    - `#!/bin/bash` pins an absolute Bash path.
+    - `#!/usr/bin/env bash` is more portable across hosts.
+    - The script still needs execute permission.
+    
+    **Try this**
+    
+    - `head -1 script.sh`
+    - `chmod +x script.sh`
+    
+    **Trap**
+    
+    - Writing a Bash shebang then running `sh script.sh` — different interpreter.
 
-**2. What are Sticky Sessions and how are they used in DevOps?**
+**2. What is the difference between `&` and `&&` in shell scripting?**
 
 ??? success "Reveal answer"
-    Sticky sessions configure a load balancer to consistently route a given user's requests to the same backend
-    instance, which matters for stateful applications that store session data locally rather than in a shared external store.
-    I generally prefer designing stateless services that don't need sticky sessions at all, since they scale and fail over
-    more cleanly.
+    **In short:** `&` backgrounds a command; `&&` runs the next command only on success.
+    
+    **Key points**
+    
+    - `long_job &` returns immediately.
+    - `make build && make test` stops if build fails.
+    - `||` runs on failure instead.
+    
+    **Try this**
+    
+    - `make build && make test`
+    - `sleep 30 &`
+    
+    **Trap**
+    
+    - Backgrounding without redirecting output and wondering why the session looks hung.
 
-**3. [ ] What is a recent challenge you faced while implementing a DevOps practice or pipeline in your team or organization?**
+**3. How do you assign and print a variable in Bash?**
 
 ??? success "Reveal answer"
-    State assumptions and constraints first (scale, RTO/RPO, blast radius, cost), then outline the design.
+    **In short:** Assign with `name=value` (no spaces) and print with `echo "${name}"`.
     
-    Walk through the Shell components you would use, why each is chosen, and the trade-offs you rejected (for example complexity versus resilience).
+    **Key points**
     
-    Explain rollout/rollback and how you would prove the design works (tests, canary, dashboards).
+    - Quote expansions unless you want word-splitting.
+    - `export` when child processes need the value.
+    - Fail fast: `: "${REGION:?REGION is required}"`.
+    
+    **Try this**
+    
+    - `name=rebash; echo "${name}"`
+    - `: "${REGION:?REGION is required}"`
+    
+    **Trap**
+    
+    - `name = value` with spaces — Bash treats `name` as a command.
 
-**4. What are YAML Pipelines, and how do they differ from Classic Pipelines?**
+**4. What does `$?` mean, and why do exit codes matter?**
 
 ??? success "Reveal answer"
-    YAML Pipelines are defined in a file checked into the source repo, giving version control and easier collaboration,
-    while Classic Pipelines use a visual designer in the portal. YAML Pipelines are more flexible, reusable, and versioned
-    alongside the application, which is why I default to them for anything beyond a quick proof of concept.
+    **In short:** `$?` is the last foreground exit code: `0` success, non-zero failure.
+    
+    **Key points**
+    
+    - CI and scripts branch on it.
+    - Save it immediately: `rc=$?`.
+    - `set -e` aborts early on failures.
+    
+    **Try this**
+    
+    - `false; echo $?`
+    - `true; echo $?`
+    
+    **Trap**
+    
+    - Checking `$?` after a debug `echo` and trusting the wrong status.
 
-**5. What is the difference between Declarative and Scripted pipelines?**
+**5. What is `set -euo pipefail` and why do interviewers expect it?**
 
 ??? success "Reveal answer"
-    Start with a precise definition in the context of Shell, then say what problem it solves.
+    **In short:** `set -euo pipefail` hardens Bash automation: exit on errors, unset vars, and pipeline failures.
     
-    Give one concrete production example, contrast it with the closest alternative, and name a failure mode teams hit when they misuse it.
+    **Key points**
     
-    Close with how you would verify it in a real environment (command, console check, or metric).
+    - `-e` stop on failure; `-u` catch unset variables.
+    - `pipefail` fails if any pipeline stage fails.
+    - Default it in deploy/backup scripts.
+    
+    **Try this**
+    
+    - `set -euo pipefail`
+    - `false | true; echo $?`
+    
+    **Trap**
+    
+    - Without `pipefail`, a failing `grep` in the middle can still look green.
 
-**6. Can you tell me the difference between single ampersand (&) and double ampersand (&&) in shell scripting?**
+**6. Explain the purpose of `grep`. What does `grep -r "error" /var/log` do?**
 
 ??? success "Reveal answer"
-    Start with a precise definition in the context of Shell, then say what problem it solves.
+    **In short:** `grep` finds matching lines; `grep -r "error" /var/log` searches that tree recursively.
     
-    Give one concrete production example, contrast it with the closest alternative, and name a failure mode teams hit when they misuse it.
+    **Key points**
     
-    Close with how you would verify it in a real environment (command, console check, or metric).
+    - Handy flags: `-i`, `-n`, `-E`.
+    - Use `rg` when installed; keep `grep` for minimal hosts.
+    - Pair with `journalctl` for systemd services.
+    
+    **Try this**
+    
+    - `grep -RIn "error" /var/log/nginx`
+    
+    **Trap**
+    
+    - Recursing into huge binary trees without filtering — slow and noisy.
 
-**7. What is the purpose of agent, post-conditions and environment blocks in pipeline?**
+**7. What is the difference between `find` and `sed`?**
 
 ??? success "Reveal answer"
-    Start with a precise definition in the context of Shell, then say what problem it solves.
+    **In short:** `find` selects files by metadata; `sed` transforms text streams.
     
-    Give one concrete production example, contrast it with the closest alternative, and name a failure mode teams hit when they misuse it.
+    **Key points**
     
-    Close with how you would verify it in a real environment (command, console check, or metric).
+    - `find` answers “which files?”; `sed` answers “change this text”.
+    - They compose via `-print0` and `xargs -0`.
+    - Content search is `grep`/`rg`, not `find`.
+    
+    **Try this**
+    
+    - `find . -type f -name '*.conf'`
+    - sed -n '1,5p' file
+    
+    **Trap**
+    
+    - Using `find` when you meant a content search.
 
-**8. What are the tools you have used for CI/CD pipeline?**
+**8. How do you get the total number of lines in a file from the shell?**
 
 ??? success "Reveal answer"
-    Start with a precise definition in the context of Shell, then say what problem it solves.
+    **In short:** Count lines with `wc -l file`.
     
-    Give one concrete production example, contrast it with the closest alternative, and name a failure mode teams hit when they misuse it.
+    **Key points**
     
-    Close with how you would verify it in a real environment (command, console check, or metric).
-
-**9. What is the controller used to manage the self managed worker nodes?**
-
-??? success "Reveal answer"
-    Start with a precise definition in the context of Shell, then say what problem it solves.
+    - `wc -l < file` omits the filename in output.
+    - `awk 'END{print NR}'` is an alternative.
+    - `grep -c` counts matches, not total lines.
     
-    Give one concrete production example, contrast it with the closest alternative, and name a failure mode teams hit when they misuse it.
+    **Try this**
     
-    Close with how you would verify it in a real environment (command, console check, or metric).
-
-**10. What is runs-on in a pipeline? Which type of runners are you using in your organization, and do you know how to configure self-hosted runners?**
-
-??? success "Reveal answer"
-    Start with a precise definition in the context of Shell, then say what problem it solves.
+    - `wc -l /var/log/syslog`
     
-    Give one concrete production example, contrast it with the closest alternative, and name a failure mode teams hit when they misuse it.
+    **Trap**
     
-    Close with how you would verify it in a real environment (command, console check, or metric).
-
-**11. What are webhooks, and have you used them anywhere?**
-
-??? success "Reveal answer"
-    Start with a precise definition in the context of Shell, then say what problem it solves.
-    
-    Give one concrete production example, contrast it with the closest alternative, and name a failure mode teams hit when they misuse it.
-    
-    Close with how you would verify it in a real environment (command, console check, or metric).
-
-**12. Difference between build artificats and pipeline artifacts and which one is better?**
-
-??? success "Reveal answer"
-    Start with a precise definition in the context of Shell, then say what problem it solves.
-    
-    Give one concrete production example, contrast it with the closest alternative, and name a failure mode teams hit when they misuse it.
-    
-    Close with how you would verify it in a real environment (command, console check, or metric).
-
-**13. What is the command or pipeline syntax used to refer the variable output of the previous stage in the current stage?**
-
-??? success "Reveal answer"
-    Start with a precise definition in the context of Shell, then say what problem it solves.
-    
-    Give one concrete production example, contrast it with the closest alternative, and name a failure mode teams hit when they misuse it.
-    
-    Close with how you would verify it in a real environment (command, console check, or metric).
-
-**14. What are some main differences between scripted and declarative pipeline?**
-
-??? success "Reveal answer"
-    Start with a precise definition in the context of Shell, then say what problem it solves.
-    
-    Give one concrete production example, contrast it with the closest alternative, and name a failure mode teams hit when they misuse it.
-    
-    Close with how you would verify it in a real environment (command, console check, or metric).
-
-**15. What is the purpose of a webhook, and how is it used in a CI/CD pipeline?**
-
-??? success "Reveal answer"
-    Start with a precise definition in the context of Shell, then say what problem it solves.
-    
-    Give one concrete production example, contrast it with the closest alternative, and name a failure mode teams hit when they misuse it.
-    
-    Close with how you would verify it in a real environment (command, console check, or metric).
-
-**16. what are the best practices can be used to keep the systems highly available?**
-
-??? success "Reveal answer"
-    Start with a precise definition in the context of Shell, then say what problem it solves.
-    
-    Give one concrete production example, contrast it with the closest alternative, and name a failure mode teams hit when they misuse it.
-    
-    Close with how you would verify it in a real environment (command, console check, or metric).
-
-**17. What is the difference between Find and sed ?**
-
-??? success "Reveal answer"
-    Start with a precise definition in the context of Shell, then say what problem it solves.
-    
-    Give one concrete production example, contrast it with the closest alternative, and name a failure mode teams hit when they misuse it.
-    
-    Close with how you would verify it in a real environment (command, console check, or metric).
-
-**18. What is the use of the subprocess module in DevOps scripting?**
-
-??? success "Reveal answer"
-    subprocess lets a Python script spawn and manage other processes, capturing their output and return codes, which
-    is useful for automating shell commands, deploying code, or wrapping CLI tools like Docker directly inside a Python
-    automation script.
-    
-    The Complete DevOps Engineer Interview Guide (Exhaustive) — 2026
-
-**19. What is a Route Table and how is it used in DevOps?**
-
-??? success "Reveal answer"
-    A route table controls how traffic flows between subnets and out to gateways -- in AWS it's the actual mechanism
-    that determines whether a subnet is public or private, based on whether its route table sends 0.0.0.0/0 traffic to an
-    internet gateway or a NAT gateway.
+    - `cat file | wc -l` — unnecessary pipeline.
 
 ## Scenarios and troubleshooting
 
-**20. Pipeline fails only on Tuesdays, no code changes — how do you debug?**
+**9. Write a shell approach to delete log files older than 30 days.**
 
 ??? success "Reveal answer"
-    Use a structured triage: confirm blast radius, check recent changes, then gather evidence (logs, metrics, events) before changing anything.
+    **In short:** Delete logs older than 30 days with `find -mtime +30` after a dry-run print.
     
-    For Shell, name the first three checks you would run, what each result tells you, and when you would escalate versus roll back.
+    **Key points**
     
-    Finish with prevention: monitoring/alert, guardrail, or automation that would catch this earlier.
+    - Preview with `-print` before `-delete`.
+    - Prefer null-delimited delete for odd names.
+    - logrotate is better for ongoing retention.
+    
+    **Try this**
+    
+    - `find /var/log/myapp -type f -name '*.log' -mtime +30 -print`
+    
+    **Trap**
+    
+    - Destructive `rm -rf` without a preview on production.
 
-**21. Can you share an experience where your automation strategy failed or caused problems? What was your corrective action?,?**
-
-??? success "Reveal answer"
-    Use a structured triage: confirm blast radius, check recent changes, then gather evidence (logs, metrics, events) before changing anything.
-    
-    For Shell, name the first three checks you would run, what each result tells you, and when you would escalate versus roll back.
-    
-    Finish with prevention: monitoring/alert, guardrail, or automation that would catch this earlier.
-
-**22. Write a script to capture the failures?**
-
-??? success "Reveal answer"
-    Use a structured triage: confirm blast radius, check recent changes, then gather evidence (logs, metrics, events) before changing anything.
-    
-    For Shell, name the first three checks you would run, what each result tells you, and when you would escalate versus roll back.
-    
-    Finish with prevention: monitoring/alert, guardrail, or automation that would catch this earlier.
-
-**23. If the pipeline fails due to existing resources, how do you handle RIP (Remove, Import, Plan)?**
+**10. Write a shell script outline to back up logs from the last 7 days and remove older ones.**
 
 ??? success "Reveal answer"
-    Use a structured triage: confirm blast radius, check recent changes, then gather evidence (logs, metrics, events) before changing anything.
+    **In short:** Archive the last 7 days first, verify the tarball, then delete older files.
     
-    For Shell, name the first three checks you would run, what each result tells you, and when you would escalate versus roll back.
+    **Key points**
     
-    Finish with prevention: monitoring/alert, guardrail, or automation that would catch this earlier.
+    - Use `find -mtime -7` + `tar`, with `set -euo pipefail`.
+    - Only delete after the archive succeeds.
+    - Log start/end for auditability.
+    
+    **Try this**
+    
+    - `find /var/log/myapp -mtime -7 -type f -print0 | tar -czf /backup/logs-$(date +%F).tgz --null -T -`
+    
+    **Trap**
+    
+    - Deleting before the archive finishes successfully.
 
-**24. if you were required to run pre-task checks, main tasks and post-task validation for patch automation, how would you structure your RedHat Automation & Virtulization scripts?**
-
-??? success "Reveal answer"
-    State assumptions and constraints first (scale, RTO/RPO, blast radius, cost), then outline the design.
-    
-    Walk through the Shell components you would use, why each is chosen, and the trade-offs you rejected (for example complexity versus resilience).
-    
-    Explain rollout/rollback and how you would prove the design works (tests, canary, dashboards).
-
-**25. Do you have experience with AWS DevOps services like CodeDeploy, CodeBuild, and CodePipeline? How would you set up a pipeline using them?**
-
-??? success "Reveal answer"
-    State assumptions and constraints first (scale, RTO/RPO, blast radius, cost), then outline the design.
-    
-    Walk through the Shell components you would use, why each is chosen, and the trade-offs you rejected (for example complexity versus resilience).
-    
-    Explain rollout/rollback and how you would prove the design works (tests, canary, dashboards).
-
-**26. Your CI pipeline is flaky — tests pass locally but fail in CI 30% of the time. What are the causes?**
+**11. Write a script pattern that checks if a service is running, restarts it if not, and logs the event.**
 
 ??? success "Reveal answer"
-    1. Tests depend on external services (network, time). 2) Parallel test interference (shared 
-    database state). 3) Resource constraints (OOM in CI). 4) Timezone differences. 5) Non-
-    deterministic test order. Fix: mock externals, isolate test databases, use --runInBand, set 
-    timeouts.
+    **In short:** If `systemctl is-active` fails, restart the unit and append a timestamped log line.
+    
+    **Key points**
+    
+    - systemd should be the primary supervisor; a watchdog is backup.
+    - Avoid restart storms — alert on repeated flips.
+    - Capture status output for handoff.
+    
+    **Try this**
+    
+    - `if ! systemctl is-active --quiet myapp; then systemctl restart myapp; echo "$(date -Is) restarted" >>/var/log/myapp-watchdog.log; fi`
+    
+    **Trap**
+    
+    - Silent restarts forever with no page — the outage becomes invisible.
+
+**12. How would you debug a Bash script that works interactively but fails in cron?**
+
+??? success "Reveal answer"
+    **In short:** Interactive-vs-cron failures are almost always environment: `PATH`, cwd, or missing variables.
+    
+    **Key points**
+    
+    - Redirect cron stdout/stderr to a log file.
+    - Use absolute paths everywhere.
+    - Reproduce as the cron user with a clean env.
+    
+    **Try this**
+    
+    - `*/5 * * * * /usr/local/bin/job.sh >>/var/log/job.log 2>&1`
+    
+    **Trap**
+    
+    - Assuming `~/.bashrc` aliases exist under cron.
+
+**13. What is the difference between `$*`, `$@`, and `"$@"` when passing arguments?**
+
+??? success "Reveal answer"
+    **In short:** `"$@"` keeps argument boundaries; unquoted `$*`/`$@` break on spaces.
+    
+    **Key points**
+    
+    - Wrappers should always forward `"$@"`.
+    - `"$*"` joins into one string — rarely desired for exec.
+    - Test with arguments that contain spaces.
+    
+    **Try this**
+    
+    - `set -- "a b" c; printf "<%s>\n" "$@"`
+    
+    **Trap**
+    
+    - Unquoted `$@` when handling filenames.
+
+**14. How do you safely read lines from a file in Bash without word-splitting issues?**
+
+??? success "Reveal answer"
+    **In short:** Read lines safely with `while IFS= read -r line`.
+    
+    **Key points**
+    
+    - `-r` preserves backslashes.
+    - Use null-delimited reads with `find -print0`.
+    - Avoid `for line in $(cat file)`.
+    
+    **Try this**
+    
+    - `while IFS= read -r line; do printf '%s\n' "$line"; done < file`
+    
+    **Trap**
+    
+    - Word-splitting filenames that contain spaces.
 
 ## Practice questions
 
-**27. What tools have you used for CI/CD, and why did you choose them?**
+**15. What does `chmod 755` do?**
 
 ??? success "Reveal answer"
-    Jenkins for its flexibility and huge plugin ecosystem across almost any tech stack; GitHub Actions for smaller projects
-    or where deep GitHub integration matters; GitLab CI when the codebase is already hosted on GitLab, for the
-    seamless built-in integration; ArgoCD specifically for GitOps-based delivery into Kubernetes; Docker for consistent
-    packaging across environments; and Terraform for automating the infrastructure the pipeline deploys into.
+    **In short:** `chmod 755` means owner rwx; group and others r-x.
+    
+    **Key points**
+    
+    - Fine for shared scripts/directories.
+    - Wrong for secrets — prefer `600`/`640`.
+    - Symbolic equivalent: `u=rwx,go=rx`.
+    
+    **Try this**
+    
+    - `chmod 755 script.sh`
+    
+    **Trap**
+    
+    - Recursive `755` across a tree with private config.
 
-**28. How do you migrate a monolith application to microservices with zero downtime?**
+**16. How do you sum integers from 1 to 100 in Bash?**
 
 ??? success "Reveal answer"
-    FINAL SECTION: SCENARIO-BASED &
+    **In short:** Sum 1..100 with a loop or `seq | awk`; the answer is `5050`.
     
-     
-    Use the Strangler Fig pattern: 1) Put a proxy/API gateway in front of the monolith. 2) Extract one 
-    service at a time — start with the least coupled. 3) Route traffic for the extracted feature to the 
-    new service via the proxy. 4) Verify with feature flags. 5) Repeat until monolith is empty. Never do 
-    a big-bang rewrite.
+    **Key points**
+    
+    - `seq 1 100 | awk '{s+=$1} END{print s}'`.
+    - Or a Bash arithmetic loop.
+    - Sanity-check with `n(n+1)/2`.
+    
+    **Try this**
+    
+    - `seq 1 100 | awk '{s+=$1} END{print s}'`
+    
+    **Trap**
+    
+    - Off-by-one errors in C-style `for` loops.
 
-**29. Q21. How do you handle multi-environment pipelines?**
+**17. How do pipes work, and what does `pipefail` change?**
 
 ??? success "Reveal answer"
-    State assumptions and constraints first (scale, RTO/RPO, blast radius, cost), then outline the design.
+    **In short:** Pipes connect stdout→stdin; `pipefail` makes any stage failure fail the pipeline.
     
-    Walk through the Shell components you would use, why each is chosen, and the trade-offs you rejected (for example complexity versus resilience).
+    **Key points**
     
-    Explain rollout/rollback and how you would prove the design works (tests, canary, dashboards).
+    - Default status comes from the last command only.
+    - `set -o pipefail` catches middle-stage failures.
+    - `tee` observes a stream without breaking the pipe.
+    
+    **Try this**
+    
+    - `set -o pipefail`
+    - `false | true; echo $?`
+    
+    **Trap**
+    
+    - Ignoring `grep`’s exit code 1 for “no match” in strict scripts.
 
-**30. Q5. How do you create auto scaling policies based on memory & disk usage?**
+**18. How do you use `xargs`, and when is `-print0` important?**
 
 ??? success "Reveal answer"
-    State assumptions and constraints first (scale, RTO/RPO, blast radius, cost), then outline the design.
+    **In short:** `xargs` builds commands from stdin; pair with `-print0`/`-0` for safe path handling.
     
-    Walk through the Shell components you would use, why each is chosen, and the trade-offs you rejected (for example complexity versus resilience).
+    **Key points**
     
-    Explain rollout/rollback and how you would prove the design works (tests, canary, dashboards).
+    - `find … -print0 | xargs -0 …` survives spaces.
+    - `-n` and `-P` control batches and parallelism.
+    - Default splitting is unsafe for arbitrary filenames.
+    
+    **Try this**
+    
+    - `find . -name '*.tmp' -print0 | xargs -0 rm -f`
+    
+    **Trap**
+    
+    - Deleting paths split on spaces — silent data loss.
 
-**31. How do you trigger a pipeline if:?**
+**19. What is command substitution, and what is the difference between `` `cmd` `` and `$(cmd)`?**
 
 ??? success "Reveal answer"
-    State assumptions and constraints first (scale, RTO/RPO, blast radius, cost), then outline the design.
+    **In short:** Command substitution captures output; prefer `$(cmd)` over backticks.
     
-    Walk through the Shell components you would use, why each is chosen, and the trade-offs you rejected (for example complexity versus resilience).
+    **Key points**
     
-    Explain rollout/rollback and how you would prove the design works (tests, canary, dashboards).
+    - `$(…)` nests cleanly and reads better.
+    - Quote carefully; prefer arrays/`mapfile` for lists.
+    - Trailing newlines are stripped — know the edge case.
+    
+    **Try this**
+    
+    - `today="$(date +%F)"; echo "$today"`
+    
+    **Trap**
+    
+    - Unquoted `$(ls)` on filenames with spaces.
 
-**32. You have a multi-cloud environment. How do you manage pipelines for all those cloud environments?**
+**20. How would you write a small Bash CLI that requires an environment name and fails clearly if it is missing?**
 
 ??? success "Reveal answer"
-    State assumptions and constraints first (scale, RTO/RPO, blast radius, cost), then outline the design.
+    **In short:** Require the environment name up front and exit with a clear usage error if missing.
     
-    Walk through the Shell components you would use, why each is chosen, and the trade-offs you rejected (for example complexity versus resilience).
+    **Key points**
     
-    Explain rollout/rollback and how you would prove the design works (tests, canary, dashboards).
-
-**33. How do you roll back a bad database migration?**
-
-??? success "Reveal answer"
-    1. If backward-compatible migration: redeploy old app code — it works with new schema. 
-    2) If breaking change was applied: run the rollback script (Liquibase rollback, Flyway 
-    undo). 3) Last resort: restore from pre-migration snapshot. Lesson: always test migrations 
-    on a production-size staging copy first.
-
-**34. How do you ensure the maintainability of Selenium test scripts?**
-
-??? success "Reveal answer"
-    The Page Object Model separates locators and page interactions from test logic, so a UI change only requires
-    updating one page object. I also modularize tests into reusable methods, use consistent naming conventions, and
-    keep everything in version control to track changes and collaborate.
-
-**35. How is EIGRP used in DevOps?**
-
-??? success "Reveal answer"
-    EIGRP is a Cisco routing protocol I've mostly encountered in legacy, on-prem environments for managing internal
-    routing efficiently -- it's less relevant in pure cloud-native setups but still shows up in hybrid infrastructure with a
-    traditional networking footprint.
+    - Use `: "${ENV:?ENV is required (dev|staging|prod)}"`.
+    - Validate allowed values with `case`.
+    - Start with `set -euo pipefail`.
+    
+    **Try this**
+    
+    - `: "${ENV:?ENV is required (dev|staging|prod)}"`
+    - `set -euo pipefail`
+    
+    **Trap**
+    
+    - Defaulting missing `ENV` to `prod`.
 
 ## Related
-
 - Course: [Shell](../shell/index.md)
 - Hub: [Interview Preparation](index.md)
 {% endraw %}

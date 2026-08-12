@@ -381,6 +381,19 @@ def rewrite_answer(answer: str) -> str:
 def clean_question(question: str) -> str:
     q = clean_ws(question)
     q = re.sub(r"^\[(?:Beginner|Intermediate|Advanced|Expert)\]\s*", "", q, flags=re.I)
+    # Drop leftover PDF numbering like "Q21." when we already number on the page
+    q = re.sub(r"^(?:Q\d+\.\s*)+", "", q, flags=re.I)
+    # Fix OCR/crawl punctuation junk: ?,?  .,?  ?.  ??  VMs,,
+    q = re.sub(r",\s*,+", ", ", q)
+    q = re.sub(r"\?\s*\.\s*\?", "?", q)
+    q = re.sub(r"\.\s*,\s*\?", "?", q)
+    q = re.sub(r",\s*\?", "?", q)
+    q = re.sub(r"\?\s*,\s*\?", "?", q)
+    q = re.sub(r"\?{2,}", "?", q)
+    q = re.sub(r"\.\s*\?", "?", q)
+    q = re.sub(r"\?\s*\.", "?", q)
+    q = re.sub(r"\s+\?", "?", q)
+    q = re.sub(r"[,:;]+$", "?", q)
     q = re.sub(r"\s+", " ", q).strip()
     # Join broken stems like "writing one for a" + next line often in answer
     return q
@@ -1096,6 +1109,19 @@ def main() -> None:
     }
     (OUT_DIR / "summary.json").write_text(json.dumps(summary, indent=2), encoding="utf-8")
     print(json.dumps(summary, indent=2))
+
+    # Prefer hand-authored model answers over crawled text when present.
+    authored = OUT_DIR / "questions-only" / "answers"
+    if authored.is_dir() and any(authored.glob("*.json")):
+        import importlib.util
+
+        apply_path = ROOT / "scripts" / "apply_authored_interview_answers.py"
+        spec = importlib.util.spec_from_file_location("apply_authored_interview_answers", apply_path)
+        mod = importlib.util.module_from_spec(spec)
+        assert spec.loader is not None
+        spec.loader.exec_module(mod)
+        print("re-applying authored answers (ignore crawled answer bodies)")
+        mod.main()
 
 
 if __name__ == "__main__":
