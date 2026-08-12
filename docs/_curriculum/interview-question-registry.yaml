@@ -22,7 +22,7 @@ topics:
 - security
 - shell
 - terraform
-question_count: 725
+question_count: 3500
 questions:
 - id: ansible-ansible-if-you-need-execute-something-as-root-us-11df689f20
   topic: ansible

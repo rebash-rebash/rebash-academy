@@ -36,11 +36,12 @@
         {% set toc = merged.items %}
       {% endif %}
     {% endif %}
-    {#- Single-h1 pages: still hide meta-only entries when present -#}
+    {#- Hide meta rows and per-question headings (quiz ### Question N) -#}
     {% if toc %}
       {% set filtered = namespace(items=[]) %}
       {% for item in toc %}
-        {% if item.title not in meta_titles %}
+        {% set item_title = item.title | string | striptags | trim %}
+        {% if item.title not in meta_titles and not item_title.startswith("Question ") %}
           {% set filtered.items = filtered.items + [item] %}
         {% endif %}
       {% endfor %}
@@ -50,7 +51,9 @@
       <label class="md-nav__title ra-onthispage__title" for="__toc">
         {{ title }}
       </label>
-      <ul class="md-nav__list ra-onthispage__list" data-md-component="toc" data-md-scrollfix>
+      {#- Drop data-md-scrollfix: Material's spy ignores sticky header/breadcrumbs
+         and keeps the previous TOC item active. custom.js owns highlighting. -#}
+      <ul class="md-nav__list ra-onthispage__list" data-md-component="toc">
         {% for toc_item in toc %}
           {% include "partials/toc-item.html" %}
         {% endfor %}

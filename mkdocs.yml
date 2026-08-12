@@ -124,7 +124,7 @@ theme:
     - navigation.indexes
     - navigation.sections
     - navigation.top
-    - navigation.tracking
+    # navigation.tracking disabled — custom.js owns TOC highlight + sticky offsets
     - search.highlight
     - search.share
     - search.suggest

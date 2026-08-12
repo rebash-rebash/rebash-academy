@@ -364,24 +364,37 @@ function syncStickyOffsets() {
   var root = document.documentElement;
   var header = document.querySelector(".md-header");
   var path = document.querySelector(".md-path.ra-path");
+  var headerH = 0;
+  var pathH = 0;
+  var toolbarH = 0;
   if (header) {
-    var h = Math.ceil(header.getBoundingClientRect().height);
-    if (h > 0) {
-      root.style.setProperty("--ra-header-offset", h + "px");
-      root.style.setProperty("--md-header-height", h + "px");
+    headerH = Math.ceil(header.getBoundingClientRect().height);
+    if (headerH > 0) {
+      root.style.setProperty("--ra-header-offset", headerH + "px");
+      root.style.setProperty("--md-header-height", headerH + "px");
     }
   }
   if (path && !path.hasAttribute("hidden")) {
-    var p = Math.ceil(path.getBoundingClientRect().height);
-    if (p > 0) root.style.setProperty("--ra-path-height", p + "px");
+    pathH = Math.ceil(path.getBoundingClientRect().height);
+    if (pathH > 0) root.style.setProperty("--ra-path-height", pathH + "px");
   } else {
     root.style.setProperty("--ra-path-height", "0px");
+    pathH = 0;
   }
   var toolbar = document.querySelector(".ra-quiz-toolbar");
   if (toolbar) {
-    var t = Math.ceil(toolbar.getBoundingClientRect().height);
-    if (t > 0) root.style.setProperty("--ra-quiz-toolbar-height", t + "px");
+    toolbarH = Math.ceil(toolbar.getBoundingClientRect().height);
+    root.style.setProperty(
+      "--ra-quiz-toolbar-height",
+      toolbarH > 0 ? toolbarH + "px" : "0px"
+    );
+  } else {
+    root.style.setProperty("--ra-quiz-toolbar-height", "0px");
   }
+  /* Pixel clearance so JS spy / scroll match CSS scroll-margin exactly */
+  var gap = 24;
+  var clear = Math.max(headerH, 48) + pathH + toolbarH + gap;
+  root.style.setProperty("--ra-sticky-scroll-clearance", clear + "px");
 }
 
 function initStickyOffsets() {
@@ -406,6 +419,266 @@ function initStickyOffsets() {
   if (toolbar) ro.observe(toolbar);
 }
 
+function stickyScrollClearance() {
+  syncStickyOffsets();
+  var cs = getComputedStyle(document.documentElement);
+  var clear = parseFloat(cs.getPropertyValue("--ra-sticky-scroll-clearance"));
+  if (clear > 0) return clear;
+  var header = parseFloat(cs.getPropertyValue("--ra-header-offset")) || 60;
+  var path = parseFloat(cs.getPropertyValue("--ra-path-height")) || 30;
+  var toolbar = parseFloat(cs.getPropertyValue("--ra-quiz-toolbar-height")) || 0;
+  return header + path + toolbar + 24;
+}
+
+/** Scroll a heading into view below sticky header + breadcrumbs (+ quiz bar). */
+function scrollToAnchorEl(el, behavior) {
+  if (!el) return;
+  var clear = stickyScrollClearance();
+  var y = el.getBoundingClientRect().top + window.scrollY - clear;
+  window.scrollTo({
+    top: Math.max(0, y),
+    behavior: behavior === "smooth" ? "smooth" : "auto",
+  });
+  /* Second pass after layout / Instant Navigation settles */
+  window.requestAnimationFrame(function () {
+    var clear2 = stickyScrollClearance();
+    var top = el.getBoundingClientRect().top;
+    if (Math.abs(top - clear2) > 2) {
+      var y2 = top + window.scrollY - clear2;
+      window.scrollTo({ top: Math.max(0, y2), behavior: "auto" });
+    }
+  });
+}
+
+function scrollToLocationHash(behavior) {
+  var id = decodeURIComponent((window.location.hash || "").replace(/^#/, ""));
+  if (!id) return;
+  var el = document.getElementById(id);
+  if (!el) return;
+  scrollToAnchorEl(el, behavior || "auto");
+}
+
+/** Hash id from a TOC link — Material may rewrite href to a full URL + #id. */
+function tocAnchorId(a) {
+  if (!a) return "";
+  try {
+    var url = new URL(a.getAttribute("href") || a.href || "", window.location.href);
+    return decodeURIComponent((url.hash || "").replace(/^#/, ""));
+  } catch (e) {
+    var href = a.getAttribute("href") || "";
+    var i = href.lastIndexOf("#");
+    return i >= 0 ? decodeURIComponent(href.slice(i + 1)) : "";
+  }
+}
+
+function collectTocItems(nav) {
+  var items = [];
+  if (!nav) return items;
+  var links = nav.querySelectorAll("a.md-nav__link");
+  for (var i = 0; i < links.length; i++) {
+    var a = links[i];
+    var id = tocAnchorId(a);
+    if (!id) continue;
+    var el = document.getElementById(id);
+    if (el) items.push({ a: a, el: el, id: id });
+  }
+  return items;
+}
+
+function findTocLinkById(id) {
+  if (!id) return null;
+  var nav = document.querySelector(".ra-onthispage");
+  if (!nav) return null;
+  var links = nav.querySelectorAll("a.md-nav__link");
+  for (var i = 0; i < links.length; i++) {
+    if (tocAnchorId(links[i]) === id) return links[i];
+  }
+  return null;
+}
+
+function setActiveTocLink(link) {
+  if (!link) return;
+  var nav = document.querySelector(".ra-onthispage");
+  if (!nav) return;
+  /* Prefer the live node for this hash (TOC can be rewritten after click) */
+  var id = tocAnchorId(link);
+  var live = id ? findTocLinkById(id) : link;
+  if (live) link = live;
+  nav.querySelectorAll(".md-nav__link.ra-toc-active").forEach(function (el) {
+    el.classList.remove("ra-toc-active");
+  });
+  link.classList.add("ra-toc-active");
+  var list = document.querySelector(".ra-onthispage__list");
+  if (list && typeof link.scrollIntoView === "function") {
+    var lr = list.getBoundingClientRect();
+    var ar = link.getBoundingClientRect();
+    if (ar.top < lr.top + 8 || ar.bottom > lr.bottom - 8) {
+      link.scrollIntoView({ block: "nearest", inline: "nearest" });
+    }
+  }
+}
+
+/**
+ * Sticky-aware "On this page" spy.
+ * Uses .ra-toc-active only — Material's --active/--passed are ignored visually.
+ */
+function initOnThisPageSpy() {
+  var nav = document.querySelector(".ra-onthispage");
+  if (!nav) return;
+  if (!collectTocItems(nav).length) return;
+
+  function pickActive() {
+    var items = collectTocItems(nav);
+    if (!items.length) return null;
+    var clearance = stickyScrollClearance();
+    var active = items[0];
+    for (var i = 0; i < items.length; i++) {
+      if (items[i].el.getBoundingClientRect().top <= clearance + 4) {
+        active = items[i];
+      }
+    }
+    return active;
+  }
+
+  function update() {
+    if (
+      initOnThisPageSpy._lockedUntil &&
+      Date.now() < initOnThisPageSpy._lockedUntil &&
+      initOnThisPageSpy._lockedId
+    ) {
+      setActiveTocLink(
+        findTocLinkById(initOnThisPageSpy._lockedId) ||
+          initOnThisPageSpy._lockedLink
+      );
+      return;
+    }
+
+    var active = pickActive();
+    if (!active) return;
+    if (active.a.classList.contains("ra-toc-active")) return;
+    setActiveTocLink(active.a);
+  }
+
+  function onScroll() {
+    if (
+      !initOnThisPageSpy._ignoreScrollUnlock &&
+      initOnThisPageSpy._lockedLink &&
+      typeof initOnThisPageSpy._lockScrollY === "number" &&
+      Math.abs(window.scrollY - initOnThisPageSpy._lockScrollY) > 48
+    ) {
+      initOnThisPageSpy._lockedUntil = 0;
+      initOnThisPageSpy._lockedLink = null;
+    }
+    if (initOnThisPageSpy._tick) return;
+    initOnThisPageSpy._tick = true;
+    window.requestAnimationFrame(function () {
+      initOnThisPageSpy._tick = false;
+      update();
+    });
+  }
+
+  if (initOnThisPageSpy._onScroll) {
+    window.removeEventListener("scroll", initOnThisPageSpy._onScroll);
+    window.removeEventListener("resize", initOnThisPageSpy._onScroll);
+  }
+  initOnThisPageSpy._onScroll = onScroll;
+  window.addEventListener("scroll", onScroll, { passive: true });
+  window.addEventListener("resize", onScroll, { passive: true });
+
+  update();
+}
+
+function lockOnThisPageSpy(ms, link) {
+  initOnThisPageSpy._lockedUntil = Date.now() + (ms || 500);
+  initOnThisPageSpy._lockedId = tocAnchorId(link);
+  initOnThisPageSpy._lockedLink =
+    findTocLinkById(initOnThisPageSpy._lockedId) || link || null;
+  initOnThisPageSpy._lockScrollY = window.scrollY;
+  if (initOnThisPageSpy._unlockTimer) {
+    window.clearTimeout(initOnThisPageSpy._unlockTimer);
+  }
+  initOnThisPageSpy._unlockTimer = window.setTimeout(function () {
+    initOnThisPageSpy._lockedLink = null;
+    initOnThisPageSpy._lockedId = null;
+    initOnThisPageSpy._lockedUntil = 0;
+    if (typeof initOnThisPageSpy._onScroll === "function") {
+      initOnThisPageSpy._onScroll();
+    }
+  }, ms || 500);
+}
+
+/**
+ * TOC / in-page links: scroll with sticky clearance; TOC clicks own the highlight.
+ */
+function initStickyAnchorScroll() {
+  if (initStickyAnchorScroll._bound) return;
+  initStickyAnchorScroll._bound = true;
+
+  document.addEventListener(
+    "click",
+    function (ev) {
+      var a =
+        ev.target && ev.target.closest ? ev.target.closest("a[href*='#']") : null;
+      if (!a) return;
+      var href = a.getAttribute("href") || "";
+      var hash = "";
+      try {
+        var url = new URL(href, window.location.href);
+        if (
+          url.pathname.replace(/\/+$/, "") !==
+          window.location.pathname.replace(/\/+$/, "")
+        ) {
+          return;
+        }
+        hash = decodeURIComponent(url.hash.replace(/^#/, ""));
+      } catch (e) {
+        return;
+      }
+      if (!hash) return;
+      var el = document.getElementById(hash);
+      if (!el) return;
+
+      var fromToc = !!a.closest(".ra-onthispage");
+      if (fromToc) {
+        ev.preventDefault();
+        ev.stopPropagation();
+        if (history.replaceState) {
+          history.replaceState(null, "", "#" + hash);
+        } else {
+          window.location.hash = hash;
+        }
+        lockOnThisPageSpy(600, a);
+        setActiveTocLink(a);
+        initOnThisPageSpy._ignoreScrollUnlock = true;
+        scrollToAnchorEl(el, "auto");
+        window.setTimeout(function () {
+          scrollToAnchorEl(el, "auto");
+          setActiveTocLink(a);
+          initOnThisPageSpy._lockScrollY = window.scrollY;
+          initOnThisPageSpy._ignoreScrollUnlock = false;
+        }, 80);
+        return;
+      }
+
+      window.setTimeout(function () {
+        scrollToAnchorEl(el, "smooth");
+      }, 0);
+    },
+    true
+  );
+
+  window.addEventListener("hashchange", function () {
+    scrollToLocationHash("smooth");
+    var id = decodeURIComponent((window.location.hash || "").replace(/^#/, ""));
+    if (!id) return;
+    var link = findTocLinkById(id);
+    if (link) {
+      lockOnThisPageSpy(600, link);
+      setActiveTocLink(link);
+    }
+  });
+}
+
 function onPageReady() {
   closeHeaderDropdowns();
   markHeaderDropdownActive();
@@ -415,11 +688,15 @@ function onPageReady() {
   markLabCodeBlocks();
   initHeaderDropdowns();
   initStickyOffsets();
+  initStickyAnchorScroll();
+  initOnThisPageSpy();
   window.requestAnimationFrame(function () {
     window.requestAnimationFrame(function () {
       syncStickyOffsets();
       scrollActiveCourseNav();
       scrollHubNavToTechnologies();
+      initOnThisPageSpy();
+      if (window.location.hash) scrollToLocationHash("auto");
     });
   });
 }

@@ -1,0 +1,39 @@
+{#-
+  REBASH Academy TOC item.
+  Hides per-question headings (### Question N) so quiz pages match the rest of
+  the site: sections and useful subsections only — not 40+ question links.
+-#}
+{% set item_title = toc_item.title | string | striptags | trim %}
+{% if not item_title.startswith("Question ") %}
+<li class="md-nav__item">
+  <a href="{{ toc_item.url }}" class="md-nav__link">
+    <span class="md-ellipsis">
+      {% if toc_item.typeset %}
+        <span class="md-typeset">
+          {{ toc_item.typeset.title }}
+        </span>
+      {% else %}
+        {{ toc_item.title }}
+      {% endif %}
+    </span>
+  </a>
+  {% if toc_item.children %}
+    {% set kids = namespace(items=[]) %}
+    {% for child in toc_item.children %}
+      {% set child_title = child.title | string | striptags | trim %}
+      {% if not child_title.startswith("Question ") %}
+        {% set kids.items = kids.items + [child] %}
+      {% endif %}
+    {% endfor %}
+    {% if kids.items %}
+      <nav class="md-nav" aria-label="{{ toc_item.title | striptags | e }}">
+        <ul class="md-nav__list">
+          {% for toc_item in kids.items %}
+            {% include "partials/toc-item.html" %}
+          {% endfor %}
+        </ul>
+      </nav>
+    {% endif %}
+  {% endif %}
+</li>
+{% endif %}

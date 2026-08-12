@@ -10,6 +10,7 @@ build/
 # MkDocs
 site/
 .cache/
+mkdocs.dev.yml
 
 # Environment
 .env

@@ -17,10 +17,10 @@ Master backlog for interview guides, mock interviews, and system design prompts.
 
 | Interview ID | Technology | Module | Experience level | Questions | Learning paths | Related tutorials | Related labs | Priority | Status |
 |--------------|------------|--------|------------------|-----------|--------------|-------------------|--------------|----------|--------|
-| `linux` | linux | full track | mid-level | ~28 | linux-administrator, devops-engineer, beginner | linux/ | labs/linux-* | P1 | published |
+| `linux` | linux | full track | mid-level | ~1555 | linux-administrator, devops-engineer, beginner | linux/ | labs/linux-* | P1 | published |
 | `shell` | shell | full track | mid-level | ~25–30 | devops-engineer, linux-administrator | shell/ | labs/shell-* | P1 | published |
 | `python` | python | full track | mid-level | ~25–30 | devops-engineer, ai-for-devops | python/ | labs/python-* | P1 | published |
-| `networking` | networking | full track | mid-level | themes | devops-engineer, cloud-engineer, site-reliability-engineer | networking/ | labs/networking-* | P1 | published |
+| `networking` | networking | full track | mid-level | ~1357 | devops-engineer, cloud-engineer, site-reliability-engineer | networking/ | labs/networking-* | P1 | published |
 | `git` | git | full track | junior | themes | devops-engineer, beginner | git/ | labs/git-* | P1 | published |
 | `aws` | aws | full track | mid-level | themes | cloud-engineer, devops-engineer | aws/ | labs/aws-* | P1 | published |
 | `docker` | docker | full track | mid-level | themes | devops-engineer, kubernetes-engineer | docker/ | labs/docker-* | P1 | published |
