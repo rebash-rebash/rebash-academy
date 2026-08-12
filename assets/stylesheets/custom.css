@@ -799,6 +799,14 @@
   padding-top: 0.5rem;
 }
 
+.rebash-header-dd__item--muted {
+  color: var(--md-default-fg-color--light);
+  font-weight: 500;
+  font-size: 0.68rem;
+  cursor: default;
+  pointer-events: none;
+}
+
 .rebash-header-dd__panel--grouped {
   display: block;
   padding: 0.35rem 0 0.3rem;
