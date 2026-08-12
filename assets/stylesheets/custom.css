@@ -684,7 +684,8 @@
 
 .rebash-header-dd__panel {
   position: absolute;
-  top: calc(100% + 0.35rem);
+  /* Flush to trigger — visual gap comes from transparent border (still hoverable) */
+  top: 100%;
   left: 0;
   z-index: 20;
   min-width: 13.5rem;
@@ -697,11 +698,14 @@
   margin: 0;
   border-radius: 0.45rem;
   background: var(--md-default-bg-color);
+  background-clip: padding-box;
   color: var(--md-default-fg-color);
   box-shadow:
     0 0.15rem 0.45rem rgba(0, 0, 0, 0.12),
     0 0.55rem 1.4rem rgba(0, 0, 0, 0.14);
   border: 1px solid var(--md-default-fg-color--lightest);
+  /* Hoverable bridge between trigger and panel (avoids pointerleave dead-zone) */
+  border-top: 0.45rem solid transparent;
   opacity: 0;
   visibility: hidden;
   transform: translateY(-0.15rem);
@@ -709,16 +713,17 @@
     opacity 0.12s ease,
     transform 0.12s ease,
     visibility 0.12s;
+  pointer-events: none;
 }
 
-/* Invisible bridge so the pointer can move from trigger → panel */
+/* Extra bridge above the panel for diagonal mouse travel */
 .rebash-header-dd__panel::before {
   content: "";
   position: absolute;
-  top: -0.45rem;
-  left: 0;
-  right: 0;
-  height: 0.5rem;
+  top: -0.55rem;
+  left: -0.75rem;
+  right: -0.75rem;
+  height: 0.7rem;
 }
 
 .rebash-header-dd--wide .rebash-header-dd__panel {
@@ -730,13 +735,14 @@
 .rebash-header-dd:focus-within:not(.rebash-header-dd--closed) > .rebash-header-dd__panel {
   opacity: 1;
   visibility: visible;
+  pointer-events: auto;
   transform: translateY(0);
 }
 
 .rebash-header-dd--closed > .rebash-header-dd__panel {
   opacity: 0;
   visibility: hidden;
-  pointer-events: none;
+  pointer-events: none !important;
   transform: translateY(-0.15rem);
 }
 

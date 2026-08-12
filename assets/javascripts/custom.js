@@ -264,8 +264,13 @@ function initHeaderDropdowns() {
   menus.forEach(function (dd) {
     if (dd.dataset.rebashDdBound) return;
     dd.dataset.rebashDdBound = "1";
+    var leaveTimer = null;
 
     function armOpen() {
+      if (leaveTimer) {
+        window.clearTimeout(leaveTimer);
+        leaveTimer = null;
+      }
       dd.classList.remove("rebash-header-dd--closed");
       menus.forEach(function (other) {
         if (other === dd) return;
@@ -277,16 +282,23 @@ function initHeaderDropdowns() {
       });
     }
 
+    function scheduleClose() {
+      if (leaveTimer) window.clearTimeout(leaveTimer);
+      /* Delay so the pointer can cross trigger → panel without killing the menu */
+      leaveTimer = window.setTimeout(function () {
+        leaveTimer = null;
+        if (dd.matches(":hover") || dd.contains(document.activeElement)) return;
+        dd.classList.add("rebash-header-dd--closed");
+        var active = document.activeElement;
+        if (active && dd.contains(active) && typeof active.blur === "function") {
+          active.blur();
+        }
+      }, 180);
+    }
+
     dd.addEventListener("pointerenter", armOpen);
     dd.addEventListener("focusin", armOpen);
-
-    dd.addEventListener("pointerleave", function () {
-      dd.classList.add("rebash-header-dd--closed");
-      var active = document.activeElement;
-      if (active && dd.contains(active) && typeof active.blur === "function") {
-        active.blur();
-      }
-    });
+    dd.addEventListener("pointerleave", scheduleClose);
 
     dd.addEventListener("click", function (event) {
       var link = event.target.closest("a");
@@ -297,7 +309,7 @@ function initHeaderDropdowns() {
 
     dd.addEventListener("focusout", function () {
       window.setTimeout(function () {
-        if (!dd.contains(document.activeElement)) {
+        if (!dd.contains(document.activeElement) && !dd.matches(":hover")) {
           dd.classList.add("rebash-header-dd--closed");
         }
       }, 0);
