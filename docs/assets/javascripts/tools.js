@@ -1344,20 +1344,21 @@
         });
       });
 
-      var fullTable = article.querySelector("#ra-cidr-full");
+      var sheet = article.querySelector("#ra-cidr-sheet");
       var fullToggle = article.querySelector("[data-ra-full-table]");
-      if (fullTable && fullToggle) {
-        fullToggle.addEventListener("click", function (ev) {
-          ev.preventDefault();
-          var open = fullTable.hasAttribute("hidden");
-          if (open) {
-            fullTable.removeAttribute("hidden");
-            fullToggle.textContent = "Hide full table ↑";
-            fullTable.scrollIntoView({ behavior: "smooth", block: "nearest" });
-          } else {
-            fullTable.setAttribute("hidden", "");
-            fullToggle.textContent = "View full table →";
-          }
+      if (sheet && fullToggle) {
+        var extraRows = sheet.querySelectorAll(".ra-tool-cheatsheet__extra");
+        fullToggle.addEventListener("click", function () {
+          var open = fullToggle.getAttribute("aria-expanded") === "true";
+          var next = !open;
+          fullToggle.setAttribute("aria-expanded", next ? "true" : "false");
+          fullToggle.textContent = next
+            ? "Show less ↑"
+            : "View full table →";
+          extraRows.forEach(function (row) {
+            if (next) row.removeAttribute("hidden");
+            else row.setAttribute("hidden", "");
+          });
         });
       }
 

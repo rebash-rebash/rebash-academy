@@ -24,7 +24,7 @@ hide:
   <div class="ra-tool__tile ra-tool-ref__cheat">
     <h3 class="ra-tool-ref__title">CIDR Cheat Sheet</h3>
     <div class="ra-tool-ref__scroll">
-      <table class="ra-tool-cheatsheet">
+      <table class="ra-tool-cheatsheet" id="ra-cidr-sheet">
         <thead>
           <tr>
             <th>CIDR</th>
@@ -43,11 +43,22 @@ hide:
           <tr><td>/26</td><td>255.255.255.192</td><td>62</td><td></td></tr>
           <tr><td>/25</td><td>255.255.255.128</td><td>126</td><td></td></tr>
           <tr><td>/24</td><td>255.255.255.0</td><td>254</td><td>Common LAN</td></tr>
+          <tr class="ra-tool-cheatsheet__extra" hidden><td>/23</td><td>255.255.254.0</td><td>510</td><td></td></tr>
+          <tr class="ra-tool-cheatsheet__extra" hidden><td>/22</td><td>255.255.252.0</td><td>1,022</td><td></td></tr>
+          <tr class="ra-tool-cheatsheet__extra" hidden><td>/21</td><td>255.255.248.0</td><td>2,046</td><td></td></tr>
+          <tr class="ra-tool-cheatsheet__extra" hidden><td>/20</td><td>255.255.240.0</td><td>4,094</td><td></td></tr>
+          <tr class="ra-tool-cheatsheet__extra" hidden><td>/19</td><td>255.255.224.0</td><td>8,190</td><td></td></tr>
+          <tr class="ra-tool-cheatsheet__extra" hidden><td>/18</td><td>255.255.192.0</td><td>16,382</td><td></td></tr>
+          <tr class="ra-tool-cheatsheet__extra" hidden><td>/17</td><td>255.255.128.0</td><td>32,766</td><td></td></tr>
+          <tr class="ra-tool-cheatsheet__extra" hidden><td>/16</td><td>255.255.0.0</td><td>65,534</td><td>Class B sized</td></tr>
+          <tr class="ra-tool-cheatsheet__extra" hidden><td>/12</td><td>255.240.0.0</td><td>1,048,574</td><td>RFC 1918 Class B block</td></tr>
+          <tr class="ra-tool-cheatsheet__extra" hidden><td>/10</td><td>255.192.0.0</td><td>4,194,302</td><td>CGNAT (RFC 6598)</td></tr>
+          <tr class="ra-tool-cheatsheet__extra" hidden><td>/8</td><td>255.0.0.0</td><td>16,777,214</td><td>Class A sized</td></tr>
         </tbody>
       </table>
     </div>
     <p class="ra-tool-ref__more">
-      <a href="#ra-cidr-full" data-ra-full-table>View full table →</a>
+      <button type="button" class="ra-tool-ref__more-btn" data-ra-full-table aria-expanded="false" aria-controls="ra-cidr-sheet">View full table →</button>
     </p>
   </div>
 
@@ -71,44 +82,6 @@ hide:
           <td class="ra-tool-private__cidr">100.64.0.0/10</td>
           <td class="ra-tool-private__label">CGNAT (ISP Shared)</td>
         </tr>
-      </tbody>
-    </table>
-  </div>
-</div>
-
-<div class="ra-tool__tile ra-tool-ref__full" id="ra-cidr-full" hidden>
-  <h3 class="ra-tool-ref__title">Full CIDR table</h3>
-  <div class="ra-tool-ref__scroll">
-    <table class="ra-tool-cheatsheet">
-      <thead>
-        <tr>
-          <th>CIDR</th>
-          <th>Subnet Mask</th>
-          <th>Usable Hosts</th>
-          <th>Notes</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr><td>/32</td><td>255.255.255.255</td><td>1</td><td>Single host</td></tr>
-        <tr><td>/31</td><td>255.255.255.254</td><td>2</td><td>Point-to-point (RFC 3021)</td></tr>
-        <tr><td>/30</td><td>255.255.255.252</td><td>2</td><td>Common for WAN / P2P</td></tr>
-        <tr><td>/29</td><td>255.255.255.248</td><td>6</td><td></td></tr>
-        <tr><td>/28</td><td>255.255.255.240</td><td>14</td><td></td></tr>
-        <tr><td>/27</td><td>255.255.255.224</td><td>30</td><td></td></tr>
-        <tr><td>/26</td><td>255.255.255.192</td><td>62</td><td></td></tr>
-        <tr><td>/25</td><td>255.255.255.128</td><td>126</td><td></td></tr>
-        <tr><td>/24</td><td>255.255.255.0</td><td>254</td><td>Common LAN</td></tr>
-        <tr><td>/23</td><td>255.255.254.0</td><td>510</td><td></td></tr>
-        <tr><td>/22</td><td>255.255.252.0</td><td>1,022</td><td></td></tr>
-        <tr><td>/21</td><td>255.255.248.0</td><td>2,046</td><td></td></tr>
-        <tr><td>/20</td><td>255.255.240.0</td><td>4,094</td><td></td></tr>
-        <tr><td>/19</td><td>255.255.224.0</td><td>8,190</td><td></td></tr>
-        <tr><td>/18</td><td>255.255.192.0</td><td>16,382</td><td></td></tr>
-        <tr><td>/17</td><td>255.255.128.0</td><td>32,766</td><td></td></tr>
-        <tr><td>/16</td><td>255.255.0.0</td><td>65,534</td><td>Class B sized</td></tr>
-        <tr><td>/12</td><td>255.240.0.0</td><td>1,048,574</td><td>RFC 1918 Class B block</td></tr>
-        <tr><td>/10</td><td>255.192.0.0</td><td>4,194,302</td><td>CGNAT (RFC 6598)</td></tr>
-        <tr><td>/8</td><td>255.0.0.0</td><td>16,777,214</td><td>Class A sized</td></tr>
       </tbody>
     </table>
   </div>
