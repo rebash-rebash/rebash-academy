@@ -97,11 +97,12 @@
   {% elif url.startswith("community/") %}
     {% set _ = crumbs.items.append({"label": "Community", "href": "community/", "current": true}) %}
 
-  {% elif url.startswith("labs/") or url.startswith("quizzes/") or url.startswith("projects/") or url.startswith("capstones/") or url.startswith("certifications/") %}
+  {% elif url.startswith("labs/") or url.startswith("quizzes/") or url.startswith("tools/") or url.startswith("projects/") or url.startswith("capstones/") or url.startswith("certifications/") %}
     {% set section = url.split("/")[0] %}
     {% set labels = {
       "labs": "Labs",
       "quizzes": "Quizzes",
+      "tools": "Tools",
       "projects": "Projects",
       "capstones": "Capstones",
       "certifications": "Certifications"

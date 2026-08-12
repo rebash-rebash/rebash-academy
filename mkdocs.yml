@@ -89,6 +89,7 @@ extra_javascript:
   - assets/javascripts/custom.js
   - assets/javascripts/books.js
   - assets/javascripts/quiz.js
+  - assets/javascripts/tools.js
 
 theme:
   name: material

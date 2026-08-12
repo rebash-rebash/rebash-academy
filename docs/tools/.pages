@@ -1,0 +1,6 @@
+title: Tools
+icon: material/calculator-variant
+
+nav:
+  - Overview: index.md
+  - Subnet Calculator: subnet-calculator.md

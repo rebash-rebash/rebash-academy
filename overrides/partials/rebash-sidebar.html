@@ -202,6 +202,9 @@
         {% call row('cheatsheets/', 'Cheat Sheets', path.startswith('cheatsheets')) %}
           {% include ".icons/material/file-table-outline.svg" %}
         {% endcall %}
+        {% call row('tools/', 'Tools', path.startswith('tools')) %}
+          {% include ".icons/material/calculator-variant.svg" %}
+        {% endcall %}
         {% call row('interview/', 'Interview Preparation', path.startswith('interview')) %}
           {% include ".icons/material/account-tie.svg" %}
         {% endcall %}
