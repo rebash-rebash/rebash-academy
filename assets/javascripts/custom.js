@@ -359,6 +359,53 @@ function scrollActiveCourseNav() {
   }
 }
 
+/** Keep sticky breadcrumbs / quiz bar under the real header height. */
+function syncStickyOffsets() {
+  var root = document.documentElement;
+  var header = document.querySelector(".md-header");
+  var path = document.querySelector(".md-path.ra-path");
+  if (header) {
+    var h = Math.ceil(header.getBoundingClientRect().height);
+    if (h > 0) {
+      root.style.setProperty("--ra-header-offset", h + "px");
+      root.style.setProperty("--md-header-height", h + "px");
+    }
+  }
+  if (path && !path.hasAttribute("hidden")) {
+    var p = Math.ceil(path.getBoundingClientRect().height);
+    if (p > 0) root.style.setProperty("--ra-path-height", p + "px");
+  } else {
+    root.style.setProperty("--ra-path-height", "0px");
+  }
+  var toolbar = document.querySelector(".ra-quiz-toolbar");
+  if (toolbar) {
+    var t = Math.ceil(toolbar.getBoundingClientRect().height);
+    if (t > 0) root.style.setProperty("--ra-quiz-toolbar-height", t + "px");
+  }
+}
+
+function initStickyOffsets() {
+  syncStickyOffsets();
+  if (!initStickyOffsets._resizeBound) {
+    initStickyOffsets._resizeBound = true;
+    window.addEventListener("resize", syncStickyOffsets);
+  }
+  if (typeof ResizeObserver === "undefined") return;
+
+  if (!initStickyOffsets._ro) {
+    initStickyOffsets._ro = new ResizeObserver(syncStickyOffsets);
+  }
+  var ro = initStickyOffsets._ro;
+  var header = document.querySelector(".md-header");
+  var path = document.querySelector(".md-path.ra-path");
+  var toolbar = document.querySelector(".ra-quiz-toolbar");
+  /* Re-observe after Instant Navigation replaces content nodes */
+  ro.disconnect();
+  if (header) ro.observe(header);
+  if (path) ro.observe(path);
+  if (toolbar) ro.observe(toolbar);
+}
+
 function onPageReady() {
   closeHeaderDropdowns();
   markHeaderDropdownActive();
@@ -367,8 +414,10 @@ function onPageReady() {
   initRecommendedRoadmap();
   markLabCodeBlocks();
   initHeaderDropdowns();
+  initStickyOffsets();
   window.requestAnimationFrame(function () {
     window.requestAnimationFrame(function () {
+      syncStickyOffsets();
       scrollActiveCourseNav();
       scrollHubNavToTechnologies();
     });
