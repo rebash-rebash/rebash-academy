@@ -1712,7 +1712,7 @@ Answers are written to scan fast: punchline → bullets → commands → trap. T
 **84. Why are subnets important in cloud networking?**
 
 ??? success "Reveal answer"
-    **In short:** IPv4 Addressing - Classless Inter-Domain Routing (CIDR) - Subnetting - [AWS VPC](cloud-networking-vpc-and-subnets.md) - [Azure VNet](azure-vnet.md) - [Google Cloud VPC](gcp-vpc.md)
+    **In short:** IPv4 Addressing - Classless Inter-Domain Routing (CIDR) - Subnetting - [AWS VPC](../networking/cloud-networking-vpc-and-subnets.md) - [Azure VNet](../networking/azure-vnet.md) - [Google Cloud VPC](../networking/gcp-vpc.md)
     
     **Key points**
     
@@ -2411,7 +2411,7 @@ Answers are written to scan fast: punchline → bullets → commands → trap. T
     **Key points**
     
     - Understand the DNS troubleshooting process - Diagnose DNS resolution failures - Identify common DNS errors - Troubleshoot DNS servers - Analyze DNS packets - Resolve Kubernetes DNS issues - Troubleshoot enterprise and cloud DNS environments
-    - DNS Fundamentals - DNS Records - DNS Resolution - [Ping](ping.md) - [tcpdump](tcpdump-troubleshooting.md) - [Wireshark](wireshark.md)
+    - DNS Fundamentals - DNS Records - DNS Resolution - [Ping](../networking/ping.md) - [tcpdump](../networking/tcpdump-troubleshooting.md) - [Wireshark](../networking/wireshark.md)
     - DNS Troubleshooting — Diagnosing and Resolving Name Resolution Problems
     
     **Try this**
@@ -2486,7 +2486,7 @@ Answers are written to scan fast: punchline → bullets → commands → trap. T
 **123. Which command checks DNS resolution?**
 
 ??? success "Reveal answer"
-    **In short:** [DNS Fundamentals](dns-fundamentals.md) - [DNS Records](dns-records-and-troubleshooting.md) - [DNS Resolution](dns-resolution.md) - [DHCP Process](icmp-arp-dhcp-and-network-services.md) - [DHCP R…
+    **In short:** [DNS Fundamentals](../networking/dns-fundamentals.md) - [DNS Records](../networking/dns-records-and-troubleshooting.md) - [DNS Resolution](../networking/dns-resolution.md) - [DHCP Process](../networking/icmp-arp-dhcp-and-network-services.md) - [DHCP R…
     
     **Key points**
     
@@ -3315,7 +3315,7 @@ Answers are written to scan fast: punchline → bullets → commands → trap. T
     **Key points**
     
     - Hybrid Networking — Connecting On-Premises, Cloud, and Multi-Cloud Environments
-    - Routing - VPN - [Private Connectivity](private-connectivity.md) - [AWS VPC](cloud-networking-vpc-and-subnets.md) - [Azure VNet](azure-vnet.md) - [Google Cloud VPC](gcp-vpc.md)
+    - Routing - VPN - [Private Connectivity](../networking/private-connectivity.md) - [AWS VPC](../networking/cloud-networking-vpc-and-subnets.md) - [Azure VNet](../networking/azure-vnet.md) - [Google Cloud VPC](../networking/gcp-vpc.md)
     - Cloud Migration - Disaster Recovery - Multi-Cloud - Global Applications - Regulatory Compliance - Enterprise Integration
     
     **Try this**
@@ -4278,7 +4278,7 @@ Answers are written to scan fast: punchline → bullets → commands → trap. T
     
     **Key points**
     
-    - [Docker Networking](docker-networking.md) - Linux Networking - Routing - DNS - Kubernetes Basics
+    - [Docker Networking](../networking/docker-networking.md) - Linux Networking - Routing - DNS - Kubernetes Basics
     - Each plugin implements the Kubernetes networking model differently.
     - Kubernetes Networking — Networking for Cloud-Native Applications
     
@@ -4615,7 +4615,7 @@ Answers are written to scan fast: punchline → bullets → commands → trap. T
     
     **Key points**
     
-    - [Binary Numbers](binary-numbers.md) - [IPv4 Address Structure](ipv4-address-structure.md) - [IPv4 Classes](ipv4-classes.md) - [Private vs Public IP Addresses](private-vs-public-ip.md)
+    - [Binary Numbers](../networking/binary-numbers.md) - [IPv4 Address Structure](../networking/ipv4-address-structure.md) - [IPv4 Classes](../networking/ipv4-classes.md) - [Private vs Public IP Addresses](../networking/private-vs-public-ip.md)
     - A Loopback Address is a special IP address reserved for communication within the same device.
     - Loopback Address — Understanding Localhost and Internal Network Testing
     
@@ -4923,7 +4923,7 @@ Answers are written to scan fast: punchline → bullets → commands → trap. T
     **Key points**
     
     - Understand NAT Gateway - Learn Source Network Address Translation (SNAT) - Differentiate inbound and outbound Internet access - Configure private subnet Internet access - Compare NAT Gateway implementations across AWS, Azure, and GCP - Design highly available NAT architectures - Troubleshoot NAT connectivity issues
-    - NAT Fundamentals - [Route Tables](route-tables.md) - [AWS VPC](cloud-networking-vpc-and-subnets.md) - [Azure VNet](azure-vnet.md) - [Google Cloud VPC](gcp-vpc.md)
+    - NAT Fundamentals - [Route Tables](../networking/route-tables.md) - [AWS VPC](../networking/cloud-networking-vpc-and-subnets.md) - [Azure VNet](../networking/azure-vnet.md) - [Google Cloud VPC](../networking/gcp-vpc.md)
     - Internet Gateway - Public Subnet - NAT Gateway - Private Application Tier - Private Database Tier - Route Tables
     
     **Try this**
@@ -8478,7 +8478,7 @@ Answers are written to scan fast: punchline → bullets → commands → trap. T
     **Key points**
     
     - Fixed-Length vs Variable-Length Subnetting
-    - [Binary Numbers](binary-numbers.md) - [IPv4 Address Structure](ipv4-address-structure.md) - [IPv4 Classes](ipv4-classes.md) - [Private vs Public IP](private-vs-public-ip.md) - [Loopback](loopback.md) - [APIPA](apipa.md) - [CIDR](cidr.md) - [Subnetting](subnetting-and-vlsm.md)
+    - [Binary Numbers](../networking/binary-numbers.md) - [IPv4 Address Structure](../networking/ipv4-address-structure.md) - [IPv4 Classes](../networking/ipv4-classes.md) - [Private vs Public IP](../networking/private-vs-public-ip.md) - [Loopback](../networking/loopback.md) - [APIPA](../networking/apipa.md) - [CIDR](../networking/cidr.md) - [Subnetting](../networking/subnetting-and-vlsm.md)
     - Although Kubernetes implementations often allocate fixed Pod CIDRs, VLSM principles are widely used in designing surrounding infrastructure networks.
     
     **Try this**
@@ -8961,7 +8961,7 @@ Answers are written to scan fast: punchline → bullets → commands → trap. T
     **Key points**
     
     - Enforce HTTPS. - Validate JWT tokens. - Apply Role-Based Access Control (RBAC). - Enable rate limiting. - Validate request payloads. - Log every API request. - Protect sensitive endpoints. - Keep gateway software updated.
-    - [Reverse Proxy](reverse-proxy-and-ingress-basics.md) - [Load Balancing](load-balancing-fundamentals.md) - [CDN](cdn.md) - [Kubernetes Networking](kubernetes-networking-devops.md) - HTTP - HTTPS - REST APIs
+    - [Reverse Proxy](../networking/reverse-proxy-and-ingress-basics.md) - [Load Balancing](../networking/load-balancing-fundamentals.md) - [CDN](../networking/cdn.md) - [Kubernetes Networking](../networking/kubernetes-networking-devops.md) - HTTP - HTTPS - REST APIs
     - Kong - NGINX - Traefik - Envoy Gateway - Apache APISIX - AWS API Gateway - Azure API Management - Google API Gateway
     
     **Try this**
@@ -9888,7 +9888,7 @@ Answers are written to scan fast: punchline → bullets → commands → trap. T
     
     **Key points**
     
-    - IPv4 Addressing - Classless Inter-Domain Routing (CIDR) - Subnetting - [AWS VPC](cloud-networking-vpc-and-subnets.md) - [Azure VNet](azure-vnet.md) - [Google Cloud VPC](gcp-vpc.md)
+    - IPv4 Addressing - Classless Inter-Domain Routing (CIDR) - Subnetting - [AWS VPC](../networking/cloud-networking-vpc-and-subnets.md) - [Azure VNet](../networking/azure-vnet.md) - [Google Cloud VPC](../networking/gcp-vpc.md)
     - This architecture is commonly used across AWS, Azure, and Google Cloud.
     
     **Try this**
@@ -9940,7 +9940,7 @@ Answers are written to scan fast: punchline → bullets → commands → trap. T
 **503. Explain how Kubernetes DNS resolution works.?**
 
 ??? success "Reveal answer"
-    **In short:** DNS Fundamentals - DNS Records - DNS Resolution - [Service Networking](service-networking.md) - Kubernetes Fundamentals
+    **In short:** DNS Fundamentals - DNS Records - DNS Resolution - [Service Networking](../networking/service-networking.md) - Kubernetes Fundamentals
     
     **Key points**
     
@@ -10001,7 +10001,7 @@ Answers are written to scan fast: punchline → bullets → commands → trap. T
     
     **Key points**
     
-    - DNS Fundamentals - DNS Records - DNS Resolution - [Service Networking](service-networking.md) - Kubernetes Fundamentals
+    - DNS Fundamentals - DNS Records - DNS Resolution - [Service Networking](../networking/service-networking.md) - Kubernetes Fundamentals
     - Service Discovery - Name Resolution - DNS Forwarding - External DNS Resolution
     - Every service request begins with DNS resolution.
     
@@ -10299,7 +10299,7 @@ Answers are written to scan fast: punchline → bullets → commands → trap. T
     **Key points**
     
     - Configure one reliable default route toward the upstream network. - Verify default gateway reachability. - Use dynamic advertisement of default routes where appropriate. - Monitor Internet connectivity regularly. - Keep routing tables clean and well documented. - Test failover if multiple default routes are configured.
-    - [Routing Basics](routing-fundamentals.md) - [Static Routing](static-routing.md) - [Dynamic Routing](dynamic-routing.md) - [RIP](rip.md) - [OSPF](ospf.md) - [EIGRP Concepts](eigrp-concepts.md) - [BGP Introduction](bgp-introduction.md)
+    - [Routing Basics](../networking/routing-fundamentals.md) - [Static Routing](../networking/static-routing.md) - [Dynamic Routing](../networking/dynamic-routing.md) - [RIP](../networking/rip.md) - [OSPF](../networking/ospf.md) - [EIGRP Concepts](../networking/eigrp-concepts.md) - [BGP Introduction](../networking/bgp-introduction.md)
     - The default route tells the device where to forward packets that do not match a more specific route.
     
     **Try this**
@@ -10763,7 +10763,7 @@ Answers are written to scan fast: punchline → bullets → commands → trap. T
     **Key points**
     
     - Draw the complete DNS resolution process from:
-    - DNS Fundamentals - DNS Records - DNS Resolution - [Ping](ping.md) - [tcpdump](tcpdump-troubleshooting.md) - [Wireshark](wireshark.md)
+    - DNS Fundamentals - DNS Records - DNS Resolution - [Ping](../networking/ping.md) - [tcpdump](../networking/tcpdump-troubleshooting.md) - [Wireshark](../networking/wireshark.md)
     - DNS Troubleshooting — Diagnosing and Resolving Name Resolution Problems
     
     **Try this**
@@ -11636,7 +11636,7 @@ Answers are written to scan fast: punchline → bullets → commands → trap. T
     
     **Key points**
     
-    - Networking Fundamentals - Routing - Firewalls - [AWS VPC](cloud-networking-vpc-and-subnets.md) - [Azure Virtual Network](azure-vnet.md)
+    - Networking Fundamentals - Routing - Firewalls - [AWS VPC](../networking/cloud-networking-vpc-and-subnets.md) - [Azure Virtual Network](../networking/azure-vnet.md)
     - Google Cloud Virtual Private Cloud (GCP VPC) — Building Global Cloud Networks
     
     **Try this**
@@ -12034,7 +12034,7 @@ Answers are written to scan fast: punchline → bullets → commands → trap. T
     
     - List Google Cloud Network Connectivity Center hubs.
     - Google Cloud Network Connectivity Center
-    - Routing - VPN - [Private Connectivity](private-connectivity.md) - [AWS VPC](cloud-networking-vpc-and-subnets.md) - [Azure VNet](azure-vnet.md) - [Google Cloud VPC](gcp-vpc.md)
+    - Routing - VPN - [Private Connectivity](../networking/private-connectivity.md) - [AWS VPC](../networking/cloud-networking-vpc-and-subnets.md) - [Azure VNet](../networking/azure-vnet.md) - [Google Cloud VPC](../networking/gcp-vpc.md)
     
     **Try this**
     
@@ -12792,11 +12792,11 @@ Answers are written to scan fast: punchline → bullets → commands → trap. T
 **649. Explain Neighbor Discovery.?**
 
 ??? success "Reveal answer"
-    **In short:** [Why IPv6](why-ipv6.md) - [IPv6 Structure](ipv6-structure.md) - [Types of IPv6 Addresses](ipv6-address-types.md) - [SLAAC](slaac.md) - [Neighbor Discovery](neighbor-discovery.md) - [IPv6 Routing]…
+    **In short:** [Why IPv6](../networking/why-ipv6.md) - [IPv6 Structure](../networking/ipv6-structure.md) - [Types of IPv6 Addresses](../networking/ipv6-address-types.md) - [SLAAC](../networking/slaac.md) - [Neighbor Discovery](../networking/neighbor-discovery.md) - [IPv6 Routing]…
     
     **Key points**
     
-    - [Why IPv6](why-ipv6.md) - [IPv6 Structure](ipv6-structure.md) - [Types of IPv6 Addresses](ipv6-address-types.md) - [SLAAC](slaac.md) - [Neighbor Discovery](neighbor-discovery.md) - [IPv6 Routing](ipv6-routing.md)
+    - [Why IPv6](../networking/why-ipv6.md) - [IPv6 Structure](../networking/ipv6-structure.md) - [Types of IPv6 Addresses](../networking/ipv6-address-types.md) - [SLAAC](../networking/slaac.md) - [Neighbor Discovery](../networking/neighbor-discovery.md) - [IPv6 Routing](../networking/ipv6-routing.md)
     
     **Try this**
     
@@ -12836,7 +12836,7 @@ Answers are written to scan fast: punchline → bullets → commands → trap. T
     **Key points**
     
     - Learn both IPv4 and IPv6. - Deploy Dual Stack where appropriate. - Test IPv6 connectivity regularly. - Document IPv6 addressing plans. - Allow required ICMPv6 traffic. - Design new networks with IPv6 support from the beginning.
-    - [Why IPv6](why-ipv6.md) - [IPv6 Structure](ipv6-structure.md) - [Types of IPv6 Addresses](ipv6-address-types.md) - [SLAAC](slaac.md) - [Neighbor Discovery](neighbor-discovery.md) - [IPv6 Routing](ipv6-routing.md)
+    - [Why IPv6](../networking/why-ipv6.md) - [IPv6 Structure](../networking/ipv6-structure.md) - [Types of IPv6 Addresses](../networking/ipv6-address-types.md) - [SLAAC](../networking/slaac.md) - [Neighbor Discovery](../networking/neighbor-discovery.md) - [IPv6 Routing](../networking/ipv6-routing.md)
     - Draw a Dual Stack network diagram showing devices using both IPv4 and IPv6 simultaneously.
     
     **Try this**
@@ -13156,7 +13156,7 @@ Answers are written to scan fast: punchline → bullets → commands → trap. T
     **Key points**
     
     - Each plugin implements the Kubernetes networking model differently.
-    - [Docker Networking](docker-networking.md) - Linux Networking - Routing - DNS - Kubernetes Basics
+    - [Docker Networking](../networking/docker-networking.md) - Linux Networking - Routing - DNS - Kubernetes Basics
     - Kubernetes Networking — Networking for Cloud-Native Applications
     
     **Try this**
@@ -14179,7 +14179,7 @@ Answers are written to scan fast: punchline → bullets → commands → trap. T
     
     **Key points**
     
-    - NAT Fundamentals - [Route Tables](route-tables.md) - [AWS VPC](cloud-networking-vpc-and-subnets.md) - [Azure VNet](azure-vnet.md) - [Google Cloud VPC](gcp-vpc.md)
+    - NAT Fundamentals - [Route Tables](../networking/route-tables.md) - [AWS VPC](../networking/cloud-networking-vpc-and-subnets.md) - [Azure VNet](../networking/azure-vnet.md) - [Google Cloud VPC](../networking/gcp-vpc.md)
     - No Public IP Required on VMs - Managed NAT Service - Works with Cloud Router - Supports Compute Engine and Google Kubernetes Engine (GKE)
     - NAT Gateway — Secure Internet Access for Private Cloud Resources
     
@@ -14430,11 +14430,11 @@ Answers are written to scan fast: punchline → bullets → commands → trap. T
 **733. How would you automate Kubernetes networking?**
 
 ??? success "Reveal answer"
-    **In short:** [High Availability](high-availability.md) - [Network Monitoring](network-monitoring.md) - [Incident Response](network-incident-response-and-observability.md) - Cloud Networking - [Kubernetes Netw…
+    **In short:** [High Availability](../networking/high-availability.md) - [Network Monitoring](../networking/network-monitoring.md) - [Incident Response](../networking/network-incident-response-and-observability.md) - Cloud Networking - [Kubernetes Netw…
     
     **Key points**
     
-    - [High Availability](high-availability.md) - [Network Monitoring](network-monitoring.md) - [Incident Response](network-incident-response-and-observability.md) - Cloud Networking - [Kubernetes Networking](kubernetes-networking-devops.md)
+    - [High Availability](../networking/high-availability.md) - [Network Monitoring](../networking/network-monitoring.md) - [Incident Response](../networking/network-incident-response-and-observability.md) - Cloud Networking - [Kubernetes Networking](../networking/kubernetes-networking-devops.md)
     
     **Try this**
     
@@ -15690,7 +15690,7 @@ Answers are written to scan fast: punchline → bullets → commands → trap. T
     
     **Key points**
     
-    - Linux Networking - Routing - [Container Network Interface (CNI)](kubernetes-networking-fundamentals.md) - Kubernetes Fundamentals
+    - Linux Networking - Routing - [Container Network Interface (CNI)](../networking/kubernetes-networking-fundamentals.md) - Kubernetes Fundamentals
     - Native Layer 3 Routing - VXLAN - Geneve - IP-in-IP
     - VPC-native Networking - Alias IPs - Dataplane V2
     
@@ -16000,7 +16000,7 @@ Answers are written to scan fast: punchline → bullets → commands → trap. T
     **Key points**
     
     - Use standardized checklists. - Automate checklist validation where possible. - Review every production change. - Test backups regularly. - Verify monitoring before deployment. - Perform peer reviews. - Keep documentation current. - Continuously improve checklists after incidents.
-    - [High Availability](high-availability.md) - [Disaster Recovery](disaster-recovery.md) - [Incident Response](network-incident-response-and-observability.md) - [Network Automation](network-automation-and-monitoring.md) - [Best Practices](networking-best-practices.md)
+    - [High Availability](../networking/high-availability.md) - [Disaster Recovery](../networking/disaster-recovery.md) - [Incident Response](../networking/network-incident-response-and-observability.md) - [Network Automation](../networking/network-automation-and-monitoring.md) - [Best Practices](../networking/networking-best-practices.md)
     - Final Health Check Completed - Monitoring Active - DNS Verified - Load Balancer Healthy - Security Validated - Backup Verified - Stakeholders Approved Deployment
     
     **Try this**
@@ -16202,7 +16202,7 @@ Answers are written to scan fast: punchline → bullets → commands → trap. T
 **826. How do you isolate DNS, routing, and firewall issues?**
 
 ??? success "Reveal answer"
-    **In short:** Entire Networking Mastery Course - [Ping](ping.md) - [traceroute](traceroute-troubleshooting.md) - [tcpdump](tcpdump-troubleshooting.md) - [Wireshark](wireshark.md) - [DNS Troubleshooting](dns-tr…
+    **In short:** Entire Networking Mastery Course - [Ping](../networking/ping.md) - [traceroute](../networking/traceroute-troubleshooting.md) - [tcpdump](../networking/tcpdump-troubleshooting.md) - [Wireshark](../networking/wireshark.md) - [DNS Troubleshooting](dns-tr…
     
     **Key points**
     
@@ -16661,7 +16661,7 @@ Answers are written to scan fast: punchline → bullets → commands → trap. T
     
     **Key points**
     
-    - Routing Basics - Static Routing - [AWS VPC](cloud-networking-vpc-and-subnets.md) - [Azure VNet](azure-vnet.md) - [Google Cloud VPC](gcp-vpc.md) - [Subnets](cloud-subnets.md)
+    - Routing Basics - Static Routing - [AWS VPC](../networking/cloud-networking-vpc-and-subnets.md) - [Azure VNet](../networking/azure-vnet.md) - [Google Cloud VPC](../networking/gcp-vpc.md) - [Subnets](../networking/cloud-subnets.md)
     - AWS - Azure - Google Cloud - On-Premises
     
     **Try this**
@@ -17188,7 +17188,7 @@ Answers are written to scan fast: punchline → bullets → commands → trap. T
 **878. What is MAC address flapping?**
 
 ??? success "Reveal answer"
-    **In short:** [Ethernet](ethernet-switching-and-vlans.md) - [MAC Address Table](mac-address-table.md) - [Switch Learning](switch-learning.md) - [VLAN](vlan.md) - [Trunking](trunking.md)
+    **In short:** [Ethernet](../networking/ethernet-switching-and-vlans.md) - [MAC Address Table](../networking/mac-address-table.md) - [Switch Learning](../networking/switch-learning.md) - [VLAN](../networking/vlan.md) - [Trunking](../networking/trunking.md)
     
     **Key points**
     
@@ -17919,7 +17919,7 @@ Answers are written to scan fast: punchline → bullets → commands → trap. T
     **Key points**
     
     - Allow switches to learn MAC addresses dynamically. - Monitor excessive flooding, which may indicate network issues. - Verify MAC table entries during troubleshooting. - Understand MAC aging timers. - Secure switch ports using features like Port Security where appropriate. - Document important static MAC assignments.
-    - [Ethernet](ethernet-switching-and-vlans.md) - [MAC Address Table](mac-address-table.md)
+    - [Ethernet](../networking/ethernet-switching-and-vlans.md) - [MAC Address Table](../networking/mac-address-table.md)
     - ❌ Thinking switches know every MAC address immediately.
     
     **Try this**
@@ -18620,7 +18620,7 @@ Answers are written to scan fast: punchline → bullets → commands → trap. T
 **950. Explain how VLSM reduces IP address wastage.?**
 
 ??? success "Reveal answer"
-    **In short:** [Binary Numbers](binary-numbers.md) - [IPv4 Address Structure](ipv4-address-structure.md) - [IPv4 Classes](ipv4-classes.md) - [Private vs Public IP](private-vs-public-ip.md) - [Loopback](loopback…
+    **In short:** [Binary Numbers](../networking/binary-numbers.md) - [IPv4 Address Structure](../networking/ipv4-address-structure.md) - [IPv4 Classes](../networking/ipv4-classes.md) - [Private vs Public IP](../networking/private-vs-public-ip.md) - [Loopback](loopback…
     
     **Key points**
     
@@ -19943,7 +19943,7 @@ Answers are written to scan fast: punchline → bullets → commands → trap. T
     
     **Key points**
     
-    - IPv4 Addressing - Classless Inter-Domain Routing (CIDR) - Subnetting - [AWS VPC](cloud-networking-vpc-and-subnets.md) - [Azure VNet](azure-vnet.md) - [Google Cloud VPC](gcp-vpc.md)
+    - IPv4 Addressing - Classless Inter-Domain Routing (CIDR) - Subnetting - [AWS VPC](../networking/cloud-networking-vpc-and-subnets.md) - [Azure VNet](../networking/azure-vnet.md) - [Google Cloud VPC](../networking/gcp-vpc.md)
     - Design a hybrid cloud subnet plan connecting an on-premises data centre with cloud resources.
     - Tie the design to scale, tenancy, least privilege, and rollback.
     
@@ -19963,7 +19963,7 @@ Answers are written to scan fast: punchline → bullets → commands → trap. T
     **Key points**
     
     - Draw a Kubernetes DNS architecture showing:
-    - DNS Fundamentals - DNS Records - DNS Resolution - [Service Networking](service-networking.md) - Kubernetes Fundamentals
+    - DNS Fundamentals - DNS Records - DNS Resolution - [Service Networking](../networking/service-networking.md) - Kubernetes Fundamentals
     - CoreDNS — DNS-Based Service Discovery in Kubernetes
     - Tie the design to scale, tenancy, least privilege, and rollback.
     
@@ -20003,7 +20003,7 @@ Answers are written to scan fast: punchline → bullets → commands → trap. T
     **Key points**
     
     - Always access workloads using Service DNS names. - Deploy multiple CoreDNS replicas. - Monitor DNS latency and error rates. - Enable Prometheus metrics for CoreDNS. - Keep the CoreDNS configuration simple. - Protect CoreDNS using Network Policies. - Test DNS resolution after every cluster upgrade. - Avoid hardcoding IP addresses in applications.
-    - DNS Fundamentals - DNS Records - DNS Resolution - [Service Networking](service-networking.md) - Kubernetes Fundamentals
+    - DNS Fundamentals - DNS Records - DNS Resolution - [Service Networking](../networking/service-networking.md) - Kubernetes Fundamentals
     - ✅ Understand the cluster's DNS configuration and policies.
     - Tie the design to scale, tenancy, least privilege, and rollback.
     
@@ -20255,7 +20255,7 @@ Answers are written to scan fast: punchline → bullets → commands → trap. T
     
     - Understand Default Routes - Differentiate Default Gateway and Default Route - Configure IPv4 and IPv6 default routes - Understand route lookup - Learn static and dynamic default routes - Apply default routing in enterprise and cloud environments - Troubleshoot default route issues
     - Container runtimes also configure default routes inside Pods for outbound connectivity.
-    - [Routing Basics](routing-fundamentals.md) - [Static Routing](static-routing.md) - [Dynamic Routing](dynamic-routing.md) - [RIP](rip.md) - [OSPF](ospf.md) - [EIGRP Concepts](eigrp-concepts.md) - [BGP Introduction](bgp-introduction.md)
+    - [Routing Basics](../networking/routing-fundamentals.md) - [Static Routing](../networking/static-routing.md) - [Dynamic Routing](../networking/dynamic-routing.md) - [RIP](../networking/rip.md) - [OSPF](../networking/ospf.md) - [EIGRP Concepts](../networking/eigrp-concepts.md) - [BGP Introduction](../networking/bgp-introduction.md)
     - Tie the design to scale, tenancy, least privilege, and rollback.
     
     **Try this**
@@ -20438,7 +20438,7 @@ Answers are written to scan fast: punchline → bullets → commands → trap. T
 **1041. Explain how Disaster Recovery integrates with High Availability and business continuity planning.?**
 
 ??? success "Reveal answer"
-    **In short:** [High Availability](high-availability.md) - [Redundancy](redundancy.md) - [Capacity Planning](capacity-planning.md) - [Network Monitoring](network-monitoring.md)
+    **In short:** [High Availability](../networking/high-availability.md) - [Redundancy](../networking/redundancy.md) - [Capacity Planning](../networking/capacity-planning.md) - [Network Monitoring](../networking/network-monitoring.md)
     
     **Key points**
     
@@ -20635,7 +20635,7 @@ Answers are written to scan fast: punchline → bullets → commands → trap. T
     **Key points**
     
     - Understand the DNS troubleshooting process - Diagnose DNS resolution failures - Identify common DNS errors - Troubleshoot DNS servers - Analyze DNS packets - Resolve Kubernetes DNS issues - Troubleshoot enterprise and cloud DNS environments
-    - DNS Fundamentals - DNS Records - DNS Resolution - [Ping](ping.md) - [tcpdump](tcpdump-troubleshooting.md) - [Wireshark](wireshark.md)
+    - DNS Fundamentals - DNS Records - DNS Resolution - [Ping](../networking/ping.md) - [tcpdump](../networking/tcpdump-troubleshooting.md) - [Wireshark](../networking/wireshark.md)
     - DNS Troubleshooting — Diagnosing and Resolving Name Resolution Problems
     - Tie the design to scale, tenancy, least privilege, and rollback.
     
@@ -20697,7 +20697,7 @@ Answers are written to scan fast: punchline → bullets → commands → trap. T
     **Key points**
     
     - Verify network connectivity before troubleshooting DNS. - Use dig as the primary DNS diagnostic tool. - Query authoritative servers when validating records. - Keep DNS records documented. - Monitor DNS server health. - Maintain redundant DNS infrastructure. - Test both internal and external DNS in Split DNS environments.
-    - [DNS Fundamentals](dns-fundamentals.md) - [DNS Records](dns-records-and-troubleshooting.md) - [DNS Resolution](dns-resolution.md) - [DHCP Process](icmp-arp-dhcp-and-network-services.md) - [DHCP Relay](dhcp-relay.md) - [Split DNS](split-dns.md)
+    - [DNS Fundamentals](../networking/dns-fundamentals.md) - [DNS Records](../networking/dns-records-and-troubleshooting.md) - [DNS Resolution](../networking/dns-resolution.md) - [DHCP Process](../networking/icmp-arp-dhcp-and-network-services.md) - [DHCP Relay](../networking/dhcp-relay.md) - [Split DNS](../networking/split-dns.md)
     - DNS Troubleshooting — Diagnosing and Resolving Name Resolution Problems
     - Tie the design to scale, tenancy, least privilege, and rollback.
     
@@ -20739,7 +20739,7 @@ Answers are written to scan fast: punchline → bullets → commands → trap. T
     **Key points**
     
     - Verify network connectivity before troubleshooting DNS. - Use dig as the primary DNS diagnostic tool. - Query authoritative servers when validating records. - Keep DNS records documented. - Monitor DNS server health. - Maintain redundant DNS infrastructure. - Test both internal and external DNS in Split DNS environments.
-    - [DNS Fundamentals](dns-fundamentals.md) - [DNS Records](dns-records-and-troubleshooting.md) - [DNS Resolution](dns-resolution.md) - [DHCP Process](icmp-arp-dhcp-and-network-services.md) - [DHCP Relay](dhcp-relay.md) - [Split DNS](split-dns.md)
+    - [DNS Fundamentals](../networking/dns-fundamentals.md) - [DNS Records](../networking/dns-records-and-troubleshooting.md) - [DNS Resolution](../networking/dns-resolution.md) - [DHCP Process](../networking/icmp-arp-dhcp-and-network-services.md) - [DHCP Relay](../networking/dhcp-relay.md) - [Split DNS](../networking/split-dns.md)
     - DNS Server Unreachable - Incorrect DNS Records - Expired or Stale Cache - Wrong DNS Configuration - DNS Propagation Delay - Firewall Blocking DNS - Split DNS Misconfiguration
     - Tie the design to scale, tenancy, least privilege, and rollback.
     
@@ -21304,7 +21304,7 @@ Answers are written to scan fast: punchline → bullets → commands → trap. T
     
     - Understand Google Cloud VPC - Learn the global VPC architecture - Create regional subnets - Configure firewall rules - Understand routes and Cloud Router - Configure Cloud NAT - Design production-ready Google Cloud networks
     - Global VPC - Regional Subnets - Routes - Firewall Rules - Cloud Router - Cloud NAT - Private Google Access - Load Balancers - VPN - Interconnect
-    - Networking Fundamentals - Routing - Firewalls - [AWS VPC](cloud-networking-vpc-and-subnets.md) - [Azure Virtual Network](azure-vnet.md)
+    - Networking Fundamentals - Routing - Firewalls - [AWS VPC](../networking/cloud-networking-vpc-and-subnets.md) - [Azure Virtual Network](../networking/azure-vnet.md)
     - Tie the design to scale, tenancy, least privilege, and rollback.
     
     **Try this**
@@ -21447,7 +21447,7 @@ Answers are written to scan fast: punchline → bullets → commands → trap. T
 **1090. Explain how you would connect AWS, Azure, Google Cloud, and on-premises infrastructure.?**
 
 ??? success "Reveal answer"
-    **In short:** Routing - VPN - [Private Connectivity](private-connectivity.md) - [AWS VPC](cloud-networking-vpc-and-subnets.md) - [Azure VNet](azure-vnet.md) - [Google Cloud VPC](gcp-vpc.md)
+    **In short:** Routing - VPN - [Private Connectivity](../networking/private-connectivity.md) - [AWS VPC](../networking/cloud-networking-vpc-and-subnets.md) - [Azure VNet](../networking/azure-vnet.md) - [Google Cloud VPC](../networking/gcp-vpc.md)
     
     **Key points**
     
@@ -22228,7 +22228,7 @@ Answers are written to scan fast: punchline → bullets → commands → trap. T
     
     **Key points**
     
-    - Module 2: IPv4 Addressing - [Why IPv6](why-ipv6.md)
+    - Module 2: IPv4 Addressing - [Why IPv6](../networking/why-ipv6.md)
     - Tie the design to scale, tenancy, least privilege, and rollback.
     
     **Try this**
@@ -22289,7 +22289,7 @@ Answers are written to scan fast: punchline → bullets → commands → trap. T
     
     **Key points**
     
-    - [CNI](kubernetes-networking-fundamentals.md) - [Pod Networking](pod-networking.md) - [Service Networking](service-networking.md) - [CoreDNS](coredns.md) - Linux Networking
+    - [CNI](../networking/kubernetes-networking-fundamentals.md) - [Pod Networking](../networking/pod-networking.md) - [Service Networking](../networking/service-networking.md) - [CoreDNS](../networking/coredns.md) - Linux Networking
     - Draw a Kubernetes Service networking architecture including:
     - Prefer IPVS for large production clusters. - Monitor kube-proxy health continuously. - Keep EndpointSlices synchronized. - Use readiness probes to prevent routing to unhealthy Pods. - Monitor Service latency and connection failures. - Keep kube-proxy updated with Kubernetes releases. - Consider eBPF-based dataplanes where appropriate.
     - Tie the design to scale, tenancy, least privilege, and rollback.
@@ -22349,7 +22349,7 @@ Answers are written to scan fast: punchline → bullets → commands → trap. T
     
     **Key points**
     
-    - [Docker Networking](docker-networking.md) - Linux Networking - Routing - DNS - Kubernetes Basics
+    - [Docker Networking](../networking/docker-networking.md) - Linux Networking - Routing - DNS - Kubernetes Basics
     - Each plugin implements the Kubernetes networking model differently.
     - Kubernetes Networking — Networking for Cloud-Native Applications
     - Tie the design to scale, tenancy, least privilege, and rollback.
@@ -23013,7 +23013,7 @@ Answers are written to scan fast: punchline → bullets → commands → trap. T
     
     - Understand NAT Gateway - Learn Source Network Address Translation (SNAT) - Differentiate inbound and outbound Internet access - Configure private subnet Internet access - Compare NAT Gateway implementations across AWS, Azure, and GCP - Design highly available NAT architectures - Troubleshoot NAT connectivity issues
     - Draw a production cloud architecture showing:
-    - NAT Fundamentals - [Route Tables](route-tables.md) - [AWS VPC](cloud-networking-vpc-and-subnets.md) - [Azure VNet](azure-vnet.md) - [Google Cloud VPC](gcp-vpc.md)
+    - NAT Fundamentals - [Route Tables](../networking/route-tables.md) - [AWS VPC](../networking/cloud-networking-vpc-and-subnets.md) - [Azure VNet](../networking/azure-vnet.md) - [Google Cloud VPC](../networking/gcp-vpc.md)
     - Tie the design to scale, tenancy, least privilege, and rollback.
     
     **Try this**
@@ -23290,7 +23290,7 @@ Answers are written to scan fast: punchline → bullets → commands → trap. T
 **1179. Explain how Incident Response integrates with High Availability, Monitoring, and Disaster Recovery.?**
 
 ??? success "Reveal answer"
-    **In short:** [High Availability](high-availability.md) - [Network Monitoring](network-monitoring.md) - [Capacity Planning](capacity-planning.md) - [Disaster Recovery](disaster-recovery.md)
+    **In short:** [High Availability](../networking/high-availability.md) - [Network Monitoring](../networking/network-monitoring.md) - [Capacity Planning](../networking/capacity-planning.md) - [Disaster Recovery](../networking/disaster-recovery.md)
     
     **Key points**
     
@@ -23435,7 +23435,7 @@ Answers are written to scan fast: punchline → bullets → commands → trap. T
     **Key points**
     
     - Begin with a default deny policy. - Allow only required communication. - Use meaningful labels for workload grouping. - Separate environments using namespaces. - Monitor policy violations and connectivity. - Test policies in staging before production. - Combine Network Policies with Role-Based Access Control (RBAC) and cloud firewalls. - Follow Zero Trust principles throughout the cluster.
-    - [CNI](kubernetes-networking-fundamentals.md) - [Pod Networking](pod-networking.md) - [Service Networking](service-networking.md) - [Ingress](ingress.md) - Kubernetes Fundamentals
+    - [CNI](../networking/kubernetes-networking-fundamentals.md) - [Pod Networking](../networking/pod-networking.md) - [Service Networking](../networking/service-networking.md) - [Ingress](../networking/ingress.md) - Kubernetes Fundamentals
     - <p class="ra-lesson-meta__crumb" markdownNetworking Mastery → Module 11: Kubernetes Networking → Lesson 5</p
     - Tie the design to scale, tenancy, least privilege, and rollback.
     
@@ -23598,7 +23598,7 @@ Answers are written to scan fast: punchline → bullets → commands → trap. T
     
     **Key points**
     
-    - [VPN](vpn-and-tunneling-basics.md) - [IPSec](ipsec.md) - [SSL/TLS](ssl-tls.md) - [SSH](ssh-networking.md) - [Network Hardening](network-security-hardening.md) - [IDS/IPS](ids-ips.md) - [Zero Trust](zero-trust.md)
+    - [VPN](../networking/vpn-and-tunneling-basics.md) - [IPSec](../networking/ipsec.md) - [SSL/TLS](../networking/ssl-tls.md) - [SSH](../networking/ssh-networking.md) - [Network Hardening](../networking/network-security-hardening.md) - [IDS/IPS](../networking/ids-ips.md) - [Zero Trust](../networking/zero-trust.md)
     - Understand Network Segmentation - Compare Physical and Logical Segmentation - Learn VLAN-Based Segmentation - Understand Micro-Segmentation - Control East-West Traffic - Design secure enterprise networks - Apply segmentation in cloud and Kubernetes environments
     - Improved Security - Reduced Lateral Movement - Better Performance - Easier Compliance - Better Traffic Visibility - Simplified Troubleshooting - Supports Zero Trust
     - Tie the design to scale, tenancy, least privilege, and rollback.
@@ -23713,7 +23713,7 @@ Answers are written to scan fast: punchline → bullets → commands → trap. T
 **1200. Explain how monitoring, logging, automation, and runbooks work together during incident resolution.?**
 
 ??? success "Reveal answer"
-    **In short:** [Network Monitoring](network-monitoring.md) - [Incident Response](network-incident-response-and-observability.md) - [Production Checklists](production-checklists.md) - DNS - Routing - Linux Netwo…
+    **In short:** [Network Monitoring](../networking/network-monitoring.md) - [Incident Response](../networking/network-incident-response-and-observability.md) - [Production Checklists](../networking/production-checklists.md) - DNS - Routing - Linux Netwo…
     
     **Key points**
     
@@ -23774,7 +23774,7 @@ Answers are written to scan fast: punchline → bullets → commands → trap. T
     
     **Key points**
     
-    - [High Availability](high-availability.md) - [Redundancy](redundancy.md) - [Network Monitoring](network-monitoring.md) - [Disaster Recovery](disaster-recovery.md) - [Incident Response](network-incident-response-and-observability.md) - [Network Automation](network-automation-and-monitoring.md)
+    - [High Availability](../networking/high-availability.md) - [Redundancy](../networking/redundancy.md) - [Network Monitoring](../networking/network-monitoring.md) - [Disaster Recovery](../networking/disaster-recovery.md) - [Incident Response](../networking/network-incident-response-and-observability.md) - [Network Automation](../networking/network-automation-and-monitoring.md)
     - Automated Infrastructure - Monitoring - Documentation - Disaster Recovery - Security Controls
     - Understand production networking best practices - Design reliable network architectures - Improve security and performance - Standardize network operations - Reduce operational risks - Build maintainable infrastructure - Apply production-ready engineering principles
     - Tie the design to scale, tenancy, least privilege, and rollback.
@@ -24302,7 +24302,7 @@ Answers are written to scan fast: punchline → bullets → commands → trap. T
     **Key points**
     
     - Never hardcode Pod IP addresses. - Use Services for stable communication. - Plan Cluster CIDR and Pod CIDR carefully. - Select a production-ready CNI plugin. - Monitor Pod networking continuously. - Enable Network Policies for security. - Use observability tools to inspect network traffic. - Test cross-node communication regularly.
-    - Linux Networking - Routing - [Container Network Interface (CNI)](kubernetes-networking-fundamentals.md) - Kubernetes Fundamentals
+    - Linux Networking - Routing - [Container Network Interface (CNI)](../networking/kubernetes-networking-fundamentals.md) - Kubernetes Fundamentals
     - Same Node - Different Nodes - Across Availability Zones - Across Regions (depending on cluster architecture)
     - Tie the design to scale, tenancy, least privilege, and rollback.
     
@@ -24844,7 +24844,7 @@ Answers are written to scan fast: punchline → bullets → commands → trap. T
     
     **Key points**
     
-    - [Routing Basics](routing-fundamentals.md) - [Static Routing](static-routing.md) - [Dynamic Routing](dynamic-routing.md) - [RIP](rip.md) - [OSPF](ospf.md) - [EIGRP Concepts](eigrp-concepts.md) - [BGP Introduction](bgp-introduction.md) - [Default Routes](default-routes.md) - [Route Summarization](route-summarization.md)
+    - [Routing Basics](../networking/routing-fundamentals.md) - [Static Routing](../networking/static-routing.md) - [Dynamic Routing](../networking/dynamic-routing.md) - [RIP](../networking/rip.md) - [OSPF](../networking/ospf.md) - [EIGRP Concepts](../networking/eigrp-concepts.md) - [BGP Introduction](../networking/bgp-introduction.md) - [Default Routes](../networking/default-routes.md) - [Route Summarization](../networking/route-summarization.md)
     - Understand Route Redistribution - Learn why redistribution is needed - Redistribute between routing protocols - Understand seed metrics - Prevent routing loops - Learn route filtering - Understand enterprise migration strategies - Apply redistribution in hybrid cloud environments
     - Supports Multiple Routing Protocols - Enables Gradual Network Migration - Improves Interoperability - Connects Legacy and Modern Networks - Supports Hybrid Cloud Designs
     - Tie the design to scale, tenancy, least privilege, and rollback.
@@ -24868,7 +24868,7 @@ Answers are written to scan fast: punchline → bullets → commands → trap. T
     
     - Research how hybrid cloud environments use BGP and route redistribution.
     - Hybrid cloud environments often require redistribution between:
-    - [Routing Basics](routing-fundamentals.md) - [Static Routing](static-routing.md) - [Dynamic Routing](dynamic-routing.md) - [RIP](rip.md) - [OSPF](ospf.md) - [EIGRP Concepts](eigrp-concepts.md) - [BGP Introduction](bgp-introduction.md) - [Default Routes](default-routes.md) - [Route Summarization](route-summarization.md)
+    - [Routing Basics](../networking/routing-fundamentals.md) - [Static Routing](../networking/static-routing.md) - [Dynamic Routing](../networking/dynamic-routing.md) - [RIP](../networking/rip.md) - [OSPF](../networking/ospf.md) - [EIGRP Concepts](../networking/eigrp-concepts.md) - [BGP Introduction](../networking/bgp-introduction.md) - [Default Routes](../networking/default-routes.md) - [Route Summarization](../networking/route-summarization.md)
     - Tie the design to scale, tenancy, least privilege, and rollback.
     
     **Try this**
@@ -24933,7 +24933,7 @@ Answers are written to scan fast: punchline → bullets → commands → trap. T
     **Key points**
     
     - Research how OSPF performs route summarization.
-    - [Routing Basics](routing-fundamentals.md) - [Static Routing](static-routing.md) - [Dynamic Routing](dynamic-routing.md) - [RIP](rip.md) - [OSPF](ospf.md) - [EIGRP Concepts](eigrp-concepts.md) - [BGP Introduction](bgp-introduction.md) - [Default Routes](default-routes.md)
+    - [Routing Basics](../networking/routing-fundamentals.md) - [Static Routing](../networking/static-routing.md) - [Dynamic Routing](../networking/dynamic-routing.md) - [RIP](../networking/rip.md) - [OSPF](../networking/ospf.md) - [EIGRP Concepts](../networking/eigrp-concepts.md) - [BGP Introduction](../networking/bgp-introduction.md) - [Default Routes](../networking/default-routes.md)
     - Requires proper IP addressing design - Only works with contiguous networks - Incorrect summarization can route traffic to unintended destinations - Troubleshooting may become more complex because detailed routes are hidden
     - Tie the design to scale, tenancy, least privilege, and rollback.
     
@@ -24978,7 +24978,7 @@ Answers are written to scan fast: punchline → bullets → commands → trap. T
     
     - Understand route tables - Learn how routing decisions are made - Configure default routes - Route traffic to the Internet - Connect private subnets using Network Address Translation (NAT) - Understand cloud routing across AWS, Azure, and GCP - Design production-ready routing architectures
     - Nodes maintain routing information. - Container Network Interface (CNI) plugins configure Pod routes. - Services rely on routing for communication. - Cloud route tables integrate with cluster networking.
-    - Routing Basics - Static Routing - [AWS VPC](cloud-networking-vpc-and-subnets.md) - [Azure VNet](azure-vnet.md) - [Google Cloud VPC](gcp-vpc.md) - [Subnets](cloud-subnets.md)
+    - Routing Basics - Static Routing - [AWS VPC](../networking/cloud-networking-vpc-and-subnets.md) - [Azure VNet](../networking/azure-vnet.md) - [Google Cloud VPC](../networking/gcp-vpc.md) - [Subnets](../networking/cloud-subnets.md)
     - Tie the design to scale, tenancy, least privilege, and rollback.
     
     **Try this**
@@ -24998,7 +24998,7 @@ Answers are written to scan fast: punchline → bullets → commands → trap. T
     
     - Understand route tables - Learn how routing decisions are made - Configure default routes - Route traffic to the Internet - Connect private subnets using Network Address Translation (NAT) - Understand cloud routing across AWS, Azure, and GCP - Design production-ready routing architectures
     - Nodes maintain routing information. - Container Network Interface (CNI) plugins configure Pod routes. - Services rely on routing for communication. - Cloud route tables integrate with cluster networking.
-    - Routing Basics - Static Routing - [AWS VPC](cloud-networking-vpc-and-subnets.md) - [Azure VNet](azure-vnet.md) - [Google Cloud VPC](gcp-vpc.md) - [Subnets](cloud-subnets.md)
+    - Routing Basics - Static Routing - [AWS VPC](../networking/cloud-networking-vpc-and-subnets.md) - [Azure VNet](../networking/azure-vnet.md) - [Google Cloud VPC](../networking/gcp-vpc.md) - [Subnets](../networking/cloud-subnets.md)
     - Tie the design to scale, tenancy, least privilege, and rollback.
     
     **Try this**
@@ -25018,7 +25018,7 @@ Answers are written to scan fast: punchline → bullets → commands → trap. T
     
     - Use separate route tables for different subnet types. - Keep routing simple and predictable. - Use least-privilege network design. - Document every custom route. - Verify route propagation in hybrid environments. - Avoid overlapping CIDR ranges. - Test routing after every infrastructure change. - Monitor routing using cloud network monitoring tools.
     - Nodes maintain routing information. - Container Network Interface (CNI) plugins configure Pod routes. - Services rely on routing for communication. - Cloud route tables integrate with cluster networking.
-    - Routing Basics - Static Routing - [AWS VPC](cloud-networking-vpc-and-subnets.md) - [Azure VNet](azure-vnet.md) - [Google Cloud VPC](gcp-vpc.md) - [Subnets](cloud-subnets.md)
+    - Routing Basics - Static Routing - [AWS VPC](../networking/cloud-networking-vpc-and-subnets.md) - [Azure VNet](../networking/azure-vnet.md) - [Google Cloud VPC](../networking/gcp-vpc.md) - [Subnets](../networking/cloud-subnets.md)
     - Tie the design to scale, tenancy, least privilege, and rollback.
     
     **Try this**
@@ -25098,7 +25098,7 @@ Answers are written to scan fast: punchline → bullets → commands → trap. T
     
     **Key points**
     
-    - IPv4 - Routing Fundamentals - Static Routing - Dynamic Routing - [Ping](ping.md) - [traceroute](traceroute-troubleshooting.md)
+    - IPv4 - Routing Fundamentals - Static Routing - Dynamic Routing - [Ping](../networking/ping.md) - [traceroute](../networking/traceroute-troubleshooting.md)
     - <p class="ra-lesson-meta__crumb" markdownNetworking Mastery → Module 12: Network Troubleshooting → Lesson 6</p
     - Routing Issues — Diagnosing and Resolving Network Routing Problems
     - Tie the design to scale, tenancy, least privilege, and rollback.
@@ -25617,7 +25617,7 @@ Answers are written to scan fast: punchline → bullets → commands → trap. T
     
     - Use ss instead of netstat on modern Linux systems. - Always verify which process owns an open port. - Use numeric output during troubleshooting. - Monitor established connections on production systems. - Regularly audit listening ports. - Combine ss with ip, tcpdump, and journalctl for complete network analysis. - Restrict unnecessary listening services.
     - <p class="ra-lesson-meta__crumb" markdownNetworking Mastery → Module 9: Linux Networking → Lesson 2</p
-    - [Linux ip Command](linux-networking-toolkit.md)
+    - [Linux ip Command](../networking/linux-networking-toolkit.md)
     - Tie the design to scale, tenancy, least privilege, and rollback.
     
     **Try this**
