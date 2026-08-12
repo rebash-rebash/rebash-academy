@@ -359,6 +359,30 @@ function scrollActiveCourseNav() {
   }
 }
 
+/**
+ * Bottom edge of sticky page chrome in the viewport (header + breadcrumbs +
+ * quiz bar). Summing heights under-counts when Material rewrites header size.
+ */
+function stickyChromeBottom() {
+  var bottom = 0;
+  var nodes = [
+    document.querySelector(".md-header"),
+    document.querySelector(".md-tabs"),
+    document.querySelector(".md-path.ra-path"),
+    document.querySelector(".ra-quiz-toolbar"),
+  ];
+  for (var i = 0; i < nodes.length; i++) {
+    var el = nodes[i];
+    if (!el || el.hasAttribute("hidden")) continue;
+    var r = el.getBoundingClientRect();
+    /* Ignore off-screen / collapsed chrome */
+    if (r.height < 1 || r.bottom <= 0) continue;
+    if (r.top > 220) continue;
+    bottom = Math.max(bottom, r.bottom);
+  }
+  return Math.ceil(bottom);
+}
+
 /** Keep sticky breadcrumbs / quiz bar under the real header height. */
 function syncStickyOffsets() {
   var root = document.documentElement;
@@ -391,9 +415,11 @@ function syncStickyOffsets() {
   } else {
     root.style.setProperty("--ra-quiz-toolbar-height", "0px");
   }
-  /* Pixel clearance so JS spy / scroll match CSS scroll-margin exactly */
-  var gap = 24;
-  var clear = Math.max(headerH, 48) + pathH + toolbarH + gap;
+  /* Prefer live chrome bottom so headings never sit under the top nav */
+  var gap = 20;
+  var fromChrome = stickyChromeBottom() + gap;
+  var fromParts = Math.max(headerH, 48) + pathH + toolbarH + gap;
+  var clear = Math.max(fromChrome, fromParts);
   root.style.setProperty("--ra-sticky-scroll-clearance", clear + "px");
 }
 

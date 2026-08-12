@@ -877,7 +877,7 @@
     var(--ra-header-offset, 3.75rem) +
       var(--ra-path-height, 1.85rem) +
       var(--ra-quiz-toolbar-height, 0px) +
-      1.5rem
+      2rem
   );
 }
 
@@ -895,7 +895,8 @@ html {
   scroll-padding-top: var(--ra-sticky-scroll-clearance);
 }
 
-.md-typeset :is(h1, h2, h3, h4, h5, h6)[id] {
+.md-typeset :is(h1, h2, h3, h4, h5, h6)[id],
+.md-typeset :is(h1, h2, h3, h4, h5, h6):target {
   scroll-margin-top: var(--ra-sticky-scroll-clearance);
 }
 
