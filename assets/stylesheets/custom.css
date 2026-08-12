@@ -9086,10 +9086,6 @@ a.rebash-roadmap__card:focus-visible {
   min-width: 0;
 }
 
-.ra-tool-ref__full {
-  margin: 0 0 1.35rem;
-}
-
 .ra-tool-ref__scroll {
   overflow-x: auto;
   margin: 0 -0.15rem;
@@ -9105,16 +9101,28 @@ a.rebash-roadmap__card:focus-visible {
   margin: 0.7rem 0 0 !important;
 }
 
-.ra-tool-ref__more a {
+.ra-tool-ref__more-btn {
+  appearance: none;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  font: inherit;
   font-size: 0.78rem;
   font-weight: 650;
   color: #1565c0;
+  cursor: pointer;
   text-decoration: none;
 }
 
-.ra-tool-ref__more a:hover,
-.ra-tool-ref__more a:focus-visible {
+.ra-tool-ref__more-btn:hover,
+.ra-tool-ref__more-btn:focus-visible {
   text-decoration: underline;
+  outline: none;
+}
+
+.md-typeset .ra-tool-cheatsheet__extra[hidden] {
+  display: none !important;
 }
 
 .md-typeset .ra-tool-cheatsheet {
@@ -9442,6 +9450,6 @@ a.rebash-roadmap__card:focus-visible {
   background: rgba(255, 255, 255, 0.07);
 }
 
-[data-md-color-scheme="slate"] .ra-tool-ref__more a {
+[data-md-color-scheme="slate"] .ra-tool-ref__more-btn {
   color: #90caf9;
 }
