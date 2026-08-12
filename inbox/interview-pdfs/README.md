@@ -46,7 +46,7 @@ We also ingest [litu54/DevOps-Interview-Guide](https://github.com/litu54/DevOps-
 
 - Company folders are **flattened** (no company-level pages)
 - Questions with short hints become model-answer entries
-- Answerless bullets become **Real interview prompts** on each topic page
+- Every published question includes a model answer (answerless bullets get drafted answers; garbled OCR is dropped)
 - Deduped against PDF/OCR questions via `interview-question-registry.yaml`
 
 Clone lands under `inbox/interview-github/` (gitignored). Re-run:

@@ -1,6 +1,6 @@
 ---
 title: "Argo CD Interview Preparation"
-description: "11 curated Argo CD interview prompts — model answers plus real interview questions collected across companies (deduplicated by topic)."
+description: "8 curated Argo CD interview questions with model answers — deduplicated from DevOps / SRE sources and edited for clear practise."
 difficulty: intermediate
 estimated_time: "45–90 min"
 author: Shaik Basha
@@ -17,7 +17,8 @@ comments: false
 # Argo CD Interview Preparation
 
 Curated from multiple DevOps interview sources, **deduplicated**, and edited for REBASH Academy.
-Answer out loud first, then reveal the model answer. Prefer judgement and verification over memorised lists.
+Every question includes a model answer. Answer out loud first, then reveal it.
+Prefer judgement and verification over memorised lists.
 
 !!! tip "How to practise"
     1. Answer in two minutes without notes
@@ -100,56 +101,44 @@ Answer out loud first, then reveal the model answer. Prefer judgement and verifi
     that brings the live cluster in line with Git; and ArgoCD's monitoring continuously shows the diff between desired and
     current state.
 
-**4. What is ArgoCD and what problem does it solve?**
+**4. What is argocd and why we are using it?**
+
+??? success "Reveal answer"
+    Start with a precise definition in the context of Argocd, then say what problem it solves.
+    
+    Give one concrete production example, contrast it with the closest alternative, and name a failure mode teams hit when they misuse it.
+    
+    Close with how you would verify it in a real environment (command, console check, or metric).
+
+**5. What is ArgoCD and what problem does it solve?**
 
 ??? success "Reveal answer"
     ArgoCD is a declarative GitOps continuous delivery tool for Kubernetes that tracks and continuously synchronizes
     the live state of a cluster with the desired state defined in a Git repository, so Git becomes the actual single source of
     truth for what's running rather than just the starting point for a one-time deploy.
 
-**5. What is Flux CD?**
-
-??? success "Reveal answer"
-    A GitOps tool (CNCF project) that continuously reconciles Kubernetes cluster state with Git 
-    repository definitions. Alternative to Argo CD — lighter weight but fewer UI features.
-
-**6. What is GitOps?**
-
-??? success "Reveal answer"
-    o A DevOps model where infrastructure changes are managed via Git repositories.
-
-## Scenarios and troubleshooting
-
-**7. How do you communicate during a production incident?**
-
-??? success "Reveal answer"
-    * Update stakeholders with clear, simple, and timely information. * Clear communication
-    | + Share impact, what we know, what we're doing, and next update time. + Stakeholder management
-    + Use a single channel (Slack/Teams/Status Page). * Transparency
-    | + Avoid technical jargon for non-technical stakeholders. + Professionalism under pressure
-    | + Document everything for post-incident review. * Documentation habit
-    | ©
-
 ## Practice questions
 
-**8. How do you perform application synchronization in ArgoCD?**
+**6. How do you design GitOps for 1000+ clusters with environment drift detection, emergency hotfixes, and controlled manual overrides?**
+
+??? success "Reveal answer"
+    State assumptions and constraints first (scale, RTO/RPO, blast radius, cost), then outline the design.
+    
+    Walk through the Argocd components you would use, why each is chosen, and the trade-offs you rejected (for example complexity versus resilience).
+    
+    Explain rollout/rollback and how you would prove the design works (tests, canary, dashboards).
+
+**7. How do you perform application synchronization in ArgoCD?**
 
 ??? success "Reveal answer"
     Sync can be manual, triggered from the UI or via argocd app sync APP_NAME, or automatic, where ArgoCD
     continuously applies Git changes as they land, optionally with self-healing enabled so any manual drift in the cluster
     gets automatically reverted back to match Git.
 
-**9. How does GitOps differ from traditional IaC?**
+**8. How does GitOps differ from traditional IaC?**
 
 ??? success "Reveal answer"
     o GitOps enforces version-controlled infrastructure and automatic reconciliation.
-
-## Real interview prompts
-
-Additional questions reported from real DevOps / SRE interviews. Company names are omitted — practise these out loud without notes.
-
-- How do you design GitOps for 1000+ clusters with environment drift detection, emergency hotfixes, and controlled manual overrides?
-- What is argocd and why we are using it?
 
 ## Related
 

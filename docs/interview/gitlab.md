@@ -1,6 +1,6 @@
 ---
 title: "GitLab CI/CD Interview Preparation"
-description: "4 curated GitLab CI/CD interview prompts — model answers plus real interview questions collected across companies (deduplicated by topic)."
+description: "3 curated GitLab CI/CD interview questions with model answers — deduplicated from DevOps / SRE sources and edited for clear practise."
 difficulty: intermediate
 estimated_time: "45–90 min"
 author: Shaik Basha
@@ -17,7 +17,8 @@ comments: false
 # GitLab CI/CD Interview Preparation
 
 Curated from multiple DevOps interview sources, **deduplicated**, and edited for REBASH Academy.
-Answer out loud first, then reveal the model answer. Prefer judgement and verification over memorised lists.
+Every question includes a model answer. Answer out loud first, then reveal it.
+Prefer judgement and verification over memorised lists.
 
 !!! tip "How to practise"
     1. Answer in two minutes without notes
@@ -27,13 +28,7 @@ Answer out loud first, then reveal the model answer. Prefer judgement and verifi
 
 ## Core concepts
 
-**1. What is a GitLab Runner?**
-
-??? success "Reveal answer"
-    A GitLab Runner is the application that processes CI/CD jobs, installable on various platforms and capable of running
-    jobs in different environments like Docker or shell, either shared across projects or dedicated to a specific one.
-
-**2. What is the include keyword in .gitlab-ci.yml?**
+**1. What is the include keyword in .gitlab-ci.yml?**
 
 ??? success "Reveal answer"
     Includes pipeline configuration from other YAML files — from the same repo, other repos, or 
@@ -43,7 +38,7 @@ Answer out loud first, then reveal the model answer. Prefer judgement and verifi
      file: '/templates/docker-build.yml' 
      ref: main
 
-**3. What is the purpose of a .gitlab-ci.yml file?**
+**2. What is the purpose of a .gitlab-ci.yml file?**
 
 ??? success "Reveal answer"
     It defines the CI/CD pipeline configuration for a project -- stages, jobs, scripts, and the conditions under which jobs
@@ -51,7 +46,7 @@ Answer out loud first, then reveal the model answer. Prefer judgement and verifi
 
 ## Practice questions
 
-**4. How does GitLab CI/CD work?**
+**3. How does GitLab CI/CD work?**
 
 ??? success "Reveal answer"
     The pipeline is defined in a .gitlab-ci.yml file at the repo root, specifying stages, jobs, and scripts. GitLab Runner

@@ -1,6 +1,6 @@
 ---
 title: "AWS Interview Preparation"
-description: "85 curated AWS interview prompts — model answers plus real interview questions collected across companies (deduplicated by topic)."
+description: "50 curated AWS interview questions with model answers — deduplicated from DevOps / SRE sources and edited for clear practise."
 difficulty: intermediate
 estimated_time: "45–90 min"
 author: Shaik Basha
@@ -17,7 +17,8 @@ comments: false
 # AWS Interview Preparation
 
 Curated from multiple DevOps interview sources, **deduplicated**, and edited for REBASH Academy.
-Answer out loud first, then reveal the model answer. Prefer judgement and verification over memorised lists.
+Every question includes a model answer. Answer out loud first, then reveal it.
+Prefer judgement and verification over memorised lists.
 
 !!! tip "How to practise"
     1. Answer in two minutes without notes
@@ -27,339 +28,70 @@ Answer out loud first, then reveal the model answer. Prefer judgement and verifi
 
 ## Core concepts
 
-**1. Can you explain how to set up auto-scaling for an application?**
+**1. what is the difference between alb and nlb, in which scenario you use alb and nlb?**
 
 ??? success "Reveal answer"
-    Launch and configure an EC2 instance as the template, create a Launch Template or Configuration capturing the
-    AMI, instance type, security groups, and user data, create an Auto Scaling Group referencing that template across
-    chosen subnets and AZs, define scaling policies -- target tracking, step scaling, or scheduled -- based on metrics like
-    CPU utilization, attach a load balancer if traffic needs to be distributed across instances, and monitor with
-    CloudWatch to fine-tune the policies over time.
-    KEY POINTS TO MENTION
-    • Launch template → ASG → scaling policy (target tracking/step/scheduled) → attach LB → monitor & tune
+    Start with a precise definition in the context of Aws, then say what problem it solves.
     
-    The Complete DevOps Engineer Interview Guide (Exhaustive) — 2026
+    Give one concrete production example, contrast it with the closest alternative, and name a failure mode teams hit when they misuse it.
+    
+    Close with how you would verify it in a real environment (command, console check, or metric).
 
-**2. What is the difference between IaaS, PaaS, and SaaS?**
+**2. What is AWS Lambda and how do you design a serverless application?**
 
 ??? success "Reveal answer"
-    IaaS, like EC2, gives virtualized compute and networking while I manage the OS, runtime, and application myself.
-    PaaS, like Elastic Beanstalk, manages the OS and runtime for me so I just deploy application code. SaaS, like
-    Salesforce or Office 365, is fully managed software I simply use, with no infrastructure or platform management on
-    my end at all.
-    KEY POINTS TO MENTION
-    • IaaS: EC2 — full control, most responsibility
-    • PaaS: Elastic Beanstalk — deploy code only
-    • SaaS: fully managed application, no infra/platform responsibility
+    Start with a precise definition in the context of Aws, then say what problem it solves.
     
-    The Complete DevOps Engineer Interview Guide (Exhaustive) — 2026
+    Give one concrete production example, contrast it with the closest alternative, and name a failure mode teams hit when they misuse it.
     
-    1
-    6
-    CLOUD COMPUTING & AZURE DEVOPS
+    Close with how you would verify it in a real environment (command, console check, or metric).
 
-**3. What is infrastructure drift i fa cd rastructure drift and how do you detect and fix it?**
-
-??? success "Reveal answer"
-    + Store state in a remote backend (S3 + Dynamol i
-    + DB locking). Te Llaborati i
-    + Enable state locking to avoid concurrent writes. , <a tas na oe dane
-    4 + Use workspaces or multiple state files per environment. * Securit a ee F
-    4 + Restrict access using IAM policies. * ee
-    + Follow least privilege & audit access to state. ® Scale & mai sais
-    é maint ili
-    -9 ®
-
-**4. What are the best practices for securing cloud infrastructure?**
+**3. What are the best practices for securing cloud infrastructure?**
 
 ??? success "Reveal answer"
     IAM roles and policies following least privilege, encryption for data at rest and in transit, security groups and NACLs
     to control traffic along with AWS WAF for web application protection, CloudTrail and CloudWatch for logging and
     monitoring account activity, and regular security audits to catch vulnerabilities and confirm ongoing compliance.
 
-**5. What is AWS PrivateLink?**
+**4. Explain the AWS architecture shown in the diagram (CodePipeline, CodeBuild, CodeDeploy, CloudFormation, CloudWatch)?**
 
 ??? success "Reveal answer"
-    PrivateLink provides private connectivity between VPCs and AWS services without that traffic ever traversing the
-    public internet -- I've used it to expose an internal service to another team's VPC securely, without a full VPC peering
-    connection or public exposure.
+    State assumptions and constraints first (scale, RTO/RPO, blast radius, cost), then outline the design.
     
-    The Complete DevOps Engineer Interview Guide (Exhaustive) — 2026
-
-**6. What is AWS Global Accelerator?**
-
-??? success "Reveal answer"
-    Global Accelerator routes traffic through AWS's global backbone network instead of the public internet's variable
-    path, reducing latency and improving performance and availability for globally distributed users hitting an application.
+    Walk through the Aws components you would use, why each is chosen, and the trade-offs you rejected (for example complexity versus resilience).
     
-    The Complete DevOps Engineer Interview Guide (Exhaustive) — 2026
+    Explain rollout/rollback and how you would prove the design works (tests, canary, dashboards).
 
-**7. What is AWS Direct Connect?**
-
-??? success "Reveal answer"
-    Direct Connect provides a dedicated, private, low-latency physical connection between on-prem data centres and
-    AWS, bypassing the public internet entirely -- I'd recommend it for consistent high-bandwidth needs or strict
-    compliance requirements around data never touching the public internet.
-
-**8. What is VPC Peering?**
+**5. How do you scale EKS? What are the metrics considered and where do you add your inputs and How? Explain how you have done auto-scaling in your project?**
 
 ??? success "Reveal answer"
-    VPC Peering creates a direct network connection between two VPCs so resources in each can communicate as if
-    they were on the same network. It's simple to set up but doesn't scale well past a handful of VPCs since it isn't
-    transitive -- each pair needs its own dedicated peering connection.
-
-**9. What is the role of DNS A and CNAME Records in DevOps?**
-
-??? success "Reveal answer"
-    An A record maps a domain directly to an IP address, while a CNAME record maps a domain to another domain
-    name. I use A records for root domains pointing at a fixed IP and CNAMEs for subdomains pointing at services like a
-    load balancer or CDN endpoint whose underlying IP might change.
-
-**10. What is a Transit Gateway?**
-
-??? success "Reveal answer"
-    Transit Gateway acts as a central hub connecting multiple VPCs and on-prem networks, which dramatically simplifies
-    networking once you have more than a couple of VPCs that need to talk to each other, replacing what would
-    otherwise be a messy mesh of individual VPC peering connections.
-
-**11. What is AWS ECS vs EKS?**
-
-??? success "Reveal answer"
-    ECS (Elastic Container Service): AWS-native orchestrator, simpler to operate, tightly integrated 
-    with AWS services. EKS (Elastic Kubernetes Service): Managed Kubernetes, industry-standard API, 
-    more complex but portable. Choose ECS for simplicity, EKS for Kubernetes compatibility.
-
-**12. What is pg_dump and how do you automate database backups?**
-
-??? success "Reveal answer"
-    pg_dump -h $DB_HOST -U $DB_USER -d mydb -Fc > backup-$(date +%Y%m%d).dump 
-    # Upload to S3 
-    aws s3 cp backup-$(date +%Y%m%d).dump s3://my-backups/postgres/ 
-    # Automate as Kubernetes CronJob: 
-    # schedule: "0 2 * * *" # Daily at 2 AM 
-     
-     
+    State assumptions and constraints first (scale, RTO/RPO, blast radius, cost), then outline the design.
     
-     
-    BEHAVIORAL QUESTIONS
-
-**13. What is an Application Security Group (ASG)?**
-
-??? success "Reveal answer"
-    ASGs let me group VMs logically for simplified NSG rule management -- instead of writing rules against individual
-    IPs, I can write a rule against an application tier's ASG and add or remove VMs from that group without touching the
-    NSG rules themselves.
-
-**14. What is a VPC in AWS?**
-
-??? success "Reveal answer"
-    A VPC is a private, logically isolated network within AWS where I control the IP address range, subnets, route tables,
-    and gateways -- it's the foundational building block for every piece of AWS infrastructure I provision.
-
-**15. What is Route 53?**
-
-??? success "Reveal answer"
-    Route 53 is AWS's DNS service, and I use it for more than basic hosting -- health-check-based failover routing and
-    weighted routing policies let it actively contribute to application availability, not just resolve names.
-
-**16. What is a Security Group vs NACL?**
-
-??? success "Reveal answer"
-    Security Group: stateful, instance-level firewall (return traffic automatically allowed). NACL 
-    (Network ACL): stateless, subnet-level firewall (return traffic must be explicitly allowed). Use both 
-    in defense-in-depth.
-
-**17. Can you explain the role of Azure Boards in Agile development?**
-
-??? success "Reveal answer"
-    Azure Boards provides Kanban boards, backlogs, sprint planning, and reporting for Agile teams, letting them manage
-    user stories, tasks, and bugs collaboratively with full visibility throughout the development process.
-
-**18. What is an Internet Gateway in AWS?**
-
-??? success "Reveal answer"
-    An Internet Gateway attaches to a VPC and enables two-way internet connectivity for resources in public subnets,
-    which is the piece that actually makes a subnet "public" once paired with the right route table entry.
-
-**19. What is an IAM Role vs IAM User?**
-
-??? success "Reveal answer"
-    An IAM User has permanent credentials (access key + secret). An IAM Role has temporary 
-    credentials obtained via STS AssumeRole. Use roles for EC2 instances, Lambda, and CI/CD systems 
-    — never long-lived users.
-
-**20. What is AWS Secrets Manager?**
-
-??? success "Reveal answer"
-    A secrets management service with automatic rotation, cross-account access, and fine-grained 
-    IAM policies. More expensive than Parameter Store but supports native rotation for RDS, 
-    Redshift, and DocumentDB.
-
-**21. What is a read replica?**
-
-??? success "Reveal answer"
-    A copy of the primary database that handles read-only queries. Reduces load on the primary, 
-    improves read performance, and provides a standby for failover. AWS RDS Multi-AZ provides 
-    automatic failover.
-
-**22. What is an Egress-Only Internet Gateway?**
-
-??? success "Reveal answer"
-    It's specifically for IPv6 traffic -- it allows outbound connectivity from a VPC while blocking any unsolicited inbound
-    traffic, functioning as the IPv6 equivalent of what a NAT Gateway does for IPv4.
-
-**23. What is irate() vs rate() in PromQL?**
-
-??? success "Reveal answer"
-    rate() calculates the per-second average over the time window — more stable. irate() uses 
-    only the last two data points — more responsive to spikes. Use rate() for alerting, irate() for 
-    dashboards.
-
-**24. What is an AWS Lambda function?**
-
-??? success "Reveal answer"
-    A serverless compute service that runs code in response to events without provisioning servers. 
-    Executes in 15 minutes maximum. Used for data processing, API backends, and event-driven 
-    automation.
-
-**25. What is AWS CodeCommit?**
-
-??? success "Reveal answer"
-    A fully managed private Git repository service. Secure, highly available, and integrated with IAM 
-    for access control. It's being deprecated — AWS announced end of new customer onboarding in 
-    2024.
-
-**26. What is IRSA (IAM Roles for Service Accounts)?**
-
-??? success "Reveal answer"
-    An EKS feature that allows Pods to assume IAM roles using Kubernetes ServiceAccounts, via OIDC 
-    federation. Replaces storing AWS credentials in secrets — fine-grained, pod-level AWS 
-    permissions.
-
-**27. What is AWS CDK?**
-
-??? success "Reveal answer"
-    Cloud Development Kit — define AWS infrastructure using Python, TypeScript, Java, or C#. CDK 
-    synthesizes to CloudFormation templates. Provides high-level constructs that encode best 
-    practices.
-
-**28. What is EventBridge?**
-
-??? success "Reveal answer"
-    A serverless event bus that connects AWS services, SaaS applications, and custom applications. 
-    Replaces CloudWatch Events with more features including schema registry and cross-account 
-    events.
-
-**29. What is AWS CloudWatch?**
-
-??? success "Reveal answer"
-    A monitoring service for collecting metrics, logs, and events. Supports dashboards, alarms, 
-    anomaly detection, and log insights queries. The default observability service for all AWS services.
-
-**30. What is AWS X-Ray?**
-
-??? success "Reveal answer"
-    A distributed tracing service for analyzing and debugging distributed applications. Instruments 
-    requests as they flow through microservices and shows performance bottlenecks in a service 
-    map.
-
-**31. What is AWS Elastic Beanstalk?**
-
-??? success "Reveal answer"
-    A PaaS service that handles infrastructure provisioning, load balancing, auto scaling, and 
-    monitoring for web applications. You upload code; Beanstalk manages the rest. Good for simple 
-    apps.
-
-**32. What is Redis Sentinel vs Redis Cluster?**
-
-??? success "Reveal answer"
-    Sentinel: high availability for a single Redis instance — automatic failover but no horizontal 
-    scaling. Cluster: horizontally shards data across multiple nodes — both HA and scalability.
-
-**33. What is AWS Lightsail?**
-
-??? success "Reveal answer"
-    A simplified cloud platform for small workloads — virtual servers, databases, containers, and CDN 
-    with predictable pricing. Targeted at developers who don't need full AWS complexity.
-
-**34. What is AWS Shield?**
-
-??? success "Reveal answer"
-    A DDoS protection service. Shield Standard (free) provides automatic protection against common 
-    DDoS attacks. Shield Advanced ($3,000/month) provides 24/7 DDoS response team support.
-
-**35. What is the difference between ECS Task Role and Execution Role?**
-
-??? success "Reveal answer"
-    Execution Role: used by ECS agent to pull images from ECR and write logs to CloudWatch. Task 
-    Role: assumed by the application container to access AWS services (S3, DynamoDB, etc.).
-
-**36. What is AWS Step Functions?**
-
-??? success "Reveal answer"
-    A serverless workflow orchestration service for coordinating Lambda functions and AWS services 
-    into complex workflows. Supports sequential, parallel, conditional, and retry logic.
-
-**37. What is RDS IAM authentication?**
-
-??? success "Reveal answer"
-    Authenticate to RDS using IAM tokens instead of database passwords. The application 
-    calls generate-db-auth-token and uses the token as the password — tokens expire in 15 
-    minutes.
-
-**38. What is AWS Systems Manager Parameter Store?**
-
-??? success "Reveal answer"
-    A service for storing configuration data and secrets as key-value pairs. Supports plain strings and 
-    SecureString (KMS-encrypted). Cheaper than Secrets Manager but fewer features.
-
-**39. What is AWS Auto Scaling?**
-
-??? success "Reveal answer"
-    Automatically adjusts the number of EC2 instances or ECS tasks based on demand. Types: Target 
-    Tracking (maintain a metric), Step Scaling (scale by increments), Scheduled Scaling.
+    Walk through the Aws components you would use, why each is chosen, and the trade-offs you rejected (for example complexity versus resilience).
+    
+    Explain rollout/rollback and how you would prove the design works (tests, canary, dashboards).
 
 ## Scenarios and troubleshooting
 
-**40. Your EC2 i questions. Real . a v¥ Load balancer i o* “ear iatindba de banrine. bs production scenarios N ote issues Ow * —)?**
+**6. What if production rds is growing 95% how do you debug and how do you prevent this in future?**
 
 ??? success "Reveal answer"
-    “2. Check a troubleshoot? ing but your. application ‘snot: accessible v vec eee
-    ai Mest status sible. \ 5
-    Verify security & system status (AWS H ae hooting
-    8 = yt gp i and id ie a
-    —3 ee traffic. : INTERVIEWER
-    : ee a ar ep subnet level. # Layered —S
-    2 ce aE Sp higulletioay” (netstat. -t eet Sans aes
-    3 ~ Revier spy os sod, cnfen. sor ; lee): standing of net
-    = fest from inside & Rem service is runni + Ability to isola flow
-    3/6 Sipeoyesr +g
-    Q:_Users ‘are. getting 5 ple omg Hevelidebingas
-    z. *
-    ine ee ar loge thing
-    -o ANS: ee ed gfe
-    i. + Review target as: (unhealthy > it? %
-    ; Analyze ALB ae a 7h health checks, port INTERVIEWER L
-    ad Check backend applicat 7 target logs. , protocol. ee OOKS FOR:
-    md ® a a a a a rae grey S health: check
-    GO Noa, Sarmak = , timeout) and delay. og analysis skills knowledge
-    ” SSH into ensure auto-healin: a Problem isolad
-    ~~ ANS Wak: do goa check an EC2 instance that was work ‘ * Ownershi te
-    : + Verify ki BSS working earlier. ip of resolution
-    —> Cue Bre, and =. (ec2-user/ubuntu/admin). ? :
-    . ck NAI inbound rule ‘ z =
-    — > Py SE eu rales (inbound…
+    Use a structured triage: confirm blast radius, check recent changes, then gather evidence (logs, metrics, events) before changing anything.
+    
+    For Aws, name the first three checks you would run, what each result tells you, and when you would escalate versus roll back.
+    
+    Finish with prevention: monitoring/alert, guardrail, or automation that would catch this earlier.
 
-**41. How do you monitor the health of a system in production?**
+**7. Q9: In lambda function, how would you handle failures and how would you set up retries?**
 
 ??? success "Reveal answer"
-    I track key metrics like CPU, memory, disk, response times, error rates, and throughput, run uptime checks against
-    real application endpoints rather than shallow pings, continuously review logs for warnings and errors, set
-    threshold-based alerts to get notified in real time, and keep dashboards that show overall system health at a glance.
-    KEY POINTS TO MENTION
-    • Key metrics, uptime checks, log review, threshold alerts, dashboards
+    Use a structured triage: confirm blast radius, check recent changes, then gather evidence (logs, metrics, events) before changing anything.
+    
+    For Aws, name the first three checks you would run, what each result tells you, and when you would escalate versus roll back.
+    
+    Finish with prevention: monitoring/alert, guardrail, or automation that would catch this earlier.
 
-**42. How do you identify the root cause of a production outage?**
+**8. How do you identify the root cause of a production outage?**
 
 ??? success "Reveal answer"
     * Review logs, metrics, traces across all layers. * Systematic troubleshooting
@@ -369,9 +101,99 @@ Answer out loud first, then reveal the model answer. Prefer judgement and verifi
     | + Reproduce issue in staging if possible to confirm. * Data-driven decisions
     (2)
 
+**9. You want to create an EC2, and while creating the instance, you are getting an error like IP address exceeded. How will you troubleshoot and fix it?**
+
+??? success "Reveal answer"
+    Use a structured triage: confirm blast radius, check recent changes, then gather evidence (logs, metrics, events) before changing anything.
+    
+    For Aws, name the first three checks you would run, what each result tells you, and when you would escalate versus roll back.
+    
+    Finish with prevention: monitoring/alert, guardrail, or automation that would catch this earlier.
+
+**10. Say you need to configure EC2 instances automatically or replace themselves automatically when they fail. How do you implement this?**
+
+??? success "Reveal answer"
+    Use a structured triage: confirm blast radius, check recent changes, then gather evidence (logs, metrics, events) before changing anything.
+    
+    For Aws, name the first three checks you would run, what each result tells you, and when you would escalate versus roll back.
+    
+    Finish with prevention: monitoring/alert, guardrail, or automation that would catch this earlier.
+
+**11. How to spead up s3 upload with files in large size, and client uploaded 10 Gb file but failed after uploading 5 gb how you confirm that 5 gb is uploaded to s3?**
+
+??? success "Reveal answer"
+    Use a structured triage: confirm blast radius, check recent changes, then gather evidence (logs, metrics, events) before changing anything.
+    
+    For Aws, name the first three checks you would run, what each result tells you, and when you would escalate versus roll back.
+    
+    Finish with prevention: monitoring/alert, guardrail, or automation that would catch this earlier.
+
+**12. You are having lambda function and role everything setup perfectly but logs are not coming up in the cw group how to troubleshoot?**
+
+??? success "Reveal answer"
+    Use a structured triage: confirm blast radius, check recent changes, then gather evidence (logs, metrics, events) before changing anything.
+    
+    For Aws, name the first three checks you would run, what each result tells you, and when you would escalate versus roll back.
+    
+    Finish with prevention: monitoring/alert, guardrail, or automation that would catch this earlier.
+
+**13. RDS migration with minimal downtime – how would you approach it?**
+
+??? success "Reveal answer"
+    Use a structured triage: confirm blast radius, check recent changes, then gather evidence (logs, metrics, events) before changing anything.
+    
+    For Aws, name the first three checks you would run, what each result tells you, and when you would escalate versus roll back.
+    
+    Finish with prevention: monitoring/alert, guardrail, or automation that would catch this earlier.
+
+**14. If there is a vendor who provides VPN services for company A, his manager wants to view some dashboard but do not have AWS account. How would you help him?**
+
+??? success "Reveal answer"
+    State assumptions and constraints first (scale, RTO/RPO, blast radius, cost), then outline the design.
+    
+    Walk through the Aws components you would use, why each is chosen, and the trade-offs you rejected (for example complexity versus resilience).
+    
+    Explain rollout/rollback and how you would prove the design works (tests, canary, dashboards).
+
+**15. How would you set up networking in vpc?**
+
+??? success "Reveal answer"
+    State assumptions and constraints first (scale, RTO/RPO, blast radius, cost), then outline the design.
+    
+    Walk through the Aws components you would use, why each is chosen, and the trade-offs you rejected (for example complexity versus resilience).
+    
+    Explain rollout/rollback and how you would prove the design works (tests, canary, dashboards).
+
+**16. Q8: How would you store secure info inside s3?**
+
+??? success "Reveal answer"
+    State assumptions and constraints first (scale, RTO/RPO, blast radius, cost), then outline the design.
+    
+    Walk through the Aws components you would use, why each is chosen, and the trade-offs you rejected (for example complexity versus resilience).
+    
+    Explain rollout/rollback and how you would prove the design works (tests, canary, dashboards).
+
+**17. how would you maintain high availability in ecs + fargate or eks?**
+
+??? success "Reveal answer"
+    State assumptions and constraints first (scale, RTO/RPO, blast radius, cost), then outline the design.
+    
+    Walk through the Aws components you would use, why each is chosen, and the trade-offs you rejected (for example complexity versus resilience).
+    
+    Explain rollout/rollback and how you would prove the design works (tests, canary, dashboards).
+
+**18. What are the security parameters we must consider while we are creating an EC2 instance for production?**
+
+??? success "Reveal answer"
+    Start with a precise definition in the context of Aws, then say what problem it solves.
+    
+    Give one concrete production example, contrast it with the closest alternative, and name a failure mode teams hit when they misuse it.
+    
+    Close with how you would verify it in a real environment (command, console check, or metric).
+
 ## Practice questions
 
-**43. How do you design a multi-region active-active deployment on AWS?**
+**19. How do you design a multi-region active-active deployment on AWS?**
 
 ??? success "Reveal answer"
     Multi-region active-active means users in every region are served by their local infrastructure 
@@ -418,7 +240,7 @@ Answer out loud first, then reveal the model answer. Prefer judgement and verifi
      set_identifier = "us-east-1" 
     …
 
-**44. How do you implement infrastructure as code on AWS using CloudFormation vs CDK?**
+**20. How do you implement infrastructure as code on AWS using CloudFormation vs CDK?**
 
 ??? success "Reveal answer"
     What are the tradeoffs? 
@@ -460,38 +282,34 @@ Answer out loud first, then reveal the model answer. Prefer judgement and verifi
      LogDriver: awslogs 
     …
 
-**45. How do reduce s while ke the architecture reliable?**
+**21. Design a highly available backend on AWS – what services and architecture would you use?**
 
 ??? success "Reveal answer"
-    + Right-size resources. Cook optimisation mindast 1 4 1 1
-    + Use managed services # Use of cloud native services
-    =) + Auto Sealing (scale down when not needed) # Auteccaling & efficiency G-GD- tid
-    + Use Spot/Reserved Instances where applicable. - Roe Rightrsise Ue managed Auto oecla) «Usa right = Mondter &
-    + Implement lifecycle policies (S3, EBS snapshots). mn s 8 - resources services pricing model optimize
-    -9 + Monitor & optimize continuously. bs zs —— *
-    SIGN THINKING
-    CD) lenges pat Water data loud alianond INTERVIEWER LOOKS FOR hs eg A =
-    - 9 ANS: + What are the business goals and constraints? 4 . skills
-    + What is the expected load and gronth? a eRe ES or ve
-    + What are the availability and performance requirements? shea cz! cate a %
-    - 9 + What are the compliance and security requirements? ge paar ina seoped ‘ An bs
-    + What are the recovery and backup requirements? aed tc L 08 Bestey Moke |
-    (a KEY TAKEAWAY: } fae eS Sa
-    Fr | - Y Great cloud architectures are built on | ‘ Loup. —= s pF Tin | VERIQTA.
-    L lon, for, fallaen-: Onstgn for Saale: J {__ Automated.…
+    State assumptions and constraints first (scale, RTO/RPO, blast radius, cost), then outline the design.
+    
+    Walk through the Aws components you would use, why each is chosen, and the trade-offs you rejected (for example complexity versus resilience).
+    
+    Explain rollout/rollback and how you would prove the design works (tests, canary, dashboards).
 
-**46. How do you ensure high availability and scalability in the cloud?**
+**22. How to design an event-driven architecture using S3, Lambda, and SNS for data ingestion?**
 
 ??? success "Reveal answer"
-    For high availability: deploying across multiple availability zones for redundancy, Elastic Load Balancing to distribute
-    traffic, and Auto Scaling Groups to automatically adjust instance count based on demand. For scalability: horizontal
-    scaling by adding or removing instances, leveraging managed services like RDS read replicas or DynamoDB for
-    database scalability, and caching with ElastiCache to reduce database load and improve response times.
-    KEY POINTS TO MENTION
-    • HA: Multi-AZ, ELB, Auto Scaling Groups
-    • Scalability: horizontal scaling, RDS read replicas/DynamoDB, ElastiCache
+    State assumptions and constraints first (scale, RTO/RPO, blast radius, cost), then outline the design.
+    
+    Walk through the Aws components you would use, why each is chosen, and the trade-offs you rejected (for example complexity versus resilience).
+    
+    Explain rollout/rollback and how you would prove the design works (tests, canary, dashboards).
 
-**47. What cloud platforms and AWS services have you worked with?**
+**23. design an high availability, fault tolerance system in aws?**
+
+??? success "Reveal answer"
+    State assumptions and constraints first (scale, RTO/RPO, blast radius, cost), then outline the design.
+    
+    Walk through the Aws components you would use, why each is chosen, and the trade-offs you rejected (for example complexity versus resilience).
+    
+    Explain rollout/rollback and how you would prove the design works (tests, canary, dashboards).
+
+**24. What cloud platforms and AWS services have you worked with?**
 
 ??? success "Reveal answer"
     I've worked extensively with EC2 for scalable compute, S3 for object storage, RDS for managed relational
@@ -499,7 +317,43 @@ Answer out loud first, then reveal the model answer. Prefer judgement and verifi
     infrastructure as code, and EKS for managing Kubernetes clusters -- the core services that make up most real-world
     AWS architectures I've built or maintained.
 
-**48. How do you monitor network traffic in AWS?**
+**25. Q8. You found memory pressure on RDS. You cannot resize. What immediate action can you take without downtime?**
+
+??? success "Reveal answer"
+    Use a structured triage: confirm blast radius, check recent changes, then gather evidence (logs, metrics, events) before changing anything.
+    
+    For Aws, name the first three checks you would run, what each result tells you, and when you would escalate versus roll back.
+    
+    Finish with prevention: monitoring/alert, guardrail, or automation that would catch this earlier.
+
+**26. If any service is down for more than 2 weeks and customer is asking for update, what will you tell to customer?**
+
+??? success "Reveal answer"
+    Use a structured triage: confirm blast radius, check recent changes, then gather evidence (logs, metrics, events) before changing anything.
+    
+    For Aws, name the first three checks you would run, what each result tells you, and when you would escalate versus roll back.
+    
+    Finish with prevention: monitoring/alert, guardrail, or automation that would catch this earlier.
+
+**27. EC2 instance is unreachable, and it’s not a security group issue. What’s your next step?**
+
+??? success "Reveal answer"
+    Use a structured triage: confirm blast radius, check recent changes, then gather evidence (logs, metrics, events) before changing anything.
+    
+    For Aws, name the first three checks you would run, what each result tells you, and when you would escalate versus roll back.
+    
+    Finish with prevention: monitoring/alert, guardrail, or automation that would catch this earlier.
+
+**28. What will you do for zero-downtime when eks cluster upgrade?**
+
+??? success "Reveal answer"
+    Use a structured triage: confirm blast radius, check recent changes, then gather evidence (logs, metrics, events) before changing anything.
+    
+    For Aws, name the first three checks you would run, what each result tells you, and when you would escalate versus roll back.
+    
+    Finish with prevention: monitoring/alert, guardrail, or automation that would catch this earlier.
+
+**29. How do you monitor network traffic in AWS?**
 
 ??? success "Reveal answer"
     VPC Flow Logs capture accepted and rejected traffic at the ENI level, which is my first stop for understanding
@@ -512,59 +366,194 @@ Answer out loud first, then reveal the model answer. Prefer judgement and verifi
     5
     AZURE NETWORKING QUESTIONS
 
-**49. How are DNS MX Records used in DevOps?**
+**30. You have RDS and tomorrow, I being your client, will tell you that you need to make the configuration in such a way so that only one user can access the RDS at a time. How will you configure that?**
 
 ??? success "Reveal answer"
-    MX records specify the mail servers responsible for receiving email for a domain -- as a DevOps engineer, I make
-    sure these are configured correctly whenever we're setting up email services or notification systems that depend on
-    outbound or inbound mail actually routing to the right place.
+    State assumptions and constraints first (scale, RTO/RPO, blast radius, cost), then outline the design.
+    
+    Walk through the Aws components you would use, why each is chosen, and the trade-offs you rejected (for example complexity versus resilience).
+    
+    Explain rollout/rollback and how you would prove the design works (tests, canary, dashboards).
 
-**50. How do Security Groups work in AWS?**
+**31. You have an EC2 instance and you would like to migrate it from one region to another. How will you do it?**
 
 ??? success "Reveal answer"
-    Security Groups are stateful, instance-level virtual firewalls -- I define allow rules for inbound and outbound traffic,
-    and because they're stateful, a response to an allowed inbound request is automatically permitted outbound without
-    needing a matching explicit rule.
+    State assumptions and constraints first (scale, RTO/RPO, blast radius, cost), then outline the design.
+    
+    Walk through the Aws components you would use, why each is chosen, and the trade-offs you rejected (for example complexity versus resilience).
+    
+    Explain rollout/rollback and how you would prove the design works (tests, canary, dashboards).
 
-## Real interview prompts
+**32. How do you secure your environments in aws?**
 
-Additional questions reported from real DevOps / SRE interviews. Company names are omitted — practise these out loud without notes.
+??? success "Reveal answer"
+    State assumptions and constraints first (scale, RTO/RPO, blast radius, cost), then outline the design.
+    
+    Walk through the Aws components you would use, why each is chosen, and the trade-offs you rejected (for example complexity versus resilience).
+    
+    Explain rollout/rollback and how you would prove the design works (tests, canary, dashboards).
 
-- You have RDS and tomorrow, I being your client, will tell you that you need to make the configuration in such a way so that only one user can access the RDS at a time. How will you configure that?
-- I have created an EC2 instance named A, and I want to create another instance B. It should create an instance without deleting instance A. What can I do during this?
-- Suppose in your DevOps team, new team members are added to your team. How can you provide AWS access to your new users, what is the behavior of login to the console?
-- How to spead up s3 upload with files in large size, and client uploaded 10 Gb file but failed after uploading 5 gb how you confirm that 5 gb is uploaded to s3?
-- If there is a vendor who provides VPN services for company A, his manager wants to view some dashboard but do not have AWS account. How would you help him?
-- How do you scale EKS? What are the metrics considered and where do you add your inputs and How? Explain how you have done auto-scaling in your project?
-- You want to create an EC2, and while creating the instance, you are getting an error like IP address exceeded. How will you troubleshoot and fix it?
-- To upgrade the version of DB in RDS, suppose you have 7.0 MySQL installed, and you want to upgrade it into 8.0 and above. What is the process?
-- If you are given a project eg EC2 or EKS or anything else what are the things you would take into consideration from prerequisite till output?
-- Two VPCs need to communicate, but their CIDR ranges overlap. Transit Gateway is not allowed. What alternative solution would you recommend?
-- how to manages certificate in aws. If the certificate expires how are you managing it and what's the action you are taking over here?
-- In Route 53, can you tell me the difference between A record and CNAME record (written as “ad code and symmetry code” in screenshot)?
-- Say you need to configure EC2 instances automatically or replace themselves automatically when they fail. How do you implement this?
-- How do you create AWS Lambda functions and manage the artifacts for deployment? What options do you use to push artifacts to Lambda?
-- You are having lambda function and role everything setup perfectly but logs are not coming up in the cw group how to troubleshoot?
-- Assume you have 10 AWS accounts. How will you securely log in to them, considering access keys are not used for security reasons?
-- If I have EC2 instance for which I don’t want to talk to internet but intra-communication can be possible, how to configure it?
-- Question : can you tell me are you familiar with setting up dashboards and alerts yourself like creating dashboards and alerts?
-- Can you deploy mongo db database in EKS cluster. If yes how and what all configuration things you would need to keep in mind?
-- Question : So can you walk me through what all dashboards that you have created, what type of alerts that you have created?
-- You have created an IAM user in AWS and configured role-based access in EKS. How do you bind the IAM user to the EKS role?
-- I have an S3 bucket, and there is some file inside it — my pod wants to access that S3 bucket. How will it access it?
-- Explain the AWS architecture shown in the diagram (CodePipeline, CodeBuild, CodeDeploy, CloudFormation, CloudWatch)?
-- If any service is down for more than 2 weeks and customer is asking for update, what will you tell to customer?
-- Q8. You found memory pressure on RDS. You cannot resize. What immediate action can you take without downtime?
-- Apart from SageMaker, which AWS or open-source services have you used or are aware of for training ML models?
-- You have an EC2 instance and you would like to migrate it from one region to another. How will you do it?
-- A developer accidentally commits AWS credentials to Git. What is your complete incident response process?
-- How do you manage and connect services like DBs, EC2, EKS, or ECS? Include the command to connect to ECS?
-- What are the security parameters we must consider while we are creating an EC2 instance for production?
-- How do you prevent misuse or unauthorized usage if someone attempts to spin up ML services in AWS?
-- Write a python script to list the EC2 instances running in your cloud which has the tag of PROD,?
-- How to make connections between on prem to AWS suppose if we want to share files from on prem?
-- What if production rds is growing 95% how do you debug and how do you prevent this in future?
-- [ ] Other than Azure and AWS, are you familiar with any other cloud platforms or services?
+**33. How do you restrict access to AWS resources for a specific user?**
+
+??? success "Reveal answer"
+    State assumptions and constraints first (scale, RTO/RPO, blast radius, cost), then outline the design.
+    
+    Walk through the Aws components you would use, why each is chosen, and the trade-offs you rejected (for example complexity versus resilience).
+    
+    Explain rollout/rollback and how you would prove the design works (tests, canary, dashboards).
+
+**34. How do you restrict a user to only EC2 and RDS access?**
+
+??? success "Reveal answer"
+    State assumptions and constraints first (scale, RTO/RPO, blast radius, cost), then outline the design.
+    
+    Walk through the Aws components you would use, why each is chosen, and the trade-offs you rejected (for example complexity versus resilience).
+    
+    Explain rollout/rollback and how you would prove the design works (tests, canary, dashboards).
+
+**35. How do you ensure the least privilege access to the IAM users?**
+
+??? success "Reveal answer"
+    State assumptions and constraints first (scale, RTO/RPO, blast radius, cost), then outline the design.
+    
+    Walk through the Aws components you would use, why each is chosen, and the trade-offs you rejected (for example complexity versus resilience).
+    
+    Explain rollout/rollback and how you would prove the design works (tests, canary, dashboards).
+
+**36. How do you login to the ec2 instance if you've lost the .pem key?**
+
+??? success "Reveal answer"
+    State assumptions and constraints first (scale, RTO/RPO, blast radius, cost), then outline the design.
+    
+    Walk through the Aws components you would use, why each is chosen, and the trade-offs you rejected (for example complexity versus resilience).
+    
+    Explain rollout/rollback and how you would prove the design works (tests, canary, dashboards).
+
+**37. You have created an IAM user in AWS and configured role-based access in EKS. How do you bind the IAM user to the EKS role?**
+
+??? success "Reveal answer"
+    State assumptions and constraints first (scale, RTO/RPO, blast radius, cost), then outline the design.
+    
+    Walk through the Aws components you would use, why each is chosen, and the trade-offs you rejected (for example complexity versus resilience).
+    
+    Explain rollout/rollback and how you would prove the design works (tests, canary, dashboards).
+
+**38. Assume you have 10 AWS accounts. How will you securely log in to them, considering access keys are not used for security reasons?**
+
+??? success "Reveal answer"
+    State assumptions and constraints first (scale, RTO/RPO, blast radius, cost), then outline the design.
+    
+    Walk through the Aws components you would use, why each is chosen, and the trade-offs you rejected (for example complexity versus resilience).
+    
+    Explain rollout/rollback and how you would prove the design works (tests, canary, dashboards).
+
+**39. How do you set up RBAC in Amazon EKS?**
+
+??? success "Reveal answer"
+    State assumptions and constraints first (scale, RTO/RPO, blast radius, cost), then outline the design.
+    
+    Walk through the Aws components you would use, why each is chosen, and the trade-offs you rejected (for example complexity versus resilience).
+    
+    Explain rollout/rollback and how you would prove the design works (tests, canary, dashboards).
+
+**40. how do you make s3 secure which is have client sensitive data?**
+
+??? success "Reveal answer"
+    State assumptions and constraints first (scale, RTO/RPO, blast radius, cost), then outline the design.
+    
+    Walk through the Aws components you would use, why each is chosen, and the trade-offs you rejected (for example complexity versus resilience).
+    
+    Explain rollout/rollback and how you would prove the design works (tests, canary, dashboards).
+
+**41. How do you provide rds ready only access to developer?**
+
+??? success "Reveal answer"
+    State assumptions and constraints first (scale, RTO/RPO, blast radius, cost), then outline the design.
+    
+    Walk through the Aws components you would use, why each is chosen, and the trade-offs you rejected (for example complexity versus resilience).
+    
+    Explain rollout/rollback and how you would prove the design works (tests, canary, dashboards).
+
+**42. An S3 bucket was made public by mistake. How do you secure and audit it?**
+
+??? success "Reveal answer"
+    State assumptions and constraints first (scale, RTO/RPO, blast radius, cost), then outline the design.
+    
+    Walk through the Aws components you would use, why each is chosen, and the trade-offs you rejected (for example complexity versus resilience).
+    
+    Explain rollout/rollback and how you would prove the design works (tests, canary, dashboards).
+
+**43. How do you did cost optimization in AWS?**
+
+??? success "Reveal answer"
+    State assumptions and constraints first (scale, RTO/RPO, blast radius, cost), then outline the design.
+    
+    Walk through the Aws components you would use, why each is chosen, and the trade-offs you rejected (for example complexity versus resilience).
+    
+    Explain rollout/rollback and how you would prove the design works (tests, canary, dashboards).
+
+**44. How do you implement best security policies on AWS?**
+
+??? success "Reveal answer"
+    State assumptions and constraints first (scale, RTO/RPO, blast radius, cost), then outline the design.
+    
+    Walk through the Aws components you would use, why each is chosen, and the trade-offs you rejected (for example complexity versus resilience).
+    
+    Explain rollout/rollback and how you would prove the design works (tests, canary, dashboards).
+
+**45. How do you scan the vulnerabilities specially for AWS instances?**
+
+??? success "Reveal answer"
+    State assumptions and constraints first (scale, RTO/RPO, blast radius, cost), then outline the design.
+    
+    Walk through the Aws components you would use, why each is chosen, and the trade-offs you rejected (for example complexity versus resilience).
+    
+    Explain rollout/rollback and how you would prove the design works (tests, canary, dashboards).
+
+**46. How do you maintain the lifecycle of an S3 bucket?**
+
+??? success "Reveal answer"
+    State assumptions and constraints first (scale, RTO/RPO, blast radius, cost), then outline the design.
+    
+    Walk through the Aws components you would use, why each is chosen, and the trade-offs you rejected (for example complexity versus resilience).
+    
+    Explain rollout/rollback and how you would prove the design works (tests, canary, dashboards).
+
+**47. How do you configure AWS RDS, and what factors do you consider (size, requirements, etc.)?**
+
+??? success "Reveal answer"
+    State assumptions and constraints first (scale, RTO/RPO, blast radius, cost), then outline the design.
+    
+    Walk through the Aws components you would use, why each is chosen, and the trade-offs you rejected (for example complexity versus resilience).
+    
+    Explain rollout/rollback and how you would prove the design works (tests, canary, dashboards).
+
+**48. How do you update the statefile from local to S3 bucket,what will you do if it gets lost?**
+
+??? success "Reveal answer"
+    State assumptions and constraints first (scale, RTO/RPO, blast radius, cost), then outline the design.
+    
+    Walk through the Aws components you would use, why each is chosen, and the trade-offs you rejected (for example complexity versus resilience).
+    
+    Explain rollout/rollback and how you would prove the design works (tests, canary, dashboards).
+
+**49. How do you upgrade your eks?**
+
+??? success "Reveal answer"
+    State assumptions and constraints first (scale, RTO/RPO, blast radius, cost), then outline the design.
+    
+    Walk through the Aws components you would use, why each is chosen, and the trade-offs you rejected (for example complexity versus resilience).
+    
+    Explain rollout/rollback and how you would prove the design works (tests, canary, dashboards).
+
+**50. How do you manage and connect services like DBs, EC2, EKS, or ECS? Include the command to connect to ECS?**
+
+??? success "Reveal answer"
+    State assumptions and constraints first (scale, RTO/RPO, blast radius, cost), then outline the design.
+    
+    Walk through the Aws components you would use, why each is chosen, and the trade-offs you rejected (for example complexity versus resilience).
+    
+    Explain rollout/rollback and how you would prove the design works (tests, canary, dashboards).
 
 ## Related
 

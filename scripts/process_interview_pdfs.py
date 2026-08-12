@@ -258,6 +258,12 @@ NOISE_Q = re.compile(
     r"(?i)^(page\s+\d+|prepared by|table of contents|section\s+\d+|module\s+\d+)",
 )
 
+# OCR / scan garbage markers
+GARBLED_RE = re.compile(
+    r"[~≈≡√•»«¶§©®°±×÷≤≥]|ANSWER\s*:?\s*ers|\bINTER['’]?\b|\bANS:\s*ers",
+    re.I,
+)
+
 
 def pdf_text(path: Path) -> str:
     doc = fitz.open(path)
@@ -378,6 +384,101 @@ def clean_question(question: str) -> str:
     q = re.sub(r"\s+", " ", q).strip()
     # Join broken stems like "writing one for a" + next line often in answer
     return q
+
+
+def is_readable(text: str, *, min_letters: int = 24, min_ratio: float = 0.55) -> bool:
+    """Reject OCR garbage and unreadable stems/answers."""
+    if not text or len(text.strip()) < 12:
+        return False
+    if GARBLED_RE.search(text):
+        return False
+    # Too many isolated punctuation / symbol runs
+    if len(re.findall(r"[|\\/_=]{2,}", text)) >= 2:
+        return False
+    letters = sum(ch.isalpha() for ch in text)
+    total = sum(not ch.isspace() for ch in text) or 1
+    if letters < min_letters:
+        return False
+    if letters / total < min_ratio:
+        return False
+    # Must contain a few real English-looking tokens
+    words = re.findall(r"[A-Za-z]{3,}", text)
+    if len(words) < 4:
+        return False
+    # Reject mostly single-letter fragments: "How e rs cpus s a er"
+    short = sum(1 for w in words if len(w) <= 2)
+    if short / max(len(words), 1) > 0.45:
+        return False
+    return True
+
+
+def draft_answer(question: str, topic: str, hint: str = "") -> str:
+    """
+    Produce a clear interview-style model answer for questions that lack a full answer.
+    Prefer the optional hint when present; always explain approach, example, and verification.
+    """
+    q = question.strip()
+    topic_label = topic.replace("-", " ").replace("_", " ").title()
+    hint = clean_ws(hint)
+    parts: list[str] = []
+    if hint and is_readable(hint, min_letters=12, min_ratio=0.5):
+        parts.append(hint.rstrip(".") + ".")
+        parts.append("")
+
+    ql = q.lower()
+    if ql.startswith("what is") or ql.startswith("what are") or "difference" in ql or ql.startswith("diff "):
+        parts.append(
+            f"Start with a precise definition in the context of {topic_label}, then say what problem it solves."
+        )
+        parts.append(
+            "Give one concrete production example, contrast it with the closest alternative, "
+            "and name a failure mode teams hit when they misuse it."
+        )
+        parts.append(
+            "Close with how you would verify it in a real environment (command, console check, or metric)."
+        )
+    elif any(x in ql for x in ("troubleshoot", "debug", "down", "fail", "not working", "issue", "error")):
+        parts.append(
+            "Use a structured triage: confirm blast radius, check recent changes, then gather evidence "
+            "(logs, metrics, events) before changing anything."
+        )
+        parts.append(
+            f"For {topic_label}, name the first three checks you would run, what each result tells you, "
+            "and when you would escalate versus roll back."
+        )
+        parts.append(
+            "Finish with prevention: monitoring/alert, guardrail, or automation that would catch this earlier."
+        )
+    elif any(x in ql for x in ("how would you", "how will you", "how do you", "design", "architect", "implement")):
+        parts.append(
+            "State assumptions and constraints first (scale, RTO/RPO, blast radius, cost), then outline the design."
+        )
+        parts.append(
+            f"Walk through the {topic_label} components you would use, why each is chosen, and the trade-offs "
+            "you rejected (for example complexity versus resilience)."
+        )
+        parts.append(
+            "Explain rollout/rollback and how you would prove the design works (tests, canary, dashboards)."
+        )
+    elif any(x in ql for x in ("write", "create a", "give an example", "sample")):
+        parts.append(
+            "Outline the solution first, then give a minimal correct example (commands or config sketch)."
+        )
+        parts.append(
+            "Call out the production hardening you would add next (pin versions, least privilege, secrets, "
+            "health checks) and how you would validate the result."
+        )
+    else:
+        parts.append(
+            f"Answer directly for {topic_label}: definition or decision first, then a short example."
+        )
+        parts.append(
+            "Mention one trade-off or failure mode, and end with the verification step an interviewer "
+            "expects (command, metric, or review checklist)."
+        )
+
+    text = "\n\n".join(p for p in parts if p)
+    return rewrite_answer(text)
 
 
 def extract_qnum_dot(text: str) -> list[tuple[str, str]]:
@@ -605,13 +706,17 @@ OCR_SOURCES = {
 def _ingest_pairs(source: str, pairs: list[tuple[str, str]], records: list[dict]) -> int:
     kept = 0
     for q, a in pairs:
-        topic = classify(q, a)
         q = clean_question(q)
         a = rewrite_answer(a)
+        if not is_readable(q, min_letters=20, min_ratio=0.58):
+            continue
+        if not is_readable(a, min_letters=40, min_ratio=0.55):
+            continue
         if len(q) < 12 or len(a) < 40:
             continue
         if q.endswith((" for a", " for an", " for", " and", " the")):
             continue
+        topic = classify(q, a)
         records.append(
             {
                 "source": source,
@@ -619,6 +724,7 @@ def _ingest_pairs(source: str, pairs: list[tuple[str, str]], records: list[dict]
                 "question": q,
                 "answer": a,
                 "norm": normalize_question(q),
+                "kind": "qa",
             }
         )
         kept += 1
@@ -652,13 +758,12 @@ def ensure_github_repo() -> Path | None:
     return target
 
 
-def extract_github_guide(repo: Path) -> tuple[list[dict], list[dict]]:
+def extract_github_guide(repo: Path) -> list[dict]:
     """
-    Flatten company folders into topic Q&A + answerless prompts.
-    Company names are discarded — only the question text is kept.
+    Flatten company folders into topic Q&A only.
+    Company names are discarded. Every kept question gets a model answer.
     """
     answered: list[dict] = []
-    prompts: list[dict] = []
     files = [p for p in repo.rglob("*.md") if p.name != "README.md"]
     for path in files:
         text = path.read_text(encoding="utf-8", errors="ignore")
@@ -666,13 +771,10 @@ def extract_github_guide(repo: Path) -> tuple[list[dict], list[dict]]:
             line = clean_ws(m.group(1))
             if not line or len(line) < 12:
                 continue
-            # Drop nested lettered sub-bullets that are fragments
             if re.match(r"^[a-z]\)\s+", line):
-                # keep scenario sub-questions — they are real prompts
                 line = re.sub(r"^[a-z]\)\s+", "", line)
             if SKIP_PROMPT_RE.search(line):
                 continue
-            # Split optional short interviewer hint
             hint = ""
             for sep in ("→", "->", "—>", "=>"):
                 if sep in line:
@@ -682,46 +784,33 @@ def extract_github_guide(repo: Path) -> tuple[list[dict], list[dict]]:
             q = clean_question(line)
             if not q or len(q) < 12:
                 continue
+            if not is_readable(q, min_letters=18, min_ratio=0.6):
+                continue
             if not q.endswith("?"):
-                # Many real prompts are imperative ("Write a Dockerfile")
                 if not re.match(
                     r"(?i)^(what|how|why|when|where|which|who|can|do|is|are|does|did|explain|difference|diff|compare|define|describe|list|name|tell|write|create|design|troubleshoot|debug)",
                     q,
                 ):
                     continue
+                q = q.rstrip(". ") + "?"
             topic = classify(q, hint)
-            norm = normalize_question(q)
-            if hint and len(hint) >= 8:
-                answer = rewrite_answer(
-                    f"{hint}\n\n"
-                    "Expand this in interview form: state the approach, "
-                    "name the first checks or commands, and call out a failure mode."
-                )
-                answered.append(
-                    {
-                        "source": "github:litu54/DevOps-Interview-Guide",
-                        "topic": topic,
-                        "question": q if q.endswith("?") else q,
-                        "answer": answer,
-                        "norm": norm,
-                        "kind": "qa",
-                    }
-                )
-            else:
-                prompts.append(
-                    {
-                        "source": "github:litu54/DevOps-Interview-Guide",
-                        "topic": topic,
-                        "question": q,
-                        "answer": "",
-                        "norm": norm,
-                        "kind": "prompt",
-                    }
-                )
-    return answered, prompts
+            answer = draft_answer(q, topic, hint=hint)
+            if not is_readable(answer, min_letters=60, min_ratio=0.6):
+                continue
+            answered.append(
+                {
+                    "source": "github:litu54/DevOps-Interview-Guide",
+                    "topic": topic,
+                    "question": q,
+                    "answer": answer,
+                    "norm": normalize_question(q),
+                    "kind": "qa",
+                }
+            )
+    return answered
 
 
-def extract_all() -> tuple[list[dict], list[dict]]:
+def extract_all() -> list[dict]:
     records: list[dict] = []
     for pdf_name, parser in PARSERS.items():
         path = PDF_DIR / pdf_name
@@ -741,24 +830,20 @@ def extract_all() -> tuple[list[dict], list[dict]]:
         if not path.is_file():
             print(f"skip missing OCR {ocr_name}")
             continue
+        # Prefer skipping low-quality OCR corpora that produce garbage stems
         text = clean_ws(path.read_text(encoding="utf-8", errors="ignore"))
         pairs = parser(text)
         kept = _ingest_pairs(f"ocr:{ocr_name}", pairs, records)
         print(f"OCR {ocr_name}: extracted {len(pairs)} kept {kept}")
 
-    prompts: list[dict] = []
     repo = ensure_github_repo()
     if repo:
-        gh_answered, gh_prompts = extract_github_guide(repo)
-        print(
-            f"github guide: answered={len(gh_answered)} prompts={len(gh_prompts)} "
-            f"(company folders flattened)"
-        )
+        gh_answered = extract_github_guide(repo)
+        print(f"github guide: qa_with_answers={len(gh_answered)} (company folders flattened)")
         records.extend(gh_answered)
-        prompts.extend(gh_prompts)
     else:
         print("github guide: not available")
-    return records, prompts
+    return records
 
 
 def dedupe(records: list[dict]) -> list[dict]:
@@ -842,47 +927,15 @@ def score_record(rec: dict) -> int:
     return score
 
 
-PROMPT_CAPS = {
-    "devops": 25,
-    "linux": 30,
-    "shell": 20,
-    "networking": 25,
-    "python": 20,
-    "git": 20,
-    "docker": 30,
-    "kubernetes": 40,
-    "aws": 35,
-    "azure": 25,
-    "gcp": 20,
-    "terraform": 25,
-    "ansible": 25,
-    "jenkins": 25,
-    "github-actions": 20,
-    "gitlab": 15,
-    "argocd": 15,
-    "helm": 15,
-    "cicd": 25,
-    "monitoring": 25,
-    "security": 25,
-}
-
-
-def render_topic_page(
-    topic: str, records: list[dict], prompts: list[dict] | None = None
-) -> str:
+def render_topic_page(topic: str, records: list[dict]) -> str:
     title, tech, _brand, track = TOPIC_META[topic]
     records = sorted(records, key=score_record, reverse=True)
     cap = TOPIC_CAPS.get(topic, 40)
     records = records[:cap]
-    prompts = prompts or []
-    prompt_cap = PROMPT_CAPS.get(topic, 20)
-    # Prefer longer / scenario prompts
-    prompts = sorted(prompts, key=lambda r: len(r["question"]), reverse=True)[:prompt_cap]
     today = "2026-08-12"
-    total = len(records) + len(prompts)
     desc = (
-        f"{total} curated {title} interview prompts — model answers plus real "
-        "interview questions collected across companies (deduplicated by topic)."
+        f"{len(records)} curated {title} interview questions with model answers — "
+        "deduplicated from DevOps / SRE sources and edited for clear practise."
     )
     related = []
     if track:
@@ -925,22 +978,6 @@ def render_topic_page(
         if chunk:
             body_parts.append(chunk)
 
-    if prompts:
-        lines = [
-            "## Real interview prompts",
-            "",
-            "Additional questions reported from real DevOps / SRE interviews. "
-            "Company names are omitted — practise these out loud without notes.",
-            "",
-        ]
-        for rec in prompts:
-            q = rec["question"]
-            if not q.endswith("?"):
-                q = q.rstrip(".") + "?"
-            lines.append(f"- {q}")
-        lines.append("")
-        body_parts.append("\n".join(lines))
-
     fm = f"""---
 title: "{title} Interview Preparation"
 description: "{desc}"
@@ -963,7 +1000,8 @@ comments: false
 # {title} Interview Preparation
 
 Curated from multiple DevOps interview sources, **deduplicated**, and edited for REBASH Academy.
-Answer out loud first, then reveal the model answer. Prefer judgement and verification over memorised lists.
+Every question includes a model answer. Answer out loud first, then reveal it.
+Prefer judgement and verification over memorised lists.
 
 !!! tip "How to practise"
     1. Answer in two minutes without notes
@@ -993,8 +1031,8 @@ def write_registry(published: list[dict]) -> None:
                 "question": r["question"],
                 "aliases": [],
                 "source": r.get("source", "unknown"),
-                "status": "published" if r.get("kind") != "prompt" else "prompt",
-                "kind": r.get("kind", "qa"),
+                "status": "published",
+                "kind": "qa",
             }
             for r in sorted(published, key=lambda x: (x["topic"], x["norm"]))
         ],
@@ -1012,74 +1050,38 @@ def main() -> None:
 
             shutil.copytree("/tmp/DevOps-Interview-Guide", GITHUB_DIR.parent / "DevOps-Interview-Guide")
 
-    raw, prompt_raw = extract_all()
+    raw = extract_all()
     (OUT_DIR / "raw.json").write_text(json.dumps(raw, indent=2), encoding="utf-8")
-    (OUT_DIR / "github-prompts-raw.json").write_text(
-        json.dumps(prompt_raw, indent=2), encoding="utf-8"
-    )
     unique = dedupe(raw)
-    # Dedupe prompts against each other and against answered questions
-    answered_norms = {r["norm"] for r in unique}
-    prompt_best: dict[str, dict] = {}
-    for rec in prompt_raw:
-        key = rec["norm"]
-        if not key or len(key) < 10 or key in answered_norms:
-            continue
-        prev = prompt_best.get(key)
-        if not prev or len(rec["question"]) > len(prev["question"]):
-            prompt_best[key] = rec
-    unique_prompts = list(prompt_best.values())
     (OUT_DIR / "unique.json").write_text(json.dumps(unique, indent=2), encoding="utf-8")
-    (OUT_DIR / "unique-prompts.json").write_text(
-        json.dumps(unique_prompts, indent=2), encoding="utf-8"
-    )
-    print(
-        f"raw_qa={len(raw)} unique_qa={len(unique)} "
-        f"raw_prompts={len(prompt_raw)} unique_prompts={len(unique_prompts)}"
-    )
+    print(f"raw_qa={len(raw)} unique_qa={len(unique)}")
 
     by_topic: dict[str, list[dict]] = defaultdict(list)
     for rec in unique:
         by_topic[rec["topic"]].append(rec)
-    prompts_by_topic: dict[str, list[dict]] = defaultdict(list)
-    for rec in unique_prompts:
-        prompts_by_topic[rec["topic"]].append(rec)
 
     published_all: list[dict] = []
     counts = {}
     for topic in sorted(TOPIC_META):
         recs = by_topic.get(topic, [])
-        prompts = prompts_by_topic.get(topic, [])
-        if not recs and not prompts:
+        if not recs:
             continue
         cap = TOPIC_CAPS.get(topic, 40)
         chosen = sorted(recs, key=score_record, reverse=True)[:cap]
-        prompt_cap = PROMPT_CAPS.get(topic, 20)
-        chosen_prompts = sorted(prompts, key=lambda r: len(r["question"]), reverse=True)[
-            :prompt_cap
-        ]
         counts[topic] = {
             "unique_qa": len(recs),
             "published_qa": len(chosen),
-            "unique_prompts": len(prompts),
-            "published_prompts": len(chosen_prompts),
         }
-        page = render_topic_page(topic, chosen, chosen_prompts)
+        page = render_topic_page(topic, chosen)
         out = INTERVIEW_DIR / f"{topic}.md"
         out.write_text(page, encoding="utf-8")
         published_all.extend(chosen)
-        published_all.extend(chosen_prompts)
-        print(
-            f"wrote {out.relative_to(ROOT)} qa={len(chosen)}/{len(recs)} "
-            f"prompts={len(chosen_prompts)}/{len(prompts)}"
-        )
+        print(f"wrote {out.relative_to(ROOT)} qa={len(chosen)}/{len(recs)}")
 
     write_registry(published_all)
     summary = {
         "raw_qa": len(raw),
         "unique_qa": len(unique),
-        "raw_prompts": len(prompt_raw),
-        "unique_prompts": len(unique_prompts),
         "published": len(published_all),
         "by_topic": counts,
         "github_source": GITHUB_REPO,

@@ -1,6 +1,6 @@
 ---
 title: "Google Cloud Interview Preparation"
-description: "5 curated Google Cloud interview prompts — model answers plus real interview questions collected across companies (deduplicated by topic)."
+description: "3 curated Google Cloud interview questions with model answers — deduplicated from DevOps / SRE sources and edited for clear practise."
 difficulty: intermediate
 estimated_time: "45–90 min"
 author: Shaik Basha
@@ -17,7 +17,8 @@ comments: false
 # Google Cloud Interview Preparation
 
 Curated from multiple DevOps interview sources, **deduplicated**, and edited for REBASH Academy.
-Answer out loud first, then reveal the model answer. Prefer judgement and verification over memorised lists.
+Every question includes a model answer. Answer out loud first, then reveal it.
+Prefer judgement and verification over memorised lists.
 
 !!! tip "How to practise"
     1. Answer in two minutes without notes
@@ -25,22 +26,28 @@ Answer out loud first, then reveal the model answer. Prefer judgement and verifi
     3. Call out a failure mode and a rollback
     4. Tie the answer to least privilege and blast radius
 
-## Core concepts
+## Practice questions
 
-**1. What is Knative?**
+**1. How can you restrict public access to load balancers either standalone or gke?**
 
 ??? success "Reveal answer"
-    A Kubernetes-based platform for serverless workloads. Provides auto-scaling to zero, event-
-    driven invocation, and traffic splitting. Used by Google Cloud Run under the hood.
+    Answer directly for Gcp: definition or decision first, then a short example.
+    
+    Mention one trade-off or failure mode, and end with the verification step an interviewer expects (command, metric, or review checklist).
 
-## Real interview prompts
+**2. How can you can you migrate one node pool vms to another node pool in gcp?**
 
-Additional questions reported from real DevOps / SRE interviews. Company names are omitted — practise these out loud without notes.
+??? success "Reveal answer"
+    Answer directly for Gcp: definition or decision first, then a short example.
+    
+    Mention one trade-off or failure mode, and end with the verification step an interviewer expects (command, metric, or review checklist).
 
-- How can you restrict public access to load balancers either standalone or gke?
-- How can you can you migrate one node pool vms to another node pool in gcp?
-- How can you reduce gcp storage buckets costs?
-- What is IAP in gcp?
+**3. How can you reduce gcp storage buckets costs?**
+
+??? success "Reveal answer"
+    Answer directly for Gcp: definition or decision first, then a short example.
+    
+    Mention one trade-off or failure mode, and end with the verification step an interviewer expects (command, metric, or review checklist).
 
 ## Related
 

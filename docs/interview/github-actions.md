@@ -1,6 +1,6 @@
 ---
 title: "GitHub Actions Interview Preparation"
-description: "45 curated GitHub Actions interview prompts — model answers plus real interview questions collected across companies (deduplicated by topic)."
+description: "35 curated GitHub Actions interview questions with model answers — deduplicated from DevOps / SRE sources and edited for clear practise."
 difficulty: intermediate
 estimated_time: "45–90 min"
 author: Shaik Basha
@@ -17,7 +17,8 @@ comments: false
 # GitHub Actions Interview Preparation
 
 Curated from multiple DevOps interview sources, **deduplicated**, and edited for REBASH Academy.
-Answer out loud first, then reveal the model answer. Prefer judgement and verification over memorised lists.
+Every question includes a model answer. Answer out loud first, then reveal it.
+Prefer judgement and verification over memorised lists.
 
 !!! tip "How to practise"
     1. Answer in two minutes without notes
@@ -66,21 +67,57 @@ Answer out loud first, then reveal the model answer. Prefer judgement and verifi
     matrix:
     python-version: ['3.10',…
 
-**2. What are runners in GitHub Actions?**
+**2. What is the difference between needs and concurrency in GitHub Actions?**
+
+??? success "Reveal answer"
+    Start with a precise definition in the context of Github Actions, then say what problem it solves.
+    
+    Give one concrete production example, contrast it with the closest alternative, and name a failure mode teams hit when they misuse it.
+    
+    Close with how you would verify it in a real environment (command, console check, or metric).
+
+**3. What is GitHub Actions Matrix strategy?**
+
+??? success "Reveal answer"
+    Start with a precise definition in the context of Github Actions, then say what problem it solves.
+    
+    Give one concrete production example, contrast it with the closest alternative, and name a failure mode teams hit when they misuse it.
+    
+    Close with how you would verify it in a real environment (command, console check, or metric).
+
+**4. What is a matrix in GitHub Actions?**
+
+??? success "Reveal answer"
+    Start with a precise definition in the context of Github Actions, then say what problem it solves.
+    
+    Give one concrete production example, contrast it with the closest alternative, and name a failure mode teams hit when they misuse it.
+    
+    Close with how you would verify it in a real environment (command, console check, or metric).
+
+**5. What is the needs keyword in GitHub Actions?**
+
+??? success "Reveal answer"
+    Start with a precise definition in the context of Github Actions, then say what problem it solves.
+    
+    Give one concrete production example, contrast it with the closest alternative, and name a failure mode teams hit when they misuse it.
+    
+    Close with how you would verify it in a real environment (command, console check, or metric).
+
+**6. What are runners in GitHub Actions?**
 
 ??? success "Reveal answer"
     Runners are the servers that actually execute a workflow's jobs. GitHub-hosted runners come with common tooling
     pre-installed across Linux, macOS, and Windows, and I'd switch to self-hosted runners when a job needs to reach
     internal infrastructure or requires a specific environment GitHub-hosted runners don't provide.
 
-**3. What are GitHub Actions and how do they work?**
+**7. What are GitHub Actions and how do they work?**
 
 ??? success "Reveal answer"
     GitHub Actions is a CI/CD tool that automates tasks directly within a repository, defined through YAML workflows in
     the .github/workflows directory. Workflows trigger on events like push, pull_request, or a schedule, and define jobs
     made up of steps that execute inside a virtual environment GitHub provisions.
 
-**4. What is the jobs.<job_id>.outputs feature?**
+**8. What is the jobs.<job_id>.outputs feature?**
 
 ??? success "Reveal answer"
     Passes data from one job to another in the same workflow. 
@@ -93,7 +130,14 @@ Answer out loud first, then reveal the model answer. Prefer judgement and verifi
      steps: 
      - run: echo "Deploying ${{ needs.build.outputs.image-tag }}"
 
-**5. What is GitHub Actions concurrency?**
+**9. Explain your GitHub Actions pipeline?**
+
+??? success "Reveal answer"
+    Answer directly for Github Actions: definition or decision first, then a short example.
+    
+    Mention one trade-off or failure mode, and end with the verification step an interviewer expects (command, metric, or review checklist).
+
+**10. What is GitHub Actions concurrency?**
 
 ??? success "Reveal answer"
     Prevents multiple workflow runs from executing simultaneously for the same trigger. 
@@ -101,7 +145,7 @@ Answer out loud first, then reveal the model answer. Prefer judgement and verifi
      group: production-deploy-${{ github.ref }} 
      cancel-in-progress: false # Don't cancel in-progress; queue instead
 
-**6. What is GitHub Actions OpenID Connect (OIDC)?**
+**11. What is GitHub Actions OpenID Connect (OIDC)?**
 
 ??? success "Reveal answer"
     Allows workflows to authenticate to cloud providers (AWS, Azure, GCP) without storing long-lived 
@@ -110,34 +154,19 @@ Answer out loud first, then reveal the model answer. Prefer judgement and verifi
      
     DEVSECOPS (25 Questions)
 
-**7. What is GitHub Actions' cache action?**
-
-??? success "Reveal answer"
-    - uses: actions/cache@v4 
-     with: 
-     path: ~/.npm 
-     key: ${{ runner.os }}-npm-${{ hashFiles('package-lock.json') }} 
-    Caches dependencies between workflow runs, dramatically speeding up builds.
-
-**8. What is Tilt?**
-
-??? success "Reveal answer"
-    A local Kubernetes development environment tool. Watches source code, rebuilds/syncs changes 
-    to running containers without full rebuilds. Faster iteration than Skaffold for some workflows.
-
-**9. What is a GitHub Actions runner?**
+**12. What is a GitHub Actions runner?**
 
 ??? success "Reveal answer"
     The machine that executes workflow jobs. GitHub provides hosted runners (ubuntu-latest, 
     windows-latest, macos-latest). Self-hosted runners run on your own infrastructure.
 
-**10. What is actions/upload-artifact and actions/download-artifact?**
+**13. What is actions/upload-artifact and actions/download-artifact?**
 
 ??? success "Reveal answer"
     Upload: saves files from a job to GitHub's artifact store. Download: retrieves those files in another 
     job or workflow. Artifacts expire after 90 days by default.
 
-**11. What is the permissions key in GitHub Actions?**
+**14. What is the permissions key in GitHub Actions?**
 
 ??? success "Reveal answer"
     Controls the permissions granted to GITHUB_TOKEN for a workflow or job. 
@@ -146,16 +175,7 @@ Answer out loud first, then reveal the model answer. Prefer judgement and verifi
      packages: write 
      id-token: write # Required for OIDC
 
-**12. What is act?**
-
-??? success "Reveal answer"
-    A tool that runs GitHub Actions workflows locally using Docker. Test your workflows without 
-    pushing to GitHub. 
-    
-     
-    act -j build # Run the 'build' job locally
-
-**13. What is GitHub Actions timeout-minutes?**
+**15. What is GitHub Actions timeout-minutes?**
 
 ??? success "Reveal answer"
     Sets a maximum runtime for a job or step. Prevents hung workflows from consuming runner 
@@ -166,7 +186,7 @@ Answer out loud first, then reveal the model answer. Prefer judgement and verifi
      test: 
      timeout-minutes: 30
 
-**14. What is the push.paths trigger filter?**
+**16. What is the push.paths trigger filter?**
 
 ??? success "Reveal answer"
     Triggers the workflow only when specific file paths are changed. 
@@ -178,7 +198,7 @@ Answer out loud first, then reveal the model answer. Prefer judgement and verifi
      paths-ignore: 
      - 'docs/**'
 
-**15. What is workflow_run trigger?**
+**17. What is workflow_run trigger?**
 
 ??? success "Reveal answer"
     Triggers a workflow when another workflow completes. 
@@ -188,7 +208,7 @@ Answer out loud first, then reveal the model answer. Prefer judgement and verifi
      types: [completed] 
      branches: [main]
 
-**16. What is continue-on-error in GitHub Actions?**
+**18. What is continue-on-error in GitHub Actions?**
 
 ??? success "Reveal answer"
     Allows subsequent steps/jobs to run even if this step fails. 
@@ -196,92 +216,35 @@ Answer out loud first, then reveal the model answer. Prefer judgement and verifi
      run: npm run lint 
      continue-on-error: true
 
-**17. What is the difference between origin and upstream in Git?**
+**19. What is the difference between origin and upstream in Git?**
 
 ??? success "Reveal answer"
     origin is your fork's remote repository. upstream is the original repository you forked from. 
     Convention in open-source workflows.
 
-**18. What are GitHub Actions and their advantages?**
-
-??? success "Reveal answer"
-    o A CI/CD automation tool integrated with GitHub. 
-    o Advantages: Easy setup, built-in marketplace, YAML-based workflows.
-
-**19. What is a composite action?**
-
-??? success "Reveal answer"
-    A reusable action made of multiple steps defined in an action.yml file. Shareable across 
-    workflows and repositories.
-
-**20. What is the GitHub Actions runner.os context?**
-
-??? success "Reveal answer"
-    Returns the operating system of the runner (Linux, Windows, macOS). Used in cross-platform 
-    workflows.
-
-**21. What is a workflow_dispatch trigger?**
-
-??? success "Reveal answer"
-    Allows manually triggering a workflow from the GitHub UI or API, optionally with input 
-    parameters.
-
-**22. What is fromJSON() in GitHub Actions expressions?**
-
-??? success "Reveal answer"
-    Parses a JSON string into an object in expressions. 
-    ${{ fromJSON(steps.build.outputs.matrix) }}
-
 ## Scenarios and troubleshooting
 
-**23. > to make a shenge. @ critical production environment. ‘ you ensure it’s safe?**
+**20. How would you parameterize a workflow so that downstream jobs know which environment to deploy to?**
 
 ??? success "Reveal answer"
-    + Review the change and impact using “terraform plan”. ee
-    ing plan’ * Change management process
-    + Get peer/architect review for high-risk changes. i 2
-    > + Use featuee branches and CI validati namie
-    validation. * Approval
-    proval. workflow
-    Apply during low-traffic windows. * Safe deployment mindset
-    © + Monitor after apply and have rollback plan. * Monitoring & rollback
-    re awareness
+    Use a structured triage: confirm blast radius, check recent changes, then gather evidence (logs, metrics, events) before changing anything.
+    
+    For Github Actions, name the first three checks you would run, what each result tells you, and when you would escalate versus roll back.
+    
+    Finish with prevention: monitoring/alert, guardrail, or automation that would catch this earlier.
+
+**21. You are given a GitHub Actions workflow snippet. How would you identify incorrect steps and suggest improvements or missing steps for a robust CI/CD pipeline?**
+
+??? success "Reveal answer"
+    State assumptions and constraints first (scale, RTO/RPO, blast radius, cost), then outline the design.
+    
+    Walk through the Github Actions components you would use, why each is chosen, and the trade-offs you rejected (for example complexity versus resilience).
+    
+    Explain rollout/rollback and how you would prove the design works (tests, canary, dashboards).
 
 ## Practice questions
 
-**24. How do you secure secrets and manage environments in GitHub Actions?**
-
-??? success "Reveal answer"
-    GitHub Actions has a layered secrets management system. Understanding the difference between 
-    repository secrets, environment secrets, and organization secrets is important for enterprise 
-    setups. 
-    Levels of secrets: 
-    Organization Secrets → Available to all repos in the organization 
-    Repository Secrets → Available to all workflows in one repo 
-    Environment Secrets → Available only to jobs targeting a specific 
-    environment 
-    Setting up environment protection rules (critical for production): 
-    In GitHub: Settings → Environments → New environment → production 
-    • 
-    Required reviewers: at least 2 senior engineers 
-    • 
-    Wait timer: 5 minutes (gives time to cancel if something looks wrong) 
-    • 
-    Deployment branches: main only 
-    Using environment secrets in a workflow: 
-    jobs: 
-     deploy-production: 
-     runs-on: ubuntu-latest 
-     environment: production # Triggers protection rules 
-     steps: 
-     - name: Deploy 
-     env: 
-     DATABASE_URL: ${{ secrets.DATABASE_URL }} # Environment secret 
-     API_KEY: ${{ secrets.API_KEY }} # Environment secret 
-     run: ./deploy.sh 
-    Using OIDC for AWS authentication…
-
-**25. How do you write a reusable workflow in GitHub Actions?**
+**22. How do you write a reusable workflow in GitHub Actions?**
 
 ??? success "Reveal answer"
     Reusable workflows are GitHub Actions' equivalent of shared libraries. Instead of copying the 
@@ -326,7 +289,70 @@ Answer out loud first, then reveal the model answer. Prefer judgement and verifi
      role-to-assume: ${{ secrets.aws-role-arn }} 
      aws-region: ${{…
 
-**26. How do you securely store secrets in GitHub Actions?**
+**23. How do you deploy to EKS through GitHub Actions?**
+
+??? success "Reveal answer"
+    State assumptions and constraints first (scale, RTO/RPO, blast radius, cost), then outline the design.
+    
+    Walk through the Github Actions components you would use, why each is chosen, and the trade-offs you rejected (for example complexity versus resilience).
+    
+    Explain rollout/rollback and how you would prove the design works (tests, canary, dashboards).
+
+**24. How do you prevent concurrent executions in GitHub Actions?**
+
+??? success "Reveal answer"
+    State assumptions and constraints first (scale, RTO/RPO, blast radius, cost), then outline the design.
+    
+    Walk through the Github Actions components you would use, why each is chosen, and the trade-offs you rejected (for example complexity versus resilience).
+    
+    Explain rollout/rollback and how you would prove the design works (tests, canary, dashboards).
+
+**25. Where do you keep the GitHub Actions workflow file, and how do you upload a JAR artifact?**
+
+??? success "Reveal answer"
+    State assumptions and constraints first (scale, RTO/RPO, blast radius, cost), then outline the design.
+    
+    Walk through the Github Actions components you would use, why each is chosen, and the trade-offs you rejected (for example complexity versus resilience).
+    
+    Explain rollout/rollback and how you would prove the design works (tests, canary, dashboards).
+
+**26. About K8's Architecture and tell me the workflow?**
+
+??? success "Reveal answer"
+    State assumptions and constraints first (scale, RTO/RPO, blast radius, cost), then outline the design.
+    
+    Walk through the Github Actions components you would use, why each is chosen, and the trade-offs you rejected (for example complexity versus resilience).
+    
+    Explain rollout/rollback and how you would prove the design works (tests, canary, dashboards).
+
+**27. How do you set up a manual trigger in GitHub Actions?**
+
+??? success "Reveal answer"
+    State assumptions and constraints first (scale, RTO/RPO, blast radius, cost), then outline the design.
+    
+    Walk through the Github Actions components you would use, why each is chosen, and the trade-offs you rejected (for example complexity versus resilience).
+    
+    Explain rollout/rollback and how you would prove the design works (tests, canary, dashboards).
+
+**28. How do you run jobs in parallel in GitHub Actions?**
+
+??? success "Reveal answer"
+    State assumptions and constraints first (scale, RTO/RPO, blast radius, cost), then outline the design.
+    
+    Walk through the Github Actions components you would use, why each is chosen, and the trade-offs you rejected (for example complexity versus resilience).
+    
+    Explain rollout/rollback and how you would prove the design works (tests, canary, dashboards).
+
+**29. 12 .How do you handle parallel execution in CI/CD workflows?**
+
+??? success "Reveal answer"
+    State assumptions and constraints first (scale, RTO/RPO, blast radius, cost), then outline the design.
+    
+    Walk through the Github Actions components you would use, why each is chosen, and the trade-offs you rejected (for example complexity versus resilience).
+    
+    Explain rollout/rollback and how you would prove the design works (tests, canary, dashboards).
+
+**30. How do you securely store secrets in GitHub Actions?**
 
 ??? success "Reveal answer"
     GitHub's Secrets feature encrypts values like API keys and credentials, accessible in a workflow via ${{
@@ -338,35 +364,40 @@ Answer out loud first, then reveal the model answer. Prefer judgement and verifi
     8
     ARGOCD
 
-**27. How do you create a GitHub Actions workflow?**
+**31. How do you create a GitHub Actions workflow?**
 
 ??? success "Reveal answer"
     I add a YAML file under .github/workflows/, specifying on for the triggering event, jobs for the units of work, and steps
     within each job for individual actions -- checking out the repo, running a script, or invoking a pre-built action from the
     marketplace.
 
-## Real interview prompts
+**32. Do you have experience with GitHub Actions? Suppose I want to build and test a Java Maven application and create an artifact, what steps would you include?**
 
-Additional questions reported from real DevOps / SRE interviews. Company names are omitted — practise these out loud without notes.
+??? success "Reveal answer"
+    Outline the solution first, then give a minimal correct example (commands or config sketch).
+    
+    Call out the production hardening you would add next (pin versions, least privilege, secrets, health checks) and how you would validate the result.
 
-- You are given a GitHub Actions workflow snippet. How would you identify incorrect steps and suggest improvements or missing steps for a robust CI/CD pipeline?
-- Do you have experience with GitHub Actions? Suppose I want to build and test a Java Maven application and create an artifact, what steps would you include?
-- How would you parameterize a workflow so that downstream jobs know which environment to deploy to?
-- Where do you keep the GitHub Actions workflow file, and how do you upload a JAR artifact?
-- In GitHub Actions, if one job depends on another job, which parameter do you use?
-- What is the difference between needs and concurrency in GitHub Actions?
-- What steps are included in your GitHub Actions workflow file?
-- 12 .How do you handle parallel execution in CI/CD workflows?
-- How do you prevent concurrent executions in GitHub Actions?
-- How do you set up a manual trigger in GitHub Actions?
-- How do you run jobs in parallel in GitHub Actions?
-- About K8's Architecture and tell me the workflow?
-- How do you deploy to EKS through GitHub Actions?
-- What is the needs keyword in GitHub Actions?
-- What is GitHub Actions Matrix strategy?
-- Explain your GitHub Actions pipeline?
-- How caching works in Github Actions?
-- What is a matrix in GitHub Actions?
+**33. In GitHub Actions, if one job depends on another job, which parameter do you use?**
+
+??? success "Reveal answer"
+    Answer directly for Github Actions: definition or decision first, then a short example.
+    
+    Mention one trade-off or failure mode, and end with the verification step an interviewer expects (command, metric, or review checklist).
+
+**34. How caching works in Github Actions?**
+
+??? success "Reveal answer"
+    Answer directly for Github Actions: definition or decision first, then a short example.
+    
+    Mention one trade-off or failure mode, and end with the verification step an interviewer expects (command, metric, or review checklist).
+
+**35. What steps are included in your GitHub Actions workflow file?**
+
+??? success "Reveal answer"
+    Answer directly for Github Actions: definition or decision first, then a short example.
+    
+    Mention one trade-off or failure mode, and end with the verification step an interviewer expects (command, metric, or review checklist).
 
 ## Related
 

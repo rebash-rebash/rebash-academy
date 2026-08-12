@@ -1,6 +1,6 @@
 ---
 title: "Python Interview Preparation"
-description: "21 curated Python interview prompts — model answers plus real interview questions collected across companies (deduplicated by topic)."
+description: "20 curated Python interview questions with model answers — deduplicated from DevOps / SRE sources and edited for clear practise."
 difficulty: intermediate
 estimated_time: "45–90 min"
 author: Shaik Basha
@@ -17,7 +17,8 @@ comments: false
 # Python Interview Preparation
 
 Curated from multiple DevOps interview sources, **deduplicated**, and edited for REBASH Academy.
-Answer out loud first, then reveal the model answer. Prefer judgement and verification over memorised lists.
+Every question includes a model answer. Answer out loud first, then reveal it.
+Prefer judgement and verification over memorised lists.
 
 !!! tip "How to practise"
     1. Answer in two minutes without notes
@@ -34,22 +35,102 @@ Answer out loud first, then reveal the model answer. Prefer judgement and verifi
     Terraform and Ansible, scripting steps in CI/CD pipelines, and building monitoring and logging integrations with tools
     like Prometheus or Grafana APIs where the built-in tooling doesn't cover a specific need.
 
-**2. Can you explain how Python works with cloud services in DevOps?**
+**2. What are Lists and Tuples in Python?**
+
+??? success "Reveal answer"
+    Start with a precise definition in the context of Python, then say what problem it solves.
+    
+    Give one concrete production example, contrast it with the closest alternative, and name a failure mode teams hit when they misuse it.
+    
+    Close with how you would verify it in a real environment (command, console check, or metric).
+
+**3. What is search keyword in Python?**
+
+??? success "Reveal answer"
+    Start with a precise definition in the context of Python, then say what problem it solves.
+    
+    Give one concrete production example, contrast it with the closest alternative, and name a failure mode teams hit when they misuse it.
+    
+    Close with how you would verify it in a real environment (command, console check, or metric).
+
+**4. What is the difference between shallow copy and deep copy in Python?**
+
+??? success "Reveal answer"
+    Start with a precise definition in the context of Python, then say what problem it solves.
+    
+    Give one concrete production example, contrast it with the closest alternative, and name a failure mode teams hit when they misuse it.
+    
+    Close with how you would verify it in a real environment (command, console check, or metric).
+
+**5. what is list and tuple in python?**
+
+??? success "Reveal answer"
+    Start with a precise definition in the context of Python, then say what problem it solves.
+    
+    Give one concrete production example, contrast it with the closest alternative, and name a failure mode teams hit when they misuse it.
+    
+    Close with how you would verify it in a real environment (command, console check, or metric).
+
+**6. What are decorators in Python?**
+
+??? success "Reveal answer"
+    Start with a precise definition in the context of Python, then say what problem it solves.
+    
+    Give one concrete production example, contrast it with the closest alternative, and name a failure mode teams hit when they misuse it.
+    
+    Close with how you would verify it in a real environment (command, console check, or metric).
+
+**7. What is the difference between set and list in python(Counter question of the above)?**
+
+??? success "Reveal answer"
+    Start with a precise definition in the context of Python, then say what problem it solves.
+    
+    Give one concrete production example, contrast it with the closest alternative, and name a failure mode teams hit when they misuse it.
+    
+    Close with how you would verify it in a real environment (command, console check, or metric).
+
+**8. Can you explain how Python works with cloud services in DevOps?**
 
 ??? success "Reveal answer"
     Cloud SDKs like Boto3 for AWS let Python interact directly with services -- listing S3 buckets, managing EC2
     instances -- which is how I've automated infrastructure provisioning, deployment, and scaling tasks beyond what the
     CLI conveniently covers.
 
-**3. What is Locust?**
+**9. How does Python's GIL affect multi-threaded web service performance and what alternatives exist to overcome it? what is Python's GIL affect multi-threaded web service?**
 
 ??? success "Reveal answer"
-    A Python-based load testing tool. Define user behaviour in Python, then simulate thousands of 
-    concurrent users. Easy to write complex test scenarios.
+    Answer directly for Python: definition or decision first, then a short example.
+    
+    Mention one trade-off or failure mode, and end with the verification step an interviewer expects (command, metric, or review checklist).
+
+**10. In Python, what are lists and tuples, and how do they differ?**
+
+??? success "Reveal answer"
+    Answer directly for Python: definition or decision first, then a short example.
+    
+    Mention one trade-off or failure mode, and end with the verification step an interviewer expects (command, metric, or review checklist).
 
 ## Scenarios and troubleshooting
 
-**4. How would you manage environment variables in Python for a DevOps project?**
+**11. If a Python program is failing due to memory issues, what can be the cause?**
+
+??? success "Reveal answer"
+    Use a structured triage: confirm blast radius, check recent changes, then gather evidence (logs, metrics, events) before changing anything.
+    
+    For Python, name the first three checks you would run, what each result tells you, and when you would escalate versus roll back.
+    
+    Finish with prevention: monitoring/alert, guardrail, or automation that would catch this earlier.
+
+**12. Write a Python function that takes a list of dictionaries representing job logs. The function should return a list of job IDs where the "status" is "FAILED"?**
+
+??? success "Reveal answer"
+    Use a structured triage: confirm blast radius, check recent changes, then gather evidence (logs, metrics, events) before changing anything.
+    
+    For Python, name the first three checks you would run, what each result tells you, and when you would escalate versus roll back.
+    
+    Finish with prevention: monitoring/alert, guardrail, or automation that would catch this earlier.
+
+**13. How would you manage environment variables in Python for a DevOps project?**
 
 ??? success "Reveal answer"
     The os module reads environment variables directly -- os.getenv("DATABASE_URL", "default_value") -- and for
@@ -58,39 +139,54 @@ Answer out loud first, then reveal the model answer. Prefer judgement and verifi
 
 ## Practice questions
 
-**5. How do you handle exceptions in Python scripts for DevOps automation?**
+**14. How do you handle exceptions in Python scripts for DevOps automation?**
 
 ??? success "Reveal answer"
     try-except blocks around anything that can fail, catching specific exceptions like subprocess.CalledProcessError
     rather than a bare except, logging the actual error with useful context, and optionally triggering a retry mechanism for
     genuinely transient failures.
 
-**6. How do you use Python to monitor server health in DevOps?**
+**15. How do you use Python to monitor server health in DevOps?**
 
 ??? success "Reveal answer"
     The psutil library gives direct access to CPU and memory usage -- psutil.cpu_percent() and psutil.virtual_memory() --
     which I can extend to push those metrics into Prometheus or Grafana for ongoing monitoring rather than just a
     one-off check.
 
-## Real interview prompts
+**16. write python program for reverse a string?**
 
-Additional questions reported from real DevOps / SRE interviews. Company names are omitted — practise these out loud without notes.
+??? success "Reveal answer"
+    Outline the solution first, then give a minimal correct example (commands or config sketch).
+    
+    Call out the production hardening you would add next (pin versions, least privilege, secrets, health checks) and how you would validate the result.
 
-- How does Python's GIL affect multi-threaded web service performance and what alternatives exist to overcome it? what is Python's GIL affect multi-threaded web service?
-- Write a Python function that takes a list of dictionaries representing job logs. The function should return a list of job IDs where the "status" is "FAILED"?
-- What is the difference between set and list in python(Counter question of the above)?
-- If a Python program is failing due to memory issues, what can be the cause?
-- What is the difference between shallow copy and deep copy in Python?
-- In Python, what are lists and tuples, and how do they differ?
-- How to configure the Flask in Jenkin, tell me procedure ?
-- Can you write code in Python? (Provided some samples)?
-- Do you have any experience on python scripting?
-- Create a python script for this requirement?
-- write python program for reverse a string?
-- What are Lists and Tuples in Python?
-- What is search keyword in Python?
-- what is list and tuple in python?
-- What are decorators in Python?
+**17. Can you write code in Python? (Provided some samples)?**
+
+??? success "Reveal answer"
+    Outline the solution first, then give a minimal correct example (commands or config sketch).
+    
+    Call out the production hardening you would add next (pin versions, least privilege, secrets, health checks) and how you would validate the result.
+
+**18. Create a python script for this requirement?**
+
+??? success "Reveal answer"
+    Outline the solution first, then give a minimal correct example (commands or config sketch).
+    
+    Call out the production hardening you would add next (pin versions, least privilege, secrets, health checks) and how you would validate the result.
+
+**19. Do you have any experience on python scripting?**
+
+??? success "Reveal answer"
+    Answer directly for Python: definition or decision first, then a short example.
+    
+    Mention one trade-off or failure mode, and end with the verification step an interviewer expects (command, metric, or review checklist).
+
+**20. How to configure the Flask in Jenkin, tell me procedure ?**
+
+??? success "Reveal answer"
+    Answer directly for Python: definition or decision first, then a short example.
+    
+    Mention one trade-off or failure mode, and end with the verification step an interviewer expects (command, metric, or review checklist).
 
 ## Related
 

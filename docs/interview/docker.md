@@ -1,6 +1,6 @@
 ---
 title: "Docker Interview Preparation"
-description: "80 curated Docker interview prompts — model answers plus real interview questions collected across companies (deduplicated by topic)."
+description: "50 curated Docker interview questions with model answers — deduplicated from DevOps / SRE sources and edited for clear practise."
 difficulty: intermediate
 estimated_time: "45–90 min"
 author: Shaik Basha
@@ -17,7 +17,8 @@ comments: false
 # Docker Interview Preparation
 
 Curated from multiple DevOps interview sources, **deduplicated**, and edited for REBASH Academy.
-Answer out loud first, then reveal the model answer. Prefer judgement and verification over memorised lists.
+Every question includes a model answer. Answer out loud first, then reveal it.
+Prefer judgement and verification over memorised lists.
 
 !!! tip "How to practise"
     1. Answer in two minutes without notes
@@ -182,47 +183,7 @@ Answer out loud first, then reveal the model answer. Prefer judgement and verifi
     CMD ["node", "src/index.js"]
     Advanced: Multi-stage builds with…
 
-**6. What is Trivy, and how do you scan Docker images for vulnerabilities in a pipeline?**
-
-??? success "Reveal answer"
-    Trivy is an open-source vulnerability scanner that scans: 
-    • 
-    Container images (OS packages, language dependencies) 
-    • 
-    Filesystems and Git repositories 
-    • 
-    Kubernetes clusters 
-    • 
-    Infrastructure as Code (Terraform, CloudFormation) 
-    
-     
-    # GitHub Actions — Trivy image scanning 
-    - name: Run Trivy vulnerability scanner 
-     uses: aquasecurity/trivy-action@master 
-     with: 
-     image-ref: '${{ env.ECR_REGISTRY }}/${{ env.ECR_REPOSITORY }}:${{ 
-    github.sha }}' 
-     format: 'sarif' 
-     output: 'trivy-results.sarif' 
-     severity: 'CRITICAL,HIGH' 
-     exit-code: '1' # Fail the pipeline if CRITICAL or HIGH vulnerabilities 
-    found 
-     ignore-unfixed: true # Ignore if no fix is available yet 
-    - name: Upload Trivy scan results to GitHub Security 
-     uses: github/codeql-action/upload-sarif@v3 
-     if: always() 
-     with: 
-     sarif_file: 'trivy-results.sarif' 
-    Running Trivy locally: 
-    # Scan a Docker image 
-    trivy image --severity CRITICAL,HIGH nginx:latest 
-    # Scan a local filesystem 
-    trivy fs --security-checks vuln,secret . 
-    # Scan a running Kubernetes cluster 
-    trivy k8s --report summary cluster 
-    # Scan…
-
-**7. What is Layered file system/Union file system?**
+**6. What is Layered file system/Union file system?**
 
 ??? success "Reveal answer"
     Ankit Dubey
@@ -234,27 +195,7 @@ Answer out loud first, then reveal the model answer. Prefer judgement and verifi
     System. If we create a container from this docker image, we can see all those files, directories and
     packages (environment replication).
 
-**8. What is OS-Level Virtualization?**
-
-??? success "Reveal answer"
-    It is the unique feature of Docker not available in other virtualization software. Docker takes most
-    UNIX features from the host machine OS and only takes extra layers of the required OS as a docker
-    image. For the core UNIX kernel, it depends on host OS (since UNIX kernel is the same across UNIX
-    and Linux flavors). Docker takes host OS virtually — that's why we call this concept OS-Level
-    Virtualization.
-
-**9. What is the importance of volumes in Docker?**
-
-??? success "Reveal answer"
-    • Volume is a directory inside your container
-    • First declare directory as a volume and then share volume
-    • Even if we stop the container, still we can access the volume
-    • Volume will be created in one container
-    • You can share one volume across any number of containers
-    • Volume will not be included when you update an image
-    • Map volumes in two ways: Share host-container or Share container-container
-
-**10. Difference between Docker and VMware?**
+**7. Difference between Docker and VMware?**
 
 ??? success "Reveal answer"
     VMware uses a complete OS which is GBs in size. Docker image size is only MBs — it takes less
@@ -263,7 +204,7 @@ Answer out loud first, then reveal the model answer. Prefer judgement and verifi
     RAM — it takes RAM during runtime as needed and releases it when done. So you need less RAM for
     Docker compared to VMware.
 
-**11. What is a Dockerfile and why do we use it?**
+**8. What is a Dockerfile and why do we use it?**
 
 ??? success "Reveal answer"
     A Dockerfile is a normal text file with instructions to build a docker image. It is the automated way of
@@ -271,15 +212,7 @@ Answer out loud first, then reveal the model answer. Prefer judgement and verifi
     instructions. Once we build the Dockerfile, Docker creates a container in the background, creates the
     image from that container, and then destroys the container automatically.
 
-**12. What is a container?**
-
-??? success "Reveal answer"
-    The container is like a virtual machine in which we can deploy any type of applications, software and
-    libraries. It is a lightweight virtual machine which uses OS in the form of an image, which is much
-    smaller in size compared to traditional VMware and Oracle VirtualBox OS images. Container word has
-    been taken from shipping containers. It has everything to run an application.
-
-**13. Explain a typical Docker application workflow.**
+**9. Explain a typical Docker application workflow.**
 
 ??? success "Reveal answer"
     Developers create a Dockerfile and build an image using docker build. The image is
@@ -292,7 +225,16 @@ Answer out loud first, then reveal the model answer. Prefer judgement and verifi
     □
     ›
 
-**14. What is Registry server in Docker?**
+**10. You are unable to push docker image to dockerhub due to access issue. What are the sources where you can push your docker image other than dockerhub?**
+
+??? success "Reveal answer"
+    Use a structured triage: confirm blast radius, check recent changes, then gather evidence (logs, metrics, events) before changing anything.
+    
+    For Docker, name the first three checks you would run, what each result tells you, and when you would escalate versus roll back.
+    
+    Finish with prevention: monitoring/alert, guardrail, or automation that would catch this earlier.
+
+**11. What is Registry server in Docker?**
 
 ??? success "Reveal answer"
     Registry server is our own Docker Hub created to store private docker images instead of storing in the
@@ -300,200 +242,153 @@ Answer out loud first, then reveal the model answer. Prefer judgement and verifi
     provided by Docker specifically for creating a private Docker Hub. We can store any number of private
     docker images and grant access to others as needed.
 
-**15. What are the ways to create docker images?**
+**12. Difference between COPY and ADD commands in a Dockerfile?**
 
 ??? success "Reveal answer"
-    There are three ways to create docker images:
-    • Directly from Docker Hub — provided by Docker company and community
-    • From your own docker containers — create container from base image, install required software
-    inside, then create image from that container
-    • From a Dockerfile — the most preferred way of creating docker images
-
-**16. What is Docker?**
-
-??? success "Reveal answer"
-    Docker is a tool using which we create containers in less time. Docker uses lightweight OS in the form
-    of docker images obtained from Docker Hub. Docker is open source and became very popular
-    because of its unique virtualization concept called 'Containerization'. We can use Docker in both
-    Windows and Linux machines.
-
-**17. What is Docker workflow?**
-
-??? success "Reveal answer"
-    First we create a Dockerfile with instructions to build a docker image. From this docker image, we
-    create docker containers. This docker image can also be pushed to Docker Hub and pulled by others
-    to create containers. We can create docker images from docker containers as well. This is the
-    workflow of Docker.
-
-**18. What is Docker Security?**
-
-??? success "Reveal answer"
-    Docker provides isolation between containers, but containers are not the same as 
-    complete virtual machines. Security can be improved by using minimal images, non-root 
-    users, trusted images, and regularly updated dependencies. Secrets should also be handled 
-    securely rather than hardcoded in images.
-
-**19. What are the benefits of Docker?**
-
-??? success "Reveal answer"
-    • Containerization (OS level virtualization) — No need for guest OS
-    • No pre-allocation of RAM
-    • Can replicate same environment
-    • Less cost
-    • Less weight (MBs in size)
-    • Fast to fire up
-    • Can run on physical/virtual/cloud
-    • Can re-use (same image)
-    • Can create containers in less time
-
-**20. What is the difference between COPY and ADD in Dockerfile?**
-
-??? success "Reveal answer"
-    Both can copy files from the build context into an image. COPY is simpler and is 
-    generally preferred for normal file copying. ADD has additional features such as extracting 
-    local tar archives and supporting URLs, though URLs are generally better handled with other 
-    tools.
-
-**21. What is an ECR lifecycle policy?**
-
-??? success "Reveal answer"
-    Automatically removes old Docker images based on rules. 
-    { 
-     "rules": [{ 
-     "rulePriority": 1, 
-     "selection": { 
+    Start with a precise definition in the context of Docker, then say what problem it solves.
     
-     
-     "tagStatus": "untagged", 
-     "countType": "sinceImagePushed", 
-     "countUnit": "days", 
-     "countNumber": 7 
-     }, 
-     "action": { "type": "expire" } 
-     }] 
-    }
+    Give one concrete production example, contrast it with the closest alternative, and name a failure mode teams hit when they misuse it.
+    
+    Close with how you would verify it in a real environment (command, console check, or metric).
 
-**22. What is containerd?**
+**13. Difference between bind mounts and volumes in Docker?**
 
 ??? success "Reveal answer"
-    A lightweight container runtime that manages the complete container lifecycle (pulling images, 
-    creating containers, managing storage). Docker Engine uses containerd internally. Kubernetes 
-    defaults to containerd directly via CRI (Container Runtime Interface).
+    Start with a precise definition in the context of Docker, then say what problem it solves.
+    
+    Give one concrete production example, contrast it with the closest alternative, and name a failure mode teams hit when they misuse it.
+    
+    Close with how you would verify it in a real environment (command, console check, or metric).
 
-**23. What is Docker Compose?**
-
-??? success "Reveal answer"
-    Docker Compose is used to define and run multiple containers as a single application. 
-    Services, networks, volumes, and configurations are defined in a YAML file. It is commonly 
-    used for applications containing frontend, backend, and database services.
-
-**24. What is a Docker Health Check?**
+**14. What is the issue with using large file image in dockerfile?**
 
 ??? success "Reveal answer"
-    A health check allows Docker to determine whether a containerized application is 
-    working correctly. It can be defined using the HEALTHCHECK instruction in a Dockerfile. This 
-    is useful for monitoring application health and service dependencies.
+    Start with a precise definition in the context of Docker, then say what problem it solves.
+    
+    Give one concrete production example, contrast it with the closest alternative, and name a failure mode teams hit when they misuse it.
+    
+    Close with how you would verify it in a real environment (command, console check, or metric).
 
-**25. What is the difference between Docker and Virtual Machine?**
-
-??? success "Reveal answer"
-    A virtual machine includes a complete guest operating system, while containers share 
-    the host OS kernel. Containers are generally lighter and start faster. VMs provide stronger 
-    OS-level isolation but usually require more resources.
-
-**26. What is docker-compose.override.yml?**
+**15. difference between entrypoint and cmd in docker?**
 
 ??? success "Reveal answer"
-    An automatically merged override file for docker-compose.yml. Used to customize 
-    configurations for local development without modifying the base compose file. Useful for adding 
-    debug ports or changing environment variables locally.
+    Start with a precise definition in the context of Docker, then say what problem it solves.
+    
+    Give one concrete production example, contrast it with the closest alternative, and name a failure mode teams hit when they misuse it.
+    
+    Close with how you would verify it in a real environment (command, console check, or metric).
 
-**27. What is a Docker Environment Variable?**
-
-??? success "Reveal answer"
-    Environment variables are used to pass configuration values to containers without 
-    hardcoding them into the image. They can be provided using -e or Compose files. Examples 
-    include database URLs, usernames, and application settings.
-
-**28. What is a Docker Container?**
+**16. what is the difference between copy and run command in docker?**
 
 ??? success "Reveal answer"
-    A container is a lightweight, isolated environment where an application runs. It contains 
-    the application and its required dependencies. Containers share the host OS kernel, making 
-    them faster and lighter than virtual machines.
+    Start with a precise definition in the context of Docker, then say what problem it solves.
+    
+    Give one concrete production example, contrast it with the closest alternative, and name a failure mode teams hit when they misuse it.
+    
+    Close with how you would verify it in a real environment (command, console check, or metric).
 
-**29. What is Docker Network?**
-
-??? success "Reveal answer"
-    Docker networking allows containers to communicate with each other and with external 
-    systems. Containers on the same network can communicate using container or service 
-    names. Common network types include bridge, host, and none.
-
-**30. What is a Multi-stage Docker Build?**
+**17. What is Docker and how do you use in your project, Any docker file you have written?**
 
 ??? success "Reveal answer"
-    Multi-stage builds use multiple FROM instructions in one Dockerfile. One stage can build 
-    the application, while another contains only the required runtime files. This helps create 
-    smaller and more secure production images.
+    Start with a precise definition in the context of Docker, then say what problem it solves.
+    
+    Give one concrete production example, contrast it with the closest alternative, and name a failure mode teams hit when they misuse it.
+    
+    Close with how you would verify it in a real environment (command, console check, or metric).
 
-**31. What is a Docker .dockerignore file?**
-
-??? success "Reveal answer"
-    .dockerignore specifies files and directories that should not be sent to the Docker build 
-    context. It can exclude files such as .git, logs, and unnecessary dependencies. This makes 
-    builds faster and keeps images cleaner.
-
-**32. What is Azure Container Registry (ACR), and how does it integrate with Azure DevOps?**
+**18. What is difficulties you face while you build a docker image?**
 
 ??? success "Reveal answer"
-    ACR is a managed private Docker registry, and it integrates with Azure Pipelines so container images are built,
-    pushed, and pulled as part of CI/CD -- a pipeline typically publishes to ACR right after a successful build.
+    Start with a precise definition in the context of Docker, then say what problem it solves.
+    
+    Give one concrete production example, contrast it with the closest alternative, and name a failure mode teams hit when they misuse it.
+    
+    Close with how you would verify it in a real environment (command, console check, or metric).
 
-**33. What is Dockerfile?**
-
-??? success "Reveal answer"
-    A Dockerfile is a text file containing instructions for building a Docker image. It defines 
-    the base image, application files, dependencies, and commands. Common instructions 
-    include FROM, COPY, RUN, CMD, and EXPOSE.
-
-**34. What is a Docker volume vs a bind mount?**
+**19. what is difference between add and copy in docker file?**
 
 ??? success "Reveal answer"
-    A volume is managed by Docker (stored in /var/lib/docker/volumes/), portable, and the 
-    recommended way for persistent data. A bind mount links a specific host path to a container 
-    path — tighter coupling to the host.
+    Start with a precise definition in the context of Docker, then say what problem it solves.
+    
+    Give one concrete production example, contrast it with the closest alternative, and name a failure mode teams hit when they misuse it.
+    
+    Close with how you would verify it in a real environment (command, console check, or metric).
 
-**35. What is the difference between CMD and ENTRYPOINT in a Dockerfile?**
-
-??? success "Reveal answer"
-    ENTRYPOINT defines the executable that always runs; it cannot be overridden (only 
-    appended). CMD provides default arguments that can be overridden at docker run. 
-    Together: ENTRYPOINT ["python"] + CMD ["app.py"].
-
-**36. What is a distroless image?**
+**20. What is the purpose of Docker?**
 
 ??? success "Reveal answer"
-    A minimal container image that contains only the application and its runtime dependencies — no 
-    shell, no package manager, no OS utilities. Reduces attack surface significantly. 
-    Example: gcr.io/distroless/java.
+    Start with a precise definition in the context of Docker, then say what problem it solves.
+    
+    Give one concrete production example, contrast it with the closest alternative, and name a failure mode teams hit when they misuse it.
+    
+    Close with how you would verify it in a real environment (command, console check, or metric).
 
-**37. What is a database connection string best practice in containerized environments?**
-
-??? success "Reveal answer"
-    Store in Secrets Manager or Vault, inject at runtime via environment variable or volume mount. 
-    Never hardcode in application code or Docker image. Use connection pooling to handle multiple 
-    container instances.
-
-**38. What is Docker's garbage collection?**
+**21. What is a multi-stage Docker build? How does it help reduce image size?**
 
 ??? success "Reveal answer"
-    Docker doesn't automatically delete unused images, containers, or volumes. You run docker 
-    system prune manually or schedule it as a cron job. Kubernetes 
-    uses imageGCHighThresholdPercent for automatic cleanup.
+    Start with a precise definition in the context of Docker, then say what problem it solves.
+    
+    Give one concrete production example, contrast it with the closest alternative, and name a failure mode teams hit when they misuse it.
+    
+    Close with how you would verify it in a real environment (command, console check, or metric).
+
+**22. What is Docker image layer caching?**
+
+??? success "Reveal answer"
+    Start with a precise definition in the context of Docker, then say what problem it solves.
+    
+    Give one concrete production example, contrast it with the closest alternative, and name a failure mode teams hit when they misuse it.
+    
+    Close with how you would verify it in a real environment (command, console check, or metric).
+
+**23. what is docker compose depends_on?**
+
+??? success "Reveal answer"
+    Start with a precise definition in the context of Docker, then say what problem it solves.
+    
+    Give one concrete production example, contrast it with the closest alternative, and name a failure mode teams hit when they misuse it.
+    
+    Close with how you would verify it in a real environment (command, console check, or metric).
+
+**24. What is the role of container runtime and which runtime do you use and why?**
+
+??? success "Reveal answer"
+    Start with a precise definition in the context of Docker, then say what problem it solves.
+    
+    Give one concrete production example, contrast it with the closest alternative, and name a failure mode teams hit when they misuse it.
+    
+    Close with how you would verify it in a real environment (command, console check, or metric).
+
+**25. What are the layer's you will get in Docker while building?**
+
+??? success "Reveal answer"
+    Start with a precise definition in the context of Docker, then say what problem it solves.
+    
+    Give one concrete production example, contrast it with the closest alternative, and name a failure mode teams hit when they misuse it.
+    
+    Close with how you would verify it in a real environment (command, console check, or metric).
+
+**26. What is docker file what is inside it?**
+
+??? success "Reveal answer"
+    Start with a precise definition in the context of Docker, then say what problem it solves.
+    
+    Give one concrete production example, contrast it with the closest alternative, and name a failure mode teams hit when they misuse it.
+    
+    Close with how you would verify it in a real environment (command, console check, or metric).
+
+**27. What is an init container and why do we need to use it?**
+
+??? success "Reveal answer"
+    Start with a precise definition in the context of Docker, then say what problem it solves.
+    
+    Give one concrete production example, contrast it with the closest alternative, and name a failure mode teams hit when they misuse it.
+    
+    Close with how you would verify it in a real environment (command, console check, or metric).
 
 ## Scenarios and troubleshooting
 
-**39. How would you use Python in a Dockerized DevOps environment?**
+**28. How would you use Python in a Dockerized DevOps environment?**
 
 ??? success "Reveal answer"
     Python often is the application logic running inside containers, and separately, the Docker SDK for Python lets me
@@ -509,20 +404,61 @@ Answer out loud first, then reveal the model answer. Prefer judgement and verifi
     
     The Complete DevOps Engineer Interview Guide (Exhaustive) — 2026
 
-**40. How do you optimize Docker images for production?**
+**29. Jenkins is failing to push a Docker image to the registry. How do you troubleshoot?**
 
 ??? success "Reveal answer"
-    Smaller base images like alpine to cut size and reduce attack surface, multi-stage builds so build tools and
-    dependencies never make it into the final image, minimizing layers by combining commands where it makes sense, a
-    .dockerignore file to keep unnecessary files out of the build context, and ordering Dockerfile instructions to take
-    advantage of layer caching -- rarely-changing steps like dependency installation before frequently-changing ones like
-    copying source code.
-    KEY POINTS TO MENTION
-    • Small base images, multi-stage builds, minimal layers, .dockerignore, cache-aware instruction ordering
+    Use a structured triage: confirm blast radius, check recent changes, then gather evidence (logs, metrics, events) before changing anything.
+    
+    For Docker, name the first three checks you would run, what each result tells you, and when you would escalate versus roll back.
+    
+    Finish with prevention: monitoring/alert, guardrail, or automation that would catch this earlier.
+
+**30. If you have 10 layers in a Dockerfile and layer 6 fails, after fixing it, where will the rebuild start from and why?**
+
+??? success "Reveal answer"
+    Use a structured triage: confirm blast radius, check recent changes, then gather evidence (logs, metrics, events) before changing anything.
+    
+    For Docker, name the first three checks you would run, what each result tells you, and when you would escalate versus roll back.
+    
+    Finish with prevention: monitoring/alert, guardrail, or automation that would catch this earlier.
+
+**31. Docker containers stopped suddenly after starting, how do you troubleshoot?**
+
+??? success "Reveal answer"
+    Use a structured triage: confirm blast radius, check recent changes, then gather evidence (logs, metrics, events) before changing anything.
+    
+    For Docker, name the first three checks you would run, what each result tells you, and when you would escalate versus roll back.
+    
+    Finish with prevention: monitoring/alert, guardrail, or automation that would catch this earlier.
+
+**32. How do you debug inside the container ?**
+
+??? success "Reveal answer"
+    Use a structured triage: confirm blast radius, check recent changes, then gather evidence (logs, metrics, events) before changing anything.
+    
+    For Docker, name the first three checks you would run, what each result tells you, and when you would escalate versus roll back.
+    
+    Finish with prevention: monitoring/alert, guardrail, or automation that would catch this earlier.
+
+**33. Why does a container sometimes exit immediately even though the application works perfectly in local testing? Give 3 real production causes?**
+
+??? success "Reveal answer"
+    Answer directly for Docker: definition or decision first, then a short example.
+    
+    Mention one trade-off or failure mode, and end with the verification step an interviewer expects (command, metric, or review checklist).
 
 ## Practice questions
 
-**41. How do you create and manage Docker images and containers?**
+**34. [ ] How do you design and manage a containerized environment to ensure scalability and high availability?**
+
+??? success "Reveal answer"
+    State assumptions and constraints first (scale, RTO/RPO, blast radius, cost), then outline the design.
+    
+    Walk through the Docker components you would use, why each is chosen, and the trade-offs you rejected (for example complexity versus resilience).
+    
+    Explain rollout/rollback and how you would prove the design works (tests, canary, dashboards).
+
+**35. How do you create and manage Docker images and containers?**
 
 ??? success "Reveal answer"
     I write a Dockerfile specifying the base image, copying application code, installing dependencies, and setting the
@@ -530,22 +466,7 @@ Answer out loud first, then reveal the model answer. Prefer judgement and verifi
     running containers I use docker run to start one, docker stop/start to control its lifecycle, docker rm to remove it, and
     Docker Compose when I need to define and run multiple containers together.
 
-**42. Important docker commands?**
-
-??? success "Reveal answer"
-    • docker ps — to see list of running containers
-    • docker ps -a — to see list of all containers
-    • docker images — to see list of all images
-    • docker run — to create docker container
-    • docker attach — to go inside container
-    • docker stop — to stop container
-    • docker start — to start container
-    • docker commit — to create image out of docker container
-    • docker rm — to delete container
-    • docker rmi — to delete image
-    Ansible
-
-**43. What do you mean by port mapping in Docker?**
+**36. What do you mean by port mapping in Docker?**
 
 ??? success "Reveal answer"
     Docker containers don't have an IP address. To expose a web application running inside a container,
@@ -557,7 +478,16 @@ Answer out loud first, then reveal the model answer. Prefer judgement and verifi
     
     DevOps Interview Questions & Answers
 
-**44. What do you mean by docker image?**
+**37. How do you fix security issues in Docker images?**
+
+??? success "Reveal answer"
+    Use a structured triage: confirm blast radius, check recent changes, then gather evidence (logs, metrics, events) before changing anything.
+    
+    For Docker, name the first three checks you would run, what each result tells you, and when you would escalate versus roll back.
+    
+    Finish with prevention: monitoring/alert, guardrail, or automation that would catch this earlier.
+
+**38. What do you mean by docker image?**
 
 ??? success "Reveal answer"
     Docker image is a lightweight OS provided by Docker company. We can get any type of docker image
@@ -565,86 +495,111 @@ Answer out loud first, then reveal the model answer. Prefer judgement and verifi
     contain only OS, or OS + other software. Each software in a docker image is stored in the form of a
     layer. Advantage: we can replicate the same environment any number of times.
 
-**45. How do you tag and push a Docker image to ECR?**
+**39. How do you reduce docker image size?**
 
 ??? success "Reveal answer"
-    aws ecr get-login-password --region ap-south-1 | \ 
-     docker login --username AWS --password-stdin 123456789.dkr.ecr.ap-south-
-    1.amazonaws.com 
-    docker tag myapp:latest 123456789.dkr.ecr.ap-south-
-    1.amazonaws.com/myapp:latest 
-    docker push 123456789.dkr.ecr.ap-south-1.amazonaws.com/myapp:latest
+    State assumptions and constraints first (scale, RTO/RPO, blast radius, cost), then outline the design.
+    
+    Walk through the Docker components you would use, why each is chosen, and the trade-offs you rejected (for example complexity versus resilience).
+    
+    Explain rollout/rollback and how you would prove the design works (tests, canary, dashboards).
 
-**46. List of Docker components?**
-
-??? success "Reveal answer"
-    • Docker image: Contains OS (very small) + software
-    • Docker Container: Machine created from Docker image
-    • Dockerfile: Describes steps to create a docker image
-    • Docker hub/registry: Stores all docker images publicly
-    • Docker daemon: Docker service running at the backend
-
-**47. How is Docker used in CI/CD?**
+**40. How do you reduce the size of a Docker image?**
 
 ??? success "Reveal answer"
-    Docker can package an application into the same environment used for testing and 
-    deployment. A CI/CD pipeline can build an image, run tests, push the image to a registry, and 
-    deploy it to a server. This makes application deployment more consistent and repeatable.
+    State assumptions and constraints first (scale, RTO/RPO, blast radius, cost), then outline the design.
+    
+    Walk through the Docker components you would use, why each is chosen, and the trade-offs you rejected (for example complexity versus resilience).
+    
+    Explain rollout/rollback and how you would prove the design works (tests, canary, dashboards).
 
-**48. Your Docker image build takes 20 minutes. How do you reduce it?**
-
-??? success "Reveal answer"
-    1. Add .dockerignore. 2) Reorder layers — copy package.json before source code. 3) Use 
-    multi-stage builds. 4) Enable BuildKit cache mounts. 5) Use layer caching in CI (--cache-
-    from). 6) Use a smaller base image (alpine). Target: under 5 minutes.
-
-**49. How do you update a running container's image without downtime?**
+**41. How do you implement Docker image layer caching?**
 
 ??? success "Reveal answer"
-    You don't update containers in-place. The correct approach is: pull new image, start new 
-    container, redirect traffic, stop old container. Orchestrators (Docker Swarm, Kubernetes) handle 
-    this automatically via rolling updates.
+    State assumptions and constraints first (scale, RTO/RPO, blast radius, cost), then outline the design.
+    
+    Walk through the Docker components you would use, why each is chosen, and the trade-offs you rejected (for example complexity versus resilience).
+    
+    Explain rollout/rollback and how you would prove the design works (tests, canary, dashboards).
 
-**50. How can you integrate Jenkins with other tools like Git, Maven, or Docker?**
+**42. How do you get logs from docker level?**
 
 ??? success "Reveal answer"
-    Through plugins -- the Git plugin to pull code from a repository, the Maven plugin for building Java projects, and the
-    Docker plugin for building and deploying containers, all configured within a job or pipeline.
+    State assumptions and constraints first (scale, RTO/RPO, blast radius, cost), then outline the design.
+    
+    Walk through the Docker components you would use, why each is chosen, and the trade-offs you rejected (for example complexity versus resilience).
+    
+    Explain rollout/rollback and how you would prove the design works (tests, canary, dashboards).
 
-## Real interview prompts
+**43. How do you check the integrity of a Docker image or file?**
 
-Additional questions reported from real DevOps / SRE interviews. Company names are omitted — practise these out loud without notes.
+??? success "Reveal answer"
+    State assumptions and constraints first (scale, RTO/RPO, blast radius, cost), then outline the design.
+    
+    Walk through the Docker components you would use, why each is chosen, and the trade-offs you rejected (for example complexity versus resilience).
+    
+    Explain rollout/rollback and how you would prove the design works (tests, canary, dashboards).
 
-- Explain Docker layer caching. During a Docker build, if layers 1–10 are already cached and you modify Layer 5, what happens to Layers 6–10? Will Docker reuse the cache or rebuild them? Explain why?
-- Are you aware of security scanning tools? How do you scan Docker images—both during build and at the registry level? Are you using any extensions or tools for image scanning?
-- How about your experience developing CI/CD pipeline and utilizing tools such as Docker, Grafana and Prometheous. Share a particular project where these skills were critical?
-- You are unable to push docker image to dockerhub due to access issue. What are the sources where you can push your docker image other than dockerhub?
-- Why does a container sometimes exit immediately even though the application works perfectly in local testing? Give 3 real production causes?
-- Recommended tools for CI/CD, artifact storage, vulnerability scanning, and container registry in a hybrid (on-prem + Azure) setup?
-- How do you pass environment variables during Docker build commands? What services do you use for storing Docker images?
-- If you have 10 layers in a Dockerfile and layer 6 fails, after fixing it, where will the rebuild start from and why?
-- in ur projects how many containers u ran? can u give me the use case where can run 4-5 containers in a pod?
-- Multi stage docker build. In which scenarios it would be useful. Is is suitable for compile based language?
-- [ ] How do you design and manage a containerized environment to ensure scalability and high availability?
-- If a Docker image becomes very large with many layers, what steps would you take to reduce its size?
-- Write the structure for building and pushing a Docker image for an application in GitHub Actions?
-- How to write a multistage Dockerfile for a Node.js app — removing secrets and unnecessary layers?
-- What are the stages in a Docker image build? Why do we use ENTRYPOINT and CMD instructions?
-- Can you explain Docker Compose and how it helps in multi-container application deployments?
-- What wil happen if the docker image has port 8080 and container/application has some port?
-- What is Docker and how do you use in your project, Any docker file you have written?
-- Jenkins is failing to push a Docker image to the registry. How do you troubleshoot?
-- What is the role of container runtime and which runtime do you use and why?
-- Docker cmd and entrypoint difference, how to configure sonarqube with azure?
-- Docker containers stopped suddenly after starting, how do you troubleshoot?
-- If Docker containers are consuming too much disk space, how do you fix it?
-- Which network will be used to isolate a communication b/w two containers?
-- What is a multi-stage Docker build? How does it help reduce image size?
-- Do you use any tool for Docker image layer caching? If yes, which one?
-- How were you authenticating Jenkins to push docker image to registery?
-- I want pass a value while building a docker image how can it be done?
-- How do you manage and version Docker images stored in Amazon ECR?
-- Which container registry do you use for storing Docker images?
+**44. How do you configure a pipeline with AWS or Docker?**
+
+??? success "Reveal answer"
+    State assumptions and constraints first (scale, RTO/RPO, blast radius, cost), then outline the design.
+    
+    Walk through the Docker components you would use, why each is chosen, and the trade-offs you rejected (for example complexity versus resilience).
+    
+    Explain rollout/rollback and how you would prove the design works (tests, canary, dashboards).
+
+**45. If Docker containers are consuming too much disk space, how do you fix it?**
+
+??? success "Reveal answer"
+    State assumptions and constraints first (scale, RTO/RPO, blast radius, cost), then outline the design.
+    
+    Walk through the Docker components you would use, why each is chosen, and the trade-offs you rejected (for example complexity versus resilience).
+    
+    Explain rollout/rollback and how you would prove the design works (tests, canary, dashboards).
+
+**46. How do you provide security in docker?**
+
+??? success "Reveal answer"
+    State assumptions and constraints first (scale, RTO/RPO, blast radius, cost), then outline the design.
+    
+    Walk through the Docker components you would use, why each is chosen, and the trade-offs you rejected (for example complexity versus resilience).
+    
+    Explain rollout/rollback and how you would prove the design works (tests, canary, dashboards).
+
+**47. Are you aware of security scanning tools? How do you scan Docker images—both during build and at the registry level? Are you using any extensions or tools for image scanning?**
+
+??? success "Reveal answer"
+    State assumptions and constraints first (scale, RTO/RPO, blast radius, cost), then outline the design.
+    
+    Walk through the Docker components you would use, why each is chosen, and the trade-offs you rejected (for example complexity versus resilience).
+    
+    Explain rollout/rollback and how you would prove the design works (tests, canary, dashboards).
+
+**48. How do you pass environment variables during Docker build commands? What services do you use for storing Docker images?**
+
+??? success "Reveal answer"
+    State assumptions and constraints first (scale, RTO/RPO, blast radius, cost), then outline the design.
+    
+    Walk through the Docker components you would use, why each is chosen, and the trade-offs you rejected (for example complexity versus resilience).
+    
+    Explain rollout/rollback and how you would prove the design works (tests, canary, dashboards).
+
+**49. How do you manage and version Docker images stored in Amazon ECR?**
+
+??? success "Reveal answer"
+    State assumptions and constraints first (scale, RTO/RPO, blast radius, cost), then outline the design.
+    
+    Walk through the Docker components you would use, why each is chosen, and the trade-offs you rejected (for example complexity versus resilience).
+    
+    Explain rollout/rollback and how you would prove the design works (tests, canary, dashboards).
+
+**50. Multi stage docker build. In which scenarios it would be useful. Is is suitable for compile based language?**
+
+??? success "Reveal answer"
+    Answer directly for Docker: definition or decision first, then a short example.
+    
+    Mention one trade-off or failure mode, and end with the verification step an interviewer expects (command, metric, or review checklist).
 
 ## Related
 

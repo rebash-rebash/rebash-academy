@@ -1,6 +1,6 @@
 ---
 title: "Monitoring & Observability Interview Preparation"
-description: "65 curated Monitoring & Observability interview prompts — model answers plus real interview questions collected across companies (deduplicated by topic)."
+description: "40 curated Monitoring & Observability interview questions with model answers — deduplicated from DevOps / SRE sources and edited for clear practise."
 difficulty: intermediate
 estimated_time: "45–90 min"
 author: Shaik Basha
@@ -17,7 +17,8 @@ comments: false
 # Monitoring & Observability Interview Preparation
 
 Curated from multiple DevOps interview sources, **deduplicated**, and edited for REBASH Academy.
-Answer out loud first, then reveal the model answer. Prefer judgement and verification over memorised lists.
+Every question includes a model answer. Answer out loud first, then reveal it.
+Prefer judgement and verification over memorised lists.
 
 !!! tip "How to practise"
     1. Answer in two minutes without notes
@@ -54,39 +55,7 @@ Answer out loud first, then reveal the model answer. Prefer judgement and verifi
     http_request_duration_seconds_bucket{le="0.1"} 9800 
     http_request_duration_seconds_bucket{le="0.5"} 14900…
 
-**2. Explain the ELK Stack architecture. What does each component do?**
-
-??? success "Reveal answer"
-    The ELK Stack components: 
-    Application Logs 
-     ↓ 
-    [Filebeat / Fluentd] ← lightweight log shipper on each server/pod 
-     ↓ 
-    [Logstash] ← parse, transform, enrich logs (optional but 
-    powerful) 
-     ↓ 
-    [Elasticsearch] ← store, index, and search logs at scale 
-     ↓ 
-    [Kibana] ← visualize, search, and create dashboards 
-    Elasticsearch: A distributed search and analytics engine built on Apache Lucene. It stores data as 
-    JSON documents and provides near-real-time full-text search. Key concepts: 
-    • 
-    Index — equivalent to a database table (e.g., logs-production-2026.03.24) 
-    
-     
-    • 
-    Document — a single log entry stored as JSON 
-    • 
-    Shard — an index is divided into shards, distributed across nodes for scalability 
-    • 
-    Replica — a copy of a shard for high availability 
-    Logstash: A data processing pipeline. Takes data from various inputs (Beats, Kafka, syslog), 
-    applies filters (grok parsing, timestamp extraction, geolocation lookup), and outputs to 
-    Elasticsearch or elsewhere. 
-    Kibana: The visualization layer. Provides Discover (search logs), Visualize (charts), Dashboard 
-    (combine…
-
-**3. Can you explain the ELK stack and how you've used it?**
+**2. Can you explain the ELK stack and how you've used it?**
 
 ??? success "Reveal answer"
     Elasticsearch stores and searches large volumes of log data, Logstash collects and processes logs from different
@@ -94,24 +63,72 @@ Answer out loud first, then reveal the model answer. Prefer judgement and verifi
     I've used it to aggregate logs across microservices, filtering and formatting them in Logstash, then building Kibana
     dashboards to monitor error rates, latency, and overall service health.
 
-**4. What is a ServiceMonitor?**
+**3. What are the observibility needed for app?**
 
 ??? success "Reveal answer"
-    A CRD used by the Prometheus Operator to define how to scrape a Service. Replaces manually 
-    editing prometheus.yml. 
-    apiVersion: monitoring.coreos.com/v1 
-    kind: ServiceMonitor 
-    spec: 
-     selector: 
-     matchLabels: 
-     app: my-api 
-     endpoints: 
+    Monitoring, Alerting, Logging, Remediation, PD,.
     
-     
-     - port: metrics 
-     interval: 30s
+    Start with a precise definition in the context of Monitoring, then say what problem it solves.
+    
+    Give one concrete production example, contrast it with the closest alternative, and name a failure mode teams hit when they misuse it.
+    
+    Close with how you would verify it in a real environment (command, console check, or metric).
 
-**5. What is Logstash Grok filter?**
+**4. what is nagios , how to integerate jenknins in nagios?**
+
+??? success "Reveal answer"
+    Start with a precise definition in the context of Monitoring, then say what problem it solves.
+    
+    Give one concrete production example, contrast it with the closest alternative, and name a failure mode teams hit when they misuse it.
+    
+    Close with how you would verify it in a real environment (command, console check, or metric).
+
+**5. What is Prometheus, Grafana, Loki?**
+
+??? success "Reveal answer"
+    Start with a precise definition in the context of Monitoring, then say what problem it solves.
+    
+    Give one concrete production example, contrast it with the closest alternative, and name a failure mode teams hit when they misuse it.
+    
+    Close with how you would verify it in a real environment (command, console check, or metric).
+
+**6. What are data sources for Grafana, Kibana?**
+
+??? success "Reveal answer"
+    Start with a precise definition in the context of Monitoring, then say what problem it solves.
+    
+    Give one concrete production example, contrast it with the closest alternative, and name a failure mode teams hit when they misuse it.
+    
+    Close with how you would verify it in a real environment (command, console check, or metric).
+
+**7. What are indices, index in Kibana?**
+
+??? success "Reveal answer"
+    Start with a precise definition in the context of Monitoring, then say what problem it solves.
+    
+    Give one concrete production example, contrast it with the closest alternative, and name a failure mode teams hit when they misuse it.
+    
+    Close with how you would verify it in a real environment (command, console check, or metric).
+
+**8. What are the alerts you setup on graffana?**
+
+??? success "Reveal answer"
+    Start with a precise definition in the context of Monitoring, then say what problem it solves.
+    
+    Give one concrete production example, contrast it with the closest alternative, and name a failure mode teams hit when they misuse it.
+    
+    Close with how you would verify it in a real environment (command, console check, or metric).
+
+**9. Difference between observality and monitoring?**
+
+??? success "Reveal answer"
+    Start with a precise definition in the context of Monitoring, then say what problem it solves.
+    
+    Give one concrete production example, contrast it with the closest alternative, and name a failure mode teams hit when they misuse it.
+    
+    Close with how you would verify it in a real environment (command, console check, or metric).
+
+**10. What is Logstash Grok filter?**
 
 ??? success "Reveal answer"
     A pattern-matching filter that parses unstructured log lines into structured fields using 
@@ -123,186 +140,16 @@ Answer out loud first, then reveal the model answer. Prefer judgement and verifi
     %{GREEDYDATA:msg}" } 
     }
 
-**6. What is the difference between Logstash and Fluentd?**
+**11. What is the difference between Logstash and Fluentd?**
 
 ??? success "Reveal answer"
     Logstash: JVM-based, rich plugin ecosystem, higher resource usage. Fluentd: written in Ruby/C, 
     lower memory footprint, better for Kubernetes (Fluentbit is even lighter). Both support multiple 
     inputs, filters, and outputs.
 
-**7. What is New Relic?**
-
-??? success "Reveal answer"
-    An observability platform offering APM, distributed tracing, infrastructure monitoring, and 
-    synthetic monitoring as a SaaS solution. Strong .NET and Java monitoring capabilities. 
-     
-     
-    
-     
-    ADDITIONAL TOOLS (20 Questions)
-
-**8. What is Prometheus recording rules?**
-
-??? success "Reveal answer"
-    Pre-computes expensive PromQL expressions and saves results as new metrics. Speeds up 
-    dashboard loading and reduces query load. 
-    - record: job:http_requests:rate5m 
-     expr: sum by (job) (rate(http_requests_total[5m]))
-
-**9. What is predict_linear() in PromQL?**
-
-??? success "Reveal answer"
-    Predicts the future value of a metric using linear regression. 
-    predict_linear(node_filesystem_free_bytes[6h], 24 * 3600) # Predict disk 
-    space in 24 hours 
-    Used in alerts: "disk will be full in less than 4 hours."
-
-**10. What is synthetic monitoring?**
-
-??? success "Reveal answer"
-    Proactive monitoring using scripted user journeys to test application functionality from external 
-    locations. Detects issues before real users encounter them. Tools: Grafana k6 Cloud, Pingdom, 
-    Datadog Synthetics.
-
-**11. Difference between for and while?**
-
-??? success "Reveal answer"
-    @ for & while
-    ~ Best when the number of ¥ Runs until a condition becomes
-    iterations is known false
-    ¥ Ideal for monitoring or polling
-    tasks
-    @ Beginner @ Frequently Asked
-    © ? How do you make a script executable?
-    @
-
-**12. What is Elasticsearch's _cat API?**
-
-??? success "Reveal answer"
-    A human-readable API for cluster monitoring. 
-    curl "localhost:9200/_cat/indices?v" # List all indices 
-    curl "localhost:9200/_cat/nodes?v" # Node status 
-    curl "localhost:9200/_cat/health?v" # Cluster health
-
-**13. What is Index Lifecycle Management (ILM) in Elasticsearch?**
-
-??? success "Reveal answer"
-    Automates the lifecycle of indices through phases: Hot (active writes), Warm (reduced resources), 
-    Cold (infrequent access), Frozen (compressed, searchable), Delete. Saves significant storage costs.
-
-**14. What is the Beats family of log shippers?**
-
-??? success "Reveal answer"
-    Lightweight data shippers: Filebeat (logs), Metricbeat (system metrics), Packetbeat (network data), 
-    Auditbeat (audit data), Heartbeat (uptime monitoring). Written in Go, minimal resource footprint.
-
-**15. What is log correlation in ELK?**
-
-??? success "Reveal answer"
-    Linking logs, metrics, and traces using a common trace ID. When a request generates an error, 
-    you can jump from Kibana (logs) to Grafana (metrics) to Jaeger (traces) using the same 
-    correlation ID.
-
-**16. What are the three pillars of observability?**
-
-??? success "Reveal answer"
-    Metrics: numeric measurements over time (CPU, request rate, error rate). Logs: event records 
-    with context (structured JSON logs). Traces: end-to-end journey of a request through multiple 
-    services.
-
-**17. What is the difference between monitoring and observability?**
-
-??? success "Reveal answer"
-    Monitoring tells you when something is wrong (dashboards, alerts). Observability tells you why — 
-    by exploring metrics, logs, and traces together. Observability requires no pre-defined questions.
-
-**18. What is the Prometheus Operator?**
-
-??? success "Reveal answer"
-    A Kubernetes operator that manages Prometheus instances using 
-    CRDs: Prometheus, ServiceMonitor, PodMonitor, PrometheusRule, AlertmanagerConfig. 
-    Installed via kube-prometheus-stack Helm chart.
-
-**19. What is Grafana's $__interval variable?**
-
-??? success "Reveal answer"
-    A built-in variable that Grafana calculates based on the dashboard time range and panel width. 
-    Used in rate() or increase() to automatically adjust the time window for the display resolution.
-
-**20. What is Elasticsearch refresh_interval?**
-
-??? success "Reveal answer"
-    How often Elasticsearch refreshes the index to make new documents searchable. Default: 1 
-    second. Setting it higher (e.g., 30s) during bulk indexing dramatically improves write throughput.
-
-**21. What is OpenTelemetry?**
-
-??? success "Reveal answer"
-    A CNCF project providing a standardized API, SDK, and tooling for collecting metrics, logs, and 
-    traces. Vendor-neutral — instrument once, send to any backend (Jaeger, Grafana, Datadog).
-
-**22. What is a Kibana Space?**
-
-??? success "Reveal answer"
-    A tenant-like isolation unit in Kibana. Each Space has its own dashboards, visualizations, and 
-    saved searches. Used to separate different teams or projects in a shared Kibana instance.
-
-**23. What is Datadog?**
-
-??? success "Reveal answer"
-    A comprehensive SaaS monitoring platform covering infrastructure metrics, APM, logs, synthetics, 
-    and security. All-in-one alternative to self-managed Prometheus + Grafana + ELK stacks.
-
-**24. What is Thanos?**
-
-??? success "Reveal answer"
-    A highly available Prometheus setup with long-term storage. Adds global query view across 
-    multiple Prometheus instances, unlimited retention via object storage (S3), and downsampling.
-
 ## Scenarios and troubleshooting
 
-**25. How do you set up a production-grade Grafana dashboard?**
-
-??? success "Reveal answer"
-    A Grafana dashboard is only as useful as the questions it answers. Production dashboards should 
-    give you the answer to "Is my service healthy right now?" within 5 seconds of opening it. 
-    The RED method (the gold standard for service dashboards): 
-    • 
-    Rate — how many requests per second is the service handling? 
-    • 
-    Errors — what fraction of requests are failing? 
-    • 
-    Duration — how long are requests taking? 
-    Dashboard as Code using Grafana's JSON model (provisioned via ConfigMap in 
-    Kubernetes): 
-    # grafana-dashboard-configmap.yaml 
-    apiVersion: v1 
-    kind: ConfigMap 
-    
-     
-    metadata: 
-     name: api-dashboard 
-     namespace: monitoring 
-     labels: 
-     grafana_dashboard: "1" # Grafana sidecar picks this up automatically 
-    data: 
-     api-dashboard.json: | 
-     { 
-     "title": "API Service - RED Dashboard", 
-     "uid": "api-service-red", 
-     "panels": [ 
-     { 
-     "title": "Request Rate (req/s)", 
-     "type": "stat", 
-     "gridPos": {"x": 0, "y": 0, "w": 6, "h": 4}, 
-     "targets": [{ 
-     "expr": "sum(rate(http_requests_total{job='api'}[5m]))", 
-     "legendFormat": "Requests/s" 
-     }], 
-     "fieldConfig": { 
-     "defaults": {…
-
-**26. Production is down. The error rate just jumped to 40%. Walk me through your incident response. Answer: This question tests your incident response instincts. The interviewer wants to see systematic thinking, not panic. The OODA loop for incidents: Observe → Orient → Decide → Act Minute 0-2: TRIAGE ├── Check monitoring dashboard (Grafana) — what metrics changed?**
+**12. Production is down. The error rate just jumped to 40%. Walk me through your incident response. Answer: This question tests your incident response instincts. The interviewer wants to see systematic thinking, not panic. The OODA loop for incidents: Observe → Orient → Decide → Act Minute 0-2: TRIAGE ├── Check monitoring dashboard (Grafana) — what metrics changed?**
 
 ??? success "Reveal answer"
     │ ├── Error rate jumped at 14:32 UTC 
@@ -329,31 +176,7 @@ Answer out loud first, then reveal the model answer. Prefer judgement and verifi
     ├── Check downstream dependencies 
     │ └── Are third-party API calls failing?…
 
-**27. How do you prevent similar incidents from happening again?**
-
-??? success "Reveal answer"
-    ° Improve monitoring & alerting. * Proactive approach
-    + Add automated checks and health validations. * Reliability mindset
-    + Implement better testing (staging, load, integration). * Architecture improvement
-    + Review architecture and remove single points of failure. * Learning feorm incidents
-    + Run regular chaos tests and DR drills. * Long-term thinking
-    5°) KEY TAKEAWAY: Incidents are not failures, poor response is.
-    | Respond fast, communicate well, learn always, and build for resilience. VERIQTA | © @verigta_
-    
-    cee VERIQTA
-    (Q) Instagram: @verigta_
-    2 = iy
-    vn > DEPLOYMENT & CI/CD FAILURES :
-    “Zatiks SLY TOPICS COVERED: «© ak |
-    |v Failed deployments v Rollbacks v Pipeline failures Vv Release strategies |
-    ® Q:A deployment was triggered and marked successful, but users are facing errors.
-    How do you investigate and fix it?
-    ANS: + Check application logs, metrics, and error rates. 
-    + Compare the new release with the previous stable version. * Structured troubleshooting
-    + Validate configs, environment variables, secrets, feature flags. * Fast but safe decision making
-    +…
-
-**28. How do you recover a failed service in production?**
+**13. How do you recover a failed service in production?**
 
 ??? success "Reveal answer"
     * Understand the failure scope and impact. * Quick recovery mindset
@@ -363,7 +186,7 @@ Answer out loud first, then reveal the model answer. Prefer judgement and verifi
     | + Monitor closely after recovery to ensure stability. * Stability focus
     GB)
 
-**29. Your production application is completely down. | Users cannot access the service. What do you do first?**
+**14. Your production application is completely down. | Users cannot access the service. What do you do first?**
 
 ??? success "Reveal answer"
     * Check monitoring & alerts (Grafana,CloudWatch,Datadog). * Calm and structured approach
@@ -373,7 +196,7 @@ Answer out loud first, then reveal the model answer. Prefer judgement and verifi
     | + Start incident timeline and notify the on-call / incident channel. * Incident ownership mindset
     | @
 
-**30. How would you handle logging in Linux?**
+**15. How would you handle logging in Linux?**
 
 ??? success "Reveal answer"
     System logs live in /var/log/, managed with rsyslog or syslog for centralized logging, journalctl for viewing and filtering
@@ -382,39 +205,34 @@ Answer out loud first, then reveal the model answer. Prefer judgement and verifi
     
     The Complete DevOps Engineer Interview Guide (Exhaustive) — 2026
 
-## Practice questions
-
-**31. How do you write PromQL queries for practical alerting scenarios?**
+**16. how the alert is created with which metrics when cpu and memory goes high in vm, what is action group, how do you create an alert explain step by step etc, some basic troubleshooting kql queries in log analytics workspace - check on those things, any automation done with scripting etc for monitoring?**
 
 ??? success "Reveal answer"
-    PromQL (Prometheus Query Language) is a functional query language for time-series data. 
-    Writing effective PromQL is a core skill — it powers both Grafana dashboards and Alertmanager 
-    rules. 
-    The four key PromQL operations: 
-    1. Instant vector selectors: 
+    Use a structured triage: confirm blast radius, check recent changes, then gather evidence (logs, metrics, events) before changing anything.
     
-     
-    # Current value of a metric with label filter 
-    http_requests_total{job="api-server", status="500"} 
-    # All HTTP 5xx errors across all jobs 
-    http_requests_total{status=~"5.."} # =~ means regex match 
-    2. Range vector + rate() — the most used pattern: 
-    # Request rate over the last 5 minutes (requests per second) 
-    rate(http_requests_total[5m]) 
-    # Error rate per second for the API 
-    rate(http_requests_total{job="api", status=~"5.."}[5m]) 
-    3. Aggregation: 
-    # Total request rate across all instances 
-    sum(rate(http_requests_total[5m])) 
-    # Request rate per endpoint 
-    sum by (endpoint) (rate(http_requests_total[5m])) 
-    # P99 latency across all pods 
-    histogram_quantile(0.99, sum by (le) 
-    (rate(http_request_duration_seconds_bucket[5m]))) 
-    4. Arithmetic and comparison: 
-    # Error ratio (errors / total requests)…
+    For Monitoring, name the first three checks you would run, what each result tells you, and when you would escalate versus roll back.
+    
+    Finish with prevention: monitoring/alert, guardrail, or automation that would catch this earlier.
 
-**32. How do you implement distributed tracing in a microservices architecture?**
+**17. How do you set up monitoring and observability for ML models in production?**
+
+??? success "Reveal answer"
+    State assumptions and constraints first (scale, RTO/RPO, blast radius, cost), then outline the design.
+    
+    Walk through the Monitoring components you would use, why each is chosen, and the trade-offs you rejected (for example complexity versus resilience).
+    
+    Explain rollout/rollback and how you would prove the design works (tests, canary, dashboards).
+
+**18. Question : What is your experience with alerts, logging, and incident/problem resolution?**
+
+??? success "Reveal answer"
+    Answer directly for Monitoring: definition or decision first, then a short example.
+    
+    Mention one trade-off or failure mode, and end with the verification step an interviewer expects (command, metric, or review checklist).
+
+## Practice questions
+
+**19. How do you implement distributed tracing in a microservices architecture?**
 
 ??? success "Reveal answer"
     Answer: 
@@ -438,73 +256,7 @@ Answer out loud first, then reveal the model answer. Prefer judgement and verifi
     conventions'); 
     const…
 
-**33. You have high error rates but logs show nothing useful. a = : Fis _—?**
-
-??? success "Reveal answer"
-    + Improve logging: add structured logs with correlation/nequest IDs. # Logging best practices knowledge | o Structured h
-    - + Increase log level temporarily (with. caution). Structured logging awareness lisp Coadiectiedl
-    a. + Check centralized lage (ELK/Leki/Clnudbatch/Datades) # Correlation & traceability Ny /emaiises |
-    + Search by trace ID, user ID, or timestamp. * Systematic troubleshooting ier
-    + Add contextual fields: service, env, version, endpoint, latency. * Balance between signal & noise \
-    - + Reproduce in lower env and compare lags. :
-    OG: thaiss prea tare tery wore ener re? 
-    9 ANS: - Get the trace ID from logs / error response / APM. # Understanding of distributed tracing — °V- 120ms 80ms 450ne
-    + Open trace in tool (Jaeger, Zipkin, Datadog, AWS X-Ray). * Ability to read traces A-a-oea-§
-    a pare latency. Se, : Ld
-    -~@ + Check span details: DB calls, external APIs, queues. ty We —,
-    + Validate with logs & metrics to coffirm the bottleneck.
-    logs 3
-    -—3 @
-
-**34. An alert fired at 3AM. What do you check first?**
-
-??? success "Reveal answer"
-    + Check clert details: metric, threshold, duration. # Mert triage process |B) Summary
-    ~® + Check dashboard linked to the alert. 6 fisdbince aback tat [4] Dashboard
-    + Validate if it's a real issue or a false positive. 3 ee | FE Recent
-    + Check recent deployments / changes. aie ars aragaa | s
-    =) + Check related clerts (eorrelation): * Communication mindset | LR Related Alerts
-    ad as woe SE rc nce a forall! INTERVIEWER LOOKS. FOR: © GOOD ALERT Is:
-    -2 py togharron rth yi. Ale a p iarlgs i,
-    Beet ead ote, acl + RAURD soemon | Baler
-    -® + Avoid noisy clerts: use rate of change, anomaly detection. =. Aeteciog) aioe hee)
-    + Add runbook links and clear descriptions. * Clear ownership & runbooks | Y Oued
-    9 + Review & tune alerts regularly. * Continuous improvement. (7 Documented
-    @©a oe a fet ort ereviite pereiee INTERVIEWER LOOKS. FOR: i LOG MANAGEMENT FLOW
-    “8 ANS: im Car iA * Cost awareness
-    ! + Implement log retention & Lifeeycle policies. ae
-    CA tat oabtouln clr oes * Logging strategy 1-y-B-
-    - + Filter & drop unnecessary logs ot source. # Retention & governance App Collector |…
-
-**35. How do you optimize a system for better performance?**
-
-??? success "Reveal answer"
-    + Optimize code and algorithms. * Optimisation techniques
-    + Add caching (Redis, CDN, in-memory). * Trade-off understanding . ;
-    
-    - + Optimize database (indexes, query tuning). si Caching'® angus patterns se =] 4 a &3
-    - + Scale horizontally and use load balancers. * Continuous monitoring ‘ 4
-    a = | f " PERFORMANCE ENGINEERING MINDSET i VERIQTA
-    | -—G)> Performance is not a one-time task. i] | «all Q & rail ran ——
-    
-    -9 | It's @ continuous cycle of: Measure > | i ‘ Ss Bree ae Gi ;
-    
-    : ;
-    — VERIQTA See re eae we
-    = , | lustagrant Querata { TOPICS COVERED: |
-    . Z
-    es = v Alerts
-    -e | 14) - MONITORING & INCIDENT MANAGEMENT - a
-    Pil oz} % Sv Oneal scenarios
-    1) Ne ,
-    Da tae de ue design ftv, ales? INTERVIEWER LOOKS. FOR: ( GQ0D_ALERT DESIGN EXAMPLE }
-    | ANS: . Alert on symptoms (user impact), not on infrastructure. Alerting best practices
-    2 . ss -e db
-    nl | + Use multiple conditions / multi-window alerts. # Understanding of impact | Triggae Threshold Oumar Rabo Nay
-    + Add context: runbook link, dashboard, owner. # Clarity and ownership a sa = rae
-    sl + Review and tune alerts regularly.…
-
-**36. How do you set up alerts for monitoring systems?**
+**20. How do you set up alerts for monitoring systems?**
 
 ??? success "Reveal answer"
     Prometheus rules define thresholds -- CPU usage above 80%, for example -- routed through Alertmanager to the
@@ -512,14 +264,104 @@ Answer out loud first, then reveal the model answer. Prefer judgement and verifi
     things like failed transactions, Kubernetes readiness/liveness probes to catch unhealthy services, and Grafana's own
     alerting for anything visualized there.
 
-**37. What tools have you used for monitoring?**
+**21. How do you receive alerts in your project and how is it setup?**
+
+??? success "Reveal answer"
+    State assumptions and constraints first (scale, RTO/RPO, blast radius, cost), then outline the design.
+    
+    Walk through the Monitoring components you would use, why each is chosen, and the trade-offs you rejected (for example complexity versus resilience).
+    
+    Explain rollout/rollback and how you would prove the design works (tests, canary, dashboards).
+
+**22. How do you handle disk, CPU alerts?**
+
+??? success "Reveal answer"
+    State assumptions and constraints first (scale, RTO/RPO, blast radius, cost), then outline the design.
+    
+    Walk through the Monitoring components you would use, why each is chosen, and the trade-offs you rejected (for example complexity versus resilience).
+    
+    Explain rollout/rollback and how you would prove the design works (tests, canary, dashboards).
+
+**23. How do you setup Prometheus dashboard?**
+
+??? success "Reveal answer"
+    State assumptions and constraints first (scale, RTO/RPO, blast radius, cost), then outline the design.
+    
+    Walk through the Monitoring components you would use, why each is chosen, and the trade-offs you rejected (for example complexity versus resilience).
+    
+    Explain rollout/rollback and how you would prove the design works (tests, canary, dashboards).
+
+**24. How do you configure a Grafana dashboard?**
+
+??? success "Reveal answer"
+    State assumptions and constraints first (scale, RTO/RPO, blast radius, cost), then outline the design.
+    
+    Walk through the Monitoring components you would use, why each is chosen, and the trade-offs you rejected (for example complexity versus resilience).
+    
+    Explain rollout/rollback and how you would prove the design works (tests, canary, dashboards).
+
+**25. What proactive monitoring solutions have you implemented in your projects?**
+
+??? success "Reveal answer"
+    State assumptions and constraints first (scale, RTO/RPO, blast radius, cost), then outline the design.
+    
+    Walk through the Monitoring components you would use, why each is chosen, and the trade-offs you rejected (for example complexity versus resilience).
+    
+    Explain rollout/rollback and how you would prove the design works (tests, canary, dashboards).
+
+**26. How do you perform infrastructure cost optimization using monitoring and observability tools?**
+
+??? success "Reveal answer"
+    State assumptions and constraints first (scale, RTO/RPO, blast radius, cost), then outline the design.
+    
+    Walk through the Monitoring components you would use, why each is chosen, and the trade-offs you rejected (for example complexity versus resilience).
+    
+    Explain rollout/rollback and how you would prove the design works (tests, canary, dashboards).
+
+**27. How do you configure Prometheus and Grafana for monitoring?**
+
+??? success "Reveal answer"
+    State assumptions and constraints first (scale, RTO/RPO, blast radius, cost), then outline the design.
+    
+    Walk through the Monitoring components you would use, why each is chosen, and the trade-offs you rejected (for example complexity versus resilience).
+    
+    Explain rollout/rollback and how you would prove the design works (tests, canary, dashboards).
+
+**28. How will you monitor the cluster through Prometheus?**
+
+??? success "Reveal answer"
+    State assumptions and constraints first (scale, RTO/RPO, blast radius, cost), then outline the design.
+    
+    Walk through the Monitoring components you would use, why each is chosen, and the trade-offs you rejected (for example complexity versus resilience).
+    
+    Explain rollout/rollback and how you would prove the design works (tests, canary, dashboards).
+
+**29. How will you create the Custom alerts, tell me the procedure?**
+
+??? success "Reveal answer"
+    State assumptions and constraints first (scale, RTO/RPO, blast radius, cost), then outline the design.
+    
+    Walk through the Monitoring components you would use, why each is chosen, and the trade-offs you rejected (for example complexity versus resilience).
+    
+    Explain rollout/rollback and how you would prove the design works (tests, canary, dashboards).
+
+**30. diff between monitoring and observality?**
+
+??? success "Reveal answer"
+    Start with a precise definition in the context of Monitoring, then say what problem it solves.
+    
+    Give one concrete production example, contrast it with the closest alternative, and name a failure mode teams hit when they misuse it.
+    
+    Close with how you would verify it in a real environment (command, console check, or metric).
+
+**31. What tools have you used for monitoring?**
 
 ??? success "Reveal answer"
     Prometheus for time-series metric collection and PromQL querying, Grafana for visualizing those metrics through
     dashboards, Alertmanager paired with Prometheus for routing alerts to Slack or email, the ELK stack for log
     aggregation and analysis, and the Prometheus Operator specifically for Kubernetes cluster monitoring.
 
-**38. Your Prometheus alerts are firing constantly (alert fatigue). How do you fix it?**
+**32. Your Prometheus alerts are firing constantly (alert fatigue). How do you fix it?**
 
 ??? success "Reveal answer"
     1. Audit alerts — remove ones nobody acts on. 2) Increase for: duration on flapping alerts. 
@@ -527,7 +369,7 @@ Answer out loud first, then reveal the model answer. Prefer judgement and verifi
     PagerDuty. 6) Add runbook links to every alert. Goal: every alert should be actionable and 
     have a documented response.
 
-**39. How do you silence an alert in Alertmanager?**
+**33. How do you silence an alert in Alertmanager?**
 
 ??? success "Reveal answer"
     Create a Silence with matchers for the alert labels. The silence inhibits notifications for a defined 
@@ -535,41 +377,53 @@ Answer out loud first, then reveal the model answer. Prefer judgement and verifi
     amtool silence add alertname="HighCPU" instance="web-01" --duration=2h --
     comment="Planned maintenance"
 
-**40. How do you use Python for log monitoring in DevOps?**
+**34. Create a script to monitor the disk usage of a server. If usage exceeds 80%, log the details to a file and send an alert email?**
+
+??? success "Reveal answer"
+    Outline the solution first, then give a minimal correct example (commands or config sketch).
+    
+    Call out the production hardening you would add next (pin versions, least privilege, secrets, health checks) and how you would validate the result.
+
+**35. How do you use Python for log monitoring in DevOps?**
 
 ??? success "Reveal answer"
     Reading and filtering log files directly in Python, or integrating with a stack like ELK for larger scale, lets me search
     for patterns like "ERROR" and trigger alerts through Slack or email notifications when specific patterns show up.
 
-## Real interview prompts
+**36. How can AI assist us in cloud infrastructure monitoring?**
 
-Additional questions reported from real DevOps / SRE interviews. Company names are omitted — practise these out loud without notes.
+??? success "Reveal answer"
+    Answer directly for Monitoring: definition or decision first, then a short example.
+    
+    Mention one trade-off or failure mode, and end with the verification step an interviewer expects (command, metric, or review checklist).
 
-- how the alert is created with which metrics when cpu and memory goes high in vm, what is action group, how do you create an alert explain step by step etc, some basic troubleshooting kql queries in log analytics workspace - check on those things, any automation done with scripting etc for monitoring?
-- Question : Have you used it in your day-to-day basis of dashboarding and alerting like based on the principles of SRE golden signals to set up alerts and dashboards?
-- Question : Can you, talked about the dashboards of observability? Which are the observability framework tools That you're currently using?
-- Create a script to monitor the disk usage of a server. If usage exceeds 80%, log the details to a file and send an alert email?
-- Question : In Observability there is a concept of SLO based alerting. So have you configured that in your project?
-- How do you perform infrastructure cost optimization using monitoring and observability tools?
-- What kind of observability tools have you used, and what metrics have you been monitoring?
-- Question : What is your experience with alerts, logging, and incident/problem resolution?
-- How do you set up monitoring and observability for ML models in production?
-- What proactive monitoring solutions have you implemented in your projects?
-- What monitoring agents have you installed in your environment?
-- How do you receive alerts in your project and how is it setup?
-- How will you create the Custom alerts, tell me the procedure?
-- How do you configure Prometheus and Grafana for monitoring?
-- What dashboards and alerts have you configured in Grafana?
-- How can AI assist us in cloud infrastructure monitoring?
-- what is nagios , how to integerate jenknins in nagios?
-- How will you monitor the cluster through Prometheus?
-- Explain installation of prometheus and grafana?
-- Difference between observality and monitoring?
-- What metrics do you monitor using Prometheus?
-- What are data sources for Grafana, Kibana?
-- What are the alerts you setup on graffana?
-- How do you configure a Grafana dashboard?
-- How to integrate grafana with prometheus?
+**37. How logs are segregated in ELK?**
+
+??? success "Reveal answer"
+    Answer directly for Monitoring: definition or decision first, then a short example.
+    
+    Mention one trade-off or failure mode, and end with the verification step an interviewer expects (command, metric, or review checklist).
+
+**38. How does Prometheus collect metrics?**
+
+??? success "Reveal answer"
+    Answer directly for Monitoring: definition or decision first, then a short example.
+    
+    Mention one trade-off or failure mode, and end with the verification step an interviewer expects (command, metric, or review checklist).
+
+**39. What kind of observability tools have you used, and what metrics have you been monitoring?**
+
+??? success "Reveal answer"
+    Answer directly for Monitoring: definition or decision first, then a short example.
+    
+    Mention one trade-off or failure mode, and end with the verification step an interviewer expects (command, metric, or review checklist).
+
+**40. How to integrate grafana with prometheus?**
+
+??? success "Reveal answer"
+    Answer directly for Monitoring: definition or decision first, then a short example.
+    
+    Mention one trade-off or failure mode, and end with the verification step an interviewer expects (command, metric, or review checklist).
 
 ## Related
 

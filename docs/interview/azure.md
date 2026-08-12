@@ -1,6 +1,6 @@
 ---
 title: "Azure Interview Preparation"
-description: "60 curated Azure interview prompts — model answers plus real interview questions collected across companies (deduplicated by topic)."
+description: "35 curated Azure interview questions with model answers — deduplicated from DevOps / SRE sources and edited for clear practise."
 difficulty: intermediate
 estimated_time: "45–90 min"
 author: Shaik Basha
@@ -17,7 +17,8 @@ comments: false
 # Azure Interview Preparation
 
 Curated from multiple DevOps interview sources, **deduplicated**, and edited for REBASH Academy.
-Answer out loud first, then reveal the model answer. Prefer judgement and verification over memorised lists.
+Every question includes a model answer. Answer out loud first, then reveal it.
+Prefer judgement and verification over memorised lists.
 
 !!! tip "How to practise"
     1. Answer in two minutes without notes
@@ -27,42 +28,7 @@ Answer out loud first, then reveal the model answer. Prefer judgement and verifi
 
 ## Core concepts
 
-**1. What is Azure DevOps, and what are its main components?**
-
-??? success "Reveal answer"
-    Azure DevOps is a suite of development services that together cover the full software 
-    development lifecycle: 
-    Service 
-    Purpose 
-    Equivalent 
-    Azure Boards 
-    Agile project management, work items, sprints 
-    Jira 
-    Azure Repos 
-    Git repository hosting 
-    GitHub/GitLab 
-    Azure Pipelines 
-    CI/CD automation 
-    Jenkins/GitHub Actions 
-    Azure Artifacts 
-    Package registry (NuGet, npm, Maven, Docker) 
-    Nexus/JFrog Artifactory 
-    Azure Test Plans 
-    Manual and exploratory testing 
-    TestRail 
-    Azure Pipelines is the most commonly used component in DevOps interviews. It supports: 
-    • 
-    YAML-based pipelines (pipeline as code) 
-    • 
-    Classic pipelines (GUI-based, legacy) 
-    • 
-    Multi-stage pipelines 
-    • 
-    Environments with approval gates 
-    • 
-    Integration with GitHub, Bitbucket, and Azure Repos
-
-**2. What is the purpose of Azure Monitor, and how does it work with Azure DevOps?**
+**1. What is the purpose of Azure Monitor, and how does it work with Azure DevOps?**
 
 ??? success "Reveal answer"
     Azure Monitor provides visibility into application performance, infrastructure health, and usage metrics, and
@@ -75,7 +41,52 @@ Answer out loud first, then reveal the model answer. Prefer judgement and verifi
     7
     MONITORING & LOGGING
 
-**3. What is Infrastructure as Code (IaC) in Azure DevOps?**
+**2. what is the networking you are using in AKS?**
+
+??? success "Reveal answer"
+    Start with a precise definition in the context of Azure, then say what problem it solves.
+    
+    Give one concrete production example, contrast it with the closest alternative, and name a failure mode teams hit when they misuse it.
+    
+    Close with how you would verify it in a real environment (command, console check, or metric).
+
+**3. Difference between stakeholder and admin in azure devops?**
+
+??? success "Reveal answer"
+    Start with a precise definition in the context of Azure, then say what problem it solves.
+    
+    Give one concrete production example, contrast it with the closest alternative, and name a failure mode teams hit when they misuse it.
+    
+    Close with how you would verify it in a real environment (command, console check, or metric).
+
+**4. What is azure board, what are the things inside it?**
+
+??? success "Reveal answer"
+    Start with a precise definition in the context of Azure, then say what problem it solves.
+    
+    Give one concrete production example, contrast it with the closest alternative, and name a failure mode teams hit when they misuse it.
+    
+    Close with how you would verify it in a real environment (command, console check, or metric).
+
+**5. What are the different types of azure storage?**
+
+??? success "Reveal answer"
+    Start with a precise definition in the context of Azure, then say what problem it solves.
+    
+    Give one concrete production example, contrast it with the closest alternative, and name a failure mode teams hit when they misuse it.
+    
+    Close with how you would verify it in a real environment (command, console check, or metric).
+
+**6. What are the different types of subscriptions in azure?**
+
+??? success "Reveal answer"
+    Start with a precise definition in the context of Azure, then say what problem it solves.
+    
+    Give one concrete production example, contrast it with the closest alternative, and name a failure mode teams hit when they misuse it.
+    
+    Close with how you would verify it in a real environment (command, console check, or metric).
+
+**7. What is Infrastructure as Code (IaC) in Azure DevOps?**
 
 ??? success "Reveal answer"
     IaC in Azure DevOps means defining and provisioning Azure resources programmatically using ARM templates,
@@ -84,21 +95,14 @@ Answer out loud first, then reveal the model answer. Prefer judgement and verifi
     
     The Complete DevOps Engineer Interview Guide (Exhaustive) — 2026
 
-**4. What is Azure DevOps?**
-
-??? success "Reveal answer"
-    Azure DevOps is Microsoft's cloud-based suite covering the full software development lifecycle -- Azure Repos for
-    version control, Azure Pipelines for CI/CD, Azure Boards for project management, Azure Artifacts for package
-    management, and Azure Test Plans for testing, all integrated into one platform.
-
-**5. What is the significance of using Personal Access Tokens (PAT) in Azure DevOps?**
+**8. What is the significance of using Personal Access Tokens (PAT) in Azure DevOps?**
 
 ??? success "Reveal answer"
     PATs authenticate to Azure DevOps without a username and password, which is especially useful for scripting and
     automation. They can be scoped to specific permissions, so managing and securing them carefully -- narrow scope,
     reasonable expiration -- matters to avoid unauthorized access.
 
-**6. What is the difference between a hard link and a soft link (symlink)?**
+**9. What is the difference between a hard link and a soft link (symlink)?**
 
 ??? success "Reveal answer"
     A hard link shares the same inode as the original file, so the underlying data persists as long as any hard link to it still
@@ -106,50 +110,42 @@ Answer out loud first, then reveal the model answer. Prefer judgement and verifi
     
     The Complete DevOps Engineer Interview Guide (Exhaustive) — 2026
 
-**7. What are Azure DevOps Extensions, and how do you use them?**
+**10. What are Azure DevOps Extensions, and how do you use them?**
 
 ??? success "Reveal answer"
     Extensions add functionality to Azure DevOps -- integrating third-party tools or adding new features -- available
     through the Azure DevOps Marketplace. I install and configure them as needed, and they immediately become
     usable features within the existing Azure DevOps environment.
 
-**8. What is CI/CD, and how does Azure DevOps support it?**
+**11. What is CI/CD, and how does Azure DevOps support it?**
 
 ??? success "Reveal answer"
     CI automatically integrates and tests code changes, while CD automates releasing that code to production. Azure
     Pipelines implements both, letting me build workflows that compile, test, and deploy applications across
     environments with minimal manual intervention.
 
-**9. What is Azure ExpressRoute?**
-
-??? success "Reveal answer"
-    ExpressRoute provides a private, dedicated, high-bandwidth connection between on-prem infrastructure and Azure
-    that bypasses the public internet -- Azure's direct equivalent to AWS Direct Connect.
-    
-    The Complete DevOps Engineer Interview Guide (Exhaustive) — 2026
-
-**10. What are Azure DevOps Service Hooks?**
+**12. What are Azure DevOps Service Hooks?**
 
 ??? success "Reveal answer"
     Service Hooks integrate Azure DevOps with other services by triggering events on changes -- sending a Slack
     notification or triggering a build in Jenkins or GitHub, for example, whenever something like a pull request or
     completed build happens in Azure DevOps.
 
-**11. What is a Release Gate in Azure DevOps?**
+**13. What is a Release Gate in Azure DevOps?**
 
 ??? success "Reveal answer"
     A Release Gate is a condition that must be satisfied before a release proceeds to the next stage -- querying an
     external system, waiting for manual approval, checking a prior deployment's status -- ensuring releases meet specific
     criteria before continuing.
 
-**12. What are the key components of Azure DevOps?**
+**14. What are the key components of Azure DevOps?**
 
 ??? success "Reveal answer"
     Azure Boards for Kanban-style project tracking, Azure Repos for Git-based source control, Azure Pipelines for build
     and release CI/CD, Azure Test Plans for managing tests and defects, and Azure Artifacts for managing and sharing
     packages across projects.
 
-**13. What is the difference between Classic and YAML pipelines in Azure DevOps?**
+**15. What is the difference between Classic and YAML pipelines in Azure DevOps?**
 
 ??? success "Reveal answer"
     Classic pipelines are GUI-configured (legacy). YAML pipelines are code-based, stored in the 
@@ -161,27 +157,12 @@ Answer out loud first, then reveal the model answer. Prefer judgement and verifi
      
     Questions)
 
-**14. What is Azure Bastion?**
-
-??? success "Reveal answer"
-    Azure Bastion provides secure RDP and SSH access to VMs directly through the Azure portal without needing to
-    assign the VM a public IP at all, which meaningfully reduces the attack surface compared to opening RDP/SSH
-    directly to the internet.
-
-**15. What are the benefits of using Azure DevTest Labs?**
+**16. What are the benefits of using Azure DevTest Labs?**
 
 ??? success "Reveal answer"
     Quick environment setup for testing and development, cost management features to track and cap spending,
     reusable templates for consistent environments, and integration with Azure DevOps for automated deployments into
     those lab environments.
-
-**16. What is Azure DNS?**
-
-??? success "Reveal answer"
-    Azure DNS is Microsoft's managed domain hosting service, providing fast, highly available DNS resolution -- the
-    Azure equivalent of Route 53's hosted zone functionality.
-    
-    The Complete DevOps Engineer Interview Guide (Exhaustive) — 2026
 
 **17. What is Azure Monitor Network Insights?**
 
@@ -196,67 +177,21 @@ Answer out loud first, then reveal the model answer. Prefer judgement and verifi
     Approval Gates enforce manual sign-off before a stage proceeds, adding oversight so deployments are verified
     against specific criteria by relevant stakeholders, minimizing the risk of an unreviewed change reaching production.
 
-**19. What is a build artifact in Azure DevOps?**
+**19. What is Azure Container Registry (ACR), and how does it integrate with Azure DevOps?**
+
+??? success "Reveal answer"
+    ACR is a managed private Docker registry, and it integrates with Azure Pipelines so container images are built,
+    pushed, and pulled as part of CI/CD -- a pipeline typically publishes to ACR right after a successful build.
+
+**20. What is a build artifact in Azure DevOps?**
 
 ??? success "Reveal answer"
     A build artifact is a file or set of files produced by a build -- compiled binaries, packages, resources needed for
     deployment -- that Azure DevOps lets you publish and share across pipeline stages or between pipelines.
 
-**20. What is a Route Table in Azure?**
-
-??? success "Reveal answer"
-    Route tables define custom routing rules that control traffic flow within a VNet, letting me override Azure's default
-    system routes when traffic needs to go through a specific path, like a network virtual appliance.
-
-**21. What is an Application Gateway in Azure?**
-
-??? success "Reveal answer"
-    Application Gateway is a Layer 7 load balancer with built-in Web Application Firewall protection, handling
-    HTTP/HTTPS routing decisions based on URL path or host, similar in role to an AWS ALB with WAF attached.
-
-**22. What is a pipeline template in Azure DevOps?**
-
-??? success "Reveal answer"
-    A reusable YAML component referenced by other pipelines. Supports parameters for 
-    customization. 
-    - template: templates/docker-build.yml@templates-repo 
-     parameters: 
-     imageName: my-api 
-     dockerfile: Dockerfile
-
-**23. What is Azure Policy?**
-
-??? success "Reveal answer"
-    Enforces organizational standards across Azure resources. Policies can audit, deny, or remediate 
-    non-compliant resources. Example: require all resources to have tags, deny creation of non-
-    encrypted storage.
-
-**24. What is a Managed Identity in Azure?**
-
-??? success "Reveal answer"
-    An automatically managed identity in Azure AD for Azure resources (VMs, AKS pods, Functions). 
-    Eliminates the need for credentials — the resource authenticates to Key Vault and other services 
-    automatically.
-
-**25. What is a pipeline artifact in Azure DevOps?**
-
-??? success "Reveal answer"
-    Files produced by a pipeline stage that are published for download or use in subsequent 
-    stages/pipelines. 
-    - publish: $(Build.ArtifactStagingDirectory) 
-     artifact: drop 
-    - download: current 
-     artifact: drop
-
-**26. What is Azure Front Door?**
-
-??? success "Reveal answer"
-    Front Door is a global, application-layer load balancer and CDN combined, providing fast, secure routing to the
-    closest healthy backend -- similar in role to AWS Global Accelerator combined with CloudFront.
-
 ## Scenarios and troubleshooting
 
-**27. Write a production-grade Azure Pipeline YAML for a .NET application deployment to AKS. Prepared by Arvind Verma Prepared by Arvind Verma Page 220 of 274 CHAPTER 11: AZURE DEVOPS Page 221 of 274**
+**21. Write a production-grade Azure Pipeline YAML for a .NET application deployment to AKS. Prepared by Arvind Verma Prepared by Arvind Verma Page 220 of 274 CHAPTER 11: AZURE DEVOPS Page 221 of 274**
 
 ??? success "Reveal answer"
     # azure-pipelines.yml
@@ -315,7 +250,7 @@ Answer out loud first, then reveal the model answer. Prefer judgement and verifi
     projects: '**/*.csproj'
     arguments: '--no-restore…
 
-**28. How do you troubleshoot an application using logs?**
+**22. How do you troubleshoot an application using logs?**
 
 ??? success "Reveal answer"
     Centralize all logs in one place first, then search specifically for errors or exceptions in the relevant time window,
@@ -329,9 +264,18 @@ Answer out loud first, then reveal the model answer. Prefer judgement and verifi
     8
     SECURITY IN DEVOPS
 
+**23. How would you use Azure DevOps REST API to apply a security policy to all repos programmatically?**
+
+??? success "Reveal answer"
+    State assumptions and constraints first (scale, RTO/RPO, blast radius, cost), then outline the design.
+    
+    Walk through the Azure components you would use, why each is chosen, and the trade-offs you rejected (for example complexity versus resilience).
+    
+    Explain rollout/rollback and how you would prove the design works (tests, canary, dashboards).
+
 ## Practice questions
 
-**29. How can you implement monitoring in Azure DevOps?**
+**24. How can you implement monitoring in Azure DevOps?**
 
 ??? success "Reveal answer"
     Azure Monitor and Application Insights provide the monitoring layer -- setting up alerts for failures or performance
@@ -340,7 +284,7 @@ Answer out loud first, then reveal the model answer. Prefer judgement and verifi
     
     The Complete DevOps Engineer Interview Guide (Exhaustive) — 2026
 
-**30. How do you create and manage Azure DevOps service connections?**
+**25. How do you create and manage Azure DevOps service connections?**
 
 ??? success "Reveal answer"
     In Project Settings under Pipelines, I create a new service connection, choose the type -- Azure Resource Manager,
@@ -349,72 +293,81 @@ Answer out loud first, then reveal the model answer. Prefer judgement and verifi
     
     The Complete DevOps Engineer Interview Guide (Exhaustive) — 2026
 
-**31. How do you implement security in Azure DevOps?**
+**26. How will you store credentials in azure pipelines?**
+
+??? success "Reveal answer"
+    State assumptions and constraints first (scale, RTO/RPO, blast radius, cost), then outline the design.
+    
+    Walk through the Azure components you would use, why each is chosen, and the trade-offs you rejected (for example complexity versus resilience).
+    
+    Explain rollout/rollback and how you would prove the design works (tests, canary, dashboards).
+
+**27. How will you implement dc/dr in azure – which are the services you will be using it?**
+
+??? success "Reveal answer"
+    State assumptions and constraints first (scale, RTO/RPO, blast radius, cost), then outline the design.
+    
+    Walk through the Azure components you would use, why each is chosen, and the trade-offs you rejected (for example complexity versus resilience).
+    
+    Explain rollout/rollback and how you would prove the design works (tests, canary, dashboards).
+
+**28. How do you assess Azure DevOps migration readiness and plan the transition?**
+
+??? success "Reveal answer"
+    State assumptions and constraints first (scale, RTO/RPO, blast radius, cost), then outline the design.
+    
+    Walk through the Azure components you would use, why each is chosen, and the trade-offs you rejected (for example complexity versus resilience).
+    
+    Explain rollout/rollback and how you would prove the design works (tests, canary, dashboards).
+
+**29. How do you implement security in Azure DevOps?**
 
 ??? success "Reveal answer"
     User and group permission management to control access, service connections to securely link to external services
     without exposing raw credentials, Azure Active Directory integration for identity management, and branch policies
     with pull request approvals to enforce code quality and security checks before merges.
 
-**32. How many types of repositories available in Git?**
-
-??? success "Reveal answer"
-    There are two types of repositories available in Git:
-    • Bare Repositories (Central): Only for storing & sharing the code. All central repositories are bare
-    repositories.
-    • Non-Bare Repositories (Local): In these repositories, we can modify the files. All local/user
-    repositories are Non-Bare Repositories.
-
-**33. How do you automate tests in Azure DevOps?**
+**30. How do you automate tests in Azure DevOps?**
 
 ??? success "Reveal answer"
     Azure Test Plans for manual and automated test management, unit testing frameworks like NUnit or JUnit integrated
     directly into the build pipeline, continuous testing features that run automated tests during build or release, and
     publishing results and reports within Azure DevOps for tracking.
 
-**34. How do you manage secrets in Azure DevOps?**
+**31. How do you manage secrets in Azure DevOps?**
 
 ??? success "Reveal answer"
     Azure Key Vault securely stores secrets like passwords and API keys, and the Azure DevOps library can hold
     variable groups containing secrets referenced in pipelines -- either way, permissions need to be configured carefully
     so only authorized users and services can actually access them.
 
-**35. How do you handle environment variables in Azure DevOps Pipelines?**
+**32. How do you handle environment variables in Azure DevOps Pipelines?**
 
 ??? success "Reveal answer"
     Pipeline variables at the pipeline or stage level, Variable Groups for values reused across multiple pipelines, the env
     keyword for setting variables directly within a YAML job, and Azure Key Vault references for anything sensitive that
     needs to be securely pulled in.
 
-## Real interview prompts
+**33. Why Dynamic blocks are used in tf and write the skeleton for an azure resource using dynamic block?**
 
-Additional questions reported from real DevOps / SRE interviews. Company names are omitted — practise these out loud without notes.
+??? success "Reveal answer"
+    Outline the solution first, then give a minimal correct example (commands or config sketch).
+    
+    Call out the production hardening you would add next (pin versions, least privilege, secrets, health checks) and how you would validate the result.
 
-- How mysql will interact with azure key vault and it should happen thru privately and should not go anything on public?
-- How the authentication and networking is established between azure devops pipeline and azure keyvault?
-- [ ] Did you create the Azure Key Vault access policies yourself, or did someone else do it for you?
-- Why Dynamic blocks are used in tf and write the skeleton for an azure resource using dynamic block?
-- How would you use Azure DevOps REST API to apply a security policy to all repos programmatically?
-- [ ] What is the advantage of using a YAML file over classic build pipelines in Azure DevOps?
-- [ ] Have you integrated Azure Key Vault into your pipelines or branches in any project?
-- How will you implement dc/dr in azure – which are the services you will be using it?
-- How to set alerts in azure monitor (explain steps and configuration that u do)?
-- • How do you do you integrate And EntraID with your AKS for authentication?
-- How do you assess Azure DevOps migration readiness and plan the transition?
-- Define an Azure Virtual Network (VNet) with a given IP range?
-- How to monitor Azure VM memory and alert if it crosses 80%?
-- Difference between stakeholder and admin in azure devops?
-- What are the different types of subscriptions in azure?
-- • How do you use Azure Key vault's secrets in AKS?
-- What is azure board, what are the things inside it?
-- [ ] Do you have experience using Azure Key Vault?
-- How will you store credentials in azure pipelines?
-- What are the different types of azure storage?
-- How pipeline logs are stored in azure devops?
-- what is the networking you are using in AKS?
-- How azure key vault is integrated in cicd?
-- • How do you secure your AKS cluster?
-- What is azure artifact?
+**34. How mysql will interact with azure key vault and it should happen thru privately and should not go anything on public?**
+
+??? success "Reveal answer"
+    Answer directly for Azure: definition or decision first, then a short example.
+    
+    Mention one trade-off or failure mode, and end with the verification step an interviewer expects (command, metric, or review checklist).
+
+**35. How azure key vault is integrated in cicd?**
+
+??? success "Reveal answer"
+    Answer directly for Azure: definition or decision first, then a short example.
+    
+    Mention one trade-off or failure mode, and end with the verification step an interviewer expects (command, metric, or review checklist).
 
 ## Related
 
