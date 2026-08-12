@@ -12,9 +12,25 @@ INTERVIEW_DIR = ROOT / "docs" / "interview"
 ANSWERS_DIR = ROOT / "inbox" / "interview-extracted" / "questions-only" / "answers"
 
 
+def ensure_section_list_spacing(text: str) -> str:
+    """Blank line after Key points / Try this / Trap so MkDocs renders real lists."""
+    lines = (text or "").strip().splitlines()
+    out: list[str] = []
+    headers = {"**Key points**", "**Try this**", "**Trap**"}
+    for i, line in enumerate(lines):
+        out.append(line)
+        if line.strip() in headers and i + 1 < len(lines):
+            nxt = lines[i + 1].strip()
+            if nxt.startswith(("- ", "*", "```")):
+                out.append("")
+    fixed = "\n".join(out)
+    return re.sub(r"\n{3,}", "\n\n", fixed).strip()
+
+
 def md_escape_indent(text: str, spaces: int = 4) -> str:
     pad = " " * spaces
-    lines = (text or "").strip().splitlines() or [""]
+    text = ensure_section_list_spacing(text)
+    lines = text.splitlines() or [""]
     return "\n".join(pad + (line if line else "") for line in lines)
 
 
