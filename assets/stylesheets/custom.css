@@ -7065,6 +7065,77 @@ a.rebash-roadmap__card:focus-visible {
   }
 }
 
+/* ---------- Interview Prep: scannable reveal answers ---------- */
+.ra-interview-qa .md-typeset details.success,
+.md-typeset.ra-interview-qa details.success {
+  border-radius: 0.5rem;
+  box-shadow: none;
+}
+
+.ra-interview-qa details.success .admonition-title,
+.ra-interview-qa details.success > summary {
+  font-weight: 600;
+}
+
+.ra-interview-qa details.success .admonition-content,
+.ra-interview-qa details.success > :not(summary) {
+  font-size: 0.95em;
+  line-height: 1.55;
+}
+
+.ra-interview-qa details.success p {
+  margin: 0.45em 0 0.7em;
+}
+
+.ra-interview-qa details.success p:first-child {
+  margin-top: 0.15em;
+}
+
+/* Punchline line */
+.ra-interview-qa details.success p:has(> strong:first-child) {
+  margin-bottom: 0.85em;
+}
+
+.ra-interview-qa details.success ul {
+  margin: 0.25em 0 0.9em 0.1em;
+  padding-left: 1.15em;
+}
+
+.ra-interview-qa details.success li {
+  margin: 0.28em 0;
+}
+
+.ra-interview-qa details.success li::marker {
+  color: var(--md-accent-fg-color, #00bfa5);
+}
+
+.ra-interview-qa details.success strong {
+  font-weight: 700;
+  letter-spacing: -0.01em;
+}
+
+.ra-interview-qa details.success .highlight,
+.ra-interview-qa details.success pre {
+  margin: 0.4em 0 0.85em;
+}
+
+.ra-interview-qa details.success pre > code {
+  padding: 0.75em 1em;
+  font-size: 0.86em;
+}
+
+/* Question stems: a bit more air */
+.ra-interview-qa > p > strong:first-child,
+.ra-interview-qa p strong:has(+ em),
+.md-typeset.ra-interview-qa p:has(> strong) {
+  /* no-op fallback; stems are **n. question** paragraphs */
+}
+
+.ra-interview-qa .md-typeset p > strong:only-child,
+.md-content .ra-interview-qa > p {
+  margin-top: 1.35em;
+}
+
 /* Responsive */
 @media screen and (max-width: 768px) {
   .rebash-hero__title {
