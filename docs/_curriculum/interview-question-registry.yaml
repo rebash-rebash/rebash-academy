@@ -1,0 +1,4142 @@
+version: 1
+updated: '2026-08-12'
+topics:
+- ansible
+- argocd
+- aws
+- azure
+- cicd
+- devops
+- docker
+- gcp
+- git
+- github-actions
+- gitlab
+- helm
+- jenkins
+- kubernetes
+- linux
+- monitoring
+- networking
+- python
+- security
+- shell
+- terraform
+question_count: 675
+questions:
+- id: ansible-ansible-components-007495db9a
+  topic: ansible
+  question: Ansible components?
+  aliases: []
+  source: pdf:1783358005276.pdf
+  status: published
+- id: ansible-architecture-ansible-3859b2d09d
+  topic: ansible
+  question: The architecture of Ansible?
+  aliases: []
+  source: pdf:1783358005276.pdf
+  status: published
+- id: ansible-components-chef-aa3d712217
+  topic: ansible
+  question: Components of Chef?
+  aliases: []
+  source: pdf:1783358005276.pdf
+  status: published
+- id: ansible-how-do-you-use-ansible-vault-manage-secrets-how-c9d96cab7a
+  topic: ansible
+  question: How do you use Ansible Vault to manage secrets, and how does it integrate
+    with a CI/CD pipeline?
+  aliases: []
+  source: pdf:1786378433442.pdf
+  status: published
+- id: ansible-how-does-ansible-work-6a5c807602
+  topic: ansible
+  question: How does Ansible work?
+  aliases: []
+  source: pdf:1783358005276.pdf
+  status: published
+- id: ansible-how-does-chef-work-e08d800c96
+  topic: ansible
+  question: How does Chef work?
+  aliases: []
+  source: pdf:1783358005276.pdf
+  status: published
+- id: ansible-how-does-chef-client-run-automatically-77f9ba32b2
+  topic: ansible
+  question: How does Chef-client run automatically?
+  aliases: []
+  source: pdf:1783358005276.pdf
+  status: published
+- id: ansible-how-many-types-chef-server-181ee6ac47
+  topic: ansible
+  question: How many types of Chef server?
+  aliases: []
+  source: pdf:1783358005276.pdf
+  status: published
+- id: ansible-what-challenges-have-you-faced-configuration-man-48331d6fcd
+  topic: ansible
+  question: What challenges have you faced with configuration management tools?
+  aliases: []
+  source: pdf:1785077379612.pdf
+  status: published
+- id: ansible-what-do-you-mean-by-ad-hoc-commands-ansible-dd8a11195e
+  topic: ansible
+  question: What do you mean by Ad-Hoc commands in Ansible?
+  aliases: []
+  source: pdf:1783358005276.pdf
+  status: published
+- id: ansible-what-do-you-mean-by-roles-ansible-ac0c586038
+  topic: ansible
+  question: What do you mean by Roles in Ansible?
+  aliases: []
+  source: pdf:1783358005276.pdf
+  status: published
+- id: ansible-what-is-ansible-3d415779ee
+  topic: ansible
+  question: What is Ansible?
+  aliases: []
+  source: pdf:1783358005276.pdf
+  status: published
+- id: ansible-what-is-ansible-block-d161b03ba2
+  topic: ansible
+  question: What is Ansible block?
+  aliases: []
+  source: pdf:1786378433442.pdf
+  status: published
+- id: ansible-what-is-ansible-collection-03e5457edf
+  topic: ansible
+  question: What is an Ansible collection?
+  aliases: []
+  source: pdf:1786378433442.pdf
+  status: published
+- id: ansible-what-is-ansible-facts-d3e70d45a5
+  topic: ansible
+  question: What is Ansible facts?
+  aliases: []
+  source: pdf:1786378433442.pdf
+  status: published
+- id: ansible-what-is-ansible-tower-awx-180e80939c
+  topic: ansible
+  question: What is Ansible Tower / AWX?
+  aliases: []
+  source: pdf:1786378433442.pdf
+  status: published
+- id: ansible-what-is-ansible-vault-e1e30dbb86
+  topic: ansible
+  question: What is Ansible vault?
+  aliases: []
+  source: pdf:1783358005276.pdf
+  status: published
+- id: ansible-what-is-attributes-concept-chef-1cffc506d3
+  topic: ansible
+  question: What is the Attributes concept in Chef?
+  aliases: []
+  source: pdf:1783358005276.pdf
+  status: published
+- id: ansible-what-is-bootstrap-c9c6d44732
+  topic: ansible
+  question: What is bootstrap?
+  aliases: []
+  source: pdf:1783358005276.pdf
+  status: published
+- id: ansible-what-is-chef-supermarket-f6205fb600
+  topic: ansible
+  question: What is Chef supermarket?
+  aliases: []
+  source: pdf:1783358005276.pdf
+  status: published
+- id: ansible-what-is-dry-run-playbook-5a4f9776cb
+  topic: ansible
+  question: What is Dry run in playbook?
+  aliases: []
+  source: pdf:1783358005276.pdf
+  status: published
+- id: ansible-what-is-idempotency-58cd0bf6a2
+  topic: ansible
+  question: What is Idempotency?
+  aliases: []
+  source: pdf:1783358005276.pdf
+  status: published
+- id: ansible-what-is-include-recipe-chef-3248401141
+  topic: ansible
+  question: What is include_recipe in Chef?
+  aliases: []
+  source: pdf:1783358005276.pdf
+  status: published
+- id: ansible-what-is-max-fail-percentage-ansible-b332c575b3
+  topic: ansible
+  question: What is max_fail_percentage in Ansible?
+  aliases: []
+  source: pdf:1786378433442.pdf
+  status: published
+- id: ansible-what-is-ohai-how-does-it-work-e6f91fa971
+  topic: ansible
+  question: What is Ohai and how does it work?
+  aliases: []
+  source: pdf:1783358005276.pdf
+  status: published
+- id: ansible-what-is-playbook-ansible-f868b0f46e
+  topic: ansible
+  question: What is Playbook in Ansible?
+  aliases: []
+  source: pdf:1783358005276.pdf
+  status: published
+- id: ansible-what-is-roles-chef-77c7e99cf3
+  topic: ansible
+  question: What is 'roles' in Chef?
+  aliases: []
+  source: pdf:1783358005276.pdf
+  status: published
+- id: ansible-what-is-run-list-chef-4eb759226e
+  topic: ansible
+  question: What is Run-list in Chef?
+  aliases: []
+  source: pdf:1783358005276.pdf
+  status: published
+- id: ansible-what-is-serial-ansible-a808da2b9e
+  topic: ansible
+  question: What is serial in Ansible?
+  aliases: []
+  source: pdf:1786378433442.pdf
+  status: published
+- id: ansible-what-is-target-section-ansible-playbook-d5ac659393
+  topic: ansible
+  question: What is Target section in Ansible playbook?
+  aliases: []
+  source: pdf:1783358005276.pdf
+  status: published
+- id: ansible-what-is-task-section-ansible-playbook-50c7259fe3
+  topic: ansible
+  question: What is Task section in Ansible playbook?
+  aliases: []
+  source: pdf:1783358005276.pdf
+  status: published
+- id: ansible-what-is-there-inside-cookbook-80a2cf9422
+  topic: ansible
+  question: What is there inside a cookbook?
+  aliases: []
+  source: pdf:1783358005276.pdf
+  status: published
+- id: ansible-what-is-workflow-chef-76fcf95077
+  topic: ansible
+  question: What is the workflow of Chef?
+  aliases: []
+  source: pdf:1783358005276.pdf
+  status: published
+- id: ansible-what-is-wrapper-cookbook-a0a05556da
+  topic: ansible
+  question: What is wrapper cookbook?
+  aliases: []
+  source: pdf:1783358005276.pdf
+  status: published
+- id: ansible-where-do-we-use-conditionals-playbooks-59a2f77cdb
+  topic: ansible
+  question: Where do we use conditionals in Playbooks?
+  aliases: []
+  source: pdf:1783358005276.pdf
+  status: published
+- id: ansible-why-are-we-using-loops-concept-ansible-8dd6a512c3
+  topic: ansible
+  question: Why are we using loops concept in Ansible?
+  aliases: []
+  source: pdf:1783358005276.pdf
+  status: published
+- id: ansible-why-should-we-go-configuration-management-tools-f33a561a08
+  topic: ansible
+  question: Why should we go with Configuration Management Tools?
+  aliases: []
+  source: pdf:1783358005276.pdf
+  status: published
+- id: ansible-working-process-ansible-658b175a13
+  topic: ansible
+  question: Working process of Ansible?
+  aliases: []
+  source: pdf:1783358005276.pdf
+  status: published
+- id: ansible-write-ansible-playbook-production-grade-web-serv-15f2198153
+  topic: ansible
+  question: Write an Ansible playbook for a production-grade web server setup.
+  aliases: []
+  source: pdf:1786378433442.pdf
+  status: published
+- id: ansible-write-sample-playbook-by-mentioning-variables-in-68a0d8ecc8
+  topic: ansible
+  question: Write a sample playbook by mentioning variables instead of hard coding?
+  aliases: []
+  source: pdf:1783358005276.pdf
+  status: published
+- id: argocd-how-do-you-communicate-during-production-inciden-bfade27d8e
+  topic: argocd
+  question: How do you communicate during a production incident?
+  aliases: []
+  source: pdf:ocr:1784874876936.txt
+  status: published
+- id: argocd-how-do-you-perform-application-synchronization-a-c95c756be5
+  topic: argocd
+  question: How do you perform application synchronization in ArgoCD?
+  aliases: []
+  source: pdf:1785077379612.pdf
+  status: published
+- id: argocd-how-does-gitops-differ-from-traditional-iac-e534c4a6e6
+  topic: argocd
+  question: How does GitOps differ from traditional IaC?
+  aliases: []
+  source: pdf:1784431820463.pdf
+  status: published
+- id: argocd-what-are-key-components-argocd-884a8ff008
+  topic: argocd
+  question: What are the key components of ArgoCD?
+  aliases: []
+  source: pdf:1785077379612.pdf
+  status: published
+- id: argocd-what-is-argo-rollouts-how-does-it-implement-prog-4ed88eb67c
+  topic: argocd
+  question: What is Argo Rollouts, and how does it implement progressive delivery?
+  aliases: []
+  source: pdf:1786378433442.pdf
+  status: published
+- id: argocd-what-is-argocd-what-problem-does-it-solve-730d6e3e79
+  topic: argocd
+  question: What is ArgoCD and what problem does it solve?
+  aliases: []
+  source: pdf:1785077379612.pdf
+  status: published
+- id: argocd-what-is-differ-gitops-traditional-cd-pipelines-f3f9248392
+  topic: argocd
+  question: What is the difference between GitOps and traditional CD pipelines?
+  aliases: []
+  source: pdf:1785077379612.pdf
+  status: published
+- id: argocd-what-is-flux-cd-c80e21598d
+  topic: argocd
+  question: What is Flux CD?
+  aliases: []
+  source: pdf:1786378433442.pdf
+  status: published
+- id: argocd-what-is-gitops-db4cd7ac89
+  topic: argocd
+  question: What is GitOps?
+  aliases: []
+  source: pdf:1784431820463.pdf
+  status: published
+- id: aws-can-you-explain-how-set-up-auto-scaling-applicat-ef261e0d59
+  topic: aws
+  question: Can you explain how to set up auto-scaling for an application?
+  aliases: []
+  source: pdf:1785077379612.pdf
+  status: published
+- id: aws-can-you-explain-role-azure-boards-agile-developm-2aa518adef
+  topic: aws
+  question: Can you explain the role of Azure Boards in Agile development?
+  aliases: []
+  source: pdf:1785077379612.pdf
+  status: published
+- id: aws-how-are-dns-mx-records-used-devops-63b9a77d63
+  topic: aws
+  question: How are DNS MX Records used in DevOps?
+  aliases: []
+  source: pdf:1785077379612.pdf
+  status: published
+- id: aws-how-do-reduce-s-while-ke-architecture-reliable-0550abe399
+  topic: aws
+  question: How do reduce s while ke the architecture reliable?
+  aliases: []
+  source: pdf:ocr:1784874876936.txt
+  status: published
+- id: aws-how-do-security-groups-work-aws-fe18731304
+  topic: aws
+  question: How do Security Groups work in AWS?
+  aliases: []
+  source: pdf:1785077379612.pdf
+  status: published
+- id: aws-how-do-you-design-multi-region-active-active-dep-45f1d76605
+  topic: aws
+  question: How do you design a multi-region active-active deployment on AWS?
+  aliases: []
+  source: pdf:1786378433442.pdf
+  status: published
+- id: aws-how-do-you-ensure-high-availability-scalability-a276fbf815
+  topic: aws
+  question: How do you ensure high availability and scalability in the cloud?
+  aliases: []
+  source: pdf:1785077379612.pdf
+  status: published
+- id: aws-how-do-you-identify-root-cause-production-outage-1cb85d4834
+  topic: aws
+  question: How do you identify the root cause of a production outage?
+  aliases: []
+  source: pdf:ocr:1784874876936.txt
+  status: published
+- id: aws-how-do-you-implement-infrastructure-as-code-aws-63b07654d1
+  topic: aws
+  question: How do you implement infrastructure as code on AWS using CloudFormation
+    vs CDK?
+  aliases: []
+  source: pdf:1786378433442.pdf
+  status: published
+- id: aws-how-do-you-monitor-health-system-production-380fe649e7
+  topic: aws
+  question: How do you monitor the health of a system in production?
+  aliases: []
+  source: pdf:1785077379612.pdf
+  status: published
+- id: aws-how-do-you-monitor-network-traffic-aws-2242721119
+  topic: aws
+  question: How do you monitor network traffic in AWS?
+  aliases: []
+  source: pdf:1785077379612.pdf
+  status: published
+- id: aws-what-are-best-practices-securing-cloud-infrastru-772d72e8ed
+  topic: aws
+  question: What are the best practices for securing cloud infrastructure?
+  aliases: []
+  source: pdf:1785077379612.pdf
+  status: published
+- id: aws-what-cloud-platforms-aws-services-have-you-worke-4018734353
+  topic: aws
+  question: What cloud platforms and AWS services have you worked with?
+  aliases: []
+  source: pdf:1785077379612.pdf
+  status: published
+- id: aws-what-is-application-security-group-asg-552df4dd44
+  topic: aws
+  question: What is an Application Security Group (ASG)?
+  aliases: []
+  source: pdf:1785077379612.pdf
+  status: published
+- id: aws-what-is-aws-auto-scaling-acfd75a058
+  topic: aws
+  question: What is AWS Auto Scaling?
+  aliases: []
+  source: pdf:1786378433442.pdf
+  status: published
+- id: aws-what-is-aws-cdk-39bed517b0
+  topic: aws
+  question: What is AWS CDK?
+  aliases: []
+  source: pdf:1786378433442.pdf
+  status: published
+- id: aws-what-is-aws-cloudwatch-1a78b71607
+  topic: aws
+  question: What is AWS CloudWatch?
+  aliases: []
+  source: pdf:1786378433442.pdf
+  status: published
+- id: aws-what-is-aws-codecommit-060f89893a
+  topic: aws
+  question: What is AWS CodeCommit?
+  aliases: []
+  source: pdf:1786378433442.pdf
+  status: published
+- id: aws-what-is-aws-direct-connect-eb714d255d
+  topic: aws
+  question: What is AWS Direct Connect?
+  aliases: []
+  source: pdf:1785077379612.pdf
+  status: published
+- id: aws-what-is-aws-ecs-vs-eks-9b2635c77e
+  topic: aws
+  question: What is AWS ECS vs EKS?
+  aliases: []
+  source: pdf:1786378433442.pdf
+  status: published
+- id: aws-what-is-aws-elastic-beanstalk-61ba26d6e0
+  topic: aws
+  question: What is AWS Elastic Beanstalk?
+  aliases: []
+  source: pdf:1786378433442.pdf
+  status: published
+- id: aws-what-is-aws-global-accelerator-c7d3594c8f
+  topic: aws
+  question: What is AWS Global Accelerator?
+  aliases: []
+  source: pdf:1785077379612.pdf
+  status: published
+- id: aws-what-is-aws-lambda-function-db380ea9af
+  topic: aws
+  question: What is an AWS Lambda function?
+  aliases: []
+  source: pdf:1786378433442.pdf
+  status: published
+- id: aws-what-is-aws-lightsail-6d092ef8e9
+  topic: aws
+  question: What is AWS Lightsail?
+  aliases: []
+  source: pdf:1786378433442.pdf
+  status: published
+- id: aws-what-is-aws-privatelink-6e3ed170a3
+  topic: aws
+  question: What is AWS PrivateLink?
+  aliases: []
+  source: pdf:1785077379612.pdf
+  status: published
+- id: aws-what-is-aws-secrets-manager-747f96b599
+  topic: aws
+  question: What is AWS Secrets Manager?
+  aliases: []
+  source: pdf:1786378433442.pdf
+  status: published
+- id: aws-what-is-aws-shield-4ff8ec1549
+  topic: aws
+  question: What is AWS Shield?
+  aliases: []
+  source: pdf:1786378433442.pdf
+  status: published
+- id: aws-what-is-aws-step-functions-30dbf0e09e
+  topic: aws
+  question: What is AWS Step Functions?
+  aliases: []
+  source: pdf:1786378433442.pdf
+  status: published
+- id: aws-what-is-aws-systems-manager-parameter-store-131e28329e
+  topic: aws
+  question: What is AWS Systems Manager Parameter Store?
+  aliases: []
+  source: pdf:1786378433442.pdf
+  status: published
+- id: aws-what-is-aws-x-ray-8c30b4d722
+  topic: aws
+  question: What is AWS X-Ray?
+  aliases: []
+  source: pdf:1786378433442.pdf
+  status: published
+- id: aws-what-is-differ-ecs-task-role-execution-role-48929cedea
+  topic: aws
+  question: What is the difference between ECS Task Role and Execution Role?
+  aliases: []
+  source: pdf:1786378433442.pdf
+  status: published
+- id: aws-what-is-differ-iaas-paas-saas-5c8257319c
+  topic: aws
+  question: What is the difference between IaaS, PaaS, and SaaS?
+  aliases: []
+  source: pdf:1785077379612.pdf
+  status: published
+- id: aws-what-is-egress-only-internet-gateway-933d9fab76
+  topic: aws
+  question: What is an Egress-Only Internet Gateway?
+  aliases: []
+  source: pdf:1785077379612.pdf
+  status: published
+- id: aws-what-is-eventbridge-c800f32e19
+  topic: aws
+  question: What is EventBridge?
+  aliases: []
+  source: pdf:1786378433442.pdf
+  status: published
+- id: aws-what-is-iam-role-vs-iam-user-7ef927fde6
+  topic: aws
+  question: What is an IAM Role vs IAM User?
+  aliases: []
+  source: pdf:1786378433442.pdf
+  status: published
+- id: aws-what-is-infrastructure-drift-i-fa-cd-rastructure-692b0eda50
+  topic: aws
+  question: What is infrastructure drift i fa cd rastructure drift and how do you
+    detect and fix it?
+  aliases: []
+  source: pdf:ocr:1784874876936.txt
+  status: published
+- id: aws-what-is-internet-gateway-aws-4d99f6069c
+  topic: aws
+  question: What is an Internet Gateway in AWS?
+  aliases: []
+  source: pdf:1785077379612.pdf
+  status: published
+- id: aws-what-is-irate-vs-rate-promql-ead47b4639
+  topic: aws
+  question: What is irate() vs rate() in PromQL?
+  aliases: []
+  source: pdf:1786378433442.pdf
+  status: published
+- id: aws-what-is-irsa-iam-roles-service-accounts-b111fbb8eb
+  topic: aws
+  question: What is IRSA (IAM Roles for Service Accounts)?
+  aliases: []
+  source: pdf:1786378433442.pdf
+  status: published
+- id: aws-what-is-pg-dump-how-do-you-automate-database-bac-a71fa9a6bf
+  topic: aws
+  question: What is pg_dump and how do you automate database backups?
+  aliases: []
+  source: pdf:1786378433442.pdf
+  status: published
+- id: aws-what-is-rds-iam-authentication-d43b8aa06a
+  topic: aws
+  question: What is RDS IAM authentication?
+  aliases: []
+  source: pdf:1786378433442.pdf
+  status: published
+- id: aws-what-is-read-replica-a2518a1a01
+  topic: aws
+  question: What is a read replica?
+  aliases: []
+  source: pdf:1786378433442.pdf
+  status: published
+- id: aws-what-is-redis-sentinel-vs-redis-cluster-1305a00563
+  topic: aws
+  question: What is Redis Sentinel vs Redis Cluster?
+  aliases: []
+  source: pdf:1786378433442.pdf
+  status: published
+- id: aws-what-is-role-dns-cname-records-devops-2bb7f7e2ab
+  topic: aws
+  question: What is the role of DNS A and CNAME Records in DevOps?
+  aliases: []
+  source: pdf:1785077379612.pdf
+  status: published
+- id: aws-what-is-route-53-1e050551e1
+  topic: aws
+  question: What is Route 53?
+  aliases: []
+  source: pdf:1785077379612.pdf
+  status: published
+- id: aws-what-is-security-group-vs-nacl-da15588066
+  topic: aws
+  question: What is a Security Group vs NACL?
+  aliases: []
+  source: pdf:1786378433442.pdf
+  status: published
+- id: aws-what-is-transit-gateway-ebb40cf84d
+  topic: aws
+  question: What is a Transit Gateway?
+  aliases: []
+  source: pdf:1785077379612.pdf
+  status: published
+- id: aws-what-is-vpc-aws-bd821ab4b3
+  topic: aws
+  question: What is a VPC in AWS?
+  aliases: []
+  source: pdf:1785077379612.pdf
+  status: published
+- id: aws-what-is-vpc-peering-7deab69301
+  topic: aws
+  question: What is VPC Peering?
+  aliases: []
+  source: pdf:1785077379612.pdf
+  status: published
+- id: aws-your-ec2-i-questions-real-v-load-balancer-i-o-ea-abdf050226
+  topic: aws
+  question: Your EC2 i questions. Real . a v¥ Load balancer i o* “ear iatindba de
+    banrine. bs production scenarios N ote issues Ow * —)?
+  aliases: []
+  source: pdf:ocr:1784874876936.txt
+  status: published
+- id: azure-how-can-you-implement-monitoring-azure-devops-8831358b65
+  topic: azure
+  question: How can you implement monitoring in Azure DevOps?
+  aliases: []
+  source: pdf:1785077379612.pdf
+  status: published
+- id: azure-how-do-you-automate-tests-azure-devops-7e99c75766
+  topic: azure
+  question: How do you automate tests in Azure DevOps?
+  aliases: []
+  source: pdf:1785077379612.pdf
+  status: published
+- id: azure-how-do-you-create-manage-azure-devops-service-co-93c2f16521
+  topic: azure
+  question: How do you create and manage Azure DevOps service connections?
+  aliases: []
+  source: pdf:1785077379612.pdf
+  status: published
+- id: azure-how-do-you-handle-environment-variables-azure-de-f3e61d2619
+  topic: azure
+  question: How do you handle environment variables in Azure DevOps Pipelines?
+  aliases: []
+  source: pdf:1785077379612.pdf
+  status: published
+- id: azure-how-do-you-implement-security-azure-devops-c67e9f1162
+  topic: azure
+  question: How do you implement security in Azure DevOps?
+  aliases: []
+  source: pdf:1785077379612.pdf
+  status: published
+- id: azure-how-do-you-manage-secrets-azure-devops-b858da042b
+  topic: azure
+  question: How do you manage secrets in Azure DevOps?
+  aliases: []
+  source: pdf:1785077379612.pdf
+  status: published
+- id: azure-how-do-you-troubleshoot-application-using-logs-6286783e2e
+  topic: azure
+  question: How do you troubleshoot an application using logs?
+  aliases: []
+  source: pdf:1785077379612.pdf
+  status: published
+- id: azure-how-many-types-repositories-available-git-b92200d9e9
+  topic: azure
+  question: How many types of repositories available in Git?
+  aliases: []
+  source: pdf:1783358005276.pdf
+  status: published
+- id: azure-what-are-azure-devops-extensions-how-do-you-use-971be2935e
+  topic: azure
+  question: What are Azure DevOps Extensions, and how do you use them?
+  aliases: []
+  source: pdf:1785077379612.pdf
+  status: published
+- id: azure-what-are-azure-devops-service-hooks-ad3dd24c89
+  topic: azure
+  question: What are Azure DevOps Service Hooks?
+  aliases: []
+  source: pdf:1785077379612.pdf
+  status: published
+- id: azure-what-are-benefits-using-azure-devtest-labs-9e68a3ade8
+  topic: azure
+  question: What are the benefits of using Azure DevTest Labs?
+  aliases: []
+  source: pdf:1785077379612.pdf
+  status: published
+- id: azure-what-are-key-components-azure-devops-aaea6da850
+  topic: azure
+  question: What are the key components of Azure DevOps?
+  aliases: []
+  source: pdf:1785077379612.pdf
+  status: published
+- id: azure-what-is-application-gateway-azure-d5655621ae
+  topic: azure
+  question: What is an Application Gateway in Azure?
+  aliases: []
+  source: pdf:1785077379612.pdf
+  status: published
+- id: azure-what-is-azure-bastion-400c9de0a5
+  topic: azure
+  question: What is Azure Bastion?
+  aliases: []
+  source: pdf:1785077379612.pdf
+  status: published
+- id: azure-what-is-azure-devops-204e1c9299
+  topic: azure
+  question: What is Azure DevOps?
+  aliases: []
+  source: pdf:1785077379612.pdf
+  status: published
+- id: azure-what-is-azure-devops-what-are-its-main-component-2a5d1c53ec
+  topic: azure
+  question: What is Azure DevOps, and what are its main components?
+  aliases: []
+  source: pdf:1786378433442.pdf
+  status: published
+- id: azure-what-is-azure-dns-0c3872b009
+  topic: azure
+  question: What is Azure DNS?
+  aliases: []
+  source: pdf:1785077379612.pdf
+  status: published
+- id: azure-what-is-azure-expressroute-3e2bb609a3
+  topic: azure
+  question: What is Azure ExpressRoute?
+  aliases: []
+  source: pdf:1785077379612.pdf
+  status: published
+- id: azure-what-is-azure-front-door-54d80ca572
+  topic: azure
+  question: What is Azure Front Door?
+  aliases: []
+  source: pdf:1785077379612.pdf
+  status: published
+- id: azure-what-is-azure-monitor-network-insights-9b1462406e
+  topic: azure
+  question: What is Azure Monitor Network Insights?
+  aliases: []
+  source: pdf:1785077379612.pdf
+  status: published
+- id: azure-what-is-azure-policy-27b74222c2
+  topic: azure
+  question: What is Azure Policy?
+  aliases: []
+  source: pdf:1786378433442.pdf
+  status: published
+- id: azure-what-is-build-artifact-azure-devops-50991e435f
+  topic: azure
+  question: What is a build artifact in Azure DevOps?
+  aliases: []
+  source: pdf:1785077379612.pdf
+  status: published
+- id: azure-what-is-ci-cd-how-does-azure-devops-support-it-8d4e7639ae
+  topic: azure
+  question: What is CI/CD, and how does Azure DevOps support it?
+  aliases: []
+  source: pdf:1785077379612.pdf
+  status: published
+- id: azure-what-is-differ-classic-yaml-pipelines-azure-devo-ce1f36ec2c
+  topic: azure
+  question: What is the difference between Classic and YAML pipelines in Azure DevOps?
+  aliases: []
+  source: pdf:1786378433442.pdf
+  status: published
+- id: azure-what-is-differ-hard-link-soft-link-symlink-70f3f14b65
+  topic: azure
+  question: What is the difference between a hard link and a soft link (symlink)?
+  aliases: []
+  source: pdf:1785077379612.pdf
+  status: published
+- id: azure-what-is-infrastructure-as-code-iac-azure-devops-d574b9159b
+  topic: azure
+  question: What is Infrastructure as Code (IaC) in Azure DevOps?
+  aliases: []
+  source: pdf:1785077379612.pdf
+  status: published
+- id: azure-what-is-managed-identity-azure-c0f63a6519
+  topic: azure
+  question: What is a Managed Identity in Azure?
+  aliases: []
+  source: pdf:1786378433442.pdf
+  status: published
+- id: azure-what-is-pipeline-artifact-azure-devops-7a7ccacdf6
+  topic: azure
+  question: What is a pipeline artifact in Azure DevOps?
+  aliases: []
+  source: pdf:1786378433442.pdf
+  status: published
+- id: azure-what-is-pipeline-template-azure-devops-dd7b03ccaf
+  topic: azure
+  question: What is a pipeline template in Azure DevOps?
+  aliases: []
+  source: pdf:1786378433442.pdf
+  status: published
+- id: azure-what-is-purpose-azure-monitor-how-does-it-work-a-6bfe976ff8
+  topic: azure
+  question: What is the purpose of Azure Monitor, and how does it work with Azure
+    DevOps?
+  aliases: []
+  source: pdf:1785077379612.pdf
+  status: published
+- id: azure-what-is-purpose-using-approval-gates-azure-devop-c6afd256f4
+  topic: azure
+  question: What is the purpose of using Approval Gates in Azure DevOps?
+  aliases: []
+  source: pdf:1785077379612.pdf
+  status: published
+- id: azure-what-is-release-gate-azure-devops-4ac7c4188f
+  topic: azure
+  question: What is a Release Gate in Azure DevOps?
+  aliases: []
+  source: pdf:1785077379612.pdf
+  status: published
+- id: azure-what-is-route-table-azure-37d3366c24
+  topic: azure
+  question: What is a Route Table in Azure?
+  aliases: []
+  source: pdf:1785077379612.pdf
+  status: published
+- id: azure-what-is-significance-using-personal-access-token-c9ff747b9b
+  topic: azure
+  question: What is the significance of using Personal Access Tokens (PAT) in Azure
+    DevOps?
+  aliases: []
+  source: pdf:1785077379612.pdf
+  status: published
+- id: azure-write-production-grade-azure-pipeline-yaml-net-a-22836d1df5
+  topic: azure
+  question: 'Write a production-grade Azure Pipeline YAML for a .NET application deployment
+    to AKS. Prepared by Arvind Verma Prepared by Arvind Verma Page 220 of 274 CHAPTER
+    11: AZURE DEVOPS Page 221 of 274'
+  aliases: []
+  source: pdf:1786378433442.pdf
+  status: published
+- id: cicd-can-you-explain-different-stages-ci-cd-pipeline-830c8e97f4
+  topic: cicd
+  question: Can you explain the different stages of a CI/CD pipeline?
+  aliases: []
+  source: pdf:1785077379612.pdf
+  status: published
+- id: cicd-can-you-explain-how-you-would-use-selenium-grid-a7438c471b
+  topic: cicd
+  question: Can you explain how you would use Selenium Grid for testing?
+  aliases: []
+  source: pdf:1785077379612.pdf
+  status: published
+- id: cicd-how-can-you-integrate-selenium-tests-into-ci-cd-003291757e
+  topic: cicd
+  question: How can you integrate Selenium tests into a CI/CD pipeline?
+  aliases: []
+  source: pdf:1785077379612.pdf
+  status: published
+- id: cicd-how-can-you-monitor-health-performance-nexus-rep-6df561fee3
+  topic: cicd
+  question: How can you monitor the health and performance of Nexus Repository Manager?
+  aliases: []
+  source: pdf:1785077379612.pdf
+  status: published
+- id: cicd-how-do-continuous-integration-ci-continuous-depl-0af63bca1b
+  topic: cicd
+  question: How do Continuous Integration (CI) and Continuous Deployment (CD) work
+    together?
+  aliases: []
+  source: pdf:1785077379612.pdf
+  status: published
+- id: cicd-how-do-you-configure-nexus-repository-manager-2595393e37
+  topic: cicd
+  question: How do you configure Nexus Repository Manager?
+  aliases: []
+  source: pdf:1785077379612.pdf
+  status: published
+- id: cicd-how-do-you-handle-database-migrations-safely-ci-bfd1c7c8b6
+  topic: cicd
+  question: How do you handle database migrations safely in a CI/CD pipeline?
+  aliases: []
+  source: pdf:1786378433442.pdf
+  status: published
+- id: cicd-how-do-you-handle-exceptions-selenium-12ea82422d
+  topic: cicd
+  question: How do you handle exceptions in Selenium?
+  aliases: []
+  source: pdf:1785077379612.pdf
+  status: published
+- id: cicd-how-do-you-handle-synchronization-issues-seleniu-4e9aa1df3a
+  topic: cicd
+  question: How do you handle synchronization issues in Selenium tests?
+  aliases: []
+  source: pdf:1785077379612.pdf
+  status: published
+- id: cicd-how-do-you-implement-ci-cd-using-azure-pipelines-587879fd0a
+  topic: cicd
+  question: How do you implement CI/CD using Azure Pipelines?
+  aliases: []
+  source: pdf:1785077379612.pdf
+  status: published
+- id: cicd-how-do-you-implement-complete-production-grade-p-04e381f891
+  topic: cicd
+  question: How do you implement a complete production-grade pipeline that incorporates
+    all the tools discussed?
+  aliases: []
+  source: pdf:1786378433442.pdf
+  status: published
+- id: cicd-how-do-you-implement-feature-flags-ci-cd-pipelin-4400e0569b
+  topic: cicd
+  question: How do you implement feature flags in a CI/CD pipeline?
+  aliases: []
+  source: pdf:1786378433442.pdf
+  status: published
+- id: cicd-how-does-sonarqube-work-ci-cd-pipeline-0fb0e940ed
+  topic: cicd
+  question: How does SonarQube work in a CI/CD pipeline?
+  aliases: []
+  source: pdf:1785077379612.pdf
+  status: published
+- id: cicd-how-does-trivy-work-5a958d0d42
+  topic: cicd
+  question: How does Trivy work?
+  aliases: []
+  source: pdf:1785077379612.pdf
+  status: published
+- id: cicd-how-would-you-design-ci-cd-pipeline-project-7210f81b1b
+  topic: cicd
+  question: How would you design a CI/CD pipeline for a project?
+  aliases: []
+  source: pdf:1785077379612.pdf
+  status: published
+- id: cicd-what-are-advantages-using-trivy-d35c9bb9e5
+  topic: cicd
+  question: What are the advantages of using Trivy?
+  aliases: []
+  source: pdf:1785077379612.pdf
+  status: published
+- id: cicd-what-are-different-components-selenium-c7512e5b51
+  topic: cicd
+  question: What are the different components of Selenium?
+  aliases: []
+  source: pdf:1785077379612.pdf
+  status: published
+- id: cicd-what-are-gitlab-ci-cd-pipelines-2d66c18348
+  topic: cicd
+  question: What are GitLab CI/CD pipelines?
+  aliases: []
+  source: pdf:1785077379612.pdf
+  status: published
+- id: cicd-what-are-key-features-sonarqube-13e56d8fb3
+  topic: cicd
+  question: What are the key features of SonarQube?
+  aliases: []
+  source: pdf:1785077379612.pdf
+  status: published
+- id: cicd-what-are-main-features-nexus-repository-manager-87ca2a018a
+  topic: cicd
+  question: What are the main features of Nexus Repository Manager?
+  aliases: []
+  source: pdf:1785077379612.pdf
+  status: published
+- id: cicd-what-are-some-best-practices-when-using-sonarqub-9de4f9f28f
+  topic: cicd
+  question: What are some best practices when using SonarQube in a CI/CD pipeline?
+  aliases: []
+  source: pdf:1785077379612.pdf
+  status: published
+- id: cicd-what-are-sonarqube-quality-gates-159bc508fb
+  topic: cicd
+  question: What are SonarQube Quality Gates?
+  aliases: []
+  source: pdf:1785077379612.pdf
+  status: published
+- id: cicd-what-are-ways-do-continuous-integration-15ab1fb249
+  topic: cicd
+  question: What are the ways to do Continuous Integration?
+  aliases: []
+  source: pdf:1783358005276.pdf
+  status: published
+- id: cicd-what-challenges-might-you-face-when-running-sele-883b3aedb0
+  topic: cicd
+  question: What challenges might you face when running Selenium tests in a CI/CD
+    environment?
+  aliases: []
+  source: pdf:1785077379612.pdf
+  status: published
+- id: cicd-what-is-aws-codepipeline-how-do-you-set-up-basic-364eb1798c
+  topic: cicd
+  question: What is AWS CodePipeline, and how do you set up a basic CI/CD pipeline?
+  aliases: []
+  source: pdf:1786378433442.pdf
+  status: published
+- id: cicd-what-is-ci-cd-6aae4b8268
+  topic: cicd
+  question: What is CI & CD?
+  aliases: []
+  source: pdf:1783358005276.pdf
+  status: published
+- id: cicd-what-is-ci-cd-5faacddbdc
+  topic: cicd
+  question: What is CI/CD?
+  aliases: []
+  source: pdf:ocr:1786289541473.txt
+  status: published
+- id: cicd-what-is-differ-bugs-vulnerabilities-code-smells-c7e9c64b9c
+  topic: cicd
+  question: What is the difference between bugs, vulnerabilities, and code smells
+    in SonarQube?
+  aliases: []
+  source: pdf:1785077379612.pdf
+  status: published
+- id: cicd-what-is-differ-continuous-integration-continuous-0a0bc6136e
+  topic: cicd
+  question: What is the difference between Continuous Integration, Continuous Delivery,
+    and Continuous Deployment?
+  aliases: []
+  source: pdf:1786378433442.pdf
+  status: published
+- id: cicd-what-is-differ-hosted-proxy-group-repository-nex-8d472e825c
+  topic: cicd
+  question: What is the difference between a hosted, a proxy, and a group repository
+    in Nexus?
+  aliases: []
+  source: pdf:1785077379612.pdf
+  status: published
+- id: cicd-what-is-nexus-repository-manager-d35f60fdc6
+  topic: cicd
+  question: What is Nexus Repository Manager?
+  aliases: []
+  source: pdf:1785077379612.pdf
+  status: published
+- id: cicd-what-is-nexus-jfrog-artifactory-why-do-you-need-2a728863bc
+  topic: cicd
+  question: What is Nexus/JFrog Artifactory, and why do you need an artifact repository
+    in CI/CD?
+  aliases: []
+  source: pdf:1786378433442.pdf
+  status: published
+- id: cicd-what-is-role-selenium-testing-pyramid-d0dea9a38e
+  topic: cicd
+  question: What is the role of Selenium in the testing pyramid?
+  aliases: []
+  source: pdf:1785077379612.pdf
+  status: published
+- id: cicd-what-is-selenium-how-is-it-used-devops-9043a78381
+  topic: cicd
+  question: What is Selenium, and how is it used in DevOps?
+  aliases: []
+  source: pdf:1785077379612.pdf
+  status: published
+- id: cicd-what-is-sonarlint-how-does-it-relate-sonarqube-edba9aa0ce
+  topic: cicd
+  question: What is SonarLint, and how does it relate to SonarQube?
+  aliases: []
+  source: pdf:1785077379612.pdf
+  status: published
+- id: cicd-what-is-sonarqube-how-do-you-integrate-it-into-c-6f0260df44
+  topic: cicd
+  question: What is SonarQube, and how do you integrate it into a CI/CD pipeline?
+  aliases: []
+  source: pdf:1786378433442.pdf
+  status: published
+- id: cicd-what-is-sonarqube-scanner-how-is-it-used-98ff85fba8
+  topic: cicd
+  question: What is the SonarQube Scanner, and how is it used?
+  aliases: []
+  source: pdf:1785077379612.pdf
+  status: published
+- id: cicd-what-is-sonarqube-why-is-it-used-0c0c32a3df
+  topic: cicd
+  question: What is SonarQube, and why is it used?
+  aliases: []
+  source: pdf:1785077379612.pdf
+  status: published
+- id: cicd-what-is-trivy-0149f0bd5c
+  topic: cicd
+  question: What is Trivy?
+  aliases: []
+  source: pdf:1785077379612.pdf
+  status: published
+- id: cicd-what-types-vulnerabilities-can-trivy-detect-8623994e88
+  topic: cicd
+  question: What types of vulnerabilities can Trivy detect?
+  aliases: []
+  source: pdf:1785077379612.pdf
+  status: published
+- id: devops-benefits-ci-81c10b3212
+  topic: devops
+  question: Benefits of CI?
+  aliases: []
+  source: pdf:1783358005276.pdf
+  status: published
+- id: devops-can-you-explain-differences-between-agile-devops-e01848e102
+  topic: devops
+  question: Can you explain the differences between Agile and DevOps?
+  aliases: []
+  source: pdf:1785077379612.pdf
+  status: published
+- id: devops-high-latenc-google-com-from-ii-d-gateway-knowled-fd42470123
+  topic: devops
+  question: 'High latenc google.com) from ii D «a Gateway knowledge = ih lta otaen
+    seta the : Cn OS was 3 ae ae troubleshoot?'
+  aliases: []
+  source: pdf:ocr:1784874876936.txt
+  status: published
+- id: devops-how-are-broadcast-domains-relevant-devops-11fa1d2d11
+  topic: devops
+  question: How are Broadcast Domains relevant to DevOps?
+  aliases: []
+  source: pdf:1785077379612.pdf
+  status: published
+- id: devops-how-does-arp-poisoning-affect-devops-4f7c7f8c1f
+  topic: devops
+  question: How does ARP Poisoning affect DevOps?
+  aliases: []
+  source: pdf:1785077379612.pdf
+  status: published
+- id: devops-how-does-dmz-demilitarized-zone-apply-devops-a9cecf6ca0
+  topic: devops
+  question: How does a DMZ (Demilitarized Zone) apply in DevOps?
+  aliases: []
+  source: pdf:1785077379612.pdf
+  status: published
+- id: devops-how-does-mesh-topology-benefit-devops-3d9a69fba9
+  topic: devops
+  question: How does Mesh Topology benefit DevOps?
+  aliases: []
+  source: pdf:1785077379612.pdf
+  status: published
+- id: devops-how-does-open-shortest-path-first-ospf-contribut-b4347bffd1
+  topic: devops
+  question: How does Open Shortest Path First (OSPF) contribute to DevOps?
+  aliases: []
+  source: pdf:1785077379612.pdf
+  status: published
+- id: devops-how-does-split-horizon-work-devops-5517def651
+  topic: devops
+  question: How does Split-Horizon work in DevOps?
+  aliases: []
+  source: pdf:1785077379612.pdf
+  status: published
+- id: devops-how-does-zero-trust-architecture-relate-devops-b018c49225
+  topic: devops
+  question: How does Zero Trust Architecture relate to DevOps?
+  aliases: []
+  source: pdf:1785077379612.pdf
+  status: published
+- id: devops-how-e-rs-cpus-s-er-exec-ae-8628529d15
+  topic: devops
+  question: 'How e rs ~-cpus s / a er exec a — : aE?'
+  aliases: []
+  source: pdf:ocr:1784874876936.txt
+  status: published
+- id: devops-how-is-quality-service-qos-utilized-devops-c0c624c74c
+  topic: devops
+  question: How is Quality of Service (QoS) utilized in DevOps?
+  aliases: []
+  source: pdf:1785077379612.pdf
+  status: published
+- id: devops-how-would-you-find-all-files-modified-last-7-day-6a2fdf8748
+  topic: devops
+  question: How would you find all files modified in the last 7 days in a directory?
+  aliases: []
+  source: pdf:1785077379612.pdf
+  status: published
+- id: devops-how-write-ruby-code-create-file-directory-959b09d963
+  topic: devops
+  question: How to write ruby code to create file, directory?
+  aliases: []
+  source: pdf:1783358005276.pdf
+  status: published
+- id: devops-server-is-extremely-slow-how-do-you-identify-if-ce1817248e
+  topic: devops
+  question: The server is extremely slow. How do you identify if the issue is CPU
+    related and what is causing i?
+  aliases: []
+  source: pdf:ocr:1784874876936.txt
+  status: published
+- id: devops-what-are-key-devops-tools-2cbfdb95a3
+  topic: devops
+  question: What are the key DevOps tools?
+  aliases: []
+  source: pdf:1784431820463.pdf
+  status: published
+- id: devops-what-are-key-principles-devops-97f5e72b4f
+  topic: devops
+  question: What are the key principles of DevOps?
+  aliases: []
+  source: pdf:1785077379612.pdf
+  status: published
+- id: devops-what-challenges-have-you-faced-implementing-devo-908fe86613
+  topic: devops
+  question: What challenges have you faced implementing DevOps in previous projects?
+  aliases: []
+  source: pdf:1785077379612.pdf
+  status: published
+- id: devops-what-do-you-mean-by-upstream-downstream-projects-badb313965
+  topic: devops
+  question: What do you mean by Upstream and Downstream projects?
+  aliases: []
+  source: pdf:1783358005276.pdf
+  status: published
+- id: devops-what-is-access-control-list-acl-devops-aa4900651a
+  topic: devops
+  question: What is an Access Control List (ACL) in DevOps?
+  aliases: []
+  source: pdf:1785077379612.pdf
+  status: published
+- id: devops-what-is-database-migration-rollback-strategy-b2c629f658
+  topic: devops
+  question: What is a database migration rollback strategy?
+  aliases: []
+  source: pdf:1786378433442.pdf
+  status: published
+- id: devops-what-is-database-sharding-8b1c63d6c2
+  topic: devops
+  question: What is database sharding?
+  aliases: []
+  source: pdf:1786378433442.pdf
+  status: published
+- id: devops-what-is-devops-lifecycle-7774886c19
+  topic: devops
+  question: What is the DevOps lifecycle ?
+  aliases: []
+  source: pdf:ocr:100 DevOps Engineer Interview Questions and Answers - Handwritten
+    Notes.txt
+  status: published
+- id: devops-what-is-devops-why-is-it-important-0de3a69937
+  topic: devops
+  question: What is DevOps, and why is it important?
+  aliases: []
+  source: pdf:1785077379612.pdf
+  status: published
+- id: devops-what-is-dhcp-scope-how-does-it-help-devops-ac83cb93be
+  topic: devops
+  question: What is a DHCP Scope and how does it help DevOps?
+  aliases: []
+  source: pdf:1785077379612.pdf
+  status: published
+- id: devops-what-is-dorny-paths-filter-action-635bda619d
+  topic: devops
+  question: What is dorny/paths-filter action?
+  aliases: []
+  source: pdf:1786378433442.pdf
+  status: published
+- id: devops-what-is-error-budget-ca05114c32
+  topic: devops
+  question: What is an error budget?
+  aliases: []
+  source: pdf:1786378433442.pdf
+  status: published
+- id: devops-what-is-handler-section-8887930004
+  topic: devops
+  question: What is Handler section?
+  aliases: []
+  source: pdf:1783358005276.pdf
+  status: published
+- id: devops-what-is-include-tasks-vs-import-tasks-6a595f5fba
+  topic: devops
+  question: What is include_tasks vs import_tasks?
+  aliases: []
+  source: pdf:1786378433442.pdf
+  status: published
+- id: devops-what-is-packet-filtering-devops-b9da2525e5
+  topic: devops
+  question: What is Packet Filtering in DevOps?
+  aliases: []
+  source: pdf:1785077379612.pdf
+  status: published
+- id: devops-what-is-packet-sniffer-its-role-devops-3f6958e741
+  topic: devops
+  question: What is a Packet Sniffer and its role in DevOps?
+  aliases: []
+  source: pdf:1785077379612.pdf
+  status: published
+- id: devops-what-is-point-to-point-connection-devops-3f8bc600c9
+  topic: devops
+  question: What is a Point-to-Point Connection in DevOps?
+  aliases: []
+  source: pdf:1785077379612.pdf
+  status: published
+- id: devops-what-is-role-controller-manager-9a25754cb7
+  topic: devops
+  question: What is the role of the Controller Manager?
+  aliases: []
+  source: pdf:1785077379612.pdf
+  status: published
+- id: devops-what-is-role-hub-devops-18e5e22a49
+  topic: devops
+  question: What is the role of a Hub in DevOps?
+  aliases: []
+  source: pdf:1785077379612.pdf
+  status: published
+- id: devops-what-is-service-level-agreement-sla-devops-cf461a7bbb
+  topic: devops
+  question: What is a Service Level Agreement (SLA) in DevOps?
+  aliases: []
+  source: pdf:1785077379612.pdf
+  status: published
+- id: devops-what-is-strategy-fail-fast-option-e1f42846f2
+  topic: devops
+  question: What is the strategy.fail-fast option?
+  aliases: []
+  source: pdf:1786378433442.pdf
+  status: published
+- id: devops-what-is-systemctl-command-why-is-it-important-de-ded4d97db6
+  topic: devops
+  question: What is the systemctl command, and why is it important for a DevOps engineer?
+  aliases: []
+  source: pdf:1785077379612.pdf
+  status: published
+- id: devops-what-is-virtualization-79c06da496
+  topic: devops
+  question: What is virtualization?
+  aliases: []
+  source: pdf:1783358005276.pdf
+  status: published
+- id: devops-what-role-do-network-switches-play-devops-9bcfe799fc
+  topic: devops
+  question: What role do Network Switches play in DevOps?
+  aliases: []
+  source: pdf:1785077379612.pdf
+  status: published
+- id: devops-what-steps-do-you-take-after-incident-is-resolve-6a417ba9d7
+  topic: devops
+  question: What steps do you take after the incident is resolved?
+  aliases: []
+  source: pdf:ocr:1784874876936.txt
+  status: published
+- id: docker-differ-docker-vmware-69d885a394
+  topic: docker
+  question: Difference between Docker and VMware?
+  aliases: []
+  source: pdf:1783358005276.pdf
+  status: published
+- id: docker-explain-docker-layer-caching-how-optimize-docker-68680547bd
+  topic: docker
+  question: Explain Docker layer caching and how to optimize Dockerfiles for faster
+    CI/CD builds.
+  aliases: []
+  source: pdf:1786378433442.pdf
+  status: published
+- id: docker-explain-typical-docker-application-workflow-8d7fd87914
+  topic: docker
+  question: Explain a typical Docker application workflow.
+  aliases: []
+  source: pdf:1786456624707.pdf
+  status: published
+- id: docker-how-can-you-integrate-jenkins-other-tools-like-g-86daddc3b0
+  topic: docker
+  question: How can you integrate Jenkins with other tools like Git, Maven, or Docker?
+  aliases: []
+  source: pdf:1785077379612.pdf
+  status: published
+- id: docker-how-do-you-create-manage-docker-images-container-af36f13af6
+  topic: docker
+  question: How do you create and manage Docker images and containers?
+  aliases: []
+  source: pdf:1785077379612.pdf
+  status: published
+- id: docker-how-do-you-optimize-docker-images-production-70059d9f04
+  topic: docker
+  question: How do you optimize Docker images for production?
+  aliases: []
+  source: pdf:1785077379612.pdf
+  status: published
+- id: docker-how-do-you-tag-push-docker-image-ecr-ab859d047a
+  topic: docker
+  question: How do you tag and push a Docker image to ECR?
+  aliases: []
+  source: pdf:1786378433442.pdf
+  status: published
+- id: docker-how-do-you-update-running-container-s-image-with-35042bfadf
+  topic: docker
+  question: How do you update a running container's image without downtime?
+  aliases: []
+  source: pdf:1786378433442.pdf
+  status: published
+- id: docker-how-does-docker-networking-work-what-are-differe-feb0159adb
+  topic: docker
+  question: How does Docker networking work, and what are the different network types?
+  aliases: []
+  source: pdf:1786378433442.pdf
+  status: published
+- id: docker-how-is-docker-used-ci-cd-fcf82ff220
+  topic: docker
+  question: How is Docker used in CI/CD?
+  aliases: []
+  source: pdf:1786456624707.pdf
+  status: published
+- id: docker-how-would-you-use-python-dockerized-devops-envir-019509d5a9
+  topic: docker
+  question: How would you use Python in a Dockerized DevOps environment?
+  aliases: []
+  source: pdf:1785077379612.pdf
+  status: published
+- id: docker-important-docker-commands-4a1062c3f0
+  topic: docker
+  question: Important docker commands?
+  aliases: []
+  source: pdf:1783358005276.pdf
+  status: published
+- id: docker-list-docker-components-8fd55e37bc
+  topic: docker
+  question: List of Docker components?
+  aliases: []
+  source: pdf:1783358005276.pdf
+  status: published
+- id: docker-what-are-benefits-docker-9306bb98f3
+  topic: docker
+  question: What are the benefits of Docker?
+  aliases: []
+  source: pdf:1783358005276.pdf
+  status: published
+- id: docker-what-are-docker-volumes-how-do-you-persist-data-9cb671a7bd
+  topic: docker
+  question: What are Docker volumes, and how do you persist data in containers?
+  aliases: []
+  source: pdf:1786378433442.pdf
+  status: published
+- id: docker-what-are-ways-create-docker-images-15816024d5
+  topic: docker
+  question: What are the ways to create docker images?
+  aliases: []
+  source: pdf:1783358005276.pdf
+  status: published
+- id: docker-what-do-you-mean-by-docker-image-8eb64ef8ca
+  topic: docker
+  question: What do you mean by docker image?
+  aliases: []
+  source: pdf:1783358005276.pdf
+  status: published
+- id: docker-what-do-you-mean-by-port-mapping-docker-91d834c32c
+  topic: docker
+  question: What do you mean by port mapping in Docker?
+  aliases: []
+  source: pdf:1783358005276.pdf
+  status: published
+- id: docker-what-is-azure-container-registry-acr-how-does-it-049ea0b7d7
+  topic: docker
+  question: What is Azure Container Registry (ACR), and how does it integrate with
+    Azure DevOps?
+  aliases: []
+  source: pdf:1785077379612.pdf
+  status: published
+- id: docker-what-is-container-509ce7334b
+  topic: docker
+  question: What is a container?
+  aliases: []
+  source: pdf:1783358005276.pdf
+  status: published
+- id: docker-what-is-containerd-e57c1f9764
+  topic: docker
+  question: What is containerd?
+  aliases: []
+  source: pdf:1786378433442.pdf
+  status: published
+- id: docker-what-is-database-connection-string-best-practice-35c8c9519e
+  topic: docker
+  question: What is a database connection string best practice in containerized environments?
+  aliases: []
+  source: pdf:1786378433442.pdf
+  status: published
+- id: docker-what-is-differ-cmd-entrypoint-dockerfile-31a58abb5a
+  topic: docker
+  question: What is the difference between CMD and ENTRYPOINT in a Dockerfile?
+  aliases: []
+  source: pdf:1786378433442.pdf
+  status: published
+- id: docker-what-is-differ-copy-add-dockerfile-d4d2e1e316
+  topic: docker
+  question: What is the difference between COPY and ADD in Dockerfile?
+  aliases: []
+  source: pdf:1786456624707.pdf
+  status: published
+- id: docker-what-is-differ-docker-vm-64e8d2d656
+  topic: docker
+  question: What is the difference between Docker and Virtual Machine?
+  aliases: []
+  source: pdf:1786456624707.pdf
+  status: published
+- id: docker-what-is-distroless-image-7f2b69720b
+  topic: docker
+  question: What is a distroless image?
+  aliases: []
+  source: pdf:1786378433442.pdf
+  status: published
+- id: docker-what-is-docker-33f22cd4b8
+  topic: docker
+  question: What is Docker?
+  aliases: []
+  source: pdf:1783358005276.pdf
+  status: published
+- id: docker-what-is-docker-compose-c9d3e8938d
+  topic: docker
+  question: What is Docker Compose?
+  aliases: []
+  source: pdf:1786456624707.pdf
+  status: published
+- id: docker-what-is-docker-container-be317c4024
+  topic: docker
+  question: What is a Docker Container?
+  aliases: []
+  source: pdf:1786456624707.pdf
+  status: published
+- id: docker-what-is-docker-differ-from-vm-7c127aaf29
+  topic: docker
+  question: What is Docker, and how is it different from a virtual machine?
+  aliases: []
+  source: pdf:1786378433442.pdf
+  status: published
+- id: docker-what-is-docker-dockerignore-file-5a002eb211
+  topic: docker
+  question: What is a Docker .dockerignore file?
+  aliases: []
+  source: pdf:1786456624707.pdf
+  status: published
+- id: docker-what-is-docker-environment-variable-b0955b0c63
+  topic: docker
+  question: What is a Docker Environment Variable?
+  aliases: []
+  source: pdf:1786456624707.pdf
+  status: published
+- id: docker-what-is-docker-health-check-a8b0478909
+  topic: docker
+  question: What is a Docker Health Check?
+  aliases: []
+  source: pdf:1786456624707.pdf
+  status: published
+- id: docker-what-is-docker-network-5b9fa48f40
+  topic: docker
+  question: What is Docker Network?
+  aliases: []
+  source: pdf:1786456624707.pdf
+  status: published
+- id: docker-what-is-docker-s-garbage-collection-e436211005
+  topic: docker
+  question: What is Docker's garbage collection?
+  aliases: []
+  source: pdf:1786378433442.pdf
+  status: published
+- id: docker-what-is-docker-security-d631e18f0d
+  topic: docker
+  question: What is Docker Security?
+  aliases: []
+  source: pdf:1786456624707.pdf
+  status: published
+- id: docker-what-is-docker-volume-vs-bind-mount-513515bb2a
+  topic: docker
+  question: What is a Docker volume vs a bind mount?
+  aliases: []
+  source: pdf:1786378433442.pdf
+  status: published
+- id: docker-what-is-docker-workflow-a03f1b2f95
+  topic: docker
+  question: What is Docker workflow?
+  aliases: []
+  source: pdf:1783358005276.pdf
+  status: published
+- id: docker-what-is-docker-compose-override-yml-34aa5794b4
+  topic: docker
+  question: What is docker-compose.override.yml?
+  aliases: []
+  source: pdf:1786378433442.pdf
+  status: published
+- id: docker-what-is-dockerfile-554a617f6d
+  topic: docker
+  question: What is Dockerfile?
+  aliases: []
+  source: pdf:1786456624707.pdf
+  status: published
+- id: docker-what-is-dockerfile-walk-me-through-writing-one-n-4aa264ef2e
+  topic: docker
+  question: What is a Dockerfile, and walk me through writing one for a Node.js application.
+  aliases: []
+  source: pdf:1786378433442.pdf
+  status: published
+- id: docker-what-is-dockerfile-why-do-we-use-it-c460183e00
+  topic: docker
+  question: What is a Dockerfile and why do we use it?
+  aliases: []
+  source: pdf:1783358005276.pdf
+  status: published
+- id: docker-what-is-ecr-lifecycle-policy-5684eabeb5
+  topic: docker
+  question: What is an ECR lifecycle policy?
+  aliases: []
+  source: pdf:1786378433442.pdf
+  status: published
+- id: docker-what-is-importance-volumes-docker-2a642587d6
+  topic: docker
+  question: What is the importance of volumes in Docker?
+  aliases: []
+  source: pdf:1783358005276.pdf
+  status: published
+- id: docker-what-is-layered-file-system-union-file-system-f6f79607ba
+  topic: docker
+  question: What is Layered file system/Union file system?
+  aliases: []
+  source: pdf:1783358005276.pdf
+  status: published
+- id: docker-what-is-multi-stage-docker-build-36424ca044
+  topic: docker
+  question: What is a Multi-stage Docker Build?
+  aliases: []
+  source: pdf:1786456624707.pdf
+  status: published
+- id: docker-what-is-os-level-virtualization-bba92ca1cb
+  topic: docker
+  question: What is OS-Level Virtualization?
+  aliases: []
+  source: pdf:1783358005276.pdf
+  status: published
+- id: docker-what-is-registry-server-docker-2cb174f832
+  topic: docker
+  question: What is Registry server in Docker?
+  aliases: []
+  source: pdf:1783358005276.pdf
+  status: published
+- id: docker-what-is-trivy-how-do-you-scan-docker-images-vuln-7b2ef53573
+  topic: docker
+  question: What is Trivy, and how do you scan Docker images for vulnerabilities in
+    a pipeline?
+  aliases: []
+  source: pdf:1786378433442.pdf
+  status: published
+- id: docker-your-docker-image-build-takes-20-minutes-how-do-f495bf844d
+  topic: docker
+  question: Your Docker image build takes 20 minutes. How do you reduce it?
+  aliases: []
+  source: pdf:1786378433442.pdf
+  status: published
+- id: gcp-what-is-knative-3bfaa6147e
+  topic: gcp
+  question: What is Knative?
+  aliases: []
+  source: pdf:1786378433442.pdf
+  status: published
+- id: git-can-you-elaborate-commit-git-105c866929
+  topic: git
+  question: Can you elaborate commit in Git?
+  aliases: []
+  source: pdf:1783358005276.pdf
+  status: published
+- id: git-can-you-explain-git-branching-strategies-git-flo-559a9cb044
+  topic: git
+  question: Can you explain Git branching strategies (Git Flow, Trunk-Based Development)?
+  aliases: []
+  source: pdf:1785077379612.pdf
+  status: published
+- id: git-can-you-explain-gitlab-branching-strategy-4acdb87b87
+  topic: git
+  question: Can you explain the GitLab branching strategy?
+  aliases: []
+  source: pdf:1785077379612.pdf
+  status: published
+- id: git-developer-accidentally-pushed-secret-github-what-8213978955
+  topic: git
+  question: A developer accidentally pushed a secret to GitHub. What do you do?
+  aliases: []
+  source: pdf:1786378433442.pdf
+  status: published
+- id: git-differ-git-pull-git-clone-f8157e3d1e
+  topic: git
+  question: Difference between Git pull and Git clone?
+  aliases: []
+  source: pdf:1783358005276.pdf
+  status: published
+- id: git-explain-concept-tags-gitlab-1e0b2cd27a
+  topic: git
+  question: Explain the concept of tags in GitLab.
+  aliases: []
+  source: pdf:1785077379612.pdf
+  status: published
+- id: git-explain-git-branching-strategy-you-use-productio-fa5367a9f2
+  topic: git
+  question: Explain the Git branching strategy you use in production environments.
+  aliases: []
+  source: pdf:1786378433442.pdf
+  status: published
+- id: git-explain-git-internals-what-actually-happens-when-fa69316e05
+  topic: git
+  question: Explain Git internals — what actually happens when you run git commit?
+  aliases: []
+  source: pdf:1786378433442.pdf
+  status: published
+- id: git-how-combine-multiple-commits-into-single-commit-fcba0940e5
+  topic: git
+  question: How to combine multiple commits into single commit?
+  aliases: []
+  source: pdf:1784196457523.pdf
+  status: published
+- id: git-how-do-you-handle-key-points-ga-insights-failure-9b477ce3fe
+  topic: git
+  question: 'How do you handle Key Points : GA_Insights Failure Handling Plow : failed
+    builds?'
+  aliases: []
+  source: pdf:ocr:1786289541473.txt
+  status: published
+- id: git-how-do-you-handle-merge-conflicts-gitlab-034fcb0e96
+  topic: git
+  question: How do you handle merge conflicts in GitLab?
+  aliases: []
+  source: pdf:1785077379612.pdf
+  status: published
+- id: git-how-do-you-integrate-github-ci-cd-tools-dc815462e2
+  topic: git
+  question: How do you integrate GitHub with CI/CD tools?
+  aliases: []
+  source: pdf:1785077379612.pdf
+  status: published
+- id: git-how-do-you-resolve-conflicts-git-9d96c97d17
+  topic: git
+  question: How do you resolve conflicts in Git?
+  aliases: []
+  source: pdf:1785077379612.pdf
+  status: published
+- id: git-what-are-advantages-git-3e33b6f4a8
+  topic: git
+  question: What are the advantages of Git?
+  aliases: []
+  source: pdf:1783358005276.pdf
+  status: published
+- id: git-what-are-advantages-source-code-management-a849a5cc37
+  topic: git
+  question: What are the Advantages of Source Code Management?
+  aliases: []
+  source: pdf:1783358005276.pdf
+  status: published
+- id: git-what-are-benefits-using-version-control-systems-6021fc3cfb
+  topic: git
+  question: What are the benefits of using version control systems like Git?
+  aliases: []
+  source: pdf:1785077379612.pdf
+  status: published
+- id: git-what-are-stages-git-f42beb6565
+  topic: git
+  question: What are the stages in Git?
+  aliases: []
+  source: pdf:1783358005276.pdf
+  status: published
+- id: git-what-do-you-mean-by-snapshot-git-08cc141694
+  topic: git
+  question: What do you mean by 'Snapshot' in Git?
+  aliases: []
+  source: pdf:1783358005276.pdf
+  status: published
+- id: git-what-does-git-stash-do-cd4f7770ca
+  topic: git
+  question: What does git stash do?
+  aliases: []
+  source: pdf:ocr:100 DevOps Engineer Interview Questions and Answers - Handwritten
+    Notes.txt
+  status: published
+- id: git-what-is-commit-message-git-b53ae81727
+  topic: git
+  question: What is the commit message in Git?
+  aliases: []
+  source: pdf:1783358005276.pdf
+  status: published
+- id: git-what-is-common-branching-strategy-git-188ac12e47
+  topic: git
+  question: What is the common branching strategy in Git?
+  aliases: []
+  source: pdf:1783358005276.pdf
+  status: published
+- id: git-what-is-differ-git-merge-rebase-3a38094a1d
+  topic: git
+  question: What is the difference between Git merge and rebase?
+  aliases: []
+  source: pdf:1783358005276.pdf
+  status: published
+- id: git-what-is-differ-git-pull-fetch-a424491e69
+  topic: git
+  question: What is the difference between Git pull and Fetch?
+  aliases: []
+  source: pdf:1783358005276.pdf
+  status: published
+- id: git-what-is-differ-git-svn-2a5b091a0b
+  topic: git
+  question: What is the difference between Git and SVN?
+  aliases: []
+  source: pdf:1783358005276.pdf
+  status: published
+- id: git-what-is-differ-gitlab-github-0576472082
+  topic: git
+  question: What is the difference between GitLab and GitHub?
+  aliases: []
+  source: pdf:1785077379612.pdf
+  status: published
+- id: git-what-is-git-0fdffcd2e2
+  topic: git
+  question: What is Git?
+  aliases: []
+  source: pdf:1783358005276.pdf
+  status: published
+- id: git-what-is-git-bisect-dba7749734
+  topic: git
+  question: What is Git Bisect?
+  aliases: []
+  source: pdf:1783358005276.pdf
+  status: published
+- id: git-what-is-git-cherry-pick-ef5802098a
+  topic: git
+  question: What is Git cherry-pick?
+  aliases: []
+  source: pdf:1783358005276.pdf
+  status: published
+- id: git-what-is-git-hooks-b89f222d7a
+  topic: git
+  question: What is Git hooks?
+  aliases: []
+  source: pdf:1783358005276.pdf
+  status: published
+- id: git-what-is-git-merge-5330967e5e
+  topic: git
+  question: What is Git merge?
+  aliases: []
+  source: pdf:1783358005276.pdf
+  status: published
+- id: git-what-is-git-rebase-3b521ee21f
+  topic: git
+  question: What is git rebase?
+  aliases: []
+  source: pdf:ocr:100 DevOps Engineer Interview Questions and Answers - Handwritten
+    Notes.txt
+  status: published
+- id: git-what-is-git-reset-86e587b795
+  topic: git
+  question: What is Git Reset?
+  aliases: []
+  source: pdf:1783358005276.pdf
+  status: published
+- id: git-what-is-git-revert-9cc4241e9b
+  topic: git
+  question: What is Git Revert?
+  aliases: []
+  source: pdf:1783358005276.pdf
+  status: published
+- id: git-what-is-git-squash-b6bab6e295
+  topic: git
+  question: What is Git squash?
+  aliases: []
+  source: pdf:1783358005276.pdf
+  status: published
+- id: git-what-is-git-stash-affe0bd1ae
+  topic: git
+  question: What is Git stash?
+  aliases: []
+  source: pdf:1783358005276.pdf
+  status: published
+- id: git-what-is-github-2c1dc74ebd
+  topic: git
+  question: What is GitHub?
+  aliases: []
+  source: pdf:1783358005276.pdf
+  status: published
+- id: git-what-is-gitlab-s-only-rules-ci-cd-c722ce0858
+  topic: git
+  question: What is GitLab's only/rules in CI/CD?
+  aliases: []
+  source: pdf:1786378433442.pdf
+  status: published
+- id: git-what-is-pull-request-merge-request-how-do-you-7ea9b47d3c
+  topic: git
+  question: What is a Pull Request / Merge Request, and how do you structure an effective
+    code review process?
+  aliases: []
+  source: pdf:1786378433442.pdf
+  status: published
+- id: git-what-is-rebase-when-would-you-use-it-instead-mer-b993b994dc
+  topic: git
+  question: What is a rebase, and when would you use it instead of merging?
+  aliases: []
+  source: pdf:1785077379612.pdf
+  status: published
+- id: git-what-is-source-code-management-7820648bbd
+  topic: git
+  question: What is Source Code Management?
+  aliases: []
+  source: pdf:1783358005276.pdf
+  status: published
+- id: github-actions-how-do-you-create-github-actions-workflow-361243d449
+  topic: github-actions
+  question: How do you create a GitHub Actions workflow?
+  aliases: []
+  source: pdf:1785077379612.pdf
+  status: published
+- id: github-actions-how-do-you-secure-secrets-manage-environments-gi-ba049dfef1
+  topic: github-actions
+  question: How do you secure secrets and manage environments in GitHub Actions?
+  aliases: []
+  source: pdf:1786378433442.pdf
+  status: published
+- id: github-actions-how-do-you-securely-store-secrets-github-actions-18cfc33c0d
+  topic: github-actions
+  question: How do you securely store secrets in GitHub Actions?
+  aliases: []
+  source: pdf:1785077379612.pdf
+  status: published
+- id: github-actions-how-do-you-write-reusable-workflow-github-action-c9716a188a
+  topic: github-actions
+  question: How do you write a reusable workflow in GitHub Actions?
+  aliases: []
+  source: pdf:1786378433442.pdf
+  status: published
+- id: github-actions-make-shenge-critical-production-environment-you-f0d536a878
+  topic: github-actions
+  question: '> to make a shenge. @ critical production environment. ‘ you ensure it’s
+    safe?'
+  aliases: []
+  source: pdf:ocr:1784874876936.txt
+  status: published
+- id: github-actions-what-are-github-actions-how-do-they-work-82de6439b4
+  topic: github-actions
+  question: What are GitHub Actions and how do they work?
+  aliases: []
+  source: pdf:1785077379612.pdf
+  status: published
+- id: github-actions-what-are-github-actions-their-advantages-bdadd7f44d
+  topic: github-actions
+  question: What are GitHub Actions and their advantages?
+  aliases: []
+  source: pdf:1784431820463.pdf
+  status: published
+- id: github-actions-what-are-runners-github-actions-ce6b79d24c
+  topic: github-actions
+  question: What are runners in GitHub Actions?
+  aliases: []
+  source: pdf:1785077379612.pdf
+  status: published
+- id: github-actions-what-is-act-b92f1bee3f
+  topic: github-actions
+  question: What is act?
+  aliases: []
+  source: pdf:1786378433442.pdf
+  status: published
+- id: github-actions-what-is-actions-upload-artifact-actions-download-a6f4baf63b
+  topic: github-actions
+  question: What is actions/upload-artifact and actions/download-artifact?
+  aliases: []
+  source: pdf:1786378433442.pdf
+  status: published
+- id: github-actions-what-is-composite-action-d0d4f69f26
+  topic: github-actions
+  question: What is a composite action?
+  aliases: []
+  source: pdf:1786378433442.pdf
+  status: published
+- id: github-actions-what-is-continue-on-error-github-actions-9f6220c9b5
+  topic: github-actions
+  question: What is continue-on-error in GitHub Actions?
+  aliases: []
+  source: pdf:1786378433442.pdf
+  status: published
+- id: github-actions-what-is-differ-origin-upstream-git-2dfc71b283
+  topic: github-actions
+  question: What is the difference between origin and upstream in Git?
+  aliases: []
+  source: pdf:1786378433442.pdf
+  status: published
+- id: github-actions-what-is-fromjson-github-actions-expressions-097e2b4ab0
+  topic: github-actions
+  question: What is fromJSON() in GitHub Actions expressions?
+  aliases: []
+  source: pdf:1786378433442.pdf
+  status: published
+- id: github-actions-what-is-github-actions-cache-action-64edf3b91e
+  topic: github-actions
+  question: What is GitHub Actions' cache action?
+  aliases: []
+  source: pdf:1786378433442.pdf
+  status: published
+- id: github-actions-what-is-github-actions-concurrency-389f4bcdc8
+  topic: github-actions
+  question: What is GitHub Actions concurrency?
+  aliases: []
+  source: pdf:1786378433442.pdf
+  status: published
+- id: github-actions-what-is-github-actions-openid-connect-oidc-6eb5ebc8b0
+  topic: github-actions
+  question: What is GitHub Actions OpenID Connect (OIDC)?
+  aliases: []
+  source: pdf:1786378433442.pdf
+  status: published
+- id: github-actions-what-is-github-actions-runner-f559eb1788
+  topic: github-actions
+  question: What is a GitHub Actions runner?
+  aliases: []
+  source: pdf:1786378433442.pdf
+  status: published
+- id: github-actions-what-is-github-actions-runner-os-context-9d11c9f5f3
+  topic: github-actions
+  question: What is the GitHub Actions runner.os context?
+  aliases: []
+  source: pdf:1786378433442.pdf
+  status: published
+- id: github-actions-what-is-github-actions-timeout-minutes-8abef00543
+  topic: github-actions
+  question: What is GitHub Actions timeout-minutes?
+  aliases: []
+  source: pdf:1786378433442.pdf
+  status: published
+- id: github-actions-what-is-github-actions-workflow-explain-its-key-98e81b1968
+  topic: github-actions
+  question: What is a GitHub Actions workflow, and explain its key components.
+  aliases: []
+  source: pdf:1786378433442.pdf
+  status: published
+- id: github-actions-what-is-jobs-job-id-outputs-feature-89acb4fdf0
+  topic: github-actions
+  question: What is the jobs.<job_id>.outputs feature?
+  aliases: []
+  source: pdf:1786378433442.pdf
+  status: published
+- id: github-actions-what-is-permissions-key-github-actions-eaf3499e2e
+  topic: github-actions
+  question: What is the permissions key in GitHub Actions?
+  aliases: []
+  source: pdf:1786378433442.pdf
+  status: published
+- id: github-actions-what-is-push-paths-trigger-filter-871ef0da5e
+  topic: github-actions
+  question: What is the push.paths trigger filter?
+  aliases: []
+  source: pdf:1786378433442.pdf
+  status: published
+- id: github-actions-what-is-tilt-7409b55835
+  topic: github-actions
+  question: What is Tilt?
+  aliases: []
+  source: pdf:1786378433442.pdf
+  status: published
+- id: github-actions-what-is-workflow-dispatch-trigger-a2026ba376
+  topic: github-actions
+  question: What is a workflow_dispatch trigger?
+  aliases: []
+  source: pdf:1786378433442.pdf
+  status: published
+- id: github-actions-what-is-workflow-run-trigger-4dcdf0a9bf
+  topic: github-actions
+  question: What is workflow_run trigger?
+  aliases: []
+  source: pdf:1786378433442.pdf
+  status: published
+- id: gitlab-how-does-gitlab-ci-cd-work-ae94e550d2
+  topic: gitlab
+  question: How does GitLab CI/CD work?
+  aliases: []
+  source: pdf:1785077379612.pdf
+  status: published
+- id: gitlab-what-is-gitlab-runner-36541e2002
+  topic: gitlab
+  question: What is a GitLab Runner?
+  aliases: []
+  source: pdf:1785077379612.pdf
+  status: published
+- id: gitlab-what-is-include-keyword-gitlab-ci-yml-6182e152e0
+  topic: gitlab
+  question: What is the include keyword in .gitlab-ci.yml?
+  aliases: []
+  source: pdf:1786378433442.pdf
+  status: published
+- id: gitlab-what-is-purpose-gitlab-ci-yml-file-2d7347e356
+  topic: gitlab
+  question: What is the purpose of a .gitlab-ci.yml file?
+  aliases: []
+  source: pdf:1785077379612.pdf
+  status: published
+- id: helm-what-are-helm-charts-54cb1cbd50
+  topic: helm
+  question: What are Helm charts?
+  aliases: []
+  source: pdf:1784196457523.pdf
+  status: published
+- id: helm-what-is-helm-a1e51e3c3d
+  topic: helm
+  question: What is Helm?
+  aliases: []
+  source: pdf:1786378433442.pdf
+  status: published
+- id: helm-what-is-helm-values-file-98ff473405
+  topic: helm
+  question: What is a Helm values file?
+  aliases: []
+  source: pdf:1786378433442.pdf
+  status: published
+- id: jenkins-explain-differ-declarative-scripted-pipelines-je-ef72e308c1
+  topic: jenkins
+  question: Explain the difference between Declarative and Scripted pipelines in Jenkins.
+  aliases: []
+  source: pdf:1786378433442.pdf
+  status: published
+- id: jenkins-explain-your-jenkins-pipeline-key-points-ga-thsi-cfa7697fbc
+  topic: jenkins
+  question: 'Explain your Jenkins Pipeline Key Points : GA. thsights Mpaing Plate’:
+    ) in your current project. OE eee |e As Se Answer : '' 6 ez | oe : | @ Maven Build
+    Push Code Jenkins Maven Run In my current project, whenever developers ay Triggers
+    Build Build Ths push code to the Git repository, Jenkins | © Selenium Automation
+    automatically checks out the code, builds @ Allure Re ports L r the project using
+    Maven, runs Selenium | Sy & | tests, generates Allure reports, sends © Email Notifications
+    QO sac = email notifications, and deploys to the | @ Deployment to QA Allure Email
+    Deploy to | QA environment if all tests pass. \ ages Nosifeatis Oh Sener SS EE".
+    @ How do you run Selenium —_Key Points : QA_Insights Example Flow : tests in Jenkins?'
+  aliases: []
+  source: pdf:ocr:1786289541473.txt
+  status: published
+- id: jenkins-how-can-you-handle-failed-builds-jenkins-f89fef2c95
+  topic: jenkins
+  question: How can you handle failed builds in Jenkins?
+  aliases: []
+  source: pdf:1785077379612.pdf
+  status: published
+- id: jenkins-how-can-you-monitor-jenkins-logs-troubleshoot-is-a2eec6962c
+  topic: jenkins
+  question: How can you monitor Jenkins logs and troubleshoot issues?
+  aliases: []
+  source: pdf:1785077379612.pdf
+  status: published
+- id: jenkins-how-can-you-use-python-jenkins-pipelines-2311f76de8
+  topic: jenkins
+  question: How can you use Python in Jenkins pipelines?
+  aliases: []
+  source: pdf:1785077379612.pdf
+  status: published
+- id: jenkins-how-do-you-back-up-jenkins-10d95e5e18
+  topic: jenkins
+  question: How do you back up Jenkins?
+  aliases: []
+  source: pdf:1786378433442.pdf
+  status: published
+- id: jenkins-how-do-you-configure-jenkins-high-availability-2d354d47f7
+  topic: jenkins
+  question: How do you configure Jenkins for high availability?
+  aliases: []
+  source: pdf:1786378433442.pdf
+  status: published
+- id: jenkins-how-do-you-configure-sonarqube-jenkins-77baa61e7d
+  topic: jenkins
+  question: How do you configure SonarQube in Jenkins?
+  aliases: []
+  source: pdf:1785077379612.pdf
+  status: published
+- id: jenkins-how-do-you-implement-blue-green-deployment-strat-63b240eb34
+  topic: jenkins
+  question: How do you implement a Blue-Green deployment strategy using Jenkins?
+  aliases: []
+  source: pdf:1786378433442.pdf
+  status: published
+- id: jenkins-how-do-you-implement-canary-deployment-jenkins-c7c623207f
+  topic: jenkins
+  question: How do you implement a Canary deployment in Jenkins?
+  aliases: []
+  source: pdf:1786378433442.pdf
+  status: published
+- id: jenkins-how-do-you-integrate-nexus-repository-manager-je-83f1e8c8c0
+  topic: jenkins
+  question: How do you integrate Nexus Repository Manager with Jenkins?
+  aliases: []
+  source: pdf:1785077379612.pdf
+  status: published
+- id: jenkins-how-do-you-integrate-sonarqube-into-jenkins-131365d90e
+  topic: jenkins
+  question: How do you integrate SonarQube into Jenkins?
+  aliases: []
+  source: pdf:1786378433442.pdf
+  status: published
+- id: jenkins-how-do-you-manage-jenkins-credentials-securely-f4bad37f75
+  topic: jenkins
+  question: How do you manage Jenkins credentials securely?
+  aliases: []
+  source: pdf:1786378433442.pdf
+  status: published
+- id: jenkins-how-do-you-manage-secrets-credentials-securely-j-3b74ce49f8
+  topic: jenkins
+  question: How do you manage secrets and credentials securely in Jenkins?
+  aliases: []
+  source: pdf:1786378433442.pdf
+  status: published
+- id: jenkins-how-do-you-mark-build-as-unstable-vs-failed-jenk-7b17d5915e
+  topic: jenkins
+  question: How do you mark a build as unstable vs failed in Jenkins?
+  aliases: []
+  source: pdf:1786378433442.pdf
+  status: published
+- id: jenkins-how-do-you-parameterize-jenkins-job-1583c81c03
+  topic: jenkins
+  question: How do you parameterize a Jenkins job?
+  aliases: []
+  source: pdf:1786378433442.pdf
+  status: published
+- id: jenkins-how-does-gitlab-ci-cd-work-differ-from-jenkins-4afd8e39d7
+  topic: jenkins
+  question: How does GitLab CI/CD work, and how is it different from Jenkins?
+  aliases: []
+  source: pdf:1786378433442.pdf
+  status: published
+- id: jenkins-how-does-jenkins-achieve-continuous-integration-68547d0752
+  topic: jenkins
+  question: How does Jenkins achieve Continuous Integration?
+  aliases: []
+  source: pdf:1785077379612.pdf
+  status: published
+- id: jenkins-how-does-jenkins-handle-parallel-execution-pipel-040c153080
+  topic: jenkins
+  question: How does Jenkins handle parallel execution in pipelines?
+  aliases: []
+  source: pdf:1785077379612.pdf
+  status: published
+- id: jenkins-how-install-jenkins-0cd7413da7
+  topic: jenkins
+  question: How to install Jenkins?
+  aliases: []
+  source: pdf:1783358005276.pdf
+  status: published
+- id: jenkins-how-many-types-configurations-jenkins-9b9d6be1a1
+  topic: jenkins
+  question: How many types of configurations in Jenkins?
+  aliases: []
+  source: pdf:1783358005276.pdf
+  status: published
+- id: jenkins-key-terminology-that-we-use-jenkins-0fd9979fea
+  topic: jenkins
+  question: Key terminology that we use in Jenkins?
+  aliases: []
+  source: pdf:1783358005276.pdf
+  status: published
+- id: jenkins-what-are-different-ways-trigger-build-jenkins-4c6687bbb8
+  topic: jenkins
+  question: What are the different ways to trigger a build in Jenkins?
+  aliases: []
+  source: pdf:1785077379612.pdf
+  status: published
+- id: jenkins-what-are-jenkins-agents-044f3ed6ca
+  topic: jenkins
+  question: What are Jenkins agents?
+  aliases: []
+  source: pdf:1785077379612.pdf
+  status: published
+- id: jenkins-what-are-jenkins-agents-nodes-how-do-they-work-d-9487f36103
+  topic: jenkins
+  question: What are Jenkins Agents/Nodes, and how do they work in a distributed build
+    environment?
+  aliases: []
+  source: pdf:1786378433442.pdf
+  status: published
+- id: jenkins-what-are-steps-secure-jenkins-d8f7f517ad
+  topic: jenkins
+  question: What are the steps to secure Jenkins?
+  aliases: []
+  source: pdf:1785077379612.pdf
+  status: published
+- id: jenkins-what-are-two-types-jenkins-pipelines-b9a6688fa2
+  topic: jenkins
+  question: What are the two types of Jenkins pipelines?
+  aliases: []
+  source: pdf:1785077379612.pdf
+  status: published
+- id: jenkins-what-do-you-mean-by-plugins-jenkins-0521eb8d53
+  topic: jenkins
+  question: What do you mean by Plugins in Jenkins?
+  aliases: []
+  source: pdf:1783358005276.pdf
+  status: published
+- id: jenkins-what-do-you-mean-by-workspace-jenkins-03af40e479
+  topic: jenkins
+  question: What do you mean by workspace in Jenkins?
+  aliases: []
+  source: pdf:1783358005276.pdf
+  status: published
+- id: jenkins-what-is-blue-ocean-jenkins-6894a33753
+  topic: jenkins
+  question: What is Blue Ocean in Jenkins?
+  aliases: []
+  source: pdf:1785077379612.pdf
+  status: published
+- id: jenkins-what-is-differ-freestyle-project-pipeline-projec-a9a858c94a
+  topic: jenkins
+  question: What is the difference between a freestyle project and a pipeline project
+    in Jenkins?
+  aliases: []
+  source: pdf:1785077379612.pdf
+  status: published
+- id: jenkins-what-is-jenkins-b5d44538e3
+  topic: jenkins
+  question: What is Jenkins?
+  aliases: []
+  source: pdf:1785077379612.pdf
+  status: published
+- id: jenkins-what-is-jenkins-architecture-e94736e669
+  topic: jenkins
+  question: What is Jenkins Architecture?
+  aliases: []
+  source: pdf:1783358005276.pdf
+  status: published
+- id: jenkins-what-is-jenkins-configuration-as-code-jcasc-c156e12bd0
+  topic: jenkins
+  question: What is Jenkins Configuration as Code (JCasC)?
+  aliases: []
+  source: pdf:1786378433442.pdf
+  status: published
+- id: jenkins-what-is-jenkins-groovy-sandbox-dd67ddda41
+  topic: jenkins
+  question: What is Jenkins Groovy sandbox?
+  aliases: []
+  source: pdf:1786378433442.pdf
+  status: published
+- id: jenkins-what-is-jenkins-master-agent-architecture-45f5862662
+  topic: jenkins
+  question: What is the Jenkins Master/Agent architecture?
+  aliases: []
+  source: pdf:1786378433442.pdf
+  status: published
+- id: jenkins-what-is-jenkins-pipeline-6459dbe72e
+  topic: jenkins
+  question: What is a Jenkins pipeline?
+  aliases: []
+  source: pdf:1785077379612.pdf
+  status: published
+- id: jenkins-what-is-jenkins-why-is-it-used-devops-cbe78bd96f
+  topic: jenkins
+  question: What is Jenkins, and why is it used in DevOps?
+  aliases: []
+  source: pdf:1786378433442.pdf
+  status: published
+- id: jenkins-what-is-jenkins-workflow-6d497ec896
+  topic: jenkins
+  question: What is Jenkins Workflow?
+  aliases: []
+  source: pdf:1783358005276.pdf
+  status: published
+- id: jenkins-what-is-jenkinsfile-d515da0b18
+  topic: jenkins
+  question: What is a Jenkinsfile?
+  aliases: []
+  source: pdf:1785077379612.pdf
+  status: published
+- id: jenkins-what-is-jenkinsfile-why-should-it-be-stored-vers-06e3506896
+  topic: jenkins
+  question: What is a Jenkinsfile, and why should it be stored in version control?
+  aliases: []
+  source: pdf:1786378433442.pdf
+  status: published
+- id: jenkins-what-is-stash-unstash-directive-jenkins-62548069fb
+  topic: jenkins
+  question: What is the stash and unstash directive in Jenkins?
+  aliases: []
+  source: pdf:1786378433442.pdf
+  status: published
+- id: jenkins-what-is-user-administration-jenkins-69c800b69d
+  topic: jenkins
+  question: What is User Administration in Jenkins?
+  aliases: []
+  source: pdf:1783358005276.pdf
+  status: published
+- id: jenkins-when-you-deploy-jenkins-helm-what-is-folder-stru-911daf2f6d
+  topic: jenkins
+  question: When you deploy Jenkins with Helm, what is the folder structure?
+  aliases: []
+  source: pdf:1784196457523.pdf
+  status: published
+- id: jenkins-why-only-jenkins-ba73b9f5c1
+  topic: jenkins
+  question: Why only Jenkins?
+  aliases: []
+  source: pdf:1783358005276.pdf
+  status: published
+- id: kubernetes-can-you-explain-gitops-workflow-kubernetes-using-a29500bd2b
+  topic: kubernetes
+  question: Can you explain the GitOps workflow in Kubernetes using ArgoCD and GitHub
+    Actions?
+  aliases: []
+  source: pdf:1785077379612.pdf
+  status: published
+- id: kubernetes-can-you-explain-how-set-up-ingress-controller-ku-dcc035ce85
+  topic: kubernetes
+  question: Can you explain how to set up an Ingress Controller in a Kubernetes cluster?
+  aliases: []
+  source: pdf:1785077379612.pdf
+  status: published
+- id: kubernetes-explain-differ-deployment-statefulset-kubernetes-6ba405a468
+  topic: kubernetes
+  question: Explain the difference between a Deployment and a StatefulSet in Kubernetes.
+  aliases: []
+  source: pdf:1785077379612.pdf
+  status: published
+- id: kubernetes-explain-how-you-ve-set-up-kubernetes-cluster-686d22a3eb
+  topic: kubernetes
+  question: Explain how you've set up a Kubernetes cluster.
+  aliases: []
+  source: pdf:1785077379612.pdf
+  status: published
+- id: kubernetes-explain-kubernetes-architecture-what-are-main-co-c82461f9f4
+  topic: kubernetes
+  question: Explain the Kubernetes architecture — what are the main components?
+  aliases: []
+  source: pdf:1786378433442.pdf
+  status: published
+- id: kubernetes-explain-kubernetes-resource-requests-limits-what-a4dd3bb7ed
+  topic: kubernetes
+  question: Explain Kubernetes resource requests and limits. What happens when a container
+    exceeds its limits?
+  aliases: []
+  source: pdf:1786378433442.pdf
+  status: published
+- id: kubernetes-how-do-you-deploy-elk-stack-kubernetes-productio-73bffb5114
+  topic: kubernetes
+  question: How do you deploy the ELK stack on Kubernetes for production log aggregation?
+  aliases: []
+  source: pdf:1786378433442.pdf
+  status: published
+- id: kubernetes-how-do-you-design-system-that-can-scale-millions-fd7ac49451
+  topic: kubernetes
+  question: How do you design a system that can scale to millions of users?
+  aliases: []
+  source: pdf:ocr:1784874876936.txt
+  status: published
+- id: kubernetes-how-do-you-ensure-deployment-is-zero-downtime-dffb59e320
+  topic: kubernetes
+  question: How do you ensure a deployment is zero-downtime?
+  aliases: []
+  source: pdf:ocr:1784874876936.txt
+  status: published
+- id: kubernetes-how-do-you-expose-kubernetes-application-externa-5620e5f318
+  topic: kubernetes
+  question: How do you expose a Kubernetes application to external traffic?
+  aliases: []
+  source: pdf:1785077379612.pdf
+  status: published
+- id: kubernetes-how-do-you-handle-datebase-migrations-production-a456516e58
+  topic: kubernetes
+  question: How do you handle datebase migrations in production?
+  aliases: []
+  source: pdf:ocr:1784874876936.txt
+  status: published
+- id: kubernetes-how-do-you-handle-rollbacks-case-failed-deployme-34b168c37d
+  topic: kubernetes
+  question: How do you handle rollbacks in the case of a failed deployment?
+  aliases: []
+  source: pdf:1785077379612.pdf
+  status: published
+- id: kubernetes-how-do-you-handle-subnetting-kubernetes-environm-5dbbee71a1
+  topic: kubernetes
+  question: How do you handle subnetting in a Kubernetes environment?
+  aliases: []
+  source: pdf:1785077379612.pdf
+  status: published
+- id: kubernetes-how-do-you-implement-cost-optimization-kubernete-a2123cb111
+  topic: kubernetes
+  question: How do you implement cost optimization in a Kubernetes cluster?
+  aliases: []
+  source: pdf:1786378433442.pdf
+  status: published
+- id: kubernetes-how-do-you-implement-horizontal-pod-autoscaling-acd8638efc
+  topic: kubernetes
+  question: How do you implement Horizontal Pod Autoscaling (HPA) in Kubernetes?
+  aliases: []
+  source: pdf:1786378433442.pdf
+  status: published
+- id: kubernetes-how-do-you-implement-zero-downtime-deployments-e-d491460dca
+  topic: kubernetes
+  question: How do you implement zero-downtime deployments on ECS Fargate with a production
+    traffic cutover strategy?
+  aliases: []
+  source: pdf:1786378433442.pdf
+  status: published
+- id: kubernetes-how-do-you-manage-secrets-kubernetes-deployments-befea98841
+  topic: kubernetes
+  question: How do you manage secrets for Kubernetes deployments in GitOps using GitHub
+    Actions and ArgoCD?
+  aliases: []
+  source: pdf:1785077379612.pdf
+  status: published
+- id: kubernetes-how-do-you-rollback-failed-deployment-production-a4a2689802
+  topic: kubernetes
+  question: How do you rollback a failed deployment in production?
+  aliases: []
+  source: pdf:ocr:1784874876936.txt
+  status: published
+- id: kubernetes-how-do-you-use-python-interact-kubernetes-cluste-2005bf30cc
+  topic: kubernetes
+  question: How do you use Python to interact with a Kubernetes cluster?
+  aliases: []
+  source: pdf:1785077379612.pdf
+  status: published
+- id: kubernetes-how-does-kubernetes-achieve-high-availability-5f68cd5f0b
+  topic: kubernetes
+  question: How does Kubernetes achieve high availability?
+  aliases: []
+  source: pdf:1785077379612.pdf
+  status: published
+- id: kubernetes-how-does-kubernetes-handle-scaling-d51a7c495a
+  topic: kubernetes
+  question: How does Kubernetes handle scaling?
+  aliases: []
+  source: pdf:1785077379612.pdf
+  status: published
+- id: kubernetes-how-does-kubernetes-handle-storage-2ca297f81d
+  topic: kubernetes
+  question: How does Kubernetes handle storage?
+  aliases: []
+  source: pdf:1785077379612.pdf
+  status: published
+- id: kubernetes-how-does-kubernetes-networking-work-8ce50ada15
+  topic: kubernetes
+  question: How does Kubernetes networking work?
+  aliases: []
+  source: pdf:1785077379612.pdf
+  status: published
+- id: kubernetes-how-would-you-deploy-kubernetes-application-usin-a476c22a71
+  topic: kubernetes
+  question: How would you deploy a Kubernetes application using GitHub Actions and
+    ArgoCD?
+  aliases: []
+  source: pdf:1785077379612.pdf
+  status: published
+- id: kubernetes-new-deployment-was-successful-but-users-are-now-db07d976e4
+  topic: kubernetes
+  question: A new deployment was successful, but users are now facing errors. | How
+    do you proceed?
+  aliases: []
+  source: pdf:ocr:1784874876936.txt
+  status: published
+- id: kubernetes-node-cluster-is-notready-how-do-you-investigate-ca7228d14a
+  topic: kubernetes
+  question: A node in the cluster is NotReady. How do you investigate?
+  aliases: []
+  source: pdf:ocr:1784874876936.txt
+  status: published
+- id: kubernetes-pod-is-crashloopbackoff-how-do-you-debug-it-1c63709e4f
+  topic: kubernetes
+  question: A pod is in CrashLoopBackOff. How do you debug it?
+  aliases: []
+  source: pdf:1786378433442.pdf
+  status: published
+- id: kubernetes-pod-restarts-intermittently-oomkilled-how-do-you-6af01d2d63
+  topic: kubernetes
+  question: Pod restarts intermittently with OOMKilled. How do you fix?
+  aliases: []
+  source: pdf:ocr:1784874876936.txt
+  status: published
+- id: kubernetes-pods-are-crashloopbackoff-status-how-do-you-trou-fbb0581db5
+  topic: kubernetes
+  question: Pods are in CrashLoopBackOff status. How do you troubleshoot and fix it?
+  aliases: []
+  source: pdf:ocr:1784874876936.txt
+  status: published
+- id: kubernetes-service-is-running-but-pods-cannot-communicate-e-988e1e0f3e
+  topic: kubernetes
+  question: Service is running, but pods cannot communicate with each other. How do
+    you troubleshoot?
+  aliases: []
+  source: pdf:ocr:1784874876936.txt
+  status: published
+- id: kubernetes-what-are-kubernetes-services-how-do-they-differ-be24f390f8
+  topic: kubernetes
+  question: What are Kubernetes services, and how do they differ from Pods?
+  aliases: []
+  source: pdf:1785077379612.pdf
+  status: published
+- id: kubernetes-what-are-main-components-kubernetes-architecture-64bfa7f258
+  topic: kubernetes
+  question: What are the main components of Kubernetes architecture?
+  aliases: []
+  source: pdf:1785077379612.pdf
+  status: published
+- id: kubernetes-what-are-namespaces-kubernetes-a0908875f6
+  topic: kubernetes
+  question: What are Namespaces in Kubernetes?
+  aliases: []
+  source: pdf:1785077379612.pdf
+  status: published
+- id: kubernetes-what-are-pods-kubernetes-275388e1eb
+  topic: kubernetes
+  question: What are Pods in Kubernetes?
+  aliases: []
+  source: pdf:1785077379612.pdf
+  status: published
+- id: kubernetes-what-are-some-safe-deployment-strategies-3d9ed2be49
+  topic: kubernetes
+  question: What are some safe deployment strategies?
+  aliases: []
+  source: pdf:ocr:1784874876936.txt
+  status: published
+- id: kubernetes-what-are-taints-tolerations-c9229cf965
+  topic: kubernetes
+  question: What are Taints and Tolerations?
+  aliases: []
+  source: pdf:1786378433442.pdf
+  status: published
+- id: kubernetes-what-does-kubernetes-scheduler-do-be7b779ab2
+  topic: kubernetes
+  question: What does the Kubernetes Scheduler do?
+  aliases: []
+  source: pdf:1785077379612.pdf
+  status: published
+- id: kubernetes-what-is-argo-cd-how-does-it-implement-gitops-kub-bc2ff7ea35
+  topic: kubernetes
+  question: What is Argo CD, and how does it implement GitOps for Kubernetes deployments?
+  aliases: []
+  source: pdf:1786378433442.pdf
+  status: published
+- id: kubernetes-what-is-cap-theorem-6e2e7fc8f1
+  topic: kubernetes
+  question: What is the CAP theorem?
+  aliases: []
+  source: pdf:1786378433442.pdf
+  status: published
+- id: kubernetes-what-is-configmap-secret-kubernetes-3809580a05
+  topic: kubernetes
+  question: What is a ConfigMap and Secret in Kubernetes?
+  aliases: []
+  source: pdf:1786378433442.pdf
+  status: published
+- id: kubernetes-what-is-differ-high-availability-disaster-recove-b75030bdcd
+  topic: kubernetes
+  question: What is the difference between High Availability and Disaster Recovery?
+  aliases: []
+  source: pdf:ocr:1784874876936.txt
+  status: published
+- id: kubernetes-what-is-etcd-why-is-it-important-kubernetes-52e533e121
+  topic: kubernetes
+  question: What is etcd and why is it important in Kubernetes?
+  aliases: []
+  source: pdf:1785077379612.pdf
+  status: published
+- id: kubernetes-what-is-function-cloud-controller-manager-02a298a095
+  topic: kubernetes
+  question: What is the function of the Cloud Controller Manager?
+  aliases: []
+  source: pdf:1785077379612.pdf
+  status: published
+- id: kubernetes-what-is-ingress-controller-kubernetes-e3f552e171
+  topic: kubernetes
+  question: What is an Ingress Controller in Kubernetes?
+  aliases: []
+  source: pdf:1785077379612.pdf
+  status: published
+- id: kubernetes-what-is-iptables-vs-ipvs-kubernetes-a3c2eb8286
+  topic: kubernetes
+  question: What is iptables vs ipvs in Kubernetes?
+  aliases: []
+  source: pdf:1786378433442.pdf
+  status: published
+- id: kubernetes-what-is-kubectl-debug-cf2182a8a0
+  topic: kubernetes
+  question: What is kubectl debug?
+  aliases: []
+  source: pdf:1786378433442.pdf
+  status: published
+- id: kubernetes-what-is-kubelet-what-role-does-it-play-572e36f327
+  topic: kubernetes
+  question: What is a Kubelet, and what role does it play?
+  aliases: []
+  source: pdf:1785077379612.pdf
+  status: published
+- id: kubernetes-what-is-kubernetes-how-does-it-help-container-or-41c4d336fd
+  topic: kubernetes
+  question: What is Kubernetes, and how does it help in container orchestration?
+  aliases: []
+  source: pdf:1785077379612.pdf
+  status: published
+- id: kubernetes-what-is-kubernetes-ingress-differ-from-loadbalan-ba25e1eb17
+  topic: kubernetes
+  question: What is a Kubernetes Ingress, and how does it differ from a LoadBalancer
+    Service?
+  aliases: []
+  source: pdf:1786378433442.pdf
+  status: published
+- id: kubernetes-what-is-kubernetes-networkpolicy-d9e33d6767
+  topic: kubernetes
+  question: What is a Kubernetes NetworkPolicy?
+  aliases: []
+  source: pdf:1786378433442.pdf
+  status: published
+- id: kubernetes-what-is-kubernetes-priority-classes-39ee8476ac
+  topic: kubernetes
+  question: What is Kubernetes Priority Classes?
+  aliases: []
+  source: pdf:1786378433442.pdf
+  status: published
+- id: kubernetes-what-is-kubernetes-why-is-it-used-28671affcf
+  topic: kubernetes
+  question: What is Kubernetes and why is it used?
+  aliases: []
+  source: pdf:1785077379612.pdf
+  status: published
+- id: kubernetes-what-is-pod-deployment-service-kubernetes-a175c7c9c6
+  topic: kubernetes
+  question: What is a Pod, Deployment, and Service in Kubernetes?
+  aliases: []
+  source: pdf:1786378433442.pdf
+  status: published
+- id: kubernetes-what-is-pod-kubernetes-a1adb2b892
+  topic: kubernetes
+  question: What is a pod in Kubernetes?
+  aliases: []
+  source: pdf:1785077379612.pdf
+  status: published
+- id: kubernetes-what-is-role-kubernetes-api-server-c8b82778b5
+  topic: kubernetes
+  question: What is the role of the Kubernetes API Server?
+  aliases: []
+  source: pdf:1785077379612.pdf
+  status: published
+- id: kubernetes-what-is-service-mesh-37edaca496
+  topic: kubernetes
+  question: What is a service mesh?
+  aliases: []
+  source: pdf:1786378433442.pdf
+  status: published
+- id: kubernetes-what-is-significance-service-kubernetes-35ee48c5df
+  topic: kubernetes
+  question: What is the significance of a Service in Kubernetes?
+  aliases: []
+  source: pdf:1785077379612.pdf
+  status: published
+- id: kubernetes-what-is-topologyspreadconstraint-50f35e7494
+  topic: kubernetes
+  question: What is a TopologySpreadConstraint?
+  aliases: []
+  source: pdf:1786378433442.pdf
+  status: published
+- id: kubernetes-what-is-vault-by-hashicorp-how-does-it-integrate-03f56ae0af
+  topic: kubernetes
+  question: What is Vault by HashiCorp, and how does it integrate with Kubernetes
+    for secrets management?
+  aliases: []
+  source: pdf:1786378433442.pdf
+  status: published
+- id: kubernetes-your-kubernetes-cluster-nodes-are-running-at-90-752ffc159f
+  topic: kubernetes
+  question: Your Kubernetes cluster nodes are running at 90% memory. What do you do?
+  aliases: []
+  source: pdf:1786378433442.pdf
+  status: published
+- id: linux-explain-differ-process-daemon-linux-88fd3e0da2
+  topic: linux
+  question: Explain the difference between a process and a daemon in Linux.
+  aliases: []
+  source: pdf:1785077379612.pdf
+  status: published
+- id: linux-explain-how-linux-file-permissions-work-rwx-eeeebc16b4
+  topic: linux
+  question: Explain how Linux file permissions work (rwx).
+  aliases: []
+  source: pdf:1785077379612.pdf
+  status: published
+- id: linux-explain-how-you-can-schedule-one-time-task-linux-221dd31d6c
+  topic: linux
+  question: Explain how you can schedule a one-time task in Linux.
+  aliases: []
+  source: pdf:1785077379612.pdf
+  status: published
+- id: linux-explain-purpose-chmod-command-linux-5305e66934
+  topic: linux
+  question: Explain the purpose of the chmod command in Linux.
+  aliases: []
+  source: pdf:1785077379612.pdf
+  status: published
+- id: linux-how-can-you-manage-software-packages-ubuntu-debi-4ef4056887
+  topic: linux
+  question: How can you manage software packages in Ubuntu/Debian-based systems?
+  aliases: []
+  source: pdf:1785077379612.pdf
+  status: published
+- id: linux-how-do-you-check-free-disk-space-linux-26fbbe02c0
+  topic: linux
+  question: How do you check the free disk space in Linux?
+  aliases: []
+  source: pdf:1785077379612.pdf
+  status: published
+- id: linux-how-do-you-create-cron-job-that-runs-every-15-mi-c6b550598a
+  topic: linux
+  question: How do you create a cron job that runs every 15 minutes?
+  aliases: []
+  source: pdf:1786378433442.pdf
+  status: published
+- id: linux-how-do-you-find-running-processes-3d8b35f81d
+  topic: linux
+  question: How do you find running processes ?
+  aliases: []
+  source: pdf:ocr:100 DevOps Engineer Interview Questions and Answers - Handwritten
+    Notes.txt
+  status: published
+- id: linux-how-do-you-install-specific-version-package-linu-b019e15b34
+  topic: linux
+  question: How do you install a specific version of a package in Linux?
+  aliases: []
+  source: pdf:1785077379612.pdf
+  status: published
+- id: linux-how-do-you-monitor-system-performance-linux-360004ceec
+  topic: linux
+  question: How do you monitor system performance in Linux?
+  aliases: []
+  source: pdf:1785077379612.pdf
+  status: published
+- id: linux-how-do-you-secure-linux-server-f84ce14584
+  topic: linux
+  question: How do you secure a Linux server?
+  aliases: []
+  source: pdf:1785077379612.pdf
+  status: published
+- id: linux-how-do-you-troubleshoot-1-0-wait-issues-linux-9ad8ca1bde
+  topic: linux
+  question: How do you troubleshoot 1/0 wait issues on Linux?
+  aliases: []
+  source: pdf:ocr:1784874876936.txt
+  status: published
+- id: linux-how-would-you-deal-high-cpu-usage-linux-server-6710bca917
+  topic: linux
+  question: How would you deal with high CPU usage on a Linux server?
+  aliases: []
+  source: pdf:1785077379612.pdf
+  status: published
+- id: linux-how-would-you-optimize-linux-system-performance-7b190f45a5
+  topic: linux
+  question: How would you optimize a Linux system for performance?
+  aliases: []
+  source: pdf:1785077379612.pdf
+  status: published
+- id: linux-how-would-you-troubleshoot-linux-system-that-is-6a9f6c01a1
+  topic: linux
+  question: How would you troubleshoot a Linux system that is running out of memory?
+  aliases: []
+  source: pdf:1785077379612.pdf
+  status: published
+- id: linux-service-keeps-restarting-failing-how-do-you-inve-8967cb9514
+  topic: linux
+  question: A service keeps restarting or failing. How do you investigate?
+  aliases: []
+  source: pdf:ocr:1784874876936.txt
+  status: published
+- id: linux-what-are-runlevels-linux-how-do-they-affect-syst-7ce100a569
+  topic: linux
+  question: What are runlevels in Linux, and how do they affect system startup?
+  aliases: []
+  source: pdf:1785077379612.pdf
+  status: published
+- id: linux-what-does-chmod-755-command-do-49b89fe5ef
+  topic: linux
+  question: What does the chmod 755 command do?
+  aliases: []
+  source: pdf:1786378433442.pdf
+  status: published
+- id: linux-what-does-chmod-command-do-dac9212314
+  topic: linux
+  question: What does-the chmod command do ?
+  aliases: []
+  source: pdf:ocr:100 DevOps Engineer Interview Questions and Answers - Handwritten
+    Notes.txt
+  status: published
+- id: linux-what-is-blameless-postmortem-9b73aab923
+  topic: linux
+  question: What is a blameless postmortem?
+  aliases: []
+  source: pdf:1786378433442.pdf
+  status: published
+- id: linux-what-is-cronjob-467be6076a
+  topic: linux
+  question: What is a CronJob?
+  aliases: []
+  source: pdf:1786378433442.pdf
+  status: published
+- id: linux-what-is-differ-kill-kill-9-56580cd768
+  topic: linux
+  question: What is the difference between kill and kill -9?
+  aliases: []
+  source: pdf:1786378433442.pdf
+  status: published
+- id: linux-what-is-differ-process-thread-b11026de1d
+  topic: linux
+  question: What is the difference between a process and a thread?
+  aliases: []
+  source: pdf:1786378433442.pdf
+  status: published
+- id: linux-what-is-ebpf-b6e68130fb
+  topic: linux
+  question: What is eBPF?
+  aliases: []
+  source: pdf:1786378433442.pdf
+  status: published
+- id: linux-what-is-kernel-panic-how-would-you-troubleshoot-9a93b35f31
+  topic: linux
+  question: What is a kernel panic, and how would you troubleshoot it?
+  aliases: []
+  source: pdf:1785077379612.pdf
+  status: published
+- id: linux-what-is-lvm-why-is-it-useful-devops-f263763be7
+  topic: linux
+  question: What is LVM, and why is it useful in DevOps?
+  aliases: []
+  source: pdf:1785077379612.pdf
+  status: published
+- id: linux-what-is-purpose-iptables-linux-1ef4dd767d
+  topic: linux
+  question: What is the purpose of iptables in Linux?
+  aliases: []
+  source: pdf:1785077379612.pdf
+  status: published
+- id: linux-what-is-role-cron-linux-39fcb08a3f
+  topic: linux
+  question: What is the role of cron in Linux?
+  aliases: []
+  source: pdf:1785077379612.pdf
+  status: published
+- id: linux-what-is-ssh-how-is-it-useful-devops-context-d78c324e38
+  topic: linux
+  question: What is SSH and how is it useful in a DevOps context?
+  aliases: []
+  source: pdf:1785077379612.pdf
+  status: published
+- id: linux-what-is-symlink-linux-0644213ce7
+  topic: linux
+  question: What is a symlink in Linux?
+  aliases: []
+  source: pdf:1785077379612.pdf
+  status: published
+- id: linux-what-is-zombie-process-e85cd9c0d3
+  topic: linux
+  question: What is a zombie process?
+  aliases: []
+  source: pdf:1786378433442.pdf
+  status: published
+- id: monitoring-alert-fired-at-3am-what-do-you-check-first-b816b9cb44
+  topic: monitoring
+  question: An alert fired at 3AM. What do you check first?
+  aliases: []
+  source: pdf:ocr:1784874876936.txt
+  status: published
+- id: monitoring-can-you-explain-elk-stack-how-you-ve-used-it-66b24a58f8
+  topic: monitoring
+  question: Can you explain the ELK stack and how you've used it?
+  aliases: []
+  source: pdf:1785077379612.pdf
+  status: published
+- id: monitoring-differ-while-90570e2c9c
+  topic: monitoring
+  question: Difference between for and while?
+  aliases: []
+  source: pdf:ocr:PptxGenJS Presentation.txt
+  status: published
+- id: monitoring-explain-elk-stack-architecture-what-does-each-co-dcfcc2aed1
+  topic: monitoring
+  question: Explain the ELK Stack architecture. What does each component do?
+  aliases: []
+  source: pdf:1786378433442.pdf
+  status: published
+- id: monitoring-how-do-you-implement-distributed-tracing-microse-41afcfdc17
+  topic: monitoring
+  question: How do you implement distributed tracing in a microservices architecture?
+  aliases: []
+  source: pdf:1786378433442.pdf
+  status: published
+- id: monitoring-how-do-you-optimize-system-better-performance-ade3e4934b
+  topic: monitoring
+  question: How do you optimize a system for better performance?
+  aliases: []
+  source: pdf:ocr:1784874876936.txt
+  status: published
+- id: monitoring-how-do-you-prevent-similar-incidents-from-happen-0d50770e20
+  topic: monitoring
+  question: How do you prevent similar incidents from happening again?
+  aliases: []
+  source: pdf:ocr:1784874876936.txt
+  status: published
+- id: monitoring-how-do-you-recover-failed-service-production-00137b986c
+  topic: monitoring
+  question: How do you recover a failed service in production?
+  aliases: []
+  source: pdf:ocr:1784874876936.txt
+  status: published
+- id: monitoring-how-do-you-set-up-alerts-monitoring-systems-a09065b137
+  topic: monitoring
+  question: How do you set up alerts for monitoring systems?
+  aliases: []
+  source: pdf:1785077379612.pdf
+  status: published
+- id: monitoring-how-do-you-set-up-production-grade-grafana-dashb-a93225963c
+  topic: monitoring
+  question: How do you set up a production-grade Grafana dashboard?
+  aliases: []
+  source: pdf:1786378433442.pdf
+  status: published
+- id: monitoring-how-do-you-silence-alert-alertmanager-5b97d62e77
+  topic: monitoring
+  question: How do you silence an alert in Alertmanager?
+  aliases: []
+  source: pdf:1786378433442.pdf
+  status: published
+- id: monitoring-how-do-you-use-python-log-monitoring-devops-6a23eab457
+  topic: monitoring
+  question: How do you use Python for log monitoring in DevOps?
+  aliases: []
+  source: pdf:1785077379612.pdf
+  status: published
+- id: monitoring-how-do-you-write-promql-queries-practical-alerti-7065996fef
+  topic: monitoring
+  question: How do you write PromQL queries for practical alerting scenarios?
+  aliases: []
+  source: pdf:1786378433442.pdf
+  status: published
+- id: monitoring-how-would-you-handle-logging-linux-958391b831
+  topic: monitoring
+  question: How would you handle logging in Linux?
+  aliases: []
+  source: pdf:1785077379612.pdf
+  status: published
+- id: monitoring-production-is-down-error-rate-just-jumped-40-wal-31f850380d
+  topic: monitoring
+  question: 'Production is down. The error rate just jumped to 40%. Walk me through
+    your incident response. Answer: This question tests your incident response instincts.
+    The interviewer wants to see systematic thinking, not panic. The OODA loop for
+    incidents: Observe → Orient → Decide → Act Minute 0-2: TRIAGE ├── Check monitoring
+    dashboard (Grafana) — what metrics changed?'
+  aliases: []
+  source: pdf:1786378433442.pdf
+  status: published
+- id: monitoring-what-are-three-pillars-observability-01f62557df
+  topic: monitoring
+  question: What are the three pillars of observability?
+  aliases: []
+  source: pdf:1786378433442.pdf
+  status: published
+- id: monitoring-what-is-beats-family-log-shippers-a45db0440f
+  topic: monitoring
+  question: What is the Beats family of log shippers?
+  aliases: []
+  source: pdf:1786378433442.pdf
+  status: published
+- id: monitoring-what-is-datadog-7b53a86f2b
+  topic: monitoring
+  question: What is Datadog?
+  aliases: []
+  source: pdf:1786378433442.pdf
+  status: published
+- id: monitoring-what-is-differ-logstash-fluentd-e154b508ee
+  topic: monitoring
+  question: What is the difference between Logstash and Fluentd?
+  aliases: []
+  source: pdf:1786378433442.pdf
+  status: published
+- id: monitoring-what-is-differ-monitoring-observability-dbe4501854
+  topic: monitoring
+  question: What is the difference between monitoring and observability?
+  aliases: []
+  source: pdf:1786378433442.pdf
+  status: published
+- id: monitoring-what-is-elasticsearch-refresh-interval-3f1be9a8f8
+  topic: monitoring
+  question: What is Elasticsearch refresh_interval?
+  aliases: []
+  source: pdf:1786378433442.pdf
+  status: published
+- id: monitoring-what-is-elasticsearch-s-cat-api-d341f92be7
+  topic: monitoring
+  question: What is Elasticsearch's _cat API?
+  aliases: []
+  source: pdf:1786378433442.pdf
+  status: published
+- id: monitoring-what-is-grafana-s-interval-variable-eb972d9dde
+  topic: monitoring
+  question: What is Grafana's $__interval variable?
+  aliases: []
+  source: pdf:1786378433442.pdf
+  status: published
+- id: monitoring-what-is-index-lifecycle-management-ilm-elasticse-d70f964a9e
+  topic: monitoring
+  question: What is Index Lifecycle Management (ILM) in Elasticsearch?
+  aliases: []
+  source: pdf:1786378433442.pdf
+  status: published
+- id: monitoring-what-is-kibana-space-03409c8092
+  topic: monitoring
+  question: What is a Kibana Space?
+  aliases: []
+  source: pdf:1786378433442.pdf
+  status: published
+- id: monitoring-what-is-log-correlation-elk-80aee38695
+  topic: monitoring
+  question: What is log correlation in ELK?
+  aliases: []
+  source: pdf:1786378433442.pdf
+  status: published
+- id: monitoring-what-is-logstash-grok-filter-49c07372e9
+  topic: monitoring
+  question: What is Logstash Grok filter?
+  aliases: []
+  source: pdf:1786378433442.pdf
+  status: published
+- id: monitoring-what-is-new-relic-5fa48515a1
+  topic: monitoring
+  question: What is New Relic?
+  aliases: []
+  source: pdf:1786378433442.pdf
+  status: published
+- id: monitoring-what-is-opentelemetry-372e6d7c8d
+  topic: monitoring
+  question: What is OpenTelemetry?
+  aliases: []
+  source: pdf:1786378433442.pdf
+  status: published
+- id: monitoring-what-is-predict-linear-promql-376d0e9eb0
+  topic: monitoring
+  question: What is predict_linear() in PromQL?
+  aliases: []
+  source: pdf:1786378433442.pdf
+  status: published
+- id: monitoring-what-is-prometheus-how-does-it-collect-metrics-2c45d7b839
+  topic: monitoring
+  question: What is Prometheus, and how does it collect metrics?
+  aliases: []
+  source: pdf:1786378433442.pdf
+  status: published
+- id: monitoring-what-is-prometheus-operator-047090107c
+  topic: monitoring
+  question: What is the Prometheus Operator?
+  aliases: []
+  source: pdf:1786378433442.pdf
+  status: published
+- id: monitoring-what-is-prometheus-recording-rules-2be6b730a5
+  topic: monitoring
+  question: What is Prometheus recording rules?
+  aliases: []
+  source: pdf:1786378433442.pdf
+  status: published
+- id: monitoring-what-is-servicemonitor-342baea420
+  topic: monitoring
+  question: What is a ServiceMonitor?
+  aliases: []
+  source: pdf:1786378433442.pdf
+  status: published
+- id: monitoring-what-is-synthetic-monitoring-76a6a6084a
+  topic: monitoring
+  question: What is synthetic monitoring?
+  aliases: []
+  source: pdf:1786378433442.pdf
+  status: published
+- id: monitoring-what-is-thanos-70a5180a9f
+  topic: monitoring
+  question: What is Thanos?
+  aliases: []
+  source: pdf:1786378433442.pdf
+  status: published
+- id: monitoring-what-tools-have-you-used-monitoring-969051b7d2
+  topic: monitoring
+  question: What tools have you used for monitoring?
+  aliases: []
+  source: pdf:1785077379612.pdf
+  status: published
+- id: monitoring-you-have-high-error-rates-but-logs-show-nothing-44112b60f0
+  topic: monitoring
+  question: 'You have high error rates but logs show nothing useful. a = : Fis _—?'
+  aliases: []
+  source: pdf:ocr:1784874876936.txt
+  status: published
+- id: monitoring-your-production-application-is-completely-down-u-9b502fb50d
+  topic: monitoring
+  question: Your production application is completely down. | Users cannot access
+    the service. What do you do first?
+  aliases: []
+  source: pdf:ocr:1784874876936.txt
+  status: published
+- id: monitoring-your-prometheus-alerts-are-firing-constantly-ale-dedf2b0fd5
+  topic: monitoring
+  question: Your Prometheus alerts are firing constantly (alert fatigue). How do you
+    fix it?
+  aliases: []
+  source: pdf:1786378433442.pdf
+  status: published
+- id: networking-after-firewall-rule-change-applications-stopped-f24c69f0bc
+  topic: networking
+  question: 'After a firewall rule change, applications stopped working. ——_ x i Few:
+    ddl eoal etd x conde?'
+  aliases: []
+  source: pdf:ocr:1784874876936.txt
+  status: published
+- id: networking-can-you-explain-what-virtual-service-is-context-942172f31a
+  topic: networking
+  question: Can you explain what a Virtual Service is in the context of Ingress Controllers?
+  aliases: []
+  source: pdf:1785077379612.pdf
+  status: published
+- id: networking-cluster-internal-dns-is-not-resolving-services-44d16a1739
+  topic: networking
+  question: Cluster internal DNS is not resolving services?
+  aliases: []
+  source: pdf:ocr:1784874876936.txt
+  status: published
+- id: networking-differ-security-groups-network-acls-b04dd4552e
+  topic: networking
+  question: Difference between Security Groups and Network ACLs?
+  aliases: []
+  source: pdf:1785077379612.pdf
+  status: published
+- id: networking-explain-differ-tcp-udp-63a20d3d08
+  topic: networking
+  question: Explain the difference between TCP and UDP.
+  aliases: []
+  source: pdf:1785077379612.pdf
+  status: published
+- id: networking-given-192-168-1-0-24-if-you-borrow-2-bits-subnet-c78e099038
+  topic: networking
+  question: Given 192.168.1.0/24, if you borrow 2 bits for subnetting, what do you
+    get?
+  aliases: []
+  source: pdf:1785077379612.pdf
+  status: published
+- id: networking-high-lat-is-reported-between-applicat-tion-serve-4e7604fac6
+  topic: networking
+  question: High lat is reported between applicat ‘tion servers in different -9 i)
+    eal ail > a ll a dh?
+  aliases: []
+  source: pdf:ocr:1784874876936.txt
+  status: published
+- id: networking-how-do-firewall-rules-apply-devops-de9d6cd75b
+  topic: networking
+  question: How do Firewall Rules apply to DevOps?
+  aliases: []
+  source: pdf:1785077379612.pdf
+  status: published
+- id: networking-how-do-latency-throughput-impact-devops-427a62018d
+  topic: networking
+  question: How do Latency and Throughput impact DevOps?
+  aliases: []
+  source: pdf:1785077379612.pdf
+  status: published
+- id: networking-how-do-symmetric-asymmetric-encryption-support-d-4e62720423
+  topic: networking
+  question: How do Symmetric and Asymmetric Encryption support DevOps?
+  aliases: []
+  source: pdf:1785077379612.pdf
+  status: published
+- id: networking-how-do-vpn-tunnels-aid-devops-6e83fecf5e
+  topic: networking
+  question: How do VPN Tunnels aid DevOps?
+  aliases: []
+  source: pdf:1785077379612.pdf
+  status: published
+- id: networking-how-do-you-calculate-number-subnets-hosts-given-985bdca87e
+  topic: networking
+  question: How do you calculate the number of subnets and hosts in a given subnet?
+  aliases: []
+  source: pdf:1785077379612.pdf
+  status: published
+- id: networking-how-do-you-design-highly-available-application-c-2b2597b9cf
+  topic: networking
+  question: How do you design a highly available application in the cloud?
+  aliases: []
+  source: pdf:ocr:1784874876936.txt
+  status: published
+- id: networking-how-do-you-handle-ssl-termination-ingress-contro-ee752695e1
+  topic: networking
+  question: How do you handle SSL termination with an Ingress Controller?
+  aliases: []
+  source: pdf:1785077379612.pdf
+  status: published
+- id: networking-how-do-you-secure-your-ingress-controller-874d74a1af
+  topic: networking
+  question: How do you secure your Ingress Controller?
+  aliases: []
+  source: pdf:1785077379612.pdf
+  status: published
+- id: networking-how-do-you-troubleshoot-issues-ingress-controlle-8ec4a354f6
+  topic: networking
+  question: How do you troubleshoot issues with an Ingress Controller?
+  aliases: []
+  source: pdf:1785077379612.pdf
+  status: published
+- id: networking-how-does-cidr-notation-improve-ip-address-manage-9172ae85cd
+  topic: networking
+  question: How does CIDR notation improve IP address management in DevOps?
+  aliases: []
+  source: pdf:1785077379612.pdf
+  status: published
+- id: networking-how-does-dns-failover-support-devops-f9e6272fbc
+  topic: networking
+  question: How does DNS Failover support DevOps?
+  aliases: []
+  source: pdf:1785077379612.pdf
+  status: published
+- id: networking-how-does-ingress-controller-differ-from-load-bal-3d6cff8a9c
+  topic: networking
+  question: How does an Ingress Controller differ from a Load Balancer?
+  aliases: []
+  source: pdf:1785077379612.pdf
+  status: published
+- id: networking-how-does-tcp-3-way-handshake-apply-devops-d1cf3294dc
+  topic: networking
+  question: How does the TCP 3-Way Handshake apply to DevOps?
+  aliases: []
+  source: pdf:1785077379612.pdf
+  status: published
+- id: networking-what-are-cidr-blocks-how-do-they-assist-devops-24eb6e23ed
+  topic: networking
+  question: What are CIDR Blocks and how do they assist in DevOps?
+  aliases: []
+  source: pdf:1785077379612.pdf
+  status: published
+- id: networking-what-are-network-security-groups-nsgs-azure-6aefc930da
+  topic: networking
+  question: What are Network Security Groups (NSGs) in Azure?
+  aliases: []
+  source: pdf:1785077379612.pdf
+  status: published
+- id: networking-what-are-some-best-practices-when-configuring-in-e7b6a7ade5
+  topic: networking
+  question: What are some best practices when configuring an Ingress Controller?
+  aliases: []
+  source: pdf:1785077379612.pdf
+  status: published
+- id: networking-what-are-some-common-features-ingress-controller-b5f727db49
+  topic: networking
+  question: What are some common features of an Ingress Controller?
+  aliases: []
+  source: pdf:1785077379612.pdf
+  status: published
+- id: networking-what-are-supernets-how-are-they-different-from-s-53f5506fbf
+  topic: networking
+  question: What are Supernets, and how are they different from Subnets?
+  aliases: []
+  source: pdf:1785077379612.pdf
+  status: published
+- id: networking-what-is-delegate-directive-2476223d65
+  topic: networking
+  question: What is the delegate_to directive?
+  aliases: []
+  source: pdf:1786378433442.pdf
+  status: published
+- id: networking-what-is-differ-24-30-subnet-4f3b4e244f
+  topic: networking
+  question: What is the difference between a /24 and a /30 subnet?
+  aliases: []
+  source: pdf:1785077379612.pdf
+  status: published
+- id: networking-what-is-differ-public-private-ip-subnets-27f2d4d47b
+  topic: networking
+  question: What is the difference between Public and Private IP Subnets?
+  aliases: []
+  source: pdf:1785077379612.pdf
+  status: published
+- id: networking-what-is-differ-routing-switching-devops-4b61f160fa
+  topic: networking
+  question: What is the difference between Routing and Switching in DevOps?
+  aliases: []
+  source: pdf:1785077379612.pdf
+  status: published
+- id: networking-what-is-differ-subnet-mask-255-255-255-0-255-255-cb01f30b79
+  topic: networking
+  question: What is the difference between subnet mask 255.255.255.0 and 255.255.255.128?
+  aliases: []
+  source: pdf:1785077379612.pdf
+  status: published
+- id: networking-what-is-dns-why-is-it-important-ea58e839c2
+  topic: networking
+  question: What is DNS, and why is it important?
+  aliases: []
+  source: pdf:1785077379612.pdf
+  status: published
+- id: networking-what-is-firewall-2089c111ef
+  topic: networking
+  question: What is a firewall?
+  aliases: []
+  source: pdf:1785077379612.pdf
+  status: published
+- id: networking-what-is-load-balancing-d35ed603b5
+  topic: networking
+  question: What is Load Balancing?
+  aliases: []
+  source: pdf:1785077379612.pdf
+  status: published
+- id: networking-what-is-network-virtual-appliance-nva-azure-3753425696
+  topic: networking
+  question: What is a Network Virtual Appliance (NVA) in Azure?
+  aliases: []
+  source: pdf:1785077379612.pdf
+  status: published
+- id: networking-what-is-osi-model-03a8cfb1af
+  topic: networking
+  question: What is the OSI Model?
+  aliases: []
+  source: pdf:1785077379612.pdf
+  status: published
+- id: networking-what-is-port-mirroring-how-does-it-help-devops-8775d7b466
+  topic: networking
+  question: What is Port Mirroring and how does it help DevOps?
+  aliases: []
+  source: pdf:1785077379612.pdf
+  status: published
+- id: networking-what-is-role-annotations-ingress-resource-49219ac096
+  topic: networking
+  question: What is the role of annotations in an Ingress resource?
+  aliases: []
+  source: pdf:1785077379612.pdf
+  status: published
+- id: networking-what-is-round-robin-dns-how-does-it-benefit-devo-df6b9c4796
+  topic: networking
+  question: What is Round-Robin DNS and how does it benefit DevOps?
+  aliases: []
+  source: pdf:1785077379612.pdf
+  status: published
+- id: networking-what-is-routing-convergence-its-importance-devop-4bccfceb79
+  topic: networking
+  question: What is Routing Convergence and its importance in DevOps?
+  aliases: []
+  source: pdf:1785077379612.pdf
+  status: published
+- id: networking-what-is-subnet-mask-7f293afdc0
+  topic: networking
+  question: What is a Subnet Mask?
+  aliases: []
+  source: pdf:1785077379612.pdf
+  status: published
+- id: networking-what-is-vlsm-variable-length-subnet-mask-when-do-7b28654938
+  topic: networking
+  question: What is VLSM (Variable Length Subnet Mask) and when do you use it in DevOps?
+  aliases: []
+  source: pdf:1785077379612.pdf
+  status: published
+- id: networking-why-is-dns-propagation-important-devops-c9137bf514
+  topic: networking
+  question: Why is DNS Propagation important for DevOps?
+  aliases: []
+  source: pdf:1785077379612.pdf
+  status: published
+- id: networking-why-is-network-topology-important-devops-4185b6249a
+  topic: networking
+  question: Why is Network Topology important in DevOps?
+  aliases: []
+  source: pdf:1785077379612.pdf
+  status: published
+- id: networking-why-is-subnetting-important-devops-043c67e69d
+  topic: networking
+  question: Why is Subnetting important in DevOps?
+  aliases: []
+  source: pdf:1785077379612.pdf
+  status: published
+- id: networking-you-see-intermittent-connection-drops-between-cl-9836be312c
+  topic: networking
+  question: You see intermittent connection drops between client and server. ————
+    ae — What would you investigate?
+  aliases: []
+  source: pdf:ocr:1784874876936.txt
+  status: published
+- id: python-can-you-explain-how-python-works-cloud-services-95c5f7ffb4
+  topic: python
+  question: Can you explain how Python works with cloud services in DevOps?
+  aliases: []
+  source: pdf:1785077379612.pdf
+  status: published
+- id: python-how-do-you-handle-exceptions-python-scripts-devo-0f9a1bd198
+  topic: python
+  question: How do you handle exceptions in Python scripts for DevOps automation?
+  aliases: []
+  source: pdf:1785077379612.pdf
+  status: published
+- id: python-how-do-you-use-python-monitor-server-health-devo-2ddb28db10
+  topic: python
+  question: How do you use Python to monitor server health in DevOps?
+  aliases: []
+  source: pdf:1785077379612.pdf
+  status: published
+- id: python-how-would-you-manage-environment-variables-pytho-479b106856
+  topic: python
+  question: How would you manage environment variables in Python for a DevOps project?
+  aliases: []
+  source: pdf:1785077379612.pdf
+  status: published
+- id: python-what-is-locust-0c1be333a2
+  topic: python
+  question: What is Locust?
+  aliases: []
+  source: pdf:1786378433442.pdf
+  status: published
+- id: python-what-is-python-s-role-devops-f609a9cf0e
+  topic: python
+  question: What is Python's role in DevOps?
+  aliases: []
+  source: pdf:1785077379612.pdf
+  status: published
+- id: security-can-trivy-scan-local-file-systems-git-repositori-10f686a4d1
+  topic: security
+  question: Can Trivy scan local file systems and Git repositories?
+  aliases: []
+  source: pdf:1785077379612.pdf
+  status: published
+- id: security-how-can-you-run-basic-scan-trivy-ede34d69c5
+  topic: security
+  question: How can you run a basic scan with Trivy?
+  aliases: []
+  source: pdf:1785077379612.pdf
+  status: published
+- id: security-how-do-you-implement-devsecops-pipeline-c0be4ca2fc
+  topic: security
+  question: How do you implement DevSecOps in a pipeline?
+  aliases: []
+  source: pdf:1784431820463.pdf
+  status: published
+- id: security-how-do-you-integrate-security-into-devops-lifecy-9ed88b8e4e
+  topic: security
+  question: How do you integrate security into the DevOps lifecycle (DevSecOps)?
+  aliases: []
+  source: pdf:1785077379612.pdf
+  status: published
+- id: security-what-are-security-features-nexus-repository-mana-18c0cc6d80
+  topic: security
+  question: What are the security features in Nexus Repository Manager?
+  aliases: []
+  source: pdf:1785077379612.pdf
+  status: published
+- id: security-what-is-aqua-security-b1a7aa2ed3
+  topic: security
+  question: What is Aqua Security?
+  aliases: []
+  source: pdf:1786378433442.pdf
+  status: published
+- id: security-what-is-container-image-scanning-c204ddcdb2
+  topic: security
+  question: What is container image scanning?
+  aliases: []
+  source: pdf:1786378433442.pdf
+  status: published
+- id: security-what-is-cve-3e3089d7c9
+  topic: security
+  question: What is a CVE?
+  aliases: []
+  source: pdf:1786378433442.pdf
+  status: published
+- id: security-what-is-dast-dynamic-application-security-testin-ad49a77946
+  topic: security
+  question: What is DAST (Dynamic Application Security Testing)?
+  aliases: []
+  source: pdf:1786378433442.pdf
+  status: published
+- id: security-what-is-dast-tool-066a143858
+  topic: security
+  question: What is a DAST tool?
+  aliases: []
+  source: pdf:1784431820463.pdf
+  status: published
+- id: security-what-is-devsecops-76d29873b5
+  topic: security
+  question: What is DevSecOps?
+  aliases: []
+  source: pdf:1786378433442.pdf
+  status: published
+- id: security-what-is-differ-trivy-other-vulnerability-scanner-edea6a93ee
+  topic: security
+  question: What is the difference between Trivy and other vulnerability scanners?
+  aliases: []
+  source: pdf:1785077379612.pdf
+  status: published
+- id: security-what-is-elasticsearch-security-formerly-x-pack-434d55afea
+  topic: security
+  question: What is Elasticsearch security (formerly X-Pack)?
+  aliases: []
+  source: pdf:1786378433442.pdf
+  status: published
+- id: security-what-is-github-s-code-scanning-536a7a8a4b
+  topic: security
+  question: What is GitHub's code scanning?
+  aliases: []
+  source: pdf:1786378433442.pdf
+  status: published
+- id: security-what-is-gitlab-s-sast-static-application-securit-46a3aa7a8f
+  topic: security
+  question: What is GitLab's SAST (Static Application Security Testing)?
+  aliases: []
+  source: pdf:1786378433442.pdf
+  status: published
+- id: security-what-is-jfrog-artifactory-f739f51dec
+  topic: security
+  question: What is JFrog Artifactory?
+  aliases: []
+  source: pdf:1786378433442.pdf
+  status: published
+- id: security-what-is-owasp-006f1401c5
+  topic: security
+  question: What is OWASP?
+  aliases: []
+  source: pdf:1784431820463.pdf
+  status: published
+- id: security-what-is-owasp-top-10-1b503723bd
+  topic: security
+  question: What is the OWASP Top 10?
+  aliases: []
+  source: pdf:1786378433442.pdf
+  status: published
+- id: security-what-is-owasp-zap-71a53609e3
+  topic: security
+  question: What is OWASP ZAP?
+  aliases: []
+  source: pdf:1786378433442.pdf
+  status: published
+- id: security-what-is-policy-as-code-78c736bb68
+  topic: security
+  question: What is Policy-as-Code?
+  aliases: []
+  source: pdf:1784431820463.pdf
+  status: published
+- id: security-what-is-proxy-server-4f58d109fa
+  topic: security
+  question: What is a Proxy Server?
+  aliases: []
+  source: pdf:1785077379612.pdf
+  status: published
+- id: security-what-is-sast-static-application-security-testing-6621a302f9
+  topic: security
+  question: What is SAST (Static Application Security Testing)?
+  aliases: []
+  source: pdf:1786378433442.pdf
+  status: published
+- id: security-what-is-sast-tool-035129f37e
+  topic: security
+  question: What is a SAST tool?
+  aliases: []
+  source: pdf:1784431820463.pdf
+  status: published
+- id: security-what-is-sca-software-composition-analysis-f81c1e5433
+  topic: security
+  question: What is SCA (Software Composition Analysis)?
+  aliases: []
+  source: pdf:1786378433442.pdf
+  status: published
+- id: security-what-is-secret-scanning-github-gitlab-752eade3c1
+  topic: security
+  question: What is secret scanning in GitHub/GitLab?
+  aliases: []
+  source: pdf:1786378433442.pdf
+  status: published
+- id: security-what-is-shift-left-security-4abf874125
+  topic: security
+  question: What is Shift-Left Security?
+  aliases: []
+  source: pdf:1784431820463.pdf
+  status: published
+- id: security-what-is-slsa-supply-chain-levels-software-artifa-b7b044783a
+  topic: security
+  question: What is SLSA (Supply-chain Levels for Software Artifacts)?
+  aliases: []
+  source: pdf:1786378433442.pdf
+  status: published
+- id: security-what-is-software-bill-materials-sbom-73974c1c8c
+  topic: security
+  question: What is a Software Bill of Materials (SBOM)?
+  aliases: []
+  source: pdf:1786378433442.pdf
+  status: published
+- id: security-what-is-software-supply-chain-security-095781c6a3
+  topic: security
+  question: What is software supply chain security?
+  aliases: []
+  source: pdf:1786378433442.pdf
+  status: published
+- id: security-what-is-terrascan-1202fd8f64
+  topic: security
+  question: What is terrascan?
+  aliases: []
+  source: pdf:1786378433442.pdf
+  status: published
+- id: security-what-is-trufflehog-e0edad4e3f
+  topic: security
+  question: What is trufflehog?
+  aliases: []
+  source: pdf:1786378433442.pdf
+  status: published
+- id: security-what-is-zero-trust-security-model-c86213b69b
+  topic: security
+  question: What is a Zero Trust security model?
+  aliases: []
+  source: pdf:1784431820463.pdf
+  status: published
+- id: security-what-tools-have-you-used-scan-vulnerabilities-3cb9994cc7
+  topic: security
+  question: What tools have you used to scan for vulnerabilities?
+  aliases: []
+  source: pdf:1785077379612.pdf
+  status: published
+- id: security-your-pipaine-failed-sccurthy-scan-how-do-ge-hand-00fb574013
+  topic: security
+  question: Your pipaine failed. sccurthy scan. How do. ge handle 18?
+  aliases: []
+  source: pdf:ocr:1784874876936.txt
+  status: published
+- id: shell-design-url-shortener-like-bit-ly-high-level-arch-fd7f03bee8
+  topic: shell
+  question: Design a URL shortener like bit.ly. ; HIGH LEVEL ARCHITECTURE 7} . ah
+    ‘i °?
+  aliases: []
+  source: pdf:ocr:1784874876936.txt
+  status: published
+- id: shell-explain-purpose-grep-command-linux-3a91b61ad4
+  topic: shell
+  question: Explain the purpose of the grep command in Linux.
+  aliases: []
+  source: pdf:1785077379612.pdf
+  status: published
+- id: shell-how-do-you-ensure-maintainability-selenium-test-b84487a096
+  topic: shell
+  question: How do you ensure the maintainability of Selenium test scripts?
+  aliases: []
+  source: pdf:1785077379612.pdf
+  status: published
+- id: shell-how-do-you-migrate-monolith-application-microser-d816f716b9
+  topic: shell
+  question: How do you migrate a monolith application to microservices with zero downtime?
+  aliases: []
+  source: pdf:1786378433442.pdf
+  status: published
+- id: shell-how-do-you-roll-back-bad-database-migration-3105075b41
+  topic: shell
+  question: How do you roll back a bad database migration?
+  aliases: []
+  source: pdf:1786378433442.pdf
+  status: published
+- id: shell-how-is-eigrp-used-devops-012982166b
+  topic: shell
+  question: How is EIGRP used in DevOps?
+  aliases: []
+  source: pdf:1785077379612.pdf
+  status: published
+- id: shell-how-is-multicast-used-devops-01e47101cf
+  topic: shell
+  question: How is Multicast used in DevOps?
+  aliases: []
+  source: pdf:1785077379612.pdf
+  status: published
+- id: shell-pipeline-failed-build-stage-how-do-you-troublesh-47eb1bcaad
+  topic: shell
+  question: A pipeline failed in the build stage. How do you troubleshoot?
+  aliases: []
+  source: pdf:ocr:1784874876936.txt
+  status: published
+- id: shell-what-are-artifacts-how-do-you-manage-them-pipeli-cfac51dca7
+  topic: shell
+  question: What are artifacts, and how do you manage them in a pipeline?
+  aliases: []
+  source: pdf:1785077379612.pdf
+  status: published
+- id: shell-what-are-problems-system-admins-used-face-withou-32331f214a
+  topic: shell
+  question: What are the problems system admins used to face without configuration
+    management tools?
+  aliases: []
+  source: pdf:1783358005276.pdf
+  status: published
+- id: shell-what-are-sticky-sessions-how-are-they-used-devop-2e190d36cf
+  topic: shell
+  question: What are Sticky Sessions and how are they used in DevOps?
+  aliases: []
+  source: pdf:1785077379612.pdf
+  status: published
+- id: shell-what-are-variables-shell-scripting-d61350d4b1
+  topic: shell
+  question: What are variables in Shell Scripting?
+  aliases: []
+  source: pdf:ocr:PptxGenJS Presentation.txt
+  status: published
+- id: shell-what-are-yaml-pipelines-how-do-they-differ-from-64b686136e
+  topic: shell
+  question: What are YAML Pipelines, and how do they differ from Classic Pipelines?
+  aliases: []
+  source: pdf:1785077379612.pdf
+  status: published
+- id: shell-what-does-2-1-mean-shell-44dd4461f0
+  topic: shell
+  question: What does 2>&1 mean in shell?
+  aliases: []
+  source: pdf:1786378433442.pdf
+  status: published
+- id: shell-what-is-actions-github-script-deca412815
+  topic: shell
+  question: What is actions/github-script?
+  aliases: []
+  source: pdf:1786378433442.pdf
+  status: published
+- id: shell-what-is-azure-pipeline-yaml-stage-2c9d16e29a
+  topic: shell
+  question: What is an Azure Pipeline YAML stage?
+  aliases: []
+  source: pdf:1786378433442.pdf
+  status: published
+- id: shell-what-is-configuration-management-5bba81259b
+  topic: shell
+  question: What is Configuration Management?
+  aliases: []
+  source: pdf:1783358005276.pdf
+  status: published
+- id: shell-what-is-differ-declarative-scripted-pipelines-1f07d2eabe
+  topic: shell
+  question: What is the difference between Declarative and Scripted pipelines?
+  aliases: []
+  source: pdf:1786378433442.pdf
+  status: published
+- id: shell-what-is-differ-text-keyword-field-types-0be81c64ca
+  topic: shell
+  question: What is the difference between text and keyword field types?
+  aliases: []
+  source: pdf:1786378433442.pdf
+  status: published
+- id: shell-what-is-dynamodb-s-partition-key-c5c7c9f28a
+  topic: shell
+  question: What is DynamoDB's partition key?
+  aliases: []
+  source: pdf:1786378433442.pdf
+  status: published
+- id: shell-what-is-hashfiles-function-e185cf19e0
+  topic: shell
+  question: What is hashFiles() function?
+  aliases: []
+  source: pdf:1786378433442.pdf
+  status: published
+- id: shell-what-is-logstash-pipeline-throughput-tuning-18d4dae4d4
+  topic: shell
+  question: What is Logstash pipeline throughput tuning?
+  aliases: []
+  source: pdf:1786378433442.pdf
+  status: published
+- id: shell-what-is-mtbf-mean-time-between-failures-d3f7da4ead
+  topic: shell
+  question: What is MTBF (Mean Time Between Failures)?
+  aliases: []
+  source: pdf:1786378433442.pdf
+  status: published
+- id: shell-what-is-purpose-post-declarative-pipeline-b29660692c
+  topic: shell
+  question: What is the purpose of post {} in a Declarative pipeline?
+  aliases: []
+  source: pdf:1786378433442.pdf
+  status: published
+- id: shell-what-is-route-table-how-is-it-used-devops-6a989758a9
+  topic: shell
+  question: What is a Route Table and how is it used in DevOps?
+  aliases: []
+  source: pdf:1785077379612.pdf
+  status: published
+- id: shell-what-is-script-block-declarative-pipelines-2cc7526e91
+  topic: shell
+  question: What is the script {} block in Declarative pipelines?
+  aliases: []
+  source: pdf:1786378433442.pdf
+  status: published
+- id: shell-what-is-self-hosted-runner-group-4422652e02
+  topic: shell
+  question: What is a self-hosted runner group?
+  aliases: []
+  source: pdf:1786378433442.pdf
+  status: published
+- id: shell-what-is-semgrep-344403bbdf
+  topic: shell
+  question: What is semgrep?
+  aliases: []
+  source: pdf:1786378433442.pdf
+  status: published
+- id: shell-what-is-shell-script-6c6d594e3e
+  topic: shell
+  question: What is a shell script?
+  aliases: []
+  source: pdf:1785077379612.pdf
+  status: published
+- id: shell-what-is-tunneling-how-is-it-used-devops-cab95bf0ec
+  topic: shell
+  question: What is Tunneling and how is it used in DevOps?
+  aliases: []
+  source: pdf:1785077379612.pdf
+  status: published
+- id: shell-what-is-use-subprocess-module-devops-scripting-8f8a95ff0f
+  topic: shell
+  question: What is the use of the subprocess module in DevOps scripting?
+  aliases: []
+  source: pdf:1785077379612.pdf
+  status: published
+- id: shell-what-tools-have-you-used-ci-cd-why-did-you-choos-c5d63e9b42
+  topic: shell
+  question: What tools have you used for CI/CD, and why did you choose them?
+  aliases: []
+  source: pdf:1785077379612.pdf
+  status: published
+- id: shell-whatare-exit-codes-5cc38dac83
+  topic: shell
+  question: whatare Exit Codes?
+  aliases: []
+  source: pdf:ocr:PptxGenJS Presentation.txt
+  status: published
+- id: shell-whatis-purpose-bin-bash-8d2a3d1e8e
+  topic: shell
+  question: 'whatis the purpose of #!/bin/bash?'
+  aliases: []
+  source: pdf:ocr:PptxGenJS Presentation.txt
+  status: published
+- id: shell-your-ci-pipeline-is-flaky-tests-pass-locally-but-f22e39a3f5
+  topic: shell
+  question: Your CI pipeline is flaky — tests pass locally but fail in CI 30% of the
+    time. What are the causes?
+  aliases: []
+  source: pdf:1786378433442.pdf
+  status: published
+- id: terraform-apply-failed-halfway-through-how-do-you-recover-846852a840
+  topic: terraform
+  question: — apply failed halfway through. How do you recover and ; ing environment
+    back to a consistent state?
+  aliases: []
+  source: pdf:ocr:1784874876936.txt
+  status: published
+- id: terraform-can-you-explain-differ-terraform-ansible-2a114209e7
+  topic: terraform
+  question: Can you explain the difference between Terraform and Ansible?
+  aliases: []
+  source: pdf:1785077379612.pdf
+  status: published
+- id: terraform-explain-terraform-s-core-workflow-init-plan-appl-4c93d89f6a
+  topic: terraform
+  question: 'Explain Terraform''s core workflow: init, plan, apply, destroy.'
+  aliases: []
+  source: pdf:1786378433442.pdf
+  status: published
+- id: terraform-how-do-you-handle-disasters-ensure-business-tinu-3593e7c12b
+  topic: terraform
+  question: How do you handle disasters and ensure business tinuity:?
+  aliases: []
+  source: pdf:ocr:1784874876936.txt
+  status: published
+- id: terraform-how-do-you-handle-terraform-state-management-pre-d545b7bb0f
+  topic: terraform
+  question: How do you handle Terraform state management and prevent state corruption
+    in a team environment?
+  aliases: []
+  source: pdf:1786378433442.pdf
+  status: published
+- id: terraform-how-do-you-handle-versioning-infrastructure-as-c-4ec232748f
+  topic: terraform
+  question: How do you handle versioning in Infrastructure as Code?
+  aliases: []
+  source: pdf:1785077379612.pdf
+  status: published
+- id: terraform-how-do-you-manage-cloud-infrastructure-terraform-bfb44aa519
+  topic: terraform
+  question: How do you manage cloud infrastructure with Terraform?
+  aliases: []
+  source: pdf:1785077379612.pdf
+  status: published
+- id: terraform-how-do-you-structure-terraform-code-c-018518cf62
+  topic: terraform
+  question: How do you structure Terraform code for c?
+  aliases: []
+  source: pdf:ocr:1784874876936.txt
+  status: published
+- id: terraform-how-do-you-structure-terraform-code-large-produc-7daeda9f85
+  topic: terraform
+  question: How do you structure Terraform code for a large production environment
+    with multiple environments?
+  aliases: []
+  source: pdf:1786378433442.pdf
+  status: published
+- id: terraform-terraform-plan-shows-resource-will-be-destroyed-127fd60734
+  topic: terraform
+  question: Terraform plan shows a resource will be destroyed unexpectedly. What do
+    you do?
+  aliases: []
+  source: pdf:1786378433442.pdf
+  status: published
+- id: terraform-terraform-state-file-is-corrupted-lost-what-are-4194b39c79
+  topic: terraform
+  question: Terraform state file is corrupted or lost. What are your options?
+  aliases: []
+  source: pdf:ocr:1784874876936.txt
+  status: published
+- id: terraform-what-are-common-terraform-anti-i-i-patterns-you-927c419a38
+  topic: terraform
+  question: What are common Terraform anti- i i-patterns you avoid?
+  aliases: []
+  source: pdf:ocr:1784874876936.txt
+  status: published
+- id: terraform-what-are-terraform-local-values-8b5c7ec8ad
+  topic: terraform
+  question: What are Terraform local values?
+  aliases: []
+  source: pdf:1786378433442.pdf
+  status: published
+- id: terraform-what-is-ansible-differ-from-terraform-201a8d8cd8
+  topic: terraform
+  question: What is Ansible, and how does it differ from Terraform?
+  aliases: []
+  source: pdf:1786378433442.pdf
+  status: published
+- id: terraform-what-is-assert-module-fb62cfd7c0
+  topic: terraform
+  question: What is the assert module?
+  aliases: []
+  source: pdf:1786378433442.pdf
+  status: published
+- id: terraform-what-is-atlantis-7217e9bfd0
+  topic: terraform
+  question: What is Atlantis?
+  aliases: []
+  source: pdf:1786378433442.pdf
+  status: published
+- id: terraform-what-is-bicep-337a041e2e
+  topic: terraform
+  question: What is Bicep?
+  aliases: []
+  source: pdf:1786378433442.pdf
+  status: published
+- id: terraform-what-is-checkov-terraform-a04bf646de
+  topic: terraform
+  question: What is checkov for Terraform?
+  aliases: []
+  source: pdf:1786378433442.pdf
+  status: published
+- id: terraform-what-is-copy-module-vs-synchronize-41a901d6f5
+  topic: terraform
+  question: What is the copy module vs synchronize?
+  aliases: []
+  source: pdf:1786378433442.pdf
+  status: published
+- id: terraform-what-is-iac-0615c0dbc4
+  topic: terraform
+  question: What is IAC?
+  aliases: []
+  source: pdf:1783358005276.pdf
+  status: published
+- id: terraform-what-is-infrastructure-as-code-5031baf8f5
+  topic: terraform
+  question: What is Infrastructure as Code?
+  aliases: []
+  source: pdf:ocr:100 DevOps Engineer Interview Questions and Answers - Handwritten
+    Notes.txt
+  status: published
+- id: terraform-what-is-infrastructure-as-code-iac-how-does-it-b-1cb96e44f4
+  topic: terraform
+  question: What is Infrastructure as Code (IaC), and how does it benefit a DevOps
+    environment?
+  aliases: []
+  source: pdf:1785077379612.pdf
+  status: published
+- id: terraform-what-is-lineinfile-module-dd908bf7b7
+  topic: terraform
+  question: What is the lineinfile module?
+  aliases: []
+  source: pdf:1786378433442.pdf
+  status: published
+- id: terraform-what-is-null-resource-terraform-bb03769718
+  topic: terraform
+  question: What is a null_resource in Terraform?
+  aliases: []
+  source: pdf:1786378433442.pdf
+  status: published
+- id: terraform-what-is-pact-contract-testing-d698048456
+  topic: terraform
+  question: What is Pact (contract testing)?
+  aliases: []
+  source: pdf:1786378433442.pdf
+  status: published
+- id: terraform-what-is-template-module-2125fb8b54
+  topic: terraform
+  question: What is the template module?
+  aliases: []
+  source: pdf:1786378433442.pdf
+  status: published
+- id: terraform-what-is-templatefile-function-2158e87342
+  topic: terraform
+  question: What is the templatefile() function?
+  aliases: []
+  source: pdf:1786378433442.pdf
+  status: published
+- id: terraform-what-is-terraform-apply-target-fea6ba4d58
+  topic: terraform
+  question: What is terraform apply -target?
+  aliases: []
+  source: pdf:1786378433442.pdf
+  status: published
+- id: terraform-what-is-terraform-backend-b91bfcf9e6
+  topic: terraform
+  question: What is a Terraform backend?
+  aliases: []
+  source: pdf:1786378433442.pdf
+  status: published
+- id: terraform-what-is-terraform-count-vs-each-f16d318f7c
+  topic: terraform
+  question: What is Terraform count vs for_each?
+  aliases: []
+  source: pdf:1786378433442.pdf
+  status: published
+- id: terraform-what-is-terraform-data-source-42c8154b39
+  topic: terraform
+  question: What is a Terraform data source?
+  aliases: []
+  source: pdf:1786378433442.pdf
+  status: published
+- id: terraform-what-is-terraform-import-956d11a29d
+  topic: terraform
+  question: What is terraform import?
+  aliases: []
+  source: pdf:1786378433442.pdf
+  status: published
+- id: terraform-what-is-terraform-module-source-f9385fc33a
+  topic: terraform
+  question: What is a Terraform module source?
+  aliases: []
+  source: pdf:1786378433442.pdf
+  status: published
+- id: terraform-what-is-terraform-output-a1e0f59d8c
+  topic: terraform
+  question: What is terraform output?
+  aliases: []
+  source: pdf:1786378433442.pdf
+  status: published
+- id: terraform-what-is-terraform-provider-f247c2d658
+  topic: terraform
+  question: What is a Terraform provider?
+  aliases: []
+  source: pdf:1786378433442.pdf
+  status: published
+- id: terraform-what-is-terraform-s-precondition-postcondition-2c5e2d0e7b
+  topic: terraform
+  question: What is Terraform's precondition and postcondition?
+  aliases: []
+  source: pdf:1786378433442.pdf
+  status: published
+- id: terraform-what-is-terraform-tfvars-1c793da74e
+  topic: terraform
+  question: What is terraform.tfvars?
+  aliases: []
+  source: pdf:1786378433442.pdf
+  status: published
+- id: terraform-what-is-terraform-workspace-66a1a4a209
+  topic: terraform
+  question: What is terraform workspace?
+  aliases: []
+  source: pdf:1786378433442.pdf
+  status: published
+- id: terraform-what-is-terragrunt-9aaba8e8f7
+  topic: terraform
+  question: What is Terragrunt?
+  aliases: []
+  source: pdf:1786378433442.pdf
+  status: published
+- id: terraform-what-is-terratest-3294fc0103
+  topic: terraform
+  question: What is Terratest?
+  aliases: []
+  source: pdf:1786378433442.pdf
+  status: published

@@ -1,209 +1,332 @@
 ---
-title: "Shell Scripting Interview Prep"
-description: "25–30 interview questions for Bash scripting — fundamentals, automation, processes, text processing, debugging, and production scenarios."
+title: "Shell Interview Preparation"
+description: "35 curated interview questions and model answers for Shell — concepts, scenarios, troubleshooting, and production trade-offs."
 difficulty: intermediate
-estimated_time: "45–60 min"
+estimated_time: "45–90 min"
 author: Shaik Basha
-last_updated: "2026-07-29"
+last_updated: "2026-08-12"
 category: interview
+technology: shell
 tags:
   - interview
   - shell
-  - bash
-  - devops
 comments: false
 ---
 
-# Shell Scripting Interview Prep
+{% raw %}
+# Shell Interview Preparation
+
+Curated from multiple DevOps interview sources, **deduplicated**, and edited for REBASH Academy.
+Answer out loud first, then reveal the model answer. Prefer judgement and verification over memorised lists.
+
+!!! tip "How to practise"
+    1. Answer in two minutes without notes
+    2. Name the first three commands or checks you would run
+    3. Call out a failure mode and a rollback
+    4. Tie the answer to least privilege and blast radius
+
+## Core concepts
+
+**1. What are artifacts, and how do you manage them in a pipeline?**
 
-Practice answers for Linux admin, DevOps, SRE, and platform engineering interviews. Prefer concrete examples from the [Shell Scripting track](../shell/index.md).
+??? success "Reveal answer"
+    Artifacts are the actual build outputs -- JAR/WAR files, Docker images, zip packages, binaries. I manage them by
+    storing them in a repository like Nexus, Artifactory, or Docker Hub, versioning and tagging each one based on the
+    release or build number for traceability and rollback, and applying retention policies so old, unused artifacts don't
+    accumulate indefinitely.
+    
+    The Complete DevOps Engineer Interview Guide (Exhaustive) — 2026
 
-## Overview
+**2. What are Sticky Sessions and how are they used in DevOps?**
+
+??? success "Reveal answer"
+    Sticky sessions configure a load balancer to consistently route a given user's requests to the same backend
+    instance, which matters for stateful applications that store session data locally rather than in a shared external store.
+    I generally prefer designing stateless services that don't need sticky sessions at all, since they scale and fail over
+    more cleanly.
 
-| Item | Detail |
-|------|--------|
-| Who | Engineers who automate Linux with Bash |
-| Level | Junior → mid DevOps / platform |
-| Companies | Product startups, SaaS, consultancies, cloud-native teams |
+**3. What is Configuration Management?**
 
-## Skills being evaluated
+??? success "Reveal answer"
+    It is a method through which we automate admin tasks. Each and every minute detail of a system is
+    called configuration details. If we do any change here, we are changing the configuration of the
+    machine. System administrators used to manage configuration manually. DevOps engineers manage
+    this configuration automatically using configuration management tools.
 
-- Quoting, expansions, and Bash vs POSIX sh
-- Exit codes, strict mode, and defensive scripting
-- Process control, signals, and traps
-- Text pipelines, jq/yq for config/API data
-- Cron/systemd environment differences
-- Security habits (secrets, `rm`, SSH BatchMode)
-- Clear communication under troubleshooting pressure
+**4. What are YAML Pipelines, and how do they differ from Classic Pipelines?**
 
-## Bash fundamentals (Q1–Q5)
+??? success "Reveal answer"
+    YAML Pipelines are defined in a file checked into the source repo, giving version control and easier collaboration,
+    while Classic Pipelines use a visual designer in the portal. YAML Pipelines are more flexible, reusable, and versioned
+    alongside the application, which is why I default to them for anything beyond a quick proof of concept.
 
-### Q1 — Why do teams still write Bash?
+**5. What is a shell script?**
 
-**Expected answer:** Ubiquitous on Linux servers and CI images; excellent for glue, packaging CLI calls, and cron. Poor fit for large applications, complex data models, or rich HTTP clients.
+??? success "Reveal answer"
+    Give an example of how you might use it in DevOps.
+    A shell script automates a sequence of commands for a shell interpreter like Bash. I use them for things like
+    deploying an application, applying server configuration changes, or scheduling routine backups -- anywhere a
+    repeatable sequence of commands would otherwise be run manually.
 
-**Common mistake:** Claiming Bash replaces Python/Go for services.
+**6. What is the use of the subprocess module in DevOps scripting?**
 
-**Follow-up:** When would you rewrite a Bash tool in Python?
+??? success "Reveal answer"
+    subprocess lets a Python script spawn and manage other processes, capturing their output and return codes, which
+    is useful for automating shell commands, deploying code, or wrapping CLI tools like Docker directly inside a Python
+    automation script.
+    
+    The Complete DevOps Engineer Interview Guide (Exhaustive) — 2026
 
-### Q2 — Bash vs `sh`?
+**7. What are the problems system admins used to face without configuration management tools?**
 
-**Expected answer:** Bash is a shell with extensions; `/bin/sh` is often dash (POSIX) on Debian/Ubuntu. Bashisms (`[[ ]]`, arrays, `source` nuances) fail under dash.
+??? success "Reveal answer"
+    • Managing users & groups is a big hectic thing (create, delete, edit...)
+    • Dealing with packages (Installing, Upgrading & Uninstalling)
+    • Taking backups on regular basis manually
+    • Deploying all kinds of applications in servers
+    • Configure services (Starting, stopping and restarting services)
 
-**Follow-up:** How do you detect the executing shell in a script?
+**8. What is a Route Table and how is it used in DevOps?**
 
-### Q3 — What does `set -euo pipefail` do?
+??? success "Reveal answer"
+    A route table controls how traffic flows between subnets and out to gateways -- in AWS it's the actual mechanism
+    that determines whether a subnet is public or private, based on whether its route table sends 0.0.0.0/0 traffic to an
+    internet gateway or a NAT gateway.
 
-**Expected answer:**
+**9. What is semgrep?**
 
-- `-e` — exit on command failure
-- `-u` — treat unset variables as errors
-- `-o pipefail` — pipeline fails if any stage fails
+??? success "Reveal answer"
+    A static analysis tool for finding bugs and security issues using pattern-based rules. Faster and 
+    more customizable than traditional SAST tools. Rules can be written in YAML without knowing 
+    the language internals. 
+     
+     
+    
+     
+    OBSERVABILITY & SRE (20 Questions)
 
-**Common mistake:** Forgetting `pipefail` so `grep | wc` hides grep failures.
+**10. What is Tunneling and how is it used in DevOps?**
 
-### Q4 — Why quote `"$var"` and `"$@"`?
+??? success "Reveal answer"
+    Tunneling encapsulates one network protocol inside another to create a secure or otherwise unsupported path
+    between networks -- SSH tunnels and VPNs are common examples I use for securely reaching cloud resources or
+    bridging separate network environments.
 
-**Expected answer:** Prevent word-splitting and globbing. `"$@"` preserves argument boundaries; `"$*"` joins into one word.
+**11. Explain the purpose of the grep command in Linux.**
 
-### Q5 — `[[ ]]` vs `[ ]`?
+??? success "Reveal answer"
+    grep searches for specific patterns within files or command output, letting me extract exactly the relevant lines by
+    matching regular expressions or plain strings -- it's one of the tools I reach for constantly when digging through logs.
 
-**Expected answer:** `[[ ]]` is Bash (safer parsing, `=~`, no word-split surprises with vars inside). `[` is POSIX `test`. Prefer `[[` in Bash scripts.
+**12. What is DynamoDB's partition key?**
 
-## Shell scripting (Q6–Q10)
+??? success "Reveal answer"
+    The primary attribute used to distribute data across partitions. Poor partition key choice (e.g., 
+    using date/status with low cardinality) causes "hot partitions" — all traffic goes to one partition, 
+    causing throttling.
 
-### Q6 — How do you structure a maintainable script?
+**13. What is Logstash pipeline throughput tuning?**
 
-**Expected answer:** Shebang, strict mode, `usage`, functions with `local`, clear exit taxonomy, logging to stderr, optional `lib/common.sh`.
+??? success "Reveal answer"
+    Key settings: pipeline.workers (parallel filter threads, set to CPU 
+    count), pipeline.batch.size (events per batch, higher = more throughput, more 
+    memory), pipeline.batch.delay (wait time for batch to fill).
 
-### Q7 — How do functions return data vs status?
+**14. What is the difference between Declarative and Scripted pipelines?**
 
-**Expected answer:** Status via `return`/`exit`; data via stdout (captured with `$( )`). Avoid globals when `local` suffices.
+??? success "Reveal answer"
+    Declarative has a rigid predefined structure (pipeline {} block), easier to read and validate. 
+    Scripted uses Groovy's node {} block with full programming flexibility but no structural 
+    validation.
 
-### Q8 — Indexed vs associative arrays?
+**15. What is the purpose of post {} in a Declarative pipeline?**
 
-**Expected answer:** Indexed for lists; associative (`declare -A`) for maps. Associative arrays need Bash 4+ (macOS system Bash may be 3.2).
+??? success "Reveal answer"
+    Defines actions to run after all stages complete, regardless of the result — e.g., send notifications, 
+    clean workspace, archive artifacts. Supports always, success, failure, unstable.
 
-### Q9 — Safe line reading pattern?
-
-**Expected answer:** `while IFS= read -r line; do ...; done <file` or `read -r -d ''` for NUL-delimited input with `find -print0`.
-
-### Q10 — How do you parse CLI args?
-
-**Expected answer:** `getopts` for short options; `case` for subcommands; document `--help` exiting `2`.
-
-## Linux automation (Q11–Q15)
-
-### Q11 — Idempotent package install?
-
-**Expected answer:** Detect package manager; skip if already installed (`dpkg -s` / `rpm -q`); support dry-run; log actions.
-
-### Q12 — User management automation risks?
-
-**Expected answer:** Validate usernames; refuse destructive ops without flags; never log passwords; prefer dry-run; audit log every change.
-
-### Q13 — Backup script essentials?
-
-**Expected answer:** Staging + `trap` cleanup, retention, `flock`, checksums/size checks, restore test drill, path prefix validation.
-
-### Q14 — Service health checks?
-
-**Expected answer:** Combine `systemctl is-active` with HTTP probes (`curl` timeouts). Aggregate worst exit code; keep checks read-only.
-
-### Q15 — Scheduling: cron vs systemd timers?
-
-**Expected answer:** Cron is ubiquitous and simple; systemd timers integrate with journald, calendars, and unit dependencies. Both need absolute paths and explicit environments.
-
-## Process management (Q16–Q18)
-
-### Q16 — What is `trap` for?
-
-**Expected answer:** Run cleanup on `EXIT`/`INT`/`TERM` — remove temp dirs, release locks, restore state.
-
-### Q17 — How do you prevent overlapping cron jobs?
-
-**Expected answer:** `flock` on a lock file (or systemd `Conflict=` / `flock` in `ExecStart`). Decide whether contention is exit `0` or an error.
-
-### Q18 — `kill` vs `pkill` / signals?
-
-**Expected answer:** Prefer signalling a known PID from a pidfile you own. Understand `TERM` then `KILL`. Avoid broad `pkill` patterns in production without safeguards.
-
-## Text processing (Q19–Q21)
-
-### Q19 — When `grep`/`awk` vs `jq`?
-
-**Expected answer:** Line-oriented logs → grep/awk/sed. Structured JSON → jq. Mixing both is fine; do not regex-parse JSON if jq is available.
-
-### Q20 — Useful jq patterns in interviews?
-
-**Expected answer:** `select()`, `@tsv`, `-r`, handling missing keys, exiting non-zero on failed assertions (`jq -e`).
-
-### Q21 — YAML in shell?
-
-**Expected answer:** Use yq (confirm mikefarah vs Python wrapper). Validate required keys before deploy. Prefer YAML for config, JSON for APIs.
-
-## Debugging (Q22–Q24)
-
-### Q22 — Script works interactively but fails in cron?
-
-**Expected answer:** Minimal `PATH`, no aliases, different cwd, missing env vars/secrets. Fingerprint env; set `PATH`; use absolute paths.
-
-### Q23 — How do you debug a failing pipeline?
-
-**Expected answer:** `bash -x`, `pipefail`, split stages, log intermediate files, ShellCheck, `bash -n`.
-
-### Q24 — Common expansion bugs?
-
-**Expected answer:** Unquoted globs, unintended empty arrays with `set -u`, assuming Linux `date` flags on macOS, Windows CRLF shebang issues.
-
-## Production scenarios (Q25–Q28)
-
-### Q25 — Unsafe `rm -rf $TARGET` in a shared script — what do you do?
-
-**Expected answer:** Stop the job; rewrite with quotes; require absolute path under an allowed prefix (`realpath` check); add dry-run; add tests; review blast radius in logs.
-
-### Q26 — Deploy script failed mid-way — design expectations?
-
-**Expected answer:** Stages + symlink flip, health check, automatic rollback, flock, clear exit codes, artefacts retained for forensics.
-
-### Q27 — Certificate expired overnight — prevention?
-
-**Expected answer:** Scheduled openssl expiry checks with warn window; alert routing; inventory of SANs; prefer automated renewal (ACME) where possible.
-
-### Q28 — CI job leaked a token in logs — response?
-
-**Expected answer:** Rotate credentials immediately; scrub CI logs; never `echo` secrets; use masked variables; fail closed; add ShellCheck/review rules.
-
-## Rapid fire (optional)
-
-| Prompt | One-line answer |
-|--------|-----------------|
-| Shebang recommendation? | `#!/usr/bin/env bash` |
-| Exit code for usage errors? | Often `2` |
-| Where should logs go? | stderr |
-| Disable password SSH prompts in scripts? | `BatchMode=yes` |
-| Static analysis tool? | ShellCheck |
-
-## Interview tips
-
-- Narrate failure modes, not only happy paths
-- Mention quoting and exit codes early — interviewers listen for them
-- Prefer small, testable scripts over clever one-liners
-- Be honest about Bash limits (JSON/APIs → Python)
-
-## Evaluation rubric (1–5)
-
-| Category | Look for |
-|----------|----------|
-| Technical accuracy | Correct Bash semantics |
-| Defensive scripting | Quotes, `pipefail`, validation |
-| Operations | Cron/env, locks, traps |
-| Security | Secrets, path safety, SSH |
-| Communication | Structured, concise answers |
+**16. What is an Azure Pipeline YAML stage?**
+
+??? success "Reveal answer"
+    A major division of a pipeline, containing jobs. Stages run sequentially by default but can be 
+    configured to run in parallel. Each stage can have its own approval requirements.
+
+**17. What is a self-hosted runner group?**
+
+??? success "Reveal answer"
+    A collection of self-hosted runners assigned to specific organizations or repositories. Used for 
+    access control — only certain repos can use certain runners.
+
+**18. What are variables in Shell Scripting?**
+
+??? success "Reveal answer"
+    Variables store values for reuse.
+    eee
+    NAME="DevOps"
+    echo $NAME
+    @ Avoid spaces around = while assigning values.
+    @ Intermediate
+    e e e
+    a6 im Explain if-else in
+
+**19. What is the script {} block in Declarative pipelines?**
+
+??? success "Reveal answer"
+    Allows embedding Scripted pipeline Groovy code inside a Declarative pipeline for complex logic 
+    like loops, conditionals, and dynamic stage creation.
+
+**20. What is actions/github-script?**
+
+??? success "Reveal answer"
+    Runs JavaScript code with access to the GitHub API and workflow context. Used for commenting 
+    on PRs, creating issues, and complex conditional logic.
+
+**21. What is the difference between text and keyword field types?**
+
+??? success "Reveal answer"
+    text is analyzed (tokenized, lowercased) — used for full-text search. keyword is not analyzed — 
+    used for exact matching, aggregations, and sorting.
+
+**22. What is hashFiles() function?**
+
+??? success "Reveal answer"
+    Generates a hash of specified files — commonly used in cache keys. 
+    key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
+
+## Scenarios and troubleshooting
+
+**23. A pipeline failed in the build stage. How do you troubleshoot?**
+
+??? success "Reveal answer"
+    + Check build logs for compilation/test errors. * Debugging skills )
+    + Verify code changes, dependencies, and build scripts. * Reproducibility approach
+    + Reproduce the failure locally or in a container. % Knowledge of build tools
+    + Check environment, cache, and artifact repository access. * Environment awareness
+    + Fix the issue and re-run the pipeline with version control. * Efficient problem isolation
+    © AQ: A pipeline failed in the deploy stage. What could be the causes and how do you fix it? 
+    ANS: + Causes: Config issues, failed health checks, insufficient permissions, * Identifying possible causes
+    bad artifacts, resource limits, network issues. * Cloud/K8s/Infra knowledge
+    + Check deployment logs, events, and target environment health. * Security & permission awareness
+    + Validate IAM roles, secrets, and cluster access. * Fast recovery mindset
+    + Fix the root cause and redeploy or rollback. * Clear action plan |
+    (G)
+
+**24. Your CI pipeline is flaky — tests pass locally but fail in CI 30% of the time. What are the causes?**
+
+??? success "Reveal answer"
+    1. Tests depend on external services (network, time). 2) Parallel test interference (shared 
+    database state). 3) Resource constraints (OOM in CI). 4) Timezone differences. 5) Non-
+    deterministic test order. Fix: mock externals, isolate test databases, use --runInBand, set 
+    timeouts.
+
+**25. What is MTBF (Mean Time Between Failures)?**
+
+??? success "Reveal answer"
+    Average time between failures. Increased by improving reliability, adding redundancy, and 
+    thorough testing.
+
+## Practice questions
+
+**26. Design a URL shortener like bit.ly. ; HIGH LEVEL ARCHITECTURE 7} . ah ‘i °?**
+
+??? success "Reveal answer"
+    « Write path: User -> API -> Generate short code -> Store mapping. let 4 caus gna)
+    - 9 + Read path: Short URL ~» API =» Lecbup -» Redirect. Raicd iss, 8
+    + Use base62 encoding for short IDs. Weegee, 2 = =. @B — =]
+    -@ + Store in sealable DB (Cassandra / DynameD8). nee my tat Cig Pai 77
+    + Cache hot mappings in Redis. 5 Rawicai eo .
+    -@ + Track analytics (clicks, geo, device). coll] rine Bx. }
+    -s @ a: design a system to handle 1004 DAV (Daily Active Uses) micas Grane saieaieammeane
+    * Scalability thinking 5 = ag aoe
+    hae “se. | 8-O-8-88
+    + Auto-scaling (horizontal) based on metrics. pigehenereggis = ba | a
+    + Asynchoneous processing for non-critical tasks. e Resili & foult tol
+    OG mene? 
+    -o ANS: . Real-time messaging with WebSocket / MOTT. # Real-time communication my . - @ -: i= + x
+    -~ 9 + Presence service using in-memory store. a Raliebility & “ 6 —-—R ’
+    + Delivery quarenates: ACKs & retrias. ;
+    ; a ge no waa aie cad @ (s) all
+    - eo + End-to-end encryption for security. aS ae Aaneer po sae tose aie
+    0 FLOW
+    Do dangn « vider srnaning platform 
+    ANS: . Upload -» Transcode -»…
+
+**27. What tools have you used for CI/CD, and why did you choose them?**
+
+??? success "Reveal answer"
+    Jenkins for its flexibility and huge plugin ecosystem across almost any tech stack; GitHub Actions for smaller projects
+    or where deep GitHub integration matters; GitLab CI when the codebase is already hosted on GitLab, for the
+    seamless built-in integration; ArgoCD specifically for GitOps-based delivery into Kubernetes; Docker for consistent
+    packaging across environments; and Terraform for automating the infrastructure the pipeline deploys into.
+
+**28. How do you migrate a monolith application to microservices with zero downtime?**
+
+??? success "Reveal answer"
+    FINAL SECTION: SCENARIO-BASED &
+    
+     
+    Use the Strangler Fig pattern: 1) Put a proxy/API gateway in front of the monolith. 2) Extract one 
+    service at a time — start with the least coupled. 3) Route traffic for the extracted feature to the 
+    new service via the proxy. 4) Verify with feature flags. 5) Repeat until monolith is empty. Never do 
+    a big-bang rewrite.
+
+**29. How do you roll back a bad database migration?**
+
+??? success "Reveal answer"
+    1. If backward-compatible migration: redeploy old app code — it works with new schema. 
+    2) If breaking change was applied: run the rollback script (Liquibase rollback, Flyway 
+    undo). 3) Last resort: restore from pre-migration snapshot. Lesson: always test migrations 
+    on a production-size staging copy first.
+
+**30. How do you ensure the maintainability of Selenium test scripts?**
+
+??? success "Reveal answer"
+    The Page Object Model separates locators and page interactions from test logic, so a UI change only requires
+    updating one page object. I also modularize tests into reusable methods, use consistent naming conventions, and
+    keep everything in version control to track changes and collaborate.
+
+**31. How is EIGRP used in DevOps?**
+
+??? success "Reveal answer"
+    EIGRP is a Cisco routing protocol I've mostly encountered in legacy, on-prem environments for managing internal
+    routing efficiently -- it's less relevant in pure cloud-native setups but still shows up in hybrid infrastructure with a
+    traditional networking footprint.
+
+**32. How is Multicast used in DevOps?**
+
+??? success "Reveal answer"
+    Multicast efficiently delivers the same data to multiple receivers simultaneously without duplicating traffic for each
+    one, which is useful in environments like Kubernetes clusters where certain real-time state updates need to reach
+    many nodes at once.
+
+**33. whatis the purpose of #!/bin/bash?**
+
+??? success "Reveal answer"
+    Known as the Shebang. It tells Linux which interpreter should execute the script.
+    eee
+    #! /bin/bash
+    @ Without it, the script may run with a different, unintended
+
+**34. whatare Exit Codes?**
+
+??? success "Reveal answer"
+    Exit codes indicate whether a command succeeded.
+    QO Success
+    +0 Error
+    CHECK THE LAST EXIT CODE
+    »_ echo $?
+    @ Production Frequently Asked
+    a e e o e
+    lato 2? Why is
+
+**35. What does 2>&1 mean in shell?**
+
+??? success "Reveal answer"
+    Redirects stderr (file descriptor 2) to wherever stdout (file descriptor 1) is currently pointing. Used 
+    to capture both stdout and stderr together.
 
 ## Related
 
-- Track: [Shell Scripting](../shell/index.md)
-- Cheat sheet: [Shell Scripting](../cheatsheets/shell.md)
-- Labs: [Ops Script Hardening](../labs/shell-ops-script-hardening.md), [Linux Operations Toolkit](../labs/shell-linux-operations-toolkit.md)
-- Quiz: [Shell Scripting for DevOps Fundamentals](../quizzes/shell-scripting-for-devops-fundamentals.md)
+- Course: [Shell](../shell/index.md)
+- Hub: [Interview Preparation](index.md)
+{% endraw %}

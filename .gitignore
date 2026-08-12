@@ -31,3 +31,8 @@ Thumbs.db
 # Generated course books (keep books/README.md)
 books/*/
 !books/README.md
+
+# Interview PDF intake (source only — keep README)
+inbox/interview-pdfs/*
+!inbox/interview-pdfs/README.md
+inbox/interview-extracted/

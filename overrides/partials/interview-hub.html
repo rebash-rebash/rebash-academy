@@ -1,5 +1,5 @@
 {#-
-  Interview Prep catalog — tile grid by category.
+  Interview Preparation catalog — published topic banks.
 -#}
 {% macro interview_tile(href, title, desc, brand=none, mdi=none, tint="blue") %}
   <a class="ra-tech-tile" href="{{ href | url }}">
@@ -32,45 +32,58 @@
 
 <article class="ra-tech-hub">
   <header class="ra-tech-hub__intro">
-    <h1 class="ra-tech-hub__title">Interview Prep</h1>
+    <h1 class="ra-tech-hub__title">Interview Preparation</h1>
     <p class="ra-tech-hub__lead">
-      Theory, scenario questions, and system-design prompts by technology.
+      Curated, deduplicated question banks with revealable model answers —
+      concepts, scenarios, troubleshooting, and production trade-offs.
       Practise with the matching
       <a href="{{ 'technologies/' | url }}">course</a>
-      and
-      <a href="{{ 'cheatsheets/' | url }}">cheat sheet</a>
-      before a round.
+      when available. More topics grow as we ingest new sources.
     </p>
   </header>
 
   {% call interview_section("Foundations", "ra-interview-foundations") %}
-    {{ interview_tile("interview/linux/", "Linux", "Fundamentals, admin, performance, security, and prod scenarios", brand="linux.svg") }}
-    {{ interview_tile("interview/shell/", "Shell", "Bash fundamentals, automation, text tools, and debugging", mdi="bash", tint="green") }}
-    {{ interview_tile("interview/networking/", "Networking", "TCP/IP, DNS, HTTP, and production networking scenarios", mdi="lan", tint="teal") }}
-    {{ interview_tile("interview/python/", "Python for DevOps", "APIs, automation, Docker, Kubernetes, and cloud SDKs", mdi="language-python", tint="blue") }}
+    {{ interview_tile("interview/devops/", "DevOps Fundamentals", "Culture, CI/CD principles, SRE basics, and delivery models", mdi="rocket-launch", tint="blue") }}
+    {{ interview_tile("interview/linux/", "Linux", "Admin, processes, storage, networking, and production triage", brand="linux.svg") }}
+    {{ interview_tile("interview/shell/", "Shell", "Bash scripting, text tools, automation, and debugging", mdi="bash", tint="green") }}
+    {{ interview_tile("interview/networking/", "Networking", "TCP/IP, DNS, HTTP, subnets, and cloud networking", mdi="lan", tint="teal") }}
+    {{ interview_tile("interview/python/", "Python", "Automation, APIs, and DevOps scripting patterns", mdi="language-python", tint="blue") }}
     {{ interview_tile("interview/git/", "Git", "Branching, remotes, workflows, and recovery scenarios", mdi="git", tint="deep-orange") }}
   {% endcall %}
 
-  {% call interview_section("Containers", "ra-interview-containers") %}
-    {{ interview_tile("interview/docker/", "Docker", "Images, networking, Compose, and production container ops", brand="docker.svg") }}
+  {% call interview_section("Containers and orchestration", "ra-interview-containers") %}
+    {{ interview_tile("interview/docker/", "Docker", "Images, networking, volumes, Compose, and hardening", brand="docker.svg") }}
     {{ interview_tile("interview/kubernetes/", "Kubernetes", "Workloads, networking, storage, security, and cluster ops", brand="kubernetes.svg") }}
+    {{ interview_tile("interview/helm/", "Helm", "Charts, releases, values, and packaging patterns", mdi="ship-wheel", tint="indigo") }}
   {% endcall %}
 
   {% call interview_section("Cloud and IaC", "ra-interview-cloud") %}
     {{ interview_tile("interview/aws/", "AWS", "IAM, VPC, compute, storage, and architecture scenarios", brand="aws.svg") }}
-    {{ interview_tile("interview/terraform/", "Terraform", "State, modules, plans, and IaC design questions", brand="terraform.svg") }}
+    {{ interview_tile("interview/azure/", "Azure", "Identity, networking, AKS, and Azure DevOps themes", brand="azure.svg") }}
+    {{ interview_tile("interview/gcp/", "Google Cloud", "GCP interview themes for cloud engineers", brand="google-cloud.svg") }}
+    {{ interview_tile("interview/terraform/", "Terraform", "State, modules, plans, imports, and IaC design", brand="terraform.svg") }}
+    {{ interview_tile("interview/ansible/", "Ansible", "Playbooks, inventory, idempotency, and config management", mdi="ansible", tint="red") }}
   {% endcall %}
 
-  {% call interview_section("CI/CD", "ra-interview-cicd") %}
-    {{ interview_tile("interview/cicd/", "CI/CD", "GitLab CI stages, rules, runners, gates, and deploys", brand="gitlab.svg") }}
+  {% call interview_section("Delivery", "ra-interview-delivery") %}
+    {{ interview_tile("interview/cicd/", "CI/CD", "Pipelines, gates, environments, and deployment strategies", mdi="infinity", tint="purple") }}
+    {{ interview_tile("interview/jenkins/", "Jenkins", "Pipelines, agents, shared libraries, and ops", mdi="cog", tint="orange") }}
+    {{ interview_tile("interview/github-actions/", "GitHub Actions", "Workflows, runners, secrets, and reusable actions", mdi="github", tint="purple") }}
+    {{ interview_tile("interview/gitlab/", "GitLab CI/CD", "Pipelines, runners, and GitLab delivery patterns", brand="gitlab.svg") }}
+    {{ interview_tile("interview/argocd/", "Argo CD", "GitOps sync, apps, and progressive delivery", mdi="sync", tint="cyan") }}
+  {% endcall %}
+
+  {% call interview_section("Reliability and security", "ra-interview-reliability") %}
+    {{ interview_tile("interview/monitoring/", "Monitoring", "Prometheus, Grafana, logging, and alerting scenarios", mdi="chart-timeline-variant", tint="orange") }}
+    {{ interview_tile("interview/security/", "Security", "DevSecOps, secrets, scanning, and least privilege", mdi="shield-lock", tint="red") }}
   {% endcall %}
 
   <aside class="ra-path-hub__guide" aria-labelledby="ra-interview-tips-title">
-    <h2 id="ra-interview-tips-title" class="ra-tech-hub__heading">How to use this guide</h2>
+    <h2 id="ra-interview-tips-title" class="ra-tech-hub__heading">How to use this goldmine</h2>
     <ul class="ra-path-hub__tips">
-      <li><strong>Theory first</strong> — answer concepts in your own words, then check the reveal.</li>
-      <li><strong>Scenarios next</strong> — walk through trade-offs the way you would on a whiteboard.</li>
-      <li><strong>Pair with practice</strong> — reinforce weak spots in the matching course labs.</li>
+      <li><strong>Reveal last</strong> — answer first, then open the model answer.</li>
+      <li><strong>Prefer depth</strong> — interviewers reward triage and trade-offs over lists.</li>
+      <li><strong>Pair with practice</strong> — reinforce weak spots in matching course labs.</li>
     </ul>
     <p class="ra-path-hub__footnote">
       Targeting a role? Start from a

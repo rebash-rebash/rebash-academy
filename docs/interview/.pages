@@ -1,14 +1,30 @@
-title: Interview Prep
+title: Interview Preparation
 icon: material/account-question
 nav:
   - Overview: index.md
-  - linux.md
-  - shell.md
-  - python.md
-  - networking.md
-  - aws.md
-  - git.md
-  - cicd.md
-  - docker.md
-  - kubernetes.md
-  - terraform.md
+  - "Foundations":
+    - devops.md
+    - linux.md
+    - shell.md
+    - networking.md
+    - python.md
+    - git.md
+  - "Containers & orchestration":
+    - docker.md
+    - kubernetes.md
+    - helm.md
+  - "Cloud & IaC":
+    - aws.md
+    - azure.md
+    - gcp.md
+    - terraform.md
+    - ansible.md
+  - "Delivery":
+    - cicd.md
+    - jenkins.md
+    - github-actions.md
+    - gitlab.md
+    - argocd.md
+  - "Reliability & security":
+    - monitoring.md
+    - security.md

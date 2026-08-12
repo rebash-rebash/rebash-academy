@@ -1,146 +1,79 @@
 ---
-title: "Python for DevOps Interview Prep"
-description: "25–30 interview questions covering Python fundamentals, OOP, files, REST APIs, automation, Kubernetes, Docker, Terraform, cloud SDKs, and production scenarios."
+title: "Python Interview Preparation"
+description: "6 curated interview questions and model answers for Python — concepts, scenarios, troubleshooting, and production trade-offs."
 difficulty: intermediate
-estimated_time: "60 min"
+estimated_time: "45–90 min"
 author: Shaik Basha
-last_updated: "2026-07-29"
+last_updated: "2026-08-12"
 category: interview
+technology: python
 tags:
   - interview
   - python
-  - devops
 comments: false
 ---
 
-# Python for DevOps Interview Prep
+{% raw %}
+# Python Interview Preparation
 
-Practice answers for DevOps, platform, and SRE interviews. Prefer concrete examples from the [Python for DevOps track](../python/index.md).
+Curated from multiple DevOps interview sources, **deduplicated**, and edited for REBASH Academy.
+Answer out loud first, then reveal the model answer. Prefer judgement and verification over memorised lists.
 
-## Fundamentals (1–5)
+!!! tip "How to practise"
+    1. Answer in two minutes without notes
+    2. Name the first three commands or checks you would run
+    3. Call out a failure mode and a rollback
+    4. Tie the answer to least privilege and blast radius
 
-1. **When do you choose Python over Bash for ops work?**  
-   Bash for composing OS tools and exit-code pipelines; Python for structured data (JSON/YAML), HTTP APIs, retries, unit tests, and packaged CLIs.
+## Core concepts
 
-2. **Why use a virtual environment?**  
-   Isolate dependencies per project so CI and laptops resolve the same versions; avoid polluting the system interpreter.
+**1. What is Python's role in DevOps?**
 
-3. **How do you pin dependencies for automation tools?**  
-   Pin ranges or lock with uv/Poetry (`requirements.txt` hashes or `uv.lock`) so builds are reproducible.
+??? success "Reveal answer"
+    Python's simplicity and rich ecosystem make it useful for automating infrastructure as code alongside tools like
+    Terraform and Ansible, scripting steps in CI/CD pipelines, and building monitoring and logging integrations with tools
+    like Prometheus or Grafana APIs where the built-in tooling doesn't cover a specific need.
 
-4. **What is a sensible exit-code taxonomy for CLIs?**  
-   `0` success, `2` usage/validation errors, `1` (or a small set) for runtime failures — document it for callers and CI.
+**2. Can you explain how Python works with cloud services in DevOps?**
 
-5. **Explain list vs generator for large log files.**  
-   Generators/`for line in file` stream; lists hold everything in memory and can OOM on multi-gigabyte logs.
+??? success "Reveal answer"
+    Cloud SDKs like Boto3 for AWS let Python interact directly with services -- listing S3 buckets, managing EC2
+    instances -- which is how I've automated infrastructure provisioning, deployment, and scaling tasks beyond what the
+    CLI conveniently covers.
 
-!!! tip "Sample answer — Python vs Bash"
-    Use Bash when you are composing OS tools and care about exit codes. Switch to Python when you need models, retries, tests, or a reusable package.
+**3. What is Locust?**
 
-## OOP (6–8)
+??? success "Reveal answer"
+    A Python-based load testing tool. Define user behaviour in Python, then simulate thousands of 
+    concurrent users. Easy to write complex test scenarios.
 
-6. **When are dataclasses useful in ops tooling?**  
-   For inventory records, findings, and config models — less boilerplate than hand-written classes, clear fields for JSON serialisation.
+## Scenarios and troubleshooting
 
-7. **Inheritance vs composition for cloud adapters?**  
-   Prefer composition: a shared `InventoryClient` protocol with AWS/Azure/GCP adapters keeps blast radius and testing simpler than deep hierarchies.
+**4. How would you manage environment variables in Python for a DevOps project?**
 
-8. **What belongs in `__init__` vs methods for a CLI service object?**  
-   Construct clients/config once in `__init__`; keep side-effecting I/O in methods so tests can inject fakes.
+??? success "Reveal answer"
+    The os module reads environment variables directly -- os.getenv("DATABASE_URL", "default_value") -- and for
+    more structured or sensitive management I'd use something like python-dotenv locally or Docker secrets in
+    containerized deployments.
 
-## File handling (9–11)
+## Practice questions
 
-9. **Why prefer pathlib over string concatenation?**  
-   Safer joins across OSes, richer API (`glob`, `read_text`, `resolve`), fewer separator bugs.
+**5. How do you handle exceptions in Python scripts for DevOps automation?**
 
-10. **Why `yaml.safe_load` not `yaml.load`?**  
-   Unsafe loaders can construct arbitrary Python objects — a security risk for untrusted manifests.
+??? success "Reveal answer"
+    try-except blocks around anything that can fail, catching specific exceptions like subprocess.CalledProcessError
+    rather than a bare except, logging the actual error with useful context, and optionally triggering a retry mechanism for
+    genuinely transient failures.
 
-11. **How do you handle partial writes of reports?**  
-   Write to a temporary file then `replace()` atomically so readers never see truncated JSON.
+**6. How do you use Python to monitor server health in DevOps?**
 
-## REST APIs (12–14)
-
-12. **What must every HTTP client set in automation?**  
-   Timeouts (connect and read). Hung calls stall pipelines and on-call scripts.
-
-13. **How do you authenticate without leaking secrets?**  
-   Env vars or a secret store; never commit tokens; redact in logs; prefer short-lived OIDC/federation.
-
-14. **How do you handle pagination and rate limits?**  
-   Follow next-page tokens/`Link` headers; honour `Retry-After`; exponential backoff on 429/5xx for idempotent GETs.
-
-!!! tip "Sample answer — timeouts"
-    Default httpx/requests without a timeout can block forever. Set an explicit timeout and fail with a clear log line the on-call can search.
-
-## Automation (15–17)
-
-15. **Why avoid `shell=True` in subprocess?**  
-   Untrusted input can inject metacharacters. Pass argv as a list so each argument is literal.
-
-16. **How do you structure a multi-source inventory CLI?**  
-   Shared record model, pluggable adapters, continue-on-error per source, JSON/table export, offline fixtures for tests.
-
-17. **What is a dry-run default and why?**  
-   Destructive Docker/K8s/cloud actions should report first; require `--apply` (or equivalent) to mutate — reduces accidental blast radius.
-
-## Kubernetes (18–20)
-
-18. **How do you check Pod readiness with the Python client?**  
-   List Pods, inspect `status.conditions` / container ready flags; treat CrashLoopBackOff as unhealthy — read-only.
-
-19. **What identity should automation use in-cluster?**  
-   A dedicated ServiceAccount with least-privilege RBAC (get/list in one namespace), not cluster-admin.
-
-20. **How do you test K8s automation in CI without a cluster?**  
-   Fixture JSON / recorded API objects; optional kind job gated separately.
-
-## Docker (21–22)
-
-21. **How do you clean dangling images safely?**  
-   List and report sizes first; filter by age/label; delete only with `--apply`; never prune volumes blindly on shared hosts.
-
-22. **What if the Docker daemon is unavailable?**  
-   Fail clearly or switch to a fixture path so unit tests and workshops still run.
-
-## Terraform (23–24)
-
-23. **How should Python wrap Terraform?**  
-   Subprocess with list args for `fmt`/`validate`/`plan`/`show -json`; never hide `apply` behind silent defaults; summarise resource_changes for PRs.
-
-24. **Why parse plan JSON instead of scraping text?**  
-   Stable machine-readable fields; better for CI comments and policy checks.
-
-## Cloud SDKs (25–26)
-
-25. **How do you inventory EC2 without embedding keys?**  
-   Instance roles, OIDC in CI, or local profiles; labs/tests use fixture `describe_instances` JSON when credentials are absent.
-
-26. **What is a normalised multi-cloud inventory record?**  
-   Common fields: id, provider, type, region/location, state, tags/labels — adapters map provider quirks into that shape.
-
-## Production scenarios (27–30)
-
-27. **Cron job works interactively but fails scheduled.**  
-   Use the venv’s absolute interpreter; set `PATH`; do not rely on aliases or interactive env vars; log to a file/journald.
-
-28. **Token appeared in pipeline logs — what do you do?**  
-   Rotate immediately; mask CI variables; add redacting filters; scan git history; treat as compromise.
-
-29. **pytest strategy for platform CLIs?**  
-   Unit-test parsers and exit codes with fixtures; mock HTTP/cloud; one optional integration job gated by secrets.
-
-30. **Memory grows on a long-running monitor.**  
-   Avoid unbounded caches; stream responses; profile with `tracemalloc`; bound queues; restart policy as a backstop — fix the leak.
-
-!!! tip "Sample answer — dry-run"
-    Default `--dry-run` for prune/delete/apply wrappers. Operators pass `--apply` deliberately. Document the flag in `--help` and the runbook.
+??? success "Reveal answer"
+    The psutil library gives direct access to CPU and memory usage -- psutil.cpu_percent() and psutil.virtual_memory() --
+    which I can extend to push those metrics into Prometheus or Grafana for ongoing monitoring rather than just a
+    one-off check.
 
 ## Related
 
-- Track: [Python for DevOps](../python/index.md)
-- Cheat sheet: [Python](../cheatsheets/python.md)
-- Lab: [Python Log Analyser](../labs/python-log-analyser.md)
-- Quiz: [Python for DevOps Engineers Fundamentals](../quizzes/python-for-devops-engineers-fundamentals.md)
-- Capstone: [Production DevOps Automation Platform](../projects/python-devops-automation-framework.md)
-- Learning path: [Python for DevOps Engineers](../learning-paths/devops-engineer/)
+- Course: [Python](../python/index.md)
+- Hub: [Interview Preparation](index.md)
+{% endraw %}

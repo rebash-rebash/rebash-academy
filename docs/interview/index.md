@@ -1,6 +1,6 @@
 ---
-title: Interview Prep
-description: "Interview preparation for Linux, Shell, Python, Networking, AWS, Git, CI/CD, Docker, Kubernetes, and Terraform — theory, scenarios, and system design."
+title: Interview Preparation
+description: "Interview Preparation goldmine — curated, deduplicated DevOps interview questions and model answers across Linux, cloud, Kubernetes, CI/CD, IaC, monitoring, and security."
 author: Shaik Basha
 category: interview
 tags:

@@ -96,6 +96,55 @@
         </div>
       </div>
 
+      {#- Interview Preparation dropdown (goldmine Q&A by topic) -#}
+      <div class="rebash-header-dd rebash-header-dd--wide">
+        <a class="rebash-header-dd__trigger" href="{{ 'interview/' | url }}">
+          Interview Prep
+          <span class="rebash-header-dd__caret" aria-hidden="true"></span>
+        </a>
+        <div class="rebash-header-dd__panel rebash-header-dd__panel--grouped" role="menu" aria-label="Interview Preparation">
+          <div class="rebash-header-dd__cols">
+            <div class="rebash-header-dd__col">
+              <div class="rebash-header-dd__group">
+                <p class="rebash-header-dd__label">Foundations</p>
+                <a class="rebash-header-dd__item" href="{{ 'interview/devops/' | url }}" role="menuitem">DevOps Fundamentals</a>
+                <a class="rebash-header-dd__item" href="{{ 'interview/linux/' | url }}" role="menuitem">Linux</a>
+                <a class="rebash-header-dd__item" href="{{ 'interview/shell/' | url }}" role="menuitem">Shell</a>
+                <a class="rebash-header-dd__item" href="{{ 'interview/networking/' | url }}" role="menuitem">Networking</a>
+                <a class="rebash-header-dd__item" href="{{ 'interview/git/' | url }}" role="menuitem">Git</a>
+              </div>
+              <div class="rebash-header-dd__group">
+                <p class="rebash-header-dd__label">Cloud &amp; IaC</p>
+                <a class="rebash-header-dd__item" href="{{ 'interview/aws/' | url }}" role="menuitem">AWS</a>
+                <a class="rebash-header-dd__item" href="{{ 'interview/azure/' | url }}" role="menuitem">Azure</a>
+                <a class="rebash-header-dd__item" href="{{ 'interview/terraform/' | url }}" role="menuitem">Terraform</a>
+                <a class="rebash-header-dd__item" href="{{ 'interview/ansible/' | url }}" role="menuitem">Ansible</a>
+              </div>
+            </div>
+            <div class="rebash-header-dd__col">
+              <div class="rebash-header-dd__group">
+                <p class="rebash-header-dd__label">Containers</p>
+                <a class="rebash-header-dd__item" href="{{ 'interview/docker/' | url }}" role="menuitem">Docker</a>
+                <a class="rebash-header-dd__item" href="{{ 'interview/kubernetes/' | url }}" role="menuitem">Kubernetes</a>
+              </div>
+              <div class="rebash-header-dd__group">
+                <p class="rebash-header-dd__label">Delivery</p>
+                <a class="rebash-header-dd__item" href="{{ 'interview/cicd/' | url }}" role="menuitem">CI/CD</a>
+                <a class="rebash-header-dd__item" href="{{ 'interview/jenkins/' | url }}" role="menuitem">Jenkins</a>
+                <a class="rebash-header-dd__item" href="{{ 'interview/github-actions/' | url }}" role="menuitem">GitHub Actions</a>
+                <a class="rebash-header-dd__item" href="{{ 'interview/argocd/' | url }}" role="menuitem">Argo CD</a>
+              </div>
+              <div class="rebash-header-dd__group">
+                <p class="rebash-header-dd__label">Ops</p>
+                <a class="rebash-header-dd__item" href="{{ 'interview/monitoring/' | url }}" role="menuitem">Monitoring</a>
+                <a class="rebash-header-dd__item" href="{{ 'interview/security/' | url }}" role="menuitem">Security</a>
+              </div>
+            </div>
+          </div>
+          <a class="rebash-header-dd__item rebash-header-dd__item--emph rebash-header-dd__item--footer" href="{{ 'interview/' | url }}" role="menuitem">All interview topics →</a>
+        </div>
+      </div>
+
       <a href="{{ 'books/' | url }}">Books</a>
       <a href="{{ 'about/' | url }}">About</a>
       <a href="{{ 'blog/' | url }}">Blog</a>
