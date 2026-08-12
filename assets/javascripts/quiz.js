@@ -440,6 +440,10 @@
     var toolbar = buildToolbar(questions.length, answeredCount(savedAnswers));
     article.insertBefore(toolbar, banner.nextSibling);
     updateProgress(toolbar, answeredCount(savedAnswers), questions.length);
+    /* Toolbar is sticky — remeasure clearance so TOC jumps clear it */
+    if (typeof initStickyOffsets === "function") initStickyOffsets();
+    else if (typeof syncStickyOffsets === "function") syncStickyOffsets();
+    if (typeof initOnThisPageSpy === "function") initOnThisPageSpy();
 
     var results = document.createElement("div");
     results.className = "ra-quiz-results";

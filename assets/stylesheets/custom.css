@@ -870,12 +870,43 @@
 :root {
   --ra-header-offset: 3.75rem; /* fallback until measured */
   --ra-path-height: 1.85rem;
-  --ra-quiz-toolbar-height: 4.5rem;
+  /* 0 on normal pages; quiz.js + syncStickyOffsets set the real bar height */
+  --ra-quiz-toolbar-height: 0px;
+  /* Header + breadcrumbs + quiz bar (if any) + gap — hash jumps & TOC spy */
+  --ra-sticky-scroll-clearance: calc(
+    var(--ra-header-offset, 3.75rem) +
+      var(--ra-path-height, 1.85rem) +
+      var(--ra-quiz-toolbar-height, 0px) +
+      1.5rem
+  );
 }
 
 /* Header must paint above sticky breadcrumbs / quiz bar */
 .md-header {
   z-index: 40;
+}
+
+/*
+  Anchor / TOC jumps must clear sticky header + breadcrumbs.
+  Without this, the target heading sits under the chrome, so it looks clipped
+  and navigation.tracking keeps the previous TOC item active.
+*/
+html {
+  scroll-padding-top: var(--ra-sticky-scroll-clearance);
+}
+
+.md-typeset :is(h1, h2, h3, h4, h5, h6)[id] {
+  scroll-margin-top: var(--ra-sticky-scroll-clearance);
+}
+
+/* Level headings on interview banks — clear, non-sticky (sticky stacked badly) */
+.ra-interview-qa > h3[id] {
+  position: relative;
+  z-index: 1;
+  margin-top: 1.75rem;
+  margin-bottom: 0.85rem;
+  padding: 0.35rem 0 0.5rem;
+  border-bottom: 1px solid var(--md-default-fg-color--lightest, rgba(0, 0, 0, 0.12));
 }
 
 /* Breadcrumbs — sticky flush under the site header */
@@ -2711,13 +2742,24 @@ body[data-md-color-scheme="slate"] {
   color: #263238;
 }
 
-/* Active TOC item — blue pill + left accent bar */
+/*
+  Only .ra-toc-active is our highlight. Neutralise Material's --active/--passed
+  so a second tracker can never paint two blue pills.
+*/
 .ra-onthispage .md-nav__link--active,
+.ra-onthispage .md-nav__link--passed,
 .ra-onthispage .md-nav__link--passed.md-nav__link--active {
-  background: rgba(25, 118, 210, 0.12);
-  color: #1565c0;
-  font-weight: 600;
-  box-shadow: inset 3px 0 0 #1565c0;
+  background: transparent !important;
+  color: #546e7a !important;
+  font-weight: 500 !important;
+  box-shadow: none !important;
+}
+
+.ra-onthispage .md-nav__link.ra-toc-active {
+  background: rgba(25, 118, 210, 0.12) !important;
+  color: #1565c0 !important;
+  font-weight: 600 !important;
+  box-shadow: inset 3px 0 0 #1565c0 !important;
 }
 
 /* Homepage Quick Links — same tile treatment as Connect with us */
@@ -2987,8 +3029,8 @@ body[data-md-color-scheme="slate"] {
   color: #78909c;
 }
 
-.ra-onthispage .md-nav .md-nav__link--active {
-  color: #1565c0;
+.ra-onthispage .md-nav .md-nav__link.ra-toc-active {
+  color: #1565c0 !important;
 }
 
 [data-md-color-scheme="slate"] .ra-onthispage {
@@ -3014,10 +3056,19 @@ body[data-md-color-scheme="slate"] {
 }
 
 [data-md-color-scheme="slate"] .ra-onthispage .md-nav__link--active,
+[data-md-color-scheme="slate"] .ra-onthispage .md-nav__link--passed,
 [data-md-color-scheme="slate"] .ra-onthispage .md-nav__link--passed.md-nav__link--active {
-  background: rgba(100, 181, 246, 0.14);
-  color: #90caf9;
-  box-shadow: inset 3px 0 0 #64b5f6;
+  background: transparent !important;
+  color: var(--md-default-fg-color--light) !important;
+  font-weight: 500 !important;
+  box-shadow: none !important;
+}
+
+[data-md-color-scheme="slate"] .ra-onthispage .md-nav__link.ra-toc-active {
+  background: rgba(100, 181, 246, 0.14) !important;
+  color: #90caf9 !important;
+  font-weight: 600 !important;
+  box-shadow: inset 3px 0 0 #64b5f6 !important;
 }
 
 /* Keep sidebar scrollbars neutral grey (no blue accent while scrolling) */
@@ -7229,13 +7280,11 @@ a.rebash-roadmap__card:focus-visible {
   isolation: isolate;
 }
 
-/* TOC / hash jumps must clear header + breadcrumbs + quiz progress bar */
+/* Quiz headings use the same clearance as the rest of the site (includes toolbar) */
 .ra-quiz-page h2[id],
-.ra-quiz-page h3[id] {
-  scroll-margin-top: calc(
-    var(--ra-header-offset, var(--md-header-height, 3.75rem)) +
-      var(--ra-path-height, 1.85rem) + 5.5rem
-  );
+.ra-quiz-page h3[id],
+.ra-quiz-results {
+  scroll-margin-top: var(--ra-sticky-scroll-clearance);
 }
 
 .ra-quiz-toolbar__inner {
@@ -7276,14 +7325,6 @@ a.rebash-roadmap__card:focus-visible {
 
   .ra-quiz-toolbar__actions {
     justify-content: flex-start;
-  }
-
-  .ra-quiz-page h2[id],
-  .ra-quiz-page h3[id] {
-    scroll-margin-top: calc(
-      var(--ra-header-offset, var(--md-header-height, 3.75rem)) +
-        var(--ra-path-height, 1.85rem) + 7.5rem
-    );
   }
 }
 
@@ -7454,13 +7495,6 @@ a.rebash-roadmap__card:focus-visible {
 
 .ra-quiz-results {
   margin: 1.5rem 0 2rem;
-  /* Clear sticky header + breadcrumbs + quiz progress when jumping to score */
-  scroll-margin-top: calc(
-    var(--ra-header-offset, 3.75rem) +
-      var(--ra-path-height, 1.85rem) +
-      var(--ra-quiz-toolbar-height, 4.5rem) +
-      0.75rem
-  );
 }
 
 .ra-quiz-results__card {
